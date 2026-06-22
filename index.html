@@ -445,8 +445,13 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
         <option value="retail">Retail / E-commerce</option>
         <option value="saas">SaaS / Software</option>
         <option value="service">Service Business</option>
-        <option value="fitness">Fitness / Wellness</option>
+        <option value="fitness">Fitness &amp; Wellness</option>
         <option value="agency">Agency / Consulting</option>
+        <option value="health">Healthcare &amp; MedTech</option>
+        <option value="edtech">EdTech &amp; Training</option>
+        <option value="marketplace">Marketplace / Platform</option>
+        <option value="events">Events &amp; Hospitality</option>
+        <option value="fintech">FinTech</option>
       </select>
     </div>
     <div class="fg">
@@ -792,13 +797,22 @@ function setCurrency(code) {
 // visitsPerMonth: how many times a retained customer transacts per month.
 // For subscription models (saas/fitness/agency) this is 1 — price IS the monthly value.
 // For transactional models (food/retail/service) price is per-sale; multiply by visits.
+// season: 30 daily multipliers representing within-month demand variation (1.0 = baseline).
+const _flat = [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1];
+const _wknd = (d) => (d%7===0||d%7===6) ? 1.35 : 0.92; // weekend spikes
+const _ramp = (d) => 0.6 + (d-1)/29 * 0.8;              // ramp-up over 30 days
 const PROFILES = {
-  food:    { fixR:.32, varR:.42, acqCost:8,  churn:.18, mktMult:1.2, visitsPerMonth:14, name:'Food & Beverage',     priceLabel:'Price Per Sale' },
-  retail:  { fixR:.22, varR:.52, acqCost:12, churn:.22, mktMult:1.5, visitsPerMonth:2.5,name:'Retail / E-commerce', priceLabel:'Price Per Order' },
-  saas:    { fixR:.38, varR:.08, acqCost:40, churn:.07, mktMult:2.0, visitsPerMonth:1,  name:'SaaS / Software',     priceLabel:'Monthly Subscription' },
-  service: { fixR:.28, varR:.28, acqCost:25, churn:.09, mktMult:1.3, visitsPerMonth:3,  name:'Service Business',    priceLabel:'Price Per Session' },
-  fitness: { fixR:.42, varR:.18, acqCost:20, churn:.11, mktMult:1.1, visitsPerMonth:1,  name:'Fitness / Wellness',  priceLabel:'Monthly Membership' },
-  agency:  { fixR:.32, varR:.18, acqCost:80, churn:.05, mktMult:1.6, visitsPerMonth:1,  name:'Agency / Consulting', priceLabel:'Monthly Retainer' }
+  food:       { fixR:.32, varR:.42, acqCost:8,  churn:.18, mktMult:1.2, visitsPerMonth:14, name:'Food & Beverage',       priceLabel:'Price Per Sale',         season: Array.from({length:30},(_,i)=>_wknd(i+1)) },
+  retail:     { fixR:.22, varR:.52, acqCost:12, churn:.22, mktMult:1.5, visitsPerMonth:2.5,name:'Retail / E-commerce',   priceLabel:'Price Per Order',         season: Array.from({length:30},(_,i)=>0.7+i/29*.7) },
+  saas:       { fixR:.38, varR:.08, acqCost:40, churn:.07, mktMult:2.0, visitsPerMonth:1,  name:'SaaS / Software',       priceLabel:'Monthly Subscription',    season: _flat },
+  service:    { fixR:.28, varR:.28, acqCost:25, churn:.09, mktMult:1.3, visitsPerMonth:3,  name:'Service Business',      priceLabel:'Price Per Session',       season: _flat },
+  fitness:    { fixR:.42, varR:.18, acqCost:20, churn:.11, mktMult:1.1, visitsPerMonth:1,  name:'Fitness & Wellness',    priceLabel:'Monthly Membership',      season: _flat },
+  agency:     { fixR:.32, varR:.18, acqCost:80, churn:.05, mktMult:1.6, visitsPerMonth:1,  name:'Agency / Consulting',   priceLabel:'Monthly Retainer',        season: _flat },
+  health:     { fixR:.40, varR:.22, acqCost:55, churn:.06, mktMult:1.1, visitsPerMonth:2,  name:'Healthcare & MedTech',  priceLabel:'Price Per Appointment',   season: _flat },
+  edtech:     { fixR:.34, varR:.14, acqCost:30, churn:.12, mktMult:1.8, visitsPerMonth:1,  name:'EdTech & Training',     priceLabel:'Course / Subscription',   season: Array.from({length:30},(_,i)=>_ramp(i+1)) },
+  marketplace:{ fixR:.18, varR:.28, acqCost:18, churn:.15, mktMult:2.2, visitsPerMonth:4,  name:'Marketplace / Platform',priceLabel:'GMV Take Rate (price=avg)',season: Array.from({length:30},(_,i)=>0.5+i/29*1.2) },
+  events:     { fixR:.45, varR:.35, acqCost:22, churn:.30, mktMult:1.4, visitsPerMonth:1.5,name:'Events & Hospitality',  priceLabel:'Ticket / Cover Price',    season: Array.from({length:30},(_,i)=>_wknd(i+1)*1.1) },
+  fintech:    { fixR:.36, varR:.12, acqCost:45, churn:.08, mktMult:1.9, visitsPerMonth:8,  name:'FinTech',               priceLabel:'Fee Per Transaction',     season: _flat },
 };
 
 // ─── QUICK FILLS ──────────────────────────────────────────────────────────────
@@ -808,7 +822,12 @@ const QF = {
   saas:   { idea:'B2B SaaS tool that automates social-media scheduling and analytics for African SMEs. Monthly subscription with 7-day free trial.', cap:15000, loc:'Accra, Ghana', mkt:'SME marketing managers', ind:'saas', price:29, mktbud:1200, team:2 },
   gym:    { idea:'Boutique private gym offering personal training sessions, small-group classes (max 8), and monthly memberships in a residential area.', cap:20000, loc:'Dubai, UAE', mkt:'Health-conscious adults 25–50', ind:'fitness', price:120, mktbud:800, team:3 },
   agency: { idea:'Digital marketing agency specialising in paid-ads management (Meta + Google) for e-commerce brands in the MENA region. Monthly retainer model.', cap:5000, loc:'Kuwait City, Kuwait', mkt:'E-commerce founders', ind:'agency', price:1500, mktbud:500, team:2 },
-  cafe:   { idea:'Specialty coffee café and co-working space combining artisan coffee with fast Wi-Fi and quiet work booths. Hourly and day-pass options available.', cap:25000, loc:'Cape Town, South Africa', mkt:'Remote workers & freelancers', ind:'food', price:18, mktbud:600, team:3 }
+  cafe:   { idea:'Specialty coffee café and co-working space combining artisan coffee with fast Wi-Fi and quiet work booths. Hourly and day-pass options available.', cap:25000, loc:'Cape Town, South Africa', mkt:'Remote workers & freelancers', ind:'food', price:18, mktbud:600, team:3 },
+  health: { idea:'Telemedicine platform connecting patients with licensed doctors for virtual consultations via mobile app. Per-appointment fee, no subscription required.', cap:18000, loc:'Lagos, Nigeria', mkt:'Urban patients 25–55 without easy clinic access', ind:'health', price:15, mktbud:1200, team:3 },
+  edtech: { idea:'Online coding bootcamp for African secondary-school graduates wanting to break into tech. 12-week cohort, monthly tuition model.', cap:12000, loc:'Kampala, Uganda', mkt:'School-leavers 18–26 seeking tech careers', ind:'edtech', price:89, mktbud:900, team:2 },
+  market: { idea:'Two-sided marketplace connecting freelance artisans (carpenters, tailors, electricians) with households needing home services. 15% platform take rate.', cap:9000, loc:'Dar es Salaam, Tanzania', mkt:'Urban homeowners 28–50', ind:'marketplace', price:12, mktbud:700, team:2 },
+  events: { idea:'Pop-up rooftop events — live music, food pop-ups, art shows — at leased venues. Ticket + bar revenue model, bi-weekly events.', cap:14000, loc:'Accra, Ghana', mkt:'Young urban professionals 22–38', ind:'events', price:22, mktbud:1100, team:4 },
+  fintech:{ idea:'Mobile money micro-savings app allowing users to round up transactions and invest the difference into treasury bonds. Fee per micro-investment.', cap:20000, loc:'Nairobi, Kenya', mkt:'Young salaried workers 22–35', ind:'fintech', price:0.30, mktbud:1500, team:3 }
 };
 
 function qf(type) {
@@ -884,15 +903,16 @@ function simulate(params) {
     const churned = Math.floor(customers * prof.churn / 30);
     customers = Math.max(0, customers + acq - churned);
 
+    const seasonMult = prof.season ? prof.season[d - 1] : 1;
     const dailyRevPerCust = params.price * prof.visitsPerMonth / 30;
-    const rev      = customers * dailyRevPerCust * rnd(.75, 1.25) * shock;
+    const rev      = customers * dailyRevPerCust * rnd(.75, 1.25) * shock * seasonMult;
     const fixed    = params.capital * prof.fixR / 30;
     const varC     = rev * prof.varR;
     const totalCost = fixed + varC + dailyMkt;
     const profit   = rev - totalCost;
     cash += profit;
 
-    days.push({ d, rev, cost: totalCost, fixed, varC, mktC: dailyMkt, profit, customers, acq, churned, cash });
+    days.push({ d, rev, cost: totalCost, fixed, varC, mktC: dailyMkt, profit, customers, acq, churned, cash, seasonMult });
   }
   return { days, events };
 }
