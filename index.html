@@ -906,7 +906,7 @@ function simulate(params) {
     const seasonMult = prof.season ? prof.season[d - 1] : 1;
     const dailyRevPerCust = params.price * prof.visitsPerMonth / 30;
     const rev      = customers * dailyRevPerCust * rnd(.75, 1.25) * shock * seasonMult;
-    const fixed    = params.capital * prof.fixR / 30;
+    const fixed    = ((params.team || 1) * 3500 * prof.fixR) / 30;
     const varC     = rev * prof.varR;
     const totalCost = fixed + varC + dailyMkt;
     const profit   = rev - totalCost;
@@ -937,7 +937,7 @@ function monteCarlo(params) {
       const acq = Math.max(0, Math.floor(rNorm(dailyMkt / p.acqCost, 1.2)));
       customers = Math.max(0, customers + acq - Math.floor(customers * p.churn / 30));
       const rev = customers * (params.price * baseProf.visitsPerMonth / 30) * rnd(.6, 1.4);
-      cash += rev - (params.capital * p.fixR / 30 + rev * p.varR + dailyMkt);
+      cash += rev - ((params.team || 1) * 3500 * p.fixR / 30 + rev * p.varR + dailyMkt);
     }
     finals.push(cash);
   }
