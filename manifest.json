@@ -1,0 +1,12 @@
+{
+  "name": "INFINICUS ENGINE v3",
+  "short_name": "INFINICUS",
+  "description": "Simulate your business idea across 30 virtual days with a statistical engine, Monte Carlo risk analysis, and a Go/Modify/Stop verdict.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#060a14",
+  "theme_color": "#22d3ee",
+  "icons": [
+    { "src": "./infinicus-mark.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
