@@ -5,7 +5,7 @@
   "start_url": "./",
   "display": "standalone",
   "background_color": "#060a14",
-  "theme_color": "#22d3ee",
+  "theme_color": "#00e060",
   "icons": [
     { "src": "./infinicus-mark.svg", "sizes": "any", "type": "image/svg+xml" }
   ]
