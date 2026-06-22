@@ -1,151 +1,1170 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>INFINICUS — Simulate your business before you risk a shilling</title>
-<meta name="description" content="Test any business idea across a virtual 30 days before you spend real money. Revenue, risks and a Go / Modify / Stop verdict in seconds." />
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>INFINICUS ENGINE v3 — Business Reality Simulator</title>
+<meta name="description" content="Simulate your business idea across 30 virtual days with a statistical engine, Monte Carlo risk analysis, and a Go/Modify/Stop verdict. No signup required.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;600;700&family=Sora:wght@700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<meta name="theme-color" content="#22d3ee">
+<link rel="icon" type="image/svg+xml" href="./infinicus-mark.svg">
 <style>
-:root{
-  --navy-900:#060a14; --navy-800:#0a1020; --glass:rgba(255,255,255,.04); --glass-2:rgba(255,255,255,.06);
-  --line:rgba(255,255,255,.09); --cyan:#22d3ee; --purple:#8b5cf6; --emerald:#10b981; --amber:#f59e0b; --red:#f43f5e;
+:root {
+  --navy-900:#060a14; --navy-800:#0a1020; --navy-700:#0e1628; --navy-600:#141e35;
+  --glass:rgba(255,255,255,.04); --glass-2:rgba(255,255,255,.07); --glass-3:rgba(255,255,255,.1);
+  --line:rgba(255,255,255,.09); --line-2:rgba(255,255,255,.14);
+  --cyan:#22d3ee; --purple:#8b5cf6; --emerald:#10b981; --amber:#f59e0b; --red:#f43f5e;
   --text:#e9eefb; --muted:#8893ad; --muted-2:#5d6885;
+  --mono:'IBM Plex Mono',monospace; --sans:'Inter',system-ui,sans-serif; --head:'Sora',sans-serif;
 }
-*{box-sizing:border-box;margin:0;padding:0}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
 body{
-  font-family:"Inter",system-ui,sans-serif;color:var(--text);line-height:1.6;-webkit-font-smoothing:antialiased;
+  font-family:var(--sans);color:var(--text);-webkit-font-smoothing:antialiased;
   background:
-    radial-gradient(900px 500px at 12% -10%, rgba(34,211,238,.10), transparent 60%),
-    radial-gradient(800px 600px at 110% 8%, rgba(139,92,246,.13), transparent 55%),
-    radial-gradient(700px 500px at 50% 120%, rgba(16,185,129,.07), transparent 60%),
+    radial-gradient(900px 500px at 12% -10%,rgba(34,211,238,.08),transparent 60%),
+    radial-gradient(800px 600px at 110% 8%,rgba(139,92,246,.1),transparent 55%),
+    radial-gradient(700px 500px at 50% 120%,rgba(16,185,129,.05),transparent 60%),
     var(--navy-900);
-  min-height:100vh;
+  min-height:100vh;overflow-x:hidden;
 }
-h1,h2,h3,.brand{font-family:"Sora",sans-serif;letter-spacing:-.01em;line-height:1.1}
-a{color:inherit}
-.wrap{max-width:1000px;margin:0 auto;padding:0 22px}
-.bar{display:flex;align-items:center;justify-content:space-between;padding:22px 0}
-.brand{display:flex;align-items:center;gap:11px;font-size:19px;font-weight:800}
-.brand .mark{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--cyan),var(--purple));display:grid;place-items:center;color:#04121a;font-weight:800;box-shadow:0 0 18px rgba(34,211,238,.4)}
-.brand span{color:var(--cyan)}
-.tag{color:var(--muted);font-size:12px}
-.glass{background:var(--glass);border:1px solid var(--line);border-radius:18px;backdrop-filter:blur(12px)}
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.015) 2px,rgba(0,0,0,.015) 4px);pointer-events:none;z-index:999;}
 
-.hero{padding:74px 0 54px;text-align:center}
-.pill{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--glass);border-radius:999px;padding:7px 15px;font-size:12px;color:var(--muted);margin-bottom:28px}
-.pill b{color:var(--cyan)}
-.dot{width:7px;height:7px;border-radius:50%;background:var(--emerald);box-shadow:0 0 10px var(--emerald)}
-.hero h1{font-size:clamp(33px,6vw,60px);font-weight:800;margin-bottom:20px}
-.hero h1 em{font-style:normal;background:linear-gradient(90deg,var(--cyan),var(--purple));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-.hero p{color:var(--muted);font-size:17px;max-width:640px;margin:0 auto 36px}
-.cta{display:inline-flex;align-items:center;gap:10px;background:linear-gradient(135deg,var(--cyan),var(--purple));color:#04121a;font-family:"Sora";font-weight:800;font-size:16px;text-decoration:none;padding:16px 30px;border-radius:13px;transition:transform .15s ease,box-shadow .15s ease;box-shadow:0 8px 26px rgba(34,211,238,.28)}
-.cta:hover{transform:translateY(-2px);box-shadow:0 12px 34px rgba(139,92,246,.34)}
-.sub{display:block;margin-top:15px;color:var(--muted-2);font-size:12px}
+/* HEADER */
+header{display:flex;align-items:center;justify-content:space-between;padding:.85rem 1.75rem;border-bottom:1px solid var(--line);background:rgba(6,10,20,.92);backdrop-filter:blur(20px);position:sticky;top:0;z-index:100;gap:12px;flex-wrap:wrap;}
+.logo{font-family:var(--head);font-size:18px;font-weight:800;letter-spacing:-.01em;display:flex;align-items:center;gap:9px;white-space:nowrap;}
+.logo .mark{width:28px;height:28px;border-radius:8px;overflow:hidden;background:var(--navy-700);display:grid;place-items:center;box-shadow:0 0 14px rgba(34,211,238,.35);flex-shrink:0;}
+.logo .mark img{width:26px;height:26px;display:block;}
+.logo .c{color:var(--cyan);}
+.logo-ver{font-family:var(--mono);font-size:9px;color:var(--muted-2);font-weight:300;align-self:flex-end;margin-bottom:2px;margin-left:4px;}
+.nav{display:flex;gap:3px;flex-wrap:wrap;}
+.nb{font-family:var(--mono);font-size:9.5px;color:var(--muted);background:none;border:1px solid transparent;padding:5px 10px;border-radius:6px;cursor:pointer;letter-spacing:.05em;transition:all .15s;white-space:nowrap;}
+.nb:hover,.nb.active{color:var(--cyan);border-color:rgba(34,211,238,.25);background:rgba(34,211,238,.06);}
+.hdr-right{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.cur-select{font-family:var(--mono);font-size:9.5px;letter-spacing:.04em;color:var(--cyan);background:var(--glass);border:1px solid var(--line-2);border-radius:6px;padding:5px 8px;cursor:pointer;outline:none;}
+.cur-select:focus{border-color:rgba(34,211,238,.4);}
+.cur-select option{background:var(--navy-800);}
+.sim-badge{font-family:var(--mono);font-size:9.5px;padding:4px 10px;border-radius:5px;letter-spacing:.06em;white-space:nowrap;}
+.sim-badge.idle{background:rgba(93,104,133,.12);color:var(--muted-2);border:1px solid var(--line);}
+.sim-badge.running{background:rgba(34,211,238,.1);color:var(--cyan);border:1px solid rgba(34,211,238,.2);animation:blink 1s infinite;}
+.sim-badge.done{background:rgba(139,92,246,.1);color:var(--purple);border:1px solid rgba(139,92,246,.2);}
+@keyframes blink{50%{opacity:.5;}}
 
-section{padding:56px 0;border-top:1px solid var(--line)}
-.eyebrow{color:var(--cyan);font-size:12px;letter-spacing:.16em;text-transform:uppercase;margin-bottom:14px;font-weight:600}
-h2{font-size:clamp(25px,4vw,35px);font-weight:800;margin-bottom:26px}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-.card{padding:24px}
-.card .ic{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;margin-bottom:14px;font-size:18px}
-.ic.c{background:rgba(34,211,238,.14);color:var(--cyan)} .ic.p{background:rgba(139,92,246,.14);color:var(--purple)} .ic.e{background:rgba(16,185,129,.14);color:var(--emerald)}
-.card h3{font-size:16px;margin-bottom:8px}
-.card p{color:var(--muted);font-size:14px}
+/* SECTIONS */
+.section{display:none;padding:1.75rem;animation:fadeUp .2s ease;}
+.section.active{display:block;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
 
-.plans{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-.plan{padding:26px;display:flex;flex-direction:column}
-.plan.feature{border-color:rgba(34,211,238,.4);box-shadow:0 0 34px rgba(34,211,238,.1)}
-.plan .pn{font-family:"Sora";font-weight:700;font-size:17px;margin-bottom:6px}
-.plan .badge{display:inline-block;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--cyan);border:1px solid rgba(34,211,238,.3);border-radius:6px;padding:3px 8px;margin-bottom:10px;width:fit-content}
-.plan .price{font-family:"Sora";font-weight:800;font-size:32px;margin:6px 0 2px}
-.plan .price small{font-size:13px;color:var(--muted);font-weight:400}
-.plan ul{list-style:none;margin:18px 0 22px;font-size:13px;color:var(--muted)}
-.plan li{padding:7px 0;border-bottom:1px dashed var(--line)}
-.plan li::before{content:"\2713 ";color:var(--emerald);font-weight:700}
-.pick{margin-top:auto;text-align:center;background:var(--glass-2);border:1px solid var(--line);color:var(--text);font-family:"Sora";font-weight:700;padding:13px;border-radius:11px;cursor:pointer;transition:.15s}
-.plan.feature .pick{background:linear-gradient(135deg,var(--cyan),var(--purple));color:#04121a;border:none}
-.pick:hover{border-color:var(--cyan)}
+/* TYPOGRAPHY */
+.pg-title{font-family:var(--head);font-size:clamp(28px,4.5vw,50px);font-weight:800;letter-spacing:-.02em;line-height:1.05;margin-bottom:.25rem;}
+.pg-sub{font-family:var(--mono);font-size:10px;color:var(--muted-2);letter-spacing:.1em;margin-bottom:2rem;}
+.c{color:var(--cyan);} .p{color:var(--purple);} .e{color:var(--emerald);} .a{color:var(--amber);} .r{color:var(--red);}
 
-.signup{text-align:center}
-.signup .cta{margin-top:6px}
-footer{border-top:1px solid var(--line);padding:32px 0;color:var(--muted-2);font-size:12px;text-align:center}
-@media(max-width:720px){.grid,.plans{grid-template-columns:1fr}}
+/* CARDS */
+.card{background:var(--glass);border:1px solid var(--line);border-radius:12px;padding:1.25rem;transition:border-color .2s;}
+.card:hover{border-color:var(--line-2);}
+.card-lbl{font-family:var(--mono);font-size:9px;color:var(--muted-2);letter-spacing:.12em;text-transform:uppercase;margin-bottom:.35rem;}
+.card-val{font-family:var(--head);font-size:26px;font-weight:800;letter-spacing:-.02em;line-height:1.1;}
+.card-sub{font-family:var(--mono);font-size:9.5px;color:var(--muted);margin-top:.25rem;}
+
+/* GRIDS */
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.25rem;}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.25rem;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:1.25rem;}
+@media(max-width:900px){.g4,.g3{grid-template-columns:1fr 1fr;}.g2{grid-template-columns:1fr;}}
+@media(max-width:560px){.g4,.g3{grid-template-columns:1fr;}}
+
+/* FORM */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1.25rem;}
+@media(max-width:640px){.form-grid{grid-template-columns:1fr;}}
+.fg{display:flex;flex-direction:column;gap:5px;}
+.fg.full{grid-column:1/-1;}
+.fg label{font-family:var(--mono);font-size:9.5px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;}
+.fg input,.fg select,.fg textarea{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:8px;color:var(--text);font-family:var(--mono);font-size:12px;padding:9px 12px;outline:none;transition:border-color .2s,background .2s;width:100%;}
+.fg textarea{min-height:80px;resize:vertical;}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:rgba(34,211,238,.4);background:rgba(34,211,238,.03);}
+.fg input::placeholder,.fg textarea::placeholder{color:var(--muted-2);}
+select option{background:var(--navy-800);}
+
+/* BUTTONS */
+.btn-launch{width:100%;padding:14px;background:linear-gradient(135deg,var(--cyan),var(--purple));color:#04121a;font-family:var(--head);font-weight:800;font-size:16px;letter-spacing:-.01em;border:none;border-radius:10px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 6px 24px rgba(34,211,238,.2);}
+.btn-launch:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 10px 32px rgba(139,92,246,.3);}
+.btn-launch:disabled{background:var(--glass);color:var(--muted-2);cursor:not-allowed;box-shadow:none;transform:none;}
+.btn-demo{display:inline-flex;align-items:center;gap:8px;margin-bottom:1.5rem;padding:10px 20px;background:transparent;color:var(--cyan);font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;border:1px solid rgba(34,211,238,.3);border-radius:8px;cursor:pointer;transition:all .2s;}
+.btn-demo:hover{background:rgba(34,211,238,.07);box-shadow:0 0 20px rgba(34,211,238,.12);}
+.btn-stop{padding:13px 20px;background:transparent;color:var(--red);font-family:var(--head);font-weight:700;font-size:14px;border:1px solid rgba(244,63,94,.35);border-radius:10px;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px;}
+.btn-stop:hover:not(:disabled){background:rgba(244,63,94,.07);}
+.btn-stop:disabled{opacity:.3;cursor:not-allowed;}
+.btn-reset{padding:13px 16px;background:transparent;color:var(--muted);font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;border:1px solid var(--line-2);border-radius:10px;cursor:pointer;transition:all .2s;}
+.btn-reset:hover{color:var(--text);}
+
+/* PILLS */
+.pills{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:1.25rem;}
+.pill{font-family:var(--mono);font-size:9.5px;padding:5px 12px;border:1px solid var(--line);border-radius:6px;cursor:pointer;color:var(--muted);background:none;letter-spacing:.04em;transition:all .15s;}
+.pill:hover{border-color:rgba(34,211,238,.35);color:var(--cyan);background:rgba(34,211,238,.05);}
+
+/* SIM CONTROLS */
+.sim-controls{display:flex;gap:10px;flex-wrap:wrap;align-items:stretch;}
+.sim-controls .btn-launch{flex:1;min-width:180px;}
+
+/* ERROR */
+.err{background:rgba(244,63,94,.08);border:1px solid rgba(244,63,94,.2);border-radius:8px;padding:.75rem 1rem;font-family:var(--mono);font-size:11px;color:var(--red);display:none;margin-top:.75rem;}
+
+/* LOADING */
+.loading-wrap{padding:4rem 2rem;text-align:center;}
+.loading-logo{width:76px;height:76px;display:block;margin:0 auto 1.25rem;animation:spin 1.2s linear infinite;filter:drop-shadow(0 0 12px rgba(34,211,238,.4));}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-label{font-family:var(--head);font-size:16px;font-weight:700;}
+.loading-detail{font-family:var(--mono);font-size:10px;color:var(--muted-2);margin-top:.35rem;}
+.sim-progress{max-width:400px;margin:.85rem auto 0;height:4px;background:rgba(255,255,255,.07);border-radius:99px;overflow:hidden;}
+.sim-progress>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--purple));transition:width .3s ease;}
+.loader-actions{display:flex;gap:10px;justify-content:center;margin-top:1.5rem;}
+
+/* CHART PANEL */
+.chart-panel{background:var(--glass);border:1px solid var(--line);border-radius:12px;padding:1.25rem;margin-bottom:1.25rem;}
+.chart-title{font-family:var(--mono);font-size:9.5px;color:var(--muted-2);letter-spacing:.12em;text-transform:uppercase;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center;}
+.chart-badge{font-size:9px;padding:2px 8px;border-radius:4px;background:rgba(34,211,238,.1);color:var(--cyan);}
+
+/* DAY HEATMAP */
+.day-heatmap{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;margin-bottom:.75rem;}
+.dhc{aspect-ratio:1;border-radius:5px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:9px;position:relative;transition:transform .15s;border:1px solid transparent;}
+.dhc:hover{transform:scale(1.18);z-index:2;}
+.dhc.future{background:rgba(255,255,255,.04);color:var(--muted-2);}
+.dhc.profit{background:rgba(16,185,129,.15);border-color:rgba(16,185,129,.25);color:var(--emerald);}
+.dhc.loss{background:rgba(244,63,94,.15);border-color:rgba(244,63,94,.25);color:var(--red);}
+.dhc.breakeven{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.2);color:var(--amber);}
+.dhc-tip{position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:var(--navy-700);border:1px solid var(--line-2);border-radius:8px;padding:.5rem .75rem;font-family:var(--mono);font-size:9.5px;line-height:1.6;min-width:155px;white-space:nowrap;z-index:10;display:none;pointer-events:none;}
+.dhc:hover .dhc-tip{display:block;}
+
+/* PROGRESS BARS */
+.prog-row{display:flex;align-items:center;gap:10px;margin-bottom:.55rem;}
+.prog-label{font-family:var(--mono);font-size:10.5px;min-width:160px;display:flex;justify-content:space-between;}
+.prog-bar-bg{flex:1;height:4px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden;}
+.prog-bar-fill{height:100%;border-radius:99px;transition:width 1.1s ease;}
+
+/* SCORE RINGS */
+.score-grid{display:flex;gap:1.25rem;flex-wrap:wrap;padding:.5rem 0;}
+.score-item{text-align:center;}
+.score-lbl{font-family:var(--mono);font-size:8.5px;color:var(--muted-2);letter-spacing:.1em;text-transform:uppercase;margin-top:.25rem;}
+
+/* EVENT LOG */
+.event-log{max-height:380px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--line) transparent;}
+.event-row{display:flex;gap:10px;padding:.6rem 0;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:10.5px;}
+.event-day{color:var(--muted-2);min-width:44px;flex-shrink:0;}
+.event-type{min-width:60px;padding:2px 6px;border-radius:4px;font-size:8.5px;letter-spacing:.05em;height:fit-content;flex-shrink:0;}
+.et-econ{background:rgba(139,92,246,.15);color:var(--purple);}
+.et-cust{background:rgba(34,211,238,.12);color:var(--cyan);}
+.et-comp{background:rgba(245,158,11,.12);color:var(--amber);}
+.et-ops{background:rgba(244,63,94,.12);color:var(--red);}
+.et-mkt{background:rgba(16,185,129,.1);color:var(--emerald);}
+.event-msg{color:var(--text);line-height:1.55;flex:1;}
+
+/* VERDICT */
+.verdict{padding:1.5rem;border-radius:12px;border:1px solid;margin-bottom:1.25rem;}
+.verdict.go{background:rgba(16,185,129,.06);border-color:rgba(16,185,129,.25);}
+.verdict.modify{background:rgba(245,158,11,.05);border-color:rgba(245,158,11,.2);}
+.verdict.stop{background:rgba(244,63,94,.06);border-color:rgba(244,63,94,.25);}
+.verdict-label{font-family:var(--head);font-size:52px;font-weight:800;letter-spacing:-.03em;line-height:1;}
+.verdict.go .verdict-label{color:var(--emerald);}
+.verdict.modify .verdict-label{color:var(--amber);}
+.verdict.stop .verdict-label{color:var(--red);}
+.verdict-meta{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:.6rem;line-height:1.7;}
+
+/* CI BARS */
+.ci-bar{display:flex;align-items:center;gap:8px;margin:.4rem 0;font-family:var(--mono);font-size:10px;}
+.ci-range{flex:1;height:6px;background:rgba(255,255,255,.06);border-radius:3px;position:relative;}
+.ci-fill{position:absolute;height:100%;border-radius:3px;background:var(--cyan);opacity:.25;}
+.ci-pin{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--cyan);border-radius:1px;}
+
+/* TICKER */
+.ticker-wrap{overflow:hidden;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:.4rem 0;margin-bottom:1.5rem;}
+.ticker-inner{display:flex;gap:2.5rem;animation:ticker 22s linear infinite;white-space:nowrap;}
+@keyframes ticker{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+.ti{font-family:var(--mono);font-size:9.5px;color:var(--muted-2);display:flex;gap:6px;}
+.ti span{color:var(--cyan);}
+
+/* MONTE CARLO HISTOGRAM */
+.mc-hist{display:flex;align-items:flex-end;gap:2px;height:64px;margin:1rem 0 .5rem;}
+.mc-bar{flex:1;border-radius:2px 2px 0 0;min-height:2px;background:rgba(34,211,238,.28);}
+.mc-bar.loss{background:rgba(244,63,94,.28);}
+.mc-axis{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;color:var(--muted-2);}
+
+/* REPORT */
+.rp-sec{margin-bottom:1.25rem;}
+.rp-h{font-family:var(--head);font-size:20px;font-weight:700;letter-spacing:-.01em;margin:0 0 .4rem;}
+.rp-p{font-size:13px;line-height:1.75;color:var(--muted);margin:.35rem 0;}
+.rp-p strong{color:var(--text);}
+.rp-num{display:flex;gap:10px;padding:.5rem 0;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:11px;color:var(--text);line-height:1.6;}
+.rp-num b{color:var(--cyan);min-width:20px;flex-shrink:0;}
+.phase{border-left:2px solid rgba(34,211,238,.3);padding:.15rem 0 .15rem 1rem;margin:.75rem 0;}
+.phase-t{font-family:var(--mono);font-size:10.5px;color:var(--cyan);letter-spacing:.06em;margin-bottom:.3rem;}
+.phase-b{font-family:var(--mono);font-size:11px;line-height:1.85;color:var(--text);}
+.wk-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:.5rem;}
+@media(max-width:900px){.wk-grid{grid-template-columns:1fr 1fr;}}
+.rp-disclaimer{margin-top:1.25rem;padding:.85rem 1rem;border:1px dashed var(--line-2);border-radius:8px;font-family:var(--mono);font-size:10px;line-height:1.75;color:var(--muted-2);}
+.rp-disclaimer strong{color:var(--text);}
+
+/* DISCLAIMER BAR */
+.disclaimer-bar{margin:0 1.75rem 2rem;padding:.9rem 1.25rem;border:1px solid var(--line);border-left:2px solid rgba(245,158,11,.4);border-radius:8px;background:rgba(245,158,11,.025);font-family:var(--mono);font-size:10px;line-height:1.7;color:var(--muted-2);}
+.disclaimer-bar strong{color:var(--text);}
+
+/* EMPTY STATE */
+.empty-state{text-align:center;padding:3rem 1rem;}
+.empty-state p{font-family:var(--mono);font-size:11px;color:var(--muted-2);margin-top:.5rem;}
 </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="bar">
-      <div class="brand"><span class="mark">i</span>INFIN<span>ICUS</span></div>
-      <div class="tag">business reality simulator</div>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <span class="mark"><img src="./infinicus-mark.svg" alt="INFINICUS"></span>
+    INFIN<span class="c">ICUS</span><span class="logo-ver">ENGINE v3</span>
+  </div>
+  <nav class="nav">
+    <button class="nb active" onclick="nav('input')">INPUT</button>
+    <button class="nb" onclick="nav('dashboard')">DASHBOARD</button>
+    <button class="nb" onclick="nav('economy')">ECONOMY</button>
+    <button class="nb" onclick="nav('customers')">CUSTOMERS</button>
+    <button class="nb" onclick="nav('risk')">RISK / MONTE CARLO</button>
+    <button class="nb" onclick="nav('log')">EVENT LOG</button>
+    <button class="nb" onclick="nav('verdict')">VERDICT</button>
+    <button class="nb" onclick="nav('report')">REPORT &amp; PLAN</button>
+  </nav>
+  <div class="hdr-right">
+    <select id="cur-select" class="cur-select" onchange="setCurrency(this.value)" title="Display currency">
+      <option value="USD">$ USD</option>
+      <option value="EUR">€ EUR</option>
+      <option value="GBP">£ GBP</option>
+      <option value="JPY">¥ JPY</option>
+      <option value="CNY">¥ CNY</option>
+      <option value="INR">₹ INR</option>
+      <option value="CAD">C$ CAD</option>
+      <option value="AUD">A$ AUD</option>
+      <option value="AED">AED</option>
+      <option value="SAR">SAR</option>
+      <option value="KWD">KWD</option>
+      <option value="NGN">₦ NGN</option>
+      <option value="KES">KSh KES</option>
+      <option value="UGX">USh UGX</option>
+      <option value="GHS">₵ GHS</option>
+      <option value="ZAR">R ZAR</option>
+    </select>
+    <span class="sim-badge idle" id="sim-badge">● IDLE</span>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════════════════════ INPUT ═══ -->
+<section class="section active" id="sec-input">
+  <div class="pg-title"><span class="c">SIMULATE</span> YOUR<br>BUSINESS REALITY</div>
+  <div class="pg-sub">// STATISTICAL ENGINE · VIRTUAL ECONOMY · AGENT-BASED MODELING · MONTE CARLO</div>
+  <button class="btn-demo" onclick="instantDemo()">▶ TRY INSTANT DEMO — NO SIGNUP, RUNS OFFLINE</button>
+  <div class="pills">
+    <button class="pill" onclick="qf('food')">🚚 Food Truck</button>
+    <button class="pill" onclick="qf('drop')">📦 Dropshipping</button>
+    <button class="pill" onclick="qf('saas')">💻 SaaS Tool</button>
+    <button class="pill" onclick="qf('gym')">💪 Private Gym</button>
+    <button class="pill" onclick="qf('agency')">🎯 Agency</button>
+    <button class="pill" onclick="qf('cafe')">☕ Café</button>
+  </div>
+  <div class="form-grid">
+    <div class="fg full">
+      <label>Business Idea *</label>
+      <textarea id="i-idea" placeholder="Describe your business — what you sell, how you sell it, who buys it…"></textarea>
+    </div>
+    <div class="fg">
+      <label>Startup Capital (<span class="cur-code">USD</span>)</label>
+      <input id="i-cap" type="number" min="0" placeholder="e.g. 10000">
+    </div>
+    <div class="fg">
+      <label>City / Country</label>
+      <input id="i-loc" placeholder="e.g. Nairobi, Kenya">
+    </div>
+    <div class="fg">
+      <label>Target Customers</label>
+      <input id="i-mkt" placeholder="e.g. office workers 25–40">
+    </div>
+    <div class="fg">
+      <label>Industry Vertical</label>
+      <select id="i-ind">
+        <option value="food">Food &amp; Beverage</option>
+        <option value="retail">Retail / E-commerce</option>
+        <option value="saas">SaaS / Software</option>
+        <option value="service">Service Business</option>
+        <option value="fitness">Fitness / Wellness</option>
+        <option value="agency">Agency / Consulting</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label>Monthly Avg Price Point (<span class="cur-code">USD</span>)</label>
+      <input id="i-price" type="number" min="0" placeholder="e.g. 25">
+    </div>
+    <div class="fg">
+      <label>Monthly Marketing Budget (<span class="cur-code">USD</span>)</label>
+      <input id="i-mktbud" type="number" min="0" placeholder="e.g. 500">
+    </div>
+    <div class="fg">
+      <label>Team Size at Launch</label>
+      <input id="i-team" type="number" min="1" placeholder="e.g. 1">
     </div>
   </div>
+  <div class="sim-controls">
+    <button class="btn-launch" id="launch-btn" onclick="startSim()">▶ START SIMULATION</button>
+    <button class="btn-stop" id="stop-btn" onclick="stopSim()" disabled>⏸ STOP</button>
+    <button class="btn-reset" id="reset-btn" onclick="resetSim()">↺ RESET</button>
+  </div>
+  <div class="err" id="err-box"></div>
+</section>
 
-  <header class="hero wrap">
-    <img src="infinicus-mark.svg" alt="INFINICUS logo" style="width:132px;height:132px;display:block;margin:4px auto 22px" />
-    <div class="pill"><span class="dot"></span>Powered by <b>Claude AI</b> · a verdict in ~20 seconds</div>
-    <h1>Simulate your business<br>before you risk <em>a single shilling</em>.</h1>
-    <p>Enter any idea — a chapati cart, an online store, a salon. INFINICUS runs it across a virtual 30 days and hands you revenue, expenses, the real risks, and a blunt <strong>Go / Modify / Stop</strong> verdict.</p>
-    <a class="cta" href="https://loquacious-chebakia-ff6ade.netlify.app" target="_blank" rel="noopener">Run a free 30-day simulation →</a>
-    <span class="sub">No signup. No card. See the output first, then tell us what it's worth.</span>
-  </header>
-
-  <section class="wrap">
-    <div class="eyebrow">What you get</div>
-    <h2>A reality check, not a pep talk.</h2>
-    <div class="grid">
-      <div class="card glass"><div class="ic c">📊</div><h3>30-day breakdown</h3><p>Week-by-week revenue and expenses with real numbers for your idea, capital and location.</p></div>
-      <div class="card glass"><div class="ic p">⚠️</div><h3>Risk &amp; failure map</h3><p>Where it breaks — cashflow gaps, slow customer pickup, the surprises founders miss.</p></div>
-      <div class="card glass"><div class="ic e">✅</div><h3>Go / Modify / Stop</h3><p>An honest verdict so you stop pouring money into ideas that don't survive the month.</p></div>
+<!-- ═══════════════════════════════════════════════════ DASHBOARD ═══ -->
+<section class="section" id="sec-dashboard">
+  <div id="dash-loading" class="loading-wrap" style="display:none;">
+    <img class="loading-logo" src="./infinicus-mark.svg" alt="INFINICUS">
+    <div class="loading-label" id="load-label">Initializing engines…</div>
+    <div class="loading-detail" id="load-detail">Building statistical distributions</div>
+    <div class="sim-progress"><i id="sim-progress-bar"></i></div>
+    <div class="loader-actions">
+      <button class="btn-stop" onclick="stopSim()">⏸ STOP SIMULATION</button>
     </div>
-  </section>
-
-  <section class="wrap" id="pricing">
-    <div class="eyebrow">Help us price it</div>
-    <h2>What would this be worth to you?</h2>
-    <p style="color:var(--muted);max-width:600px;margin-bottom:26px">We're deciding what to build next. Pick the plan you'd actually pay for — then tell us below to lock in early-bird pricing.</p>
-    <div class="plans">
-      <div class="plan glass">
-        <div class="pn">Taster</div>
-        <div class="price">Free</div>
-        <ul><li>1 simulation</li><li>On-screen report</li><li>Basic verdict</li></ul>
-        <button class="pick" data-plan="Free">I'd use this</button>
-      </div>
-      <div class="plan glass feature">
-        <div class="badge">Most popular</div>
-        <div class="pn">Founder</div>
-        <div class="price">$9 <small>/ month</small></div>
-        <ul><li>Unlimited simulations</li><li>Downloadable PDF reports</li><li>Compare ideas side by side</li><li>Deeper cashflow model</li></ul>
-        <button class="pick" data-plan="Founder $9/mo">I'd pay for this</button>
-      </div>
-      <div class="plan glass">
-        <div class="pn">Pro</div>
-        <div class="price">$29 <small>/ month</small></div>
-        <ul><li>Everything in Founder</li><li>Monte-Carlo risk runs</li><li>Investor-ready exports</li><li>Priority engine</li></ul>
-        <button class="pick" data-plan="Pro $29/mo">I'd pay for this</button>
+  </div>
+  <div id="dash-content">
+    <div class="ticker-wrap"><div class="ticker-inner" id="ticker-inner"><span class="ti">INFINICUS ENGINE v3 <span>READY</span></span></div></div>
+    <div class="pg-title" style="font-size:22px;margin-bottom:.1rem;">DASHBOARD</div>
+    <div class="pg-sub" id="dash-sub">// RUN A SIMULATION TO SEE RESULTS</div>
+    <div class="g4" id="kpi-cards">
+      <div class="card"><div class="card-lbl">TOTAL REVENUE</div><div class="card-val" style="color:var(--muted-2)">—</div></div>
+      <div class="card"><div class="card-lbl">NET PROFIT</div><div class="card-val" style="color:var(--muted-2)">—</div></div>
+      <div class="card"><div class="card-lbl">END CASH</div><div class="card-val" style="color:var(--muted-2)">—</div></div>
+      <div class="card"><div class="card-lbl">SURVIVAL RATE</div><div class="card-val" style="color:var(--muted-2)">—</div></div>
+    </div>
+    <div class="chart-panel">
+      <div class="chart-title">30-DAY P&amp;L HEATMAP <span class="chart-badge">DAILY</span></div>
+      <div class="day-heatmap" id="day-heatmap"></div>
+      <div style="display:flex;gap:1.5rem;font-family:var(--mono);font-size:9px;color:var(--muted-2);">
+        <span style="color:var(--emerald)">■</span> Profitable &nbsp;
+        <span style="color:var(--amber)">■</span> Near breakeven &nbsp;
+        <span style="color:var(--red)">■</span> Loss day
       </div>
     </div>
-  </section>
+    <div class="g2">
+      <div class="card">
+        <div class="card-lbl">SCORE BREAKDOWN</div>
+        <div class="score-grid" id="score-rings"><div style="font-family:var(--mono);font-size:10px;color:var(--muted-2);margin-top:.5rem;">Run a simulation to see scores.</div></div>
+      </div>
+      <div class="card">
+        <div class="card-lbl">PERFORMANCE BENCHMARKS</div>
+        <div id="perf-bars" style="margin-top:.75rem;"><div style="font-family:var(--mono);font-size:10px;color:var(--muted-2);">Run a simulation to see benchmarks.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
 
-  <section class="wrap signup" id="signup">
-    <div class="eyebrow">Lock in early access</div>
-    <h2>Tell us what you'd pay.</h2>
-    <p style="color:var(--muted);max-width:560px;margin:0 auto 26px">One 90-second question: what would INFINICUS be worth to you? Your answer decides what we build next — and locks in early-bird pricing.</p>
-    <a class="cta" id="formCta" href="https://docs.google.com/forms/d/e/1FAIpQLScP5mC7QqXwfUa-uEyG_VP0j-EqQk0X991vQgEbP3fHLiPAww/viewform" target="_blank" rel="noopener">Tell us what you'd pay →</a>
-    <span class="sub">Opens a short form. No account needed.</span>
-  </section>
+<!-- ═══════════════════════════════════════════════════════ ECONOMY ═══ -->
+<section class="section" id="sec-economy">
+  <div class="pg-title" style="font-size:22px;margin-bottom:.1rem;">ECONOMY</div>
+  <div class="pg-sub">// REVENUE · EXPENSES · CASHFLOW</div>
+  <div class="g4" id="econ-kpis"></div>
+  <div class="chart-panel">
+    <div class="chart-title">DAILY REVENUE <span style="color:var(--cyan)">■</span> vs COSTS <span style="color:var(--red)">■</span></div>
+    <div id="econ-chart" style="display:flex;align-items:flex-end;gap:3px;height:120px;"></div>
+    <div class="mc-axis" id="econ-axis" style="margin-top:.5rem;"></div>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <div class="card-lbl">COST BREAKDOWN</div>
+      <div id="cost-bars" style="margin-top:.75rem;"></div>
+    </div>
+    <div class="card">
+      <div class="card-lbl">WEEKLY CASHFLOW</div>
+      <div id="cashflow-list" style="margin-top:.75rem;"></div>
+    </div>
+  </div>
+</section>
 
-  <footer>
-    <div class="wrap">INFINICUS · business reality simulator · built with Claude AI</div>
-  </footer>
+<!-- ═══════════════════════════════════════════════════════ CUSTOMERS ═══ -->
+<section class="section" id="sec-customers">
+  <div class="pg-title" style="font-size:22px;margin-bottom:.1rem;">CUSTOMERS</div>
+  <div class="pg-sub">// ACQUISITION · RETENTION · LTV</div>
+  <div class="g4" id="cust-kpis"></div>
+  <div class="chart-panel">
+    <div class="chart-title">CUSTOMER COUNT — DAY BY DAY</div>
+    <div id="cust-chart" style="display:flex;align-items:flex-end;gap:3px;height:100px;"></div>
+    <div class="mc-axis" id="cust-axis" style="margin-top:.5rem;"></div>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <div class="card-lbl">ACQUISITION FUNNEL</div>
+      <div id="funnel" style="margin-top:.75rem;"></div>
+    </div>
+    <div class="card">
+      <div class="card-lbl">RETENTION (DAYS 7 / 14 / 21 / 30)</div>
+      <div id="retention" style="margin-top:.75rem;"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════ RISK ═══ -->
+<section class="section" id="sec-risk">
+  <div class="pg-title" style="font-size:22px;margin-bottom:.1rem;">RISK / MONTE CARLO</div>
+  <div class="pg-sub">// 500 SIMULATION RUNS · PROBABILITY DISTRIBUTION</div>
+  <div class="g4" id="risk-kpis"></div>
+  <div class="chart-panel">
+    <div class="chart-title">FINAL CASH DISTRIBUTION (500 RUNS) <span class="chart-badge">MONTE CARLO</span></div>
+    <div class="mc-hist" id="mc-hist"></div>
+    <div class="mc-axis" id="mc-axis"></div>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <div class="card-lbl">CONFIDENCE INTERVALS</div>
+      <div id="ci-section" style="margin-top:.75rem;"></div>
+    </div>
+    <div class="card">
+      <div class="card-lbl">RISK SCENARIOS</div>
+      <div id="risk-scenarios" style="margin-top:.75rem;"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═════════════════════════════════════════════════════ EVENT LOG ═══ -->
+<section class="section" id="sec-log">
+  <div class="pg-title" style="font-size:22px;margin-bottom:.1rem;">EVENT LOG</div>
+  <div class="pg-sub">// 30-DAY SIMULATION EVENTS</div>
+  <div class="g3" id="log-summary"></div>
+  <div class="card">
+    <div class="card-lbl">ALL EVENTS — CHRONOLOGICAL</div>
+    <div class="event-log" id="event-log" style="margin-top:.75rem;">
+      <div style="font-family:var(--mono);font-size:10.5px;color:var(--muted-2);padding:1rem 0;">No simulation data yet. Run a simulation first.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════ VERDICT ═══ -->
+<section class="section" id="sec-verdict">
+  <div class="pg-title" style="font-size:22px;margin-bottom:.1rem;">VERDICT</div>
+  <div class="pg-sub">// FINAL ASSESSMENT</div>
+  <div id="verdict-panel">
+    <div class="empty-state"><p>Run a simulation to receive a verdict.</p></div>
+  </div>
+  <div class="g2" id="verdict-detail"></div>
+</section>
+
+<!-- ══════════════════════════════════════════════════ REPORT & PLAN ═══ -->
+<section class="section" id="sec-report">
+  <div class="pg-title" style="font-size:22px;margin-bottom:.1rem;">REPORT &amp; 30-DAY PLAN</div>
+  <div class="pg-sub">// EXECUTIVE SUMMARY · ACTION ROADMAP</div>
+  <div id="report-content">
+    <div class="empty-state"><p>Run a simulation to generate a report.</p></div>
+  </div>
+</section>
+
+<div class="disclaimer-bar">
+  <strong>Disclaimer:</strong> INFINICUS ENGINE is a statistical simulation tool for educational and planning purposes only. Results are probabilistic projections based on industry averages and are not guarantees. All financial decisions should involve qualified professional advice. Simulated data does not reflect actual market conditions.
+</div>
 
 <script>
-  var formUrl=document.getElementById('formCta').getAttribute('href');
-  document.querySelectorAll('.pick').forEach(function(b){
-    b.addEventListener('click',function(){ window.open(formUrl,'_blank','noopener'); });
+// ─── STATE ────────────────────────────────────────────────────────────────────
+const S = {
+  running: false,
+  done: false,
+  days: [],
+  events: [],
+  mc: null,
+  scores: null,
+  params: {},
+  timer: null
+};
+
+// ─── CURRENCIES ───────────────────────────────────────────────────────────────
+const CUR = {
+  USD:{ s:'$',    r:1       }, EUR:{ s:'€',     r:.92   }, GBP:{ s:'£',    r:.79    },
+  JPY:{ s:'¥',   r:149     }, CNY:{ s:'¥',     r:7.1   }, INR:{ s:'₹',   r:83     },
+  CAD:{ s:'C$',  r:1.36    }, AUD:{ s:'A$',    r:1.53  },
+  AED:{ s:'AED ',r:3.67    }, SAR:{ s:'SAR ',  r:3.75  }, KWD:{ s:'KWD ',r:.31    },
+  NGN:{ s:'₦',  r:1500    }, KES:{ s:'KSh ',  r:130   }, UGX:{ s:'USh ',r:3750   },
+  GHS:{ s:'₵',  r:12      }, ZAR:{ s:'R ',    r:18.5  }
+};
+let curCode = 'USD';
+
+function fmt(v) {
+  const c = CUR[curCode], n = v * c.r;
+  if (Math.abs(n) >= 1e6) return c.s + (n / 1e6).toFixed(2) + 'M';
+  if (Math.abs(n) >= 1e3) return c.s + (n / 1e3).toFixed(1) + 'K';
+  return c.s + Math.round(n).toLocaleString();
+}
+
+function setCurrency(code) {
+  curCode = code;
+  document.querySelectorAll('.cur-code').forEach(el => el.textContent = code);
+  if (S.done) renderAll();
+}
+
+// ─── INDUSTRY PROFILES ────────────────────────────────────────────────────────
+const PROFILES = {
+  food:    { fixR:.32, varR:.42, acqCost:8,  churn:.18, mktMult:1.2, name:'Food & Beverage' },
+  retail:  { fixR:.22, varR:.52, acqCost:12, churn:.22, mktMult:1.5, name:'Retail / E-commerce' },
+  saas:    { fixR:.38, varR:.08, acqCost:40, churn:.07, mktMult:2.0, name:'SaaS / Software' },
+  service: { fixR:.28, varR:.28, acqCost:25, churn:.09, mktMult:1.3, name:'Service Business' },
+  fitness: { fixR:.42, varR:.18, acqCost:20, churn:.11, mktMult:1.1, name:'Fitness / Wellness' },
+  agency:  { fixR:.32, varR:.18, acqCost:80, churn:.05, mktMult:1.6, name:'Agency / Consulting' }
+};
+
+// ─── QUICK FILLS ──────────────────────────────────────────────────────────────
+const QF = {
+  food:   { idea:'Mobile food truck selling freshly cooked local meals during lunch and dinner hours near office districts. Daily specials, contactless ordering via QR code.', cap:8000, loc:'Nairobi, Kenya', mkt:'Office workers & students 18–35', ind:'food', price:8, mktbud:300, team:2 },
+  drop:   { idea:'Dropshipping niche fitness accessories — resistance bands, yoga mats, posture correctors — via a Shopify store targeting home gym enthusiasts.', cap:3000, loc:'Lagos, Nigeria', mkt:'Home gym enthusiasts 22–45', ind:'retail', price:35, mktbud:600, team:1 },
+  saas:   { idea:'B2B SaaS tool that automates social-media scheduling and analytics for African SMEs. Monthly subscription with 7-day free trial.', cap:15000, loc:'Accra, Ghana', mkt:'SME marketing managers', ind:'saas', price:29, mktbud:1200, team:2 },
+  gym:    { idea:'Boutique private gym offering personal training sessions, small-group classes (max 8), and monthly memberships in a residential area.', cap:20000, loc:'Dubai, UAE', mkt:'Health-conscious adults 25–50', ind:'fitness', price:120, mktbud:800, team:3 },
+  agency: { idea:'Digital marketing agency specialising in paid-ads management (Meta + Google) for e-commerce brands in the MENA region. Monthly retainer model.', cap:5000, loc:'Kuwait City, Kuwait', mkt:'E-commerce founders', ind:'agency', price:1500, mktbud:500, team:2 },
+  cafe:   { idea:'Specialty coffee café and co-working space combining artisan coffee with fast Wi-Fi and quiet work booths. Hourly and day-pass options available.', cap:25000, loc:'Cape Town, South Africa', mkt:'Remote workers & freelancers', ind:'food', price:18, mktbud:600, team:3 }
+};
+
+function qf(type) {
+  const d = QF[type]; if (!d) return;
+  $v('i-idea', d.idea); $v('i-cap', d.cap); $v('i-loc', d.loc);
+  $v('i-mkt', d.mkt); $v('i-ind', d.ind); $v('i-price', d.price);
+  $v('i-mktbud', d.mktbud); $v('i-team', d.team);
+}
+
+function instantDemo() { qf('food'); startSim(); }
+
+// ─── DOM HELPERS ──────────────────────────────────────────────────────────────
+function $(id) { return document.getElementById(id); }
+function $v(id, val) { const el = $(id); if (el) el.value = val; }
+function $h(id, html) { const el = $(id); if (el) el.innerHTML = html; }
+
+// ─── RANDOM ───────────────────────────────────────────────────────────────────
+function rnd(min, max) { return min + Math.random() * (max - min); }
+function rndi(min, max) { return Math.floor(min + Math.random() * (max - min + 1)); }
+function gauss() {
+  let u, v;
+  do { u = Math.random(); } while (!u);
+  do { v = Math.random(); } while (!v);
+  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+}
+function rNorm(mean, sd) { return mean + gauss() * sd; }
+
+// ─── EVENT TEMPLATES ──────────────────────────────────────────────────────────
+const EVT_POOL = [
+  { type:'econ', msg:'Raw material prices rose 7% due to supply chain disruption.',      impact:-.07 },
+  { type:'econ', msg:'Favourable exchange rate dropped import costs by 5%.',             impact: .05 },
+  { type:'econ', msg:'Government tax filing deadline reduced local discretionary spend.', impact:-.04 },
+  { type:'cust', msg:'Repeat customer posted a glowing review — organic reach spiked.',  impact: .10 },
+  { type:'cust', msg:'Batch of customers requested refunds after a quality complaint.',   impact:-.09 },
+  { type:'cust', msg:'Local influencer shared your product unprompted.',                  impact: .14 },
+  { type:'comp', msg:'A direct competitor launched a 20% discount campaign.',            impact:-.11 },
+  { type:'comp', msg:'Main competitor went offline for 3 days — customers migrated.',    impact: .12 },
+  { type:'ops',  msg:'Key team member was sick for two days — operations slowed.',       impact:-.08 },
+  { type:'ops',  msg:'Automation upgrade cut processing time by 30%.',                   impact: .06 },
+  { type:'ops',  msg:'Equipment failure caused a 6-hour service outage.',                impact:-.13 },
+  { type:'mkt',  msg:'Ad creative outperformed baseline 2×; CPC dropped 40%.',           impact: .12 },
+  { type:'mkt',  msg:'Ad account flagged and paused for 48 hours.',                      impact:-.10 },
+  { type:'mkt',  msg:'Email campaign achieved a 38% open rate — best this month.',       impact: .07 },
+];
+
+function pickEvents() {
+  const usedDays = new Set();
+  const count = rndi(4, 8);
+  const shuffled = [...EVT_POOL].sort(() => Math.random() - .5);
+  return shuffled.slice(0, count).map(e => {
+    let day;
+    do { day = rndi(2, 29); } while (usedDays.has(day));
+    usedDays.add(day);
+    return { ...e, day };
+  }).sort((a, b) => a.day - b.day);
+}
+
+// ─── SIMULATION ───────────────────────────────────────────────────────────────
+function simulate(params) {
+  const prof = PROFILES[params.industry];
+  const events = pickEvents();
+  const evMap = {};
+  events.forEach(e => { evMap[e.day] = (evMap[e.day] || 1) * (1 + e.impact); });
+
+  const days = [];
+  let cash = params.capital;
+  let customers = 0;
+  const dailyMkt = params.mktBud / 30;
+
+  for (let d = 1; d <= 30; d++) {
+    const shock = evMap[d] || 1;
+    const acq   = Math.max(0, Math.floor(rNorm(dailyMkt / prof.acqCost, 1.5) * shock));
+    const churned = Math.floor(customers * prof.churn / 30);
+    customers = Math.max(0, customers + acq - churned);
+
+    const rev      = customers * (params.price / 30) * rnd(.75, 1.25) * shock;
+    const fixed    = params.capital * prof.fixR / 30;
+    const varC     = rev * prof.varR;
+    const totalCost = fixed + varC + dailyMkt;
+    const profit   = rev - totalCost;
+    cash += profit;
+
+    days.push({ d, rev, cost: totalCost, fixed, varC, mktC: dailyMkt, profit, customers, acq, churned, cash });
+  }
+  return { days, events };
+}
+
+// ─── MONTE CARLO (500 runs) ───────────────────────────────────────────────────
+function monteCarlo(params) {
+  const baseProf = PROFILES[params.industry];
+  const finals = [];
+
+  for (let r = 0; r < 500; r++) {
+    const p = {
+      fixR:    Math.max(.03, rNorm(baseProf.fixR, baseProf.fixR * .25)),
+      varR:    Math.max(.01, rNorm(baseProf.varR, baseProf.varR * .2)),
+      acqCost: Math.max(1,   rNorm(baseProf.acqCost, baseProf.acqCost * .3)),
+      churn:   Math.max(.005,rNorm(baseProf.churn, baseProf.churn * .25)),
+      mktMult: baseProf.mktMult
+    };
+    let cash = params.capital, customers = 0;
+    const dailyMkt = params.mktBud / 30;
+
+    for (let d = 1; d <= 30; d++) {
+      const acq = Math.max(0, Math.floor(rNorm(dailyMkt / p.acqCost, 1.2)));
+      customers = Math.max(0, customers + acq - Math.floor(customers * p.churn / 30));
+      const rev = customers * (params.price / 30) * rnd(.6, 1.4);
+      cash += rev - (params.capital * p.fixR / 30 + rev * p.varR + dailyMkt);
+    }
+    finals.push(cash);
+  }
+
+  finals.sort((a, b) => a - b);
+  const N = finals.length;
+  return {
+    p10: finals[Math.floor(N * .10)],
+    p25: finals[Math.floor(N * .25)],
+    p50: finals[Math.floor(N * .50)],
+    p75: finals[Math.floor(N * .75)],
+    p90: finals[Math.floor(N * .90)],
+    survivalRate: finals.filter(v => v > 0).length / N,
+    runs: finals
+  };
+}
+
+// ─── SCORES (computed once, memoised) ────────────────────────────────────────
+function calcScores() {
+  if (S.scores) return S.scores;
+  const d = S.days;
+  const endCash  = d[d.length - 1]?.cash ?? 0;
+  const profDays = d.filter(x => x.profit > 0).length;
+  const finalCust= d[d.length - 1]?.customers ?? 0;
+  const surv     = S.mc.survivalRate;
+  const totalRev = d.reduce((s, x) => s + x.rev, 0);
+  const totalCost= d.reduce((s, x) => s + x.cost, 0);
+
+  const viability = Math.round(Math.min(100, Math.max(0, surv * 55 + (profDays / 30) * 30 + (endCash > 0 ? 15 : 0))));
+  const mktFit    = Math.round(Math.min(100, Math.max(0, Math.min(finalCust / 20, 1) * 45 + (totalRev > totalCost ? 35 : 10) + 15)));
+  const execution = Math.round(Math.min(100, Math.max(0, profDays / 30 * 60 + Math.min(finalCust, 30) / 30 * 40)));
+  const financial = Math.round(Math.min(100, Math.max(0, Math.min(endCash / S.params.capital, 1) * 50 + (totalRev > 0 ? 30 : 0) + (endCash > 0 ? 20 : 0))));
+
+  S.scores = { VIABILITY: viability, 'MKT FIT': mktFit, EXECUTION: execution, FINANCIAL: financial };
+  return S.scores;
+}
+
+// ─── NAVIGATION ───────────────────────────────────────────────────────────────
+function nav(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach(b => b.classList.remove('active'));
+  $('sec-' + id).classList.add('active');
+  const ids = ['input','dashboard','economy','customers','risk','log','verdict','report'];
+  const idx = ids.indexOf(id);
+  if (idx >= 0) document.querySelectorAll('.nb')[idx].classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// ─── START SIMULATION ─────────────────────────────────────────────────────────
+function startSim() {
+  const idea    = $('i-idea').value.trim();
+  const capital = parseFloat($('i-cap').value) || 0;
+  const price   = parseFloat($('i-price').value) || 0;
+  const mktBud  = parseFloat($('i-mktbud').value) || 300;
+  const team    = parseInt($('i-team').value) || 1;
+  const industry= $('i-ind').value;
+  const loc     = $('i-loc').value.trim();
+  const mkt     = $('i-mkt').value.trim();
+
+  const errBox = $('err-box');
+  errBox.style.display = 'none';
+
+  if (!idea) { errBox.textContent = 'Please describe your business idea.'; errBox.style.display = 'block'; return; }
+  if (capital <= 0) { errBox.textContent = 'Enter a startup capital greater than 0.'; errBox.style.display = 'block'; return; }
+  if (price <= 0) { errBox.textContent = 'Enter a price point greater than 0.'; errBox.style.display = 'block'; return; }
+
+  S.params = { idea, capital, price, mktBud, team, industry, loc, mkt };
+  S.running = true; S.done = false; S.scores = null;
+
+  setBadge('running');
+  $('launch-btn').disabled = true;
+  $('stop-btn').disabled = false;
+
+  nav('dashboard');
+  $('dash-loading').style.display = 'block';
+  $('dash-content').style.display = 'none';
+
+  const STEPS = [
+    [350, 'Building market model…',              'Deriving customer acquisition curves'],
+    [700, 'Running day-by-day simulation…',      'Applying stochastic revenue shocks'],
+    [1100,'Running Monte Carlo (500 runs)…',     'Sampling parameter distributions'],
+    [1500,'Analysing risk scenarios…',           'Computing confidence intervals'],
+    [1900,'Generating verdict & report…',        'Applying decision framework'],
+  ];
+  let stepIdx = 0;
+  const bar = $('sim-progress-bar');
+
+  function tick() {
+    if (!S.running) return;
+    if (stepIdx < STEPS.length) {
+      const [delay, lbl, det] = STEPS[stepIdx];
+      $('load-label').textContent = lbl;
+      $('load-detail').textContent = det;
+      bar.style.width = ((stepIdx + 1) / (STEPS.length + 1) * 100) + '%';
+      stepIdx++;
+      S.timer = setTimeout(tick, delay);
+    } else {
+      bar.style.width = '100%';
+      setTimeout(finalize, 200);
+    }
+  }
+  tick();
+}
+
+function finalize() {
+  if (!S.running) return;
+  const { days, events } = simulate(S.params);
+  S.days = days;
+  S.events = events;
+  S.mc = monteCarlo(S.params);
+  S.running = false;
+  S.done = true;
+
+  setBadge('done');
+  $('launch-btn').disabled = false;
+  $('stop-btn').disabled = true;
+  $('dash-loading').style.display = 'none';
+  $('dash-content').style.display = 'block';
+
+  renderAll();
+}
+
+function stopSim() {
+  if (S.timer) { clearTimeout(S.timer); S.timer = null; }
+  S.running = false;
+  setBadge('idle');
+  $('launch-btn').disabled = false;
+  $('stop-btn').disabled = true;
+  $('dash-loading').style.display = 'none';
+  $('dash-content').style.display = 'block';
+}
+
+function resetSim() {
+  stopSim();
+  S.days = []; S.events = []; S.mc = null; S.done = false; S.scores = null;
+  ['i-idea','i-cap','i-loc','i-mkt','i-price','i-mktbud','i-team'].forEach(id => $v(id, ''));
+  $('i-ind').value = 'food';
+  initHeatmap();
+  $h('score-rings', '<div style="font-family:var(--mono);font-size:10px;color:var(--muted-2);margin-top:.5rem;">Run a simulation to see scores.</div>');
+  $h('perf-bars', '<div style="font-family:var(--mono);font-size:10px;color:var(--muted-2);">Run a simulation to see benchmarks.</div>');
+  nav('input');
+}
+
+function setBadge(state) {
+  const b = $('sim-badge');
+  b.className = 'sim-badge ' + state;
+  b.textContent = state === 'idle' ? '● IDLE' : state === 'running' ? '● RUNNING' : '● DONE';
+}
+
+// ─── RENDER ALL ───────────────────────────────────────────────────────────────
+function renderAll() {
+  if (!S.done) return;
+  renderTicker();
+  renderDashboard();
+  renderEconomy();
+  renderCustomers();
+  renderRisk();
+  renderLog();
+  renderVerdict();
+  renderReport();
+}
+
+// ─── TICKER ───────────────────────────────────────────────────────────────────
+function renderTicker() {
+  const d = S.days;
+  const totalRev  = d.reduce((s, x) => s + x.rev, 0);
+  const totalCost = d.reduce((s, x) => s + x.cost, 0);
+  const endCash   = d[d.length - 1]?.cash ?? 0;
+  const maxCust   = Math.max(...d.map(x => x.customers));
+  const profDays  = d.filter(x => x.profit > 0).length;
+
+  const items = [
+    ['TOTAL REV',   fmt(totalRev)],
+    ['NET P&L',     fmt(totalRev - totalCost)],
+    ['END CASH',    fmt(endCash)],
+    ['PEAK CUST',   maxCust.toFixed(0)],
+    ['PROFIT DAYS', profDays + '/30'],
+    ['SURVIVAL',    (S.mc.survivalRate * 100).toFixed(0) + '%'],
+  ];
+  $h('ticker-inner', [...items, ...items].map(([k, v]) =>
+    `<span class="ti">${k}: <span>${v}</span></span>`
+  ).join(''));
+}
+
+// ─── DASHBOARD ────────────────────────────────────────────────────────────────
+function renderDashboard() {
+  const d = S.days;
+  const totalRev  = d.reduce((s, x) => s + x.rev, 0);
+  const totalCost = d.reduce((s, x) => s + x.cost, 0);
+  const netProfit = totalRev - totalCost;
+  const endCash   = d[d.length - 1]?.cash ?? 0;
+  const roi       = S.params.capital > 0 ? netProfit / S.params.capital * 100 : 0;
+
+  $h('dash-sub', `// ${S.params.industry.toUpperCase()} · ${S.params.loc || 'GLOBAL'} · 30-DAY SIMULATION`);
+
+  $h('kpi-cards', [
+    { lbl:'TOTAL REVENUE', val:fmt(totalRev),  sub:'30-day gross',                       col:'cyan' },
+    { lbl:'NET PROFIT',    val:fmt(netProfit), sub:(netProfit>=0?'+':'')+roi.toFixed(1)+'% ROI', col:netProfit>=0?'emerald':'red' },
+    { lbl:'END CASH',      val:fmt(endCash),   sub:endCash>=0?'Solvent':'⚠ Insolvent',   col:endCash>=0?'cyan':'red' },
+    { lbl:'SURVIVAL RATE', val:(S.mc.survivalRate*100).toFixed(0)+'%', sub:'Monte Carlo p(survive)', col:S.mc.survivalRate>.6?'emerald':S.mc.survivalRate>.35?'amber':'red' },
+  ].map(k => `<div class="card"><div class="card-lbl">${k.lbl}</div><div class="card-val" style="color:var(--${k.col})">${k.val}</div><div class="card-sub">${k.sub}</div></div>`).join(''));
+
+  // Heatmap
+  const maxAbsP = Math.max(...d.map(x => Math.abs(x.profit)), 1);
+  $h('day-heatmap', d.map(day => {
+    const cls = day.profit > maxAbsP * .05 ? 'profit' : day.profit < -maxAbsP * .05 ? 'loss' : 'breakeven';
+    const opacity = (.4 + Math.min(1, Math.abs(day.profit) / maxAbsP) * .6).toFixed(2);
+    return `<div class="dhc ${cls}" style="opacity:${opacity}">
+      ${day.d}
+      <div class="dhc-tip">Day ${day.d}<br>Rev: ${fmt(day.rev)}<br>Cost: ${fmt(day.cost)}<br>P&amp;L: ${fmt(day.profit)}<br>Customers: ${day.customers}</div>
+    </div>`;
+  }).join(''));
+
+  // Score rings
+  const sc = calcScores();
+  $h('score-rings', Object.entries(sc).map(([k, v]) => {
+    const col = v >= 70 ? 'emerald' : v >= 45 ? 'amber' : 'red';
+    const r = 22, circ = 2 * Math.PI * r;
+    const dash = (circ * v / 100).toFixed(2);
+    return `<div class="score-item">
+      <svg width="64" height="64" viewBox="0 0 64 64">
+        <circle cx="32" cy="32" r="${r}" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="4"/>
+        <circle cx="32" cy="32" r="${r}" fill="none" stroke="var(--${col})" stroke-width="4"
+          stroke-dasharray="${dash} ${(circ - parseFloat(dash)).toFixed(2)}" stroke-dashoffset="${(circ/4).toFixed(2)}"
+          stroke-linecap="round" transform="rotate(-90 32 32) rotate(90 32 32)" style="transform:rotate(-90deg);transform-origin:50% 50%;"/>
+        <text x="32" y="37" text-anchor="middle" fill="var(--${col})" font-size="13" font-weight="700" font-family="Sora,sans-serif">${v}</text>
+      </svg>
+      <div class="score-lbl">${k}</div>
+    </div>`;
+  }).join(''));
+
+  // Perf benchmarks
+  const profMargin = totalRev > 0 ? (netProfit / totalRev * 100) : 0;
+  const revGrowth  = d[0].rev > 0 ? Math.min(100, (d[29].rev / d[0].rev - 1) * 80 + 50) : 50;
+  const custGrowth = Math.min(100, (d[29].customers / Math.max(1, d[0].customers || 1) - 1) * 15 + 40);
+  const cashEff    = Math.min(100, Math.max(0, endCash / S.params.capital * 100));
+
+  $h('perf-bars', [
+    ['Revenue Growth',   revGrowth,  'cyan'],
+    ['Profit Margin',    Math.max(0, Math.min(100, profMargin + 50)), 'emerald'],
+    ['Customer Growth',  custGrowth, 'purple'],
+    ['Cash Efficiency',  cashEff,    'amber'],
+  ].map(([lbl, pct, col]) => `<div class="prog-row">
+    <div class="prog-label"><span>${lbl}</span><span style="color:var(--${col})">${pct.toFixed(0)}</span></div>
+    <div class="prog-bar-bg"><div class="prog-bar-fill" style="width:${pct.toFixed(1)}%;background:var(--${col});"></div></div>
+  </div>`).join(''));
+}
+
+// ─── ECONOMY ──────────────────────────────────────────────────────────────────
+function renderEconomy() {
+  const d = S.days;
+  const totalRev   = d.reduce((s, x) => s + x.rev, 0);
+  const totalFixed = d.reduce((s, x) => s + x.fixed, 0);
+  const totalVar   = d.reduce((s, x) => s + x.varC, 0);
+  const totalMkt   = d.reduce((s, x) => s + x.mktC, 0);
+  const totalCost  = totalFixed + totalVar + totalMkt;
+  const gp = totalRev - totalVar - totalMkt;
+
+  $h('econ-kpis', [
+    { lbl:'GROSS REVENUE', val:fmt(totalRev),           col:'cyan' },
+    { lbl:'GROSS PROFIT',  val:fmt(gp),                 col:gp>=0?'emerald':'red' },
+    { lbl:'TOTAL COSTS',   val:fmt(totalCost),          col:'amber' },
+    { lbl:'EBITDA',        val:fmt(totalRev-totalCost), col:(totalRev-totalCost)>=0?'emerald':'red' },
+  ].map(k => `<div class="card"><div class="card-lbl">${k.lbl}</div><div class="card-val" style="color:var(--${k.col})">${k.val}</div></div>`).join(''));
+
+  const maxV = Math.max(...d.map(x => Math.max(x.rev, x.cost)), 1);
+  $h('econ-chart', d.map(day => `
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;justify-content:flex-end;">
+      <div style="width:100%;background:rgba(34,211,238,.5);height:${(day.rev/maxV*116).toFixed(1)}px;border-radius:2px 2px 0 0;" title="Rev ${fmt(day.rev)}"></div>
+      <div style="width:100%;background:rgba(244,63,94,.4);height:${(day.cost/maxV*116).toFixed(1)}px;border-radius:0;margin-top:1px;" title="Cost ${fmt(day.cost)}"></div>
+    </div>`).join(''));
+  $h('econ-axis', [1,8,15,22,30].map(n => `<span>Day ${n}</span>`).join(''));
+
+  $h('cost-bars', [
+    ['Fixed Costs',    totalFixed, 'purple'],
+    ['Variable Costs', totalVar,   'amber'],
+    ['Marketing',      totalMkt,   'cyan'],
+  ].map(([lbl, val, col]) => {
+    const pct = totalCost > 0 ? (val / totalCost * 100) : 0;
+    return `<div class="prog-row">
+      <div class="prog-label"><span>${lbl}</span><span style="color:var(--${col})">${fmt(val)}</span></div>
+      <div class="prog-bar-bg"><div class="prog-bar-fill" style="width:${pct.toFixed(1)}%;background:var(--${col});"></div></div>
+    </div>`;
+  }).join(''));
+
+  $h('cashflow-list', [[1,7],[8,14],[15,21],[22,30]].map(([s, e], i) => {
+    const wP = d.filter(x => x.d >= s && x.d <= e).reduce((a, x) => a + x.profit, 0);
+    const col = wP >= 0 ? 'emerald' : 'red';
+    return `<div class="rp-num"><b>W${i+1}</b>Days ${s}–${e}: <span style="color:var(--${col})">${fmt(wP)}</span></div>`;
+  }).join(''));
+}
+
+// ─── CUSTOMERS ────────────────────────────────────────────────────────────────
+function renderCustomers() {
+  const d = S.days;
+  const finalCust  = d[d.length - 1]?.customers ?? 0;
+  const totalAcq   = d.reduce((s, x) => s + x.acq, 0);
+  const totalChurn = d.reduce((s, x) => s + x.churned, 0);
+  const churnRate  = PROFILES[S.params.industry].churn;
+  const ltv        = S.params.price / Math.max(churnRate, .001);
+
+  $h('cust-kpis', [
+    { lbl:'END CUSTOMERS',  val:finalCust.toFixed(0), col:'cyan' },
+    { lbl:'TOTAL ACQUIRED', val:totalAcq.toFixed(0),  col:'emerald' },
+    { lbl:'TOTAL CHURNED',  val:totalChurn.toFixed(0),col:'red' },
+    { lbl:'EST. LTV',        val:fmt(ltv),             col:'purple' },
+  ].map(k => `<div class="card"><div class="card-lbl">${k.lbl}</div><div class="card-val" style="color:var(--${k.col})">${k.val}</div></div>`).join(''));
+
+  const maxCust = Math.max(...d.map(x => x.customers), 1);
+  $h('cust-chart', d.map(day =>
+    `<div style="flex:1;background:rgba(34,211,238,.38);height:${(day.customers/maxCust*96).toFixed(1)}px;border-radius:2px 2px 0 0;" title="Day ${day.d}: ${day.customers}"></div>`
+  ).join(''));
+  $h('cust-axis', [1,8,15,22,30].map(n => `<span>Day ${n}</span>`).join(''));
+
+  const impressions = Math.floor(S.params.mktBud / 30 * 200);
+  const clicks = Math.floor(impressions * .032);
+  const leads  = Math.floor(clicks * .2);
+  $h('funnel', [
+    ['Impressions', impressions, 100],
+    ['Clicks',      clicks,      clicks / Math.max(1, impressions) * 100],
+    ['Leads',       leads,       leads  / Math.max(1, impressions) * 100],
+    ['Customers',   totalAcq,    totalAcq / Math.max(1, impressions) * 100],
+  ].map(([lbl, n, pct]) => `<div class="prog-row">
+    <div class="prog-label"><span>${lbl}</span><span class="c">${n.toLocaleString()}</span></div>
+    <div class="prog-bar-bg"><div class="prog-bar-fill" style="width:${Math.min(100, pct).toFixed(1)}%;background:var(--cyan);"></div></div>
+  </div>`).join(''));
+
+  $h('retention', [7, 14, 21, 30].map(day => {
+    const ret = Math.max(0, Math.round((1 - churnRate / 30 * day) * 100));
+    const col = ret >= 80 ? 'emerald' : ret >= 60 ? 'amber' : 'red';
+    const label = ret >= 80 ? '✓ Good' : ret >= 60 ? '~ OK' : '✗ High churn';
+    return `<div class="rp-num"><b>D${day}</b>${ret}% retained <span style="color:var(--${col})">${label}</span></div>`;
+  }).join(''));
+}
+
+// ─── RISK / MONTE CARLO ───────────────────────────────────────────────────────
+function renderRisk() {
+  const mc  = S.mc;
+  const sur = (mc.survivalRate * 100).toFixed(0);
+  const rc  = mc.survivalRate > .6 ? 'emerald' : mc.survivalRate > .35 ? 'amber' : 'red';
+
+  $h('risk-kpis', [
+    { lbl:'SURVIVAL PROBABILITY', val:sur+'%',    col:rc },
+    { lbl:'MEDIAN OUTCOME (P50)', val:fmt(mc.p50), col:mc.p50>=0?'cyan':'red' },
+    { lbl:'WORST CASE (P10)',      val:fmt(mc.p10), col:'red' },
+    { lbl:'BEST CASE (P90)',       val:fmt(mc.p90), col:'emerald' },
+  ].map(k => `<div class="card"><div class="card-lbl">${k.lbl}</div><div class="card-val" style="color:var(--${k.col})">${k.val}</div></div>`).join(''));
+
+  // Histogram
+  const runs = mc.runs, N = runs.length;
+  const minV = runs[0], maxV = runs[N - 1], span = maxV - minV || 1;
+  const BINS = 20;
+  const hist = Array(BINS).fill(0);
+  runs.forEach(v => hist[Math.min(BINS - 1, Math.floor((v - minV) / span * BINS))]++);
+  const maxH = Math.max(...hist, 1);
+  $h('mc-hist', hist.map((h, i) => {
+    const binMid = minV + (i + .5) * span / BINS;
+    return `<div class="mc-bar ${binMid < 0 ? 'loss' : ''}" style="height:${(h/maxH*60).toFixed(0)}px;" title="${h} runs"></div>`;
+  }).join(''));
+  $h('mc-axis', `<span>${fmt(minV)}</span><span>${fmt((minV+maxV)/2)}</span><span>${fmt(maxV)}</span>`);
+
+  // CI
+  const range = mc.p90 - mc.p10 || 1;
+  $h('ci-section', [
+    ['P10 — Pessimistic', mc.p10, 0],
+    ['P25',              mc.p25, 15],
+    ['P50 — Median',     mc.p50, 40],
+    ['P75',              mc.p75, 65],
+    ['P90 — Optimistic', mc.p90, 88],
+  ].map(([lbl, val, pin]) => {
+    const col = val >= 0 ? 'cyan' : 'red';
+    return `<div class="ci-bar">
+      <span style="min-width:155px;color:var(--muted-2)">${lbl}</span>
+      <div class="ci-range"><div class="ci-fill" style="width:100%"></div><div class="ci-pin" style="left:${pin}%"></div></div>
+      <span style="color:var(--${col});min-width:76px;text-align:right">${fmt(val)}</span>
+    </div>`;
+  }).join(''));
+
+  $h('risk-scenarios', [
+    { name:'Best Case',  prob: Math.min(99, Math.round(mc.survivalRate * 100 * 1.15)), val:mc.p90, col:'emerald' },
+    { name:'Base Case',  prob: Math.round(mc.survivalRate * 100),                      val:mc.p50, col:'cyan' },
+    { name:'Worst Case', prob: Math.min(99, Math.round((1 - mc.survivalRate) * 100)),  val:mc.p10, col:'red' },
+  ].map(s => `<div class="rp-num"><b style="color:var(--${s.col})">●</b>${s.name} — ${s.prob}% likely → ${fmt(s.val)}</div>`).join(''));
+}
+
+// ─── EVENT LOG ────────────────────────────────────────────────────────────────
+function renderLog() {
+  const evts = S.events;
+  $h('log-summary', [
+    { lbl:'TOTAL EVENTS', val:evts.length,                       col:'cyan' },
+    { lbl:'POSITIVE',     val:evts.filter(e=>e.impact>0).length, col:'emerald' },
+    { lbl:'NEGATIVE',     val:evts.filter(e=>e.impact<0).length, col:'red' },
+  ].map(k => `<div class="card"><div class="card-lbl">${k.lbl}</div><div class="card-val" style="color:var(--${k.col})">${k.val}</div></div>`).join(''));
+
+  $h('event-log', evts.length ? evts.map(e => {
+    const cls = { econ:'et-econ', cust:'et-cust', comp:'et-comp', ops:'et-ops', mkt:'et-mkt' }[e.type] || '';
+    const sign = e.impact > 0 ? '+' : '';
+    const impCol = e.impact > 0 ? 'var(--emerald)' : 'var(--red)';
+    return `<div class="event-row">
+      <span class="event-day">Day ${e.day}</span>
+      <span class="event-type ${cls}">${e.type.toUpperCase()}</span>
+      <span class="event-msg">${e.msg} <span style="color:${impCol}">(${sign}${(e.impact*100).toFixed(0)}%)</span></span>
+    </div>`;
+  }).join('') : '<div style="font-family:var(--mono);font-size:10.5px;color:var(--muted-2);padding:1rem 0;">No events generated.</div>');
+}
+
+// ─── VERDICT ──────────────────────────────────────────────────────────────────
+function renderVerdict() {
+  const sc      = calcScores();
+  const avg     = Object.values(sc).reduce((s, v) => s + v, 0) / Object.values(sc).length;
+  const surv    = S.mc.survivalRate;
+  const endCash = S.days[S.days.length - 1]?.cash ?? 0;
+
+  let verdict, cls, reasons, actions;
+  if (avg >= 65 && surv >= .55 && endCash > 0) {
+    verdict = 'GO'; cls = 'go';
+    reasons = [
+      'Simulation projects positive cash position at day 30',
+      `Survival probability: ${(surv*100).toFixed(0)}% across 500 Monte Carlo runs — above threshold`,
+      'Customer acquisition model is viable for this industry vertical',
+      'Margin structure can support reinvestment into growth'
+    ];
+    actions = [
+      'Launch a minimum viable version within 2 weeks',
+      'Set a 30-day revenue target and review weekly against simulation',
+      'Allocate marketing budget as modelled — track CPA daily',
+      'Build a cash-flow dashboard and review it every 7 days'
+    ];
+  } else if (avg >= 40 || surv >= .35) {
+    verdict = 'MODIFY'; cls = 'modify';
+    reasons = [
+      'Some metrics fall below industry benchmarks',
+      `Cash position is tight — risk of shortfall in weeks 2–3 (survival: ${(surv*100).toFixed(0)}%)`,
+      'Customer acquisition cost may be high relative to per-unit revenue',
+      'Model shows survival in fewer than 55% of Monte Carlo scenarios'
+    ];
+    actions = [
+      'Reduce fixed costs by 15–20% before committing to launch',
+      'Increase price point or reduce marketing burn rate — improve unit economics',
+      'Validate demand with 10 real paying customers before scaling',
+      'Extend runway by at least 30 days before full capital deployment'
+    ];
+  } else {
+    verdict = 'STOP'; cls = 'stop';
+    reasons = [
+      `High probability of cash depletion before day 30 (survival: ${(surv*100).toFixed(0)}%)`,
+      'Customer acquisition cost significantly exceeds revenue per customer',
+      'Survival rate below 35% across Monte Carlo simulations',
+      'Business model requires fundamental restructuring before any spend'
+    ];
+    actions = [
+      'Do not invest further capital until unit economics improve substantially',
+      'Revisit pricing — current price-to-cost ratio is unfavourable',
+      'Consider a different market segment, lower-cost delivery model, or niche pivot',
+      'Run market validation (surveys, 10 interviews) before any further spend'
+    ];
+  }
+
+  const scoreSummary = Object.entries(sc).map(([k, v]) => `${k}: ${v}`).join(' · ');
+  $h('verdict-panel', `<div class="verdict ${cls}">
+    <div class="verdict-label">${verdict}</div>
+    <div class="verdict-meta">Score: ${avg.toFixed(0)}/100 · Survival: ${(surv*100).toFixed(0)}% · ${scoreSummary}</div>
+  </div>`);
+
+  $h('verdict-detail', `
+    <div class="card">
+      <div class="card-lbl">WHY THIS VERDICT</div>
+      ${reasons.map(r => `<div class="rp-num"><b>→</b>${r}</div>`).join('')}
+    </div>
+    <div class="card">
+      <div class="card-lbl">RECOMMENDED ACTIONS</div>
+      ${actions.map((a, i) => `<div class="rp-num"><b>${i+1}</b>${a}</div>`).join('')}
+    </div>`);
+}
+
+// ─── REPORT ───────────────────────────────────────────────────────────────────
+function renderReport() {
+  const d = S.days, p = S.params;
+  const prof = PROFILES[p.industry];
+  const totalRev  = d.reduce((s, x) => s + x.rev, 0);
+  const totalCost = d.reduce((s, x) => s + x.cost, 0);
+  const netProfit = totalRev - totalCost;
+  const endCash   = d[d.length - 1]?.cash ?? 0;
+  const sc        = calcScores();
+
+  const wkData = [[1,7],[8,14],[15,21],[22,30]].map(([s, e]) => {
+    const w = d.filter(x => x.d >= s && x.d <= e);
+    return { s, e, rev:w.reduce((a,x)=>a+x.rev,0), cost:w.reduce((a,x)=>a+x.cost,0), cust:w[w.length-1]?.customers??0 };
   });
+
+  $h('report-content', `
+    <div class="rp-sec">
+      <div class="rp-h">EXECUTIVE SUMMARY</div>
+      <div class="rp-p">Simulation for <strong>${p.idea.slice(0,100)}${p.idea.length>100?'…':''}</strong> in <strong>${p.loc||'an unspecified market'}</strong>. Starting capital: <strong>${fmt(p.capital)}</strong>. Industry: <strong>${prof.name}</strong>.</div>
+      <div class="rp-p">The model projects <strong style="color:var(--cyan)">${fmt(totalRev)}</strong> gross revenue, <strong style="color:${netProfit>=0?'var(--emerald)':'var(--red)'}">${fmt(netProfit)}</strong> net P&amp;L, and an ending cash position of <strong>${fmt(endCash)}</strong>. Monte Carlo survival rate: <strong>${(S.mc.survivalRate*100).toFixed(0)}%</strong> across 500 runs.</div>
+    </div>
+
+    <div class="rp-sec">
+      <div class="rp-h">WEEKLY BREAKDOWN</div>
+      <div class="wk-grid">${wkData.map((w,i) => `<div class="card">
+        <div class="card-lbl">WEEK ${i+1} (DAYS ${w.s}–${w.e})</div>
+        <div style="font-family:var(--mono);font-size:10.5px;line-height:1.9;margin-top:.4rem;">
+          <div>Rev: <span class="c">${fmt(w.rev)}</span></div>
+          <div>Cost: <span class="a">${fmt(w.cost)}</span></div>
+          <div>P&amp;L: <span style="color:${w.rev-w.cost>=0?'var(--emerald)':'var(--red)'}">${fmt(w.rev-w.cost)}</span></div>
+          <div>Customers: <span class="c">${w.cust}</span></div>
+        </div>
+      </div>`).join('')}</div>
+    </div>
+
+    <div class="rp-sec">
+      <div class="rp-h">30-DAY ACTION PLAN</div>
+      ${[
+        ['DAYS 1–7: LAUNCH',     `Activate operations and marketing. Target first paying customers. Track daily spend vs revenue. Cap weekly burn at ${fmt(p.mktBud/4)}.`],
+        ['DAYS 8–14: VALIDATE',  `Review customer acquisition cost vs LTV. A/B test messaging. If CAC exceeds ${fmt(p.price*.5)}, shift channel mix. Target ${Math.ceil((d[d.length-1]?.customers??1)*.3)} customers by day 14.`],
+        ['DAYS 15–21: OPTIMISE', 'Double down on what works. Cut underperforming channels. Introduce a referral incentive. Re-check pricing vs competitor rates.'],
+        ['DAYS 22–30: SCALE',    'If cash-positive: increase marketing spend by 20%. If cash-negative: reduce burn by 25%. Build month-2 forecast from actual data.'],
+      ].map(([t,b]) => `<div class="phase"><div class="phase-t">${t}</div><div class="phase-b">${b}</div></div>`).join('')}
+    </div>
+
+    <div class="rp-sec">
+      <div class="rp-h">KEY RISKS FLAGGED</div>
+      ${S.events.filter(e=>e.impact<0).slice(0,5).map(e =>
+        `<div class="rp-num"><b>⚠</b>${e.msg} (Day ${e.day})</div>`
+      ).join('') || '<div class="rp-num"><b>✓</b>No severe negative events in this run — re-run for variance.</div>'}
+    </div>
+
+    <div class="rp-disclaimer">
+      <strong>Disclaimer:</strong> This report is generated by a statistical simulation engine using industry benchmarks and probabilistic models. It does not constitute financial, legal, or business advice. Actual results will vary based on execution, market conditions, and many factors outside this model's scope. Always validate assumptions with real market data before committing capital.
+    </div>`);
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+function initHeatmap() {
+  $h('day-heatmap', Array.from({length:30}, (_,i) =>
+    `<div class="dhc future">${i+1}</div>`
+  ).join(''));
+}
+initHeatmap();
 </script>
 </body>
 </html>
