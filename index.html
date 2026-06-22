@@ -253,7 +253,7 @@ select option{background:var(--navy-800);}
 /* ── MODALS ── */
 .modal-overlay{position:fixed;inset:0;background:rgba(4,6,13,.88);backdrop-filter:blur(8px);z-index:500;display:flex;align-items:center;justify-content:center;padding:1rem;}
 .modal-box{background:var(--navy-700);border:1px solid var(--line-2);border-radius:16px;padding:2rem;width:100%;max-width:420px;position:relative;animation:fadeUp .2s ease;}
-.modal-box.modal-wide{max-width:860px;}
+.modal-box.modal-wide{max-width:1020px;}
 .modal-close{position:absolute;top:1rem;right:1rem;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;line-height:1;padding:2px 6px;border-radius:4px;}
 .modal-close:hover{color:var(--text);background:var(--glass-2);}
 .modal-logo{display:flex;align-items:center;gap:8px;margin-bottom:1rem;}
@@ -271,16 +271,17 @@ select option{background:var(--navy-800);}
 .modal-fine{font-family:var(--mono);font-size:9px;color:var(--muted-2);text-align:center;margin-top:.75rem;}
 
 /* PLAN GRID */
-.plan-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:1.25rem;}
-@media(max-width:680px){.plan-grid{grid-template-columns:1fr;}}
-.plan-card{background:var(--navy-800);border:1px solid var(--line-2);border-radius:12px;padding:1.5rem;cursor:pointer;transition:border-color .2s,transform .15s;}
+.plan-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.8rem;margin-top:1rem;}
+@media(max-width:960px){.plan-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:520px){.plan-grid{grid-template-columns:1fr;}}
+.plan-card{background:var(--navy-800);border:1px solid var(--line-2);border-radius:12px;padding:1.25rem;cursor:pointer;transition:border-color .2s,transform .15s;}
 .plan-card:hover{border-color:rgba(34,211,238,.3);transform:translateY(-2px);}
 .plan-card.featured{border-color:rgba(139,92,246,.35);background:rgba(139,92,246,.06);}
 .plan-badge-tag{font-family:var(--mono);font-size:8.5px;color:var(--purple);letter-spacing:.1em;margin-bottom:.45rem;min-height:14px;}
-.plan-nm{font-family:var(--head);font-size:19px;font-weight:800;margin-bottom:.2rem;}
-.plan-price{font-family:var(--mono);font-size:27px;font-weight:700;color:var(--cyan);margin-bottom:.9rem;line-height:1;}
-.plan-price span{font-size:11px;color:var(--muted);font-weight:400;}
-.plan-feats{list-style:none;font-family:var(--mono);font-size:10.5px;display:flex;flex-direction:column;gap:.38rem;margin-bottom:1.2rem;min-height:110px;}
+.plan-nm{font-family:var(--head);font-size:17px;font-weight:800;margin-bottom:.2rem;}
+.plan-price{font-family:var(--mono);font-size:24px;font-weight:700;color:var(--cyan);margin-bottom:.75rem;line-height:1;}
+.plan-price span{font-size:10px;color:var(--muted);font-weight:400;}
+.plan-feats{list-style:none;font-family:var(--mono);font-size:10px;display:flex;flex-direction:column;gap:.35rem;margin-bottom:1rem;min-height:100px;}
 .plan-feats li.yes{color:var(--text);}
 .plan-feats li.no{color:var(--muted-2);text-decoration:line-through;}
 .btn-plan{width:100%;padding:9px;border-radius:7px;font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;cursor:pointer;border:1px solid var(--line-2);background:var(--glass);color:var(--muted);transition:all .2s;}
@@ -288,11 +289,23 @@ select option{background:var(--navy-800);}
 .btn-plan:hover{border-color:rgba(34,211,238,.3);color:var(--cyan);background:rgba(34,211,238,.05);}
 .btn-plan.featured:hover{background:rgba(139,92,246,.22);color:#a78bfa;}
 
+/* ANNUAL TOGGLE */
+.billing-toggle{display:flex;align-items:center;justify-content:center;gap:.75rem;margin:.25rem 0 1rem;}
+.billing-lbl{font-family:var(--mono);font-size:10.5px;color:var(--muted);cursor:pointer;}
+.billing-lbl.on{color:var(--text);}
+.billing-sw{width:36px;height:20px;background:var(--glass-2);border:1px solid var(--line-2);border-radius:10px;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;}
+.billing-sw.annual{background:rgba(34,211,238,.12);border-color:rgba(34,211,238,.3);}
+.billing-sw::after{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:7px;background:var(--muted-2);transition:all .2s;}
+.billing-sw.annual::after{left:18px;background:var(--cyan);}
+.billing-save{font-family:var(--mono);font-size:8px;color:var(--emerald);background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:4px;padding:2px 6px;margin-left:2px;}
+
 /* PAYMENT MODAL */
 .pay-row{display:grid;grid-template-columns:1fr 1fr;gap:.9rem;}
 .pay-tier-badge{font-family:var(--mono);font-size:9px;letter-spacing:.07em;padding:4px 10px;border-radius:5px;display:inline-block;margin-bottom:.65rem;border:1px solid;}
+.pay-tier-badge.starter{background:rgba(34,211,238,.07);color:var(--cyan);border-color:rgba(34,211,238,.2);}
 .pay-tier-badge.pro{background:rgba(139,92,246,.1);color:var(--purple);border-color:rgba(139,92,246,.25);}
 .pay-tier-badge.growth{background:rgba(16,185,129,.08);color:var(--emerald);border-color:rgba(16,185,129,.25);}
+.pay-tier-badge.professional{background:rgba(245,158,11,.08);color:var(--amber);border-color:rgba(245,158,11,.2);}
 .pay-secure{font-family:var(--mono);font-size:9.5px;color:var(--muted-2);margin-bottom:1.25rem;display:flex;align-items:center;gap:5px;}
 .pay-demo-note{font-family:var(--mono);font-size:9px;color:var(--amber);text-align:center;margin:.65rem 0 .25rem;padding:.4rem;background:rgba(245,158,11,.06);border-radius:6px;border:1px solid rgba(245,158,11,.12);}
 .btn-skip-pay{width:100%;background:none;border:none;color:var(--muted-2);font-family:var(--mono);font-size:9.5px;cursor:pointer;padding:.5rem;margin-top:.25rem;letter-spacing:.04em;}
@@ -301,8 +314,46 @@ select option{background:var(--navy-800);}
 /* USER BADGE (header) */
 .user-badge{font-family:var(--mono);font-size:9px;padding:4px 10px;border-radius:5px;letter-spacing:.06em;display:none;align-items:center;gap:5px;cursor:pointer;white-space:nowrap;border:1px solid;}
 .user-badge.free{background:rgba(93,104,133,.1);color:var(--muted);border-color:var(--line);}
+.user-badge.starter{background:rgba(34,211,238,.07);color:var(--cyan);border-color:rgba(34,211,238,.18);}
 .user-badge.pro{background:rgba(139,92,246,.1);color:var(--purple);border-color:rgba(139,92,246,.2);}
 .user-badge.growth{background:rgba(16,185,129,.08);color:var(--emerald);border-color:rgba(16,185,129,.2);}
+.user-badge.professional{background:rgba(245,158,11,.08);color:var(--amber);border-color:rgba(245,158,11,.2);}
+
+/* SENSITIVITY ANALYSIS */
+.sens-slider-wrap{margin-bottom:1.25rem;}
+.sens-label{display:flex;justify-content:space-between;align-items:center;font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-bottom:.45rem;}
+.sens-label strong{color:var(--text);}
+input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;background:var(--line-2);border-radius:2px;outline:none;-webkit-appearance:none;}
+.sens-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-top:1rem;}
+@media(max-width:700px){.sens-grid{grid-template-columns:repeat(2,1fr);}}
+.sens-kpi{background:var(--glass);border:1px solid var(--line);border-radius:8px;padding:.75rem 1rem;text-align:center;}
+.sens-kpi-val{font-family:var(--mono);font-size:18px;font-weight:700;}
+.sens-kpi-lbl{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.07em;margin-top:.2rem;}
+.sens-verdict{display:inline-flex;align-items:center;font-family:var(--head);font-size:14px;font-weight:800;padding:5px 16px;border-radius:7px;margin-top:.75rem;}
+.sens-verdict.go{background:rgba(16,185,129,.13);color:var(--emerald);border:1px solid rgba(16,185,129,.28);}
+.sens-verdict.modify{background:rgba(245,158,11,.1);color:var(--amber);border:1px solid rgba(245,158,11,.22);}
+.sens-verdict.stop{background:rgba(244,63,94,.1);color:var(--red);border:1px solid rgba(244,63,94,.2);}
+.sens-delta{font-family:var(--mono);font-size:9px;margin-left:6px;}
+.sens-delta.up{color:var(--emerald);}
+.sens-delta.dn{color:var(--red);}
+
+/* SCENARIO COMPARISON */
+.sc-slots{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.25rem;}
+@media(max-width:600px){.sc-slots{grid-template-columns:1fr;}}
+.sc-slot{background:var(--glass);border:1px solid var(--line-2);border-radius:10px;padding:1rem;min-height:80px;}
+.sc-slot.saved{border-color:rgba(34,211,238,.25);background:rgba(34,211,238,.03);}
+.sc-slot-lbl{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.08em;margin-bottom:.4rem;}
+.sc-slot-idea{font-family:var(--sans);font-size:13px;font-weight:500;margin-bottom:.2rem;}
+.sc-slot-meta{font-family:var(--mono);font-size:10px;color:var(--muted);}
+.cmp-tbl{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:11px;}
+.cmp-tbl th{font-size:9px;letter-spacing:.07em;color:var(--muted);text-align:left;padding:.5rem .75rem;border-bottom:1px solid var(--line);}
+.cmp-tbl th.r{text-align:right;}
+.cmp-tbl td{padding:.45rem .75rem;border-bottom:1px solid rgba(255,255,255,.04);}
+.cmp-tbl td.metric{color:var(--muted-2);}
+.cmp-tbl td.r{text-align:right;}
+.cmp-tbl td.better{color:var(--emerald);}
+.cmp-tbl td.worse{color:var(--red);}
+.cmp-tbl td.same{color:var(--text);}
 
 /* LOCK OVERLAY */
 .section{position:relative;}
@@ -329,7 +380,9 @@ select option{background:var(--navy-800);}
     <button class="nb"        data-section="risk"      onclick="nav('risk')">RISK / MONTE CARLO 🔒</button>
     <button class="nb"        data-section="log"       onclick="nav('log')">EVENT LOG 🔒</button>
     <button class="nb"        data-section="verdict"   onclick="nav('verdict')">VERDICT</button>
-    <button class="nb"        data-section="report"    onclick="nav('report')">REPORT &amp; PLAN 🔒</button>
+    <button class="nb"        data-section="report"      onclick="nav('report')">REPORT &amp; PLAN 🔒</button>
+    <button class="nb"        data-section="sensitivity" onclick="nav('sensitivity')">SENSITIVITY 🔒</button>
+    <button class="nb"        data-section="compare"     onclick="nav('compare')">COMPARE 🔒</button>
   </nav>
   <div class="hdr-right">
     <span id="user-badge" class="user-badge free" onclick="openPlanModal()" title="View or change your plan"></span>
@@ -432,6 +485,11 @@ select option{background:var(--navy-800);}
     <div class="ticker-wrap"><div class="ticker-inner" id="ticker-inner"><span class="ti">INFINICUS ENGINE v3 <span>READY</span></span></div></div>
     <div class="pg-title" style="font-size:22px;margin-bottom:.1rem;">DASHBOARD</div>
     <div class="pg-sub" id="dash-sub">// RUN A SIMULATION TO SEE RESULTS</div>
+    <div class="action-row" id="dash-actions" style="display:none;">
+      <button class="btn-action" id="save-scenario-btn" onclick="saveScenario()">⊞ SAVE SCENARIO</button>
+      <button class="btn-action" onclick="nav('sensitivity')">⌇ SENSITIVITY</button>
+      <button class="btn-action" onclick="nav('compare')">⇔ COMPARE</button>
+    </div>
     <div class="g4" id="kpi-cards">
       <div class="card"><div class="card-lbl">TOTAL REVENUE</div><div class="card-val" style="color:var(--muted-2)">—</div></div>
       <div class="card"><div class="card-lbl">NET PROFIT</div><div class="card-val" style="color:var(--muted-2)">—</div></div>
@@ -566,6 +624,56 @@ select option{background:var(--navy-800);}
   </div>
 </section>
 
+<!-- ═══════════════════════════════════════════════════ SENSITIVITY ═══ -->
+<section class="section" id="sec-sensitivity">
+  <div class="pg-title" style="font-size:22px;margin-bottom:.1rem;">SENSITIVITY ANALYSIS</div>
+  <div class="pg-sub">// LIVE PARAMETER ADJUSTMENT · INSTANT VERDICT UPDATE</div>
+  <div class="g2" style="margin-bottom:1rem;">
+    <div class="card">
+      <div class="card-lbl">PRICE ADJUSTMENT</div>
+      <div class="sens-slider-wrap" style="margin-top:.85rem;">
+        <div class="sens-label"><span>Adjust price from original</span><strong id="sens-price-disp">100%</strong></div>
+        <input type="range" id="sens-price" min="40" max="250" value="100" oninput="updateSensitivity()">
+        <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;color:var(--muted-2);margin-top:.3rem;"><span>40%</span><span>100%</span><span>250%</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-lbl">MARKETING BUDGET MULTIPLIER</div>
+      <div class="sens-slider-wrap" style="margin-top:.85rem;">
+        <div class="sens-label"><span>Multiply current marketing spend</span><strong id="sens-mkt-disp">1.0×</strong></div>
+        <input type="range" id="sens-mkt" min="0" max="300" value="100" oninput="updateSensitivity()">
+        <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;color:var(--muted-2);margin-top:.3rem;"><span>0×</span><span>1×</span><span>3×</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="card" id="sens-result">
+    <div style="font-family:var(--mono);font-size:10.5px;color:var(--muted-2);text-align:center;padding:1rem 0;">Run a simulation first, then return here to adjust parameters live.</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════ COMPARE ═══ -->
+<section class="section" id="sec-compare">
+  <div class="pg-title" style="font-size:22px;margin-bottom:.1rem;">SCENARIO COMPARISON</div>
+  <div class="pg-sub">// SIDE-BY-SIDE ANALYSIS OF TWO SIMULATIONS</div>
+  <div class="sc-slots">
+    <div class="sc-slot" id="slot-a">
+      <div class="sc-slot-lbl">SCENARIO A</div>
+      <div class="sc-slot-idea" style="color:var(--muted-2);">No scenario saved yet.</div>
+      <div class="sc-slot-meta">Run a simulation and click "Save Scenario" from the Dashboard.</div>
+    </div>
+    <div class="sc-slot" id="slot-b">
+      <div class="sc-slot-lbl">SCENARIO B</div>
+      <div class="sc-slot-idea" style="color:var(--muted-2);">No scenario saved yet.</div>
+      <div class="sc-slot-meta">Save a second simulation to compare.</div>
+    </div>
+  </div>
+  <div id="cmp-table-wrap">
+    <div class="card" style="text-align:center;padding:2rem;">
+      <div style="font-family:var(--mono);font-size:10.5px;color:var(--muted-2);">Save two scenarios from the Dashboard to see a side-by-side comparison.</div>
+    </div>
+  </div>
+</section>
+
 <!-- ══════════════════════════ REGISTRATION MODAL ══════════════════════════ -->
 <div class="modal-overlay" id="reg-modal" style="display:none" role="dialog" aria-modal="true" aria-labelledby="reg-modal-h">
   <div class="modal-box">
@@ -595,6 +703,11 @@ select option{background:var(--navy-800);}
     <button class="modal-close" onclick="closePlanModal()" aria-label="Close">×</button>
     <div class="modal-h" id="plan-modal-h">Choose Your Plan</div>
     <div class="modal-sub">Start free with one simulation. Upgrade any time for unlimited access, deep analytics, and export tools.</div>
+    <div class="billing-toggle">
+      <span class="billing-lbl on" id="billing-monthly-lbl" onclick="setBilling('monthly')">Monthly</span>
+      <div class="billing-sw" id="billing-sw" onclick="toggleBilling()"></div>
+      <span class="billing-lbl" id="billing-annual-lbl" onclick="setBilling('annual')">Annual <span class="billing-save">Save 20%</span></span>
+    </div>
     <div class="plan-grid" id="plan-grid">
       <!-- injected by renderPlanGrid() -->
     </div>
@@ -605,8 +718,8 @@ select option{background:var(--navy-800);}
 <div class="modal-overlay" id="pay-modal" style="display:none" role="dialog" aria-modal="true" aria-labelledby="pay-modal-h">
   <div class="modal-box" style="max-width:420px">
     <button class="modal-close" onclick="closePayModal()" aria-label="Close">×</button>
-    <div id="pay-tier-badge" class="pay-tier-badge pro">PRO — $29 / month</div>
-    <div class="modal-h" id="pay-modal-h">Upgrade to Pro</div>
+    <div id="pay-tier-badge" class="pay-tier-badge starter">STARTER — $19 / month</div>
+    <div class="modal-h" id="pay-modal-h">Upgrade to Starter</div>
     <div class="pay-secure">🔒 Secure checkout · powered by Stripe</div>
     <div class="modal-field">
       <label for="pay-card">CARD NUMBER</label>
@@ -844,19 +957,17 @@ function calcScores() {
 
 // ─── NAVIGATION ───────────────────────────────────────────────────────────────
 function nav(id) {
-  // Gate: locked sections open plan modal for free/unregistered users
-  if (PRO_SECTIONS && PRO_SECTIONS.includes(id) && !isPro()) {
-    openPlanModal();
-    return;
-  }
+  if (PRO_SECTIONS.includes(id) && !isPro()) { openPlanModal(); return; }
+  if (GROWTH_SECTIONS.includes(id) && !isGrowthPlus()) { openPlanModal(); return; }
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.nb').forEach(b => b.classList.remove('active'));
   $('sec-' + id).classList.add('active');
-  const ids = ['input','dashboard','economy','customers','risk','log','verdict','report'];
-  const idx = ids.indexOf(id);
-  if (idx >= 0) document.querySelectorAll('.nb')[idx].classList.add('active');
+  const btn = document.querySelector(`.nb[data-section="${id}"]`);
+  if (btn) btn.classList.add('active');
   $('main-nav').classList.remove('open');
   window.scrollTo(0, 0);
+  if (id === 'sensitivity' && S.done) updateSensitivity();
+  if (id === 'compare') { renderScenarioSlots(); renderComparisonTable(); }
 }
 
 // ─── START SIMULATION ─────────────────────────────────────────────────────────
@@ -942,6 +1053,7 @@ function finalize() {
   $('stop-btn').disabled = true;
   $('dash-loading').style.display = 'none';
   $('dash-content').style.display = 'block';
+  if ($('dash-actions')) $('dash-actions').style.display = 'flex';
 
   if (U) { U.simCount = (U.simCount || 0) + 1; saveUser(); }
   saveToStorage();
@@ -1426,7 +1538,10 @@ let U = null;
 let _pendingSimAfterReg = false;
 let _payingPlan = null;
 
-const PRO_SECTIONS = ['customers','risk','log','report'];
+// Sections unlocked by Starter+ (any paid plan)
+const PRO_SECTIONS     = ['customers','risk','log','report'];
+// Sections unlocked by Growth+ only
+const GROWTH_SECTIONS  = ['sensitivity','compare'];
 
 function loadUser() {
   try {
@@ -1440,24 +1555,61 @@ function saveUser() {
   try { localStorage.setItem('infinicus_user', JSON.stringify(U)); } catch(e) {}
 }
 
-function isPro() { return U && (U.plan === 'pro' || U.plan === 'growth'); }
+// Any paid plan (includes legacy 'pro')
+function isPro() { return U && ['starter','pro','growth','professional'].includes(U.plan); }
+// Growth or Professional only
+function isGrowthPlus() { return U && ['growth','professional'].includes(U.plan); }
+
+function planLabel(plan) {
+  return { free:'FREE', starter:'STARTER', pro:'STARTER', growth:'GROWTH', professional:'PRO' }[plan] || (plan||'').toUpperCase();
+}
 
 function showUserBadge() {
   const el = $('user-badge');
   if (!el || !U || U.plan === 'none') return;
-  el.className = 'user-badge ' + U.plan;
-  const planLabel = U.plan.toUpperCase();
-  const firstName = U.name.split(' ')[0];
-  el.innerHTML = planLabel + ' · ' + firstName;
+  // Normalise legacy 'pro' to display as 'starter'
+  const cls = U.plan === 'pro' ? 'starter' : U.plan;
+  el.className = 'user-badge ' + cls;
+  el.innerHTML = planLabel(U.plan) + ' · ' + U.name.split(' ')[0];
   el.style.display = 'flex';
+}
+
+// ─── ANNUAL BILLING TOGGLE ────────────────────────────────────────────────────
+let _billing = 'monthly';
+
+function toggleBilling() { setBilling(_billing === 'monthly' ? 'annual' : 'monthly'); }
+
+function setBilling(mode) {
+  _billing = mode;
+  const sw  = $('billing-sw');
+  const ml  = $('billing-monthly-lbl');
+  const al  = $('billing-annual-lbl');
+  if (!sw) return;
+  if (mode === 'annual') {
+    sw.classList.add('annual');
+    ml.classList.remove('on'); al.classList.add('on');
+  } else {
+    sw.classList.remove('annual');
+    ml.classList.add('on'); al.classList.remove('on');
+  }
+  renderPlanGrid();
+}
+
+function planPrice(plan, billing) {
+  const monthly = { starter:19, growth:49, professional:99 };
+  const annual  = { starter:15, growth:39, professional:79 };
+  return billing === 'annual' ? annual[plan] : monthly[plan];
 }
 
 // ─── NAV LOCK MANAGEMENT ─────────────────────────────────────────────────────
 function updateNavLocks() {
-  const locked = !isPro();
-  PRO_SECTIONS.forEach(id => {
+  const allLocked = [...PRO_SECTIONS, ...GROWTH_SECTIONS];
+  allLocked.forEach(id => {
     const btn = document.querySelector(`.nb[data-section="${id}"]`);
     if (!btn) return;
+    const needsPaid   = PRO_SECTIONS.includes(id);
+    const needsGrowth = GROWTH_SECTIONS.includes(id);
+    const locked = (needsPaid && !isPro()) || (needsGrowth && !isGrowthPlus());
     if (locked) {
       if (!btn.textContent.includes('🔒')) btn.textContent += ' 🔒';
     } else {
@@ -1468,19 +1620,27 @@ function updateNavLocks() {
 }
 
 function applyLockOverlays() {
-  PRO_SECTIONS.forEach(id => {
-    const sec = $('sec-' + id);
+  const cfg = {
+    customers:   { name:'Customer Analytics',   req:'isPro',        tier:'Starter' },
+    risk:        { name:'Risk / Monte Carlo',    req:'isPro',        tier:'Starter' },
+    log:         { name:'Event Log',             req:'isPro',        tier:'Starter' },
+    report:      { name:'Report & Plan',         req:'isPro',        tier:'Starter' },
+    sensitivity: { name:'Sensitivity Analysis',  req:'isGrowthPlus', tier:'Growth'  },
+    compare:     { name:'Scenario Comparison',   req:'isGrowthPlus', tier:'Growth'  }
+  };
+  Object.entries(cfg).forEach(([id, c]) => {
+    const sec  = $('sec-' + id);
     if (!sec) return;
     const existing = sec.querySelector('.lock-overlay');
-    if (!isPro()) {
+    const unlocked = c.req === 'isPro' ? isPro() : isGrowthPlus();
+    if (!unlocked) {
       if (!existing) {
         const ov = document.createElement('div');
         ov.className = 'lock-overlay';
-        const names = { customers:'Customer Analytics', risk:'Risk / Monte Carlo', log:'Event Log', report:'Report & Plan' };
         ov.innerHTML = `
           <div class="lock-icon">🔒</div>
-          <div class="lock-h">${names[id]} — Pro Feature</div>
-          <div class="lock-p">Full analytics, Monte Carlo risk data, and the complete report are available on Pro and Growth plans.</div>
+          <div class="lock-h">${c.name} — ${c.tier}+ Feature</div>
+          <div class="lock-p">Available on ${c.tier}, Growth, and Professional plans.</div>
           <button class="btn-launch" style="padding:10px 22px;font-size:11px;margin-top:.25rem" onclick="openPlanModal()">View Plans →</button>`;
         sec.appendChild(ov);
       }
@@ -1525,50 +1685,51 @@ function closePlanModal() {
 }
 
 function renderPlanGrid() {
-  $('plan-grid').innerHTML = `
-    <div class="plan-card" onclick="selectPlan('free')">
-      <div class="plan-badge-tag"></div>
-      <div class="plan-nm">FREE</div>
-      <div class="plan-price">$0<span> / forever</span></div>
-      <ul class="plan-feats">
-        <li class="yes">1 free simulation</li>
-        <li class="yes">Dashboard KPIs</li>
-        <li class="yes">Economy chart</li>
-        <li class="yes">GO / MODIFY / STOP verdict</li>
-        <li class="no">Customer analytics</li>
-        <li class="no">Monte Carlo risk analysis</li>
-        <li class="no">Event log &amp; full report</li>
-      </ul>
-      <button class="btn-plan">${U && U.plan === 'free' ? '✓ Current Plan' : 'Start Free'}</button>
-    </div>
-    <div class="plan-card featured" onclick="selectPlan('pro')">
-      <div class="plan-badge-tag">★ MOST POPULAR</div>
-      <div class="plan-nm" style="color:var(--purple)">PRO</div>
-      <div class="plan-price" style="color:var(--purple)">$29<span> / month</span></div>
-      <ul class="plan-feats">
-        <li class="yes">Unlimited simulations</li>
-        <li class="yes">Full 8-section report</li>
-        <li class="yes">Monte Carlo / Risk analysis</li>
-        <li class="yes">Customer retention analysis</li>
-        <li class="yes">Event log</li>
-        <li class="yes">PDF export &amp; share link</li>
-      </ul>
-      <button class="btn-plan featured">${U && U.plan === 'pro' ? '✓ Current Plan' : 'Get Pro →'}</button>
-    </div>
-    <div class="plan-card" onclick="selectPlan('growth')">
-      <div class="plan-badge-tag"></div>
-      <div class="plan-nm" style="color:var(--emerald)">GROWTH</div>
-      <div class="plan-price" style="color:var(--emerald)">$79<span> / month</span></div>
-      <ul class="plan-feats">
-        <li class="yes">Everything in Pro</li>
-        <li class="yes">Scenario comparison</li>
-        <li class="yes">Sensitivity sliders</li>
-        <li class="yes">Investor-ready export</li>
-        <li class="yes">Priority support</li>
-        <li class="yes">API access</li>
-      </ul>
-      <button class="btn-plan">${U && U.plan === 'growth' ? '✓ Current Plan' : 'Get Growth →'}</button>
+  const ann = _billing === 'annual';
+  const cur = U?.plan;
+
+  const planCard = (id, nm, color, badge, feats, btnCls, btnTxt, price, period) => `
+    <div class="plan-card ${badge ? 'featured' : ''}" onclick="selectPlan('${id}')">
+      <div class="plan-badge-tag">${badge}</div>
+      <div class="plan-nm" ${color ? `style="color:${color}"` : ''}>${nm}</div>
+      <div class="plan-price" ${color ? `style="color:${color}"` : ''}>${price}<span> ${period}</span></div>
+      <ul class="plan-feats">${feats.map(([cls,t]) => `<li class="${cls}">${t}</li>`).join('')}</ul>
+      <button class="btn-plan ${btnCls}">${cur === id || (id==='starter' && cur==='pro') ? '✓ Current Plan' : btnTxt}</button>
     </div>`;
+
+  $('plan-grid').innerHTML =
+    planCard('free','FREE','','',
+      [['yes','1 simulation / month'],['yes','Dashboard KPIs'],['yes','Economy chart'],
+       ['yes','GO / MODIFY / STOP verdict'],['no','Customer analytics'],['no','Monte Carlo risk'],['no','Full report']],
+      '','Start Free','$0','/ forever') +
+
+    planCard('starter','STARTER','var(--cyan)','',
+      [['yes','5 simulations / month'],['yes','Full 8-section report'],['yes','Monte Carlo / Risk'],
+       ['yes','Customer retention analytics'],['yes','Event log'],['yes','PDF export & share link']],
+      '', ann ? 'Get Starter →' : 'Get Starter →',
+      ann ? `$${planPrice('starter','annual')}` : `$${planPrice('starter','monthly')}`,
+      ann ? '/ mo · billed yearly' : '/ month') +
+
+    planCard('growth','GROWTH','var(--purple)','★ MOST POPULAR',
+      [['yes','20 simulations / month'],['yes','Everything in Starter'],['yes','Sensitivity sliders'],
+       ['yes','Scenario comparison'],['yes','Simulation history archive'],['yes','Priority support']],
+      'featured', ann ? 'Get Growth →' : 'Get Growth →',
+      ann ? `$${planPrice('growth','annual')}` : `$${planPrice('growth','monthly')}`,
+      ann ? '/ mo · billed yearly' : '/ month') +
+
+    planCard('professional','PROFESSIONAL','var(--amber)','',
+      [['yes','60 simulations / month'],['yes','Everything in Growth'],['yes','White-label PDF export'],
+       ['yes','Investor Pack export'],['yes','Client workspace'],['yes','API access (beta)']],
+      '', ann ? 'Get Professional →' : 'Get Professional →',
+      ann ? `$${planPrice('professional','annual')}` : `$${planPrice('professional','monthly')}`,
+      ann ? '/ mo · billed yearly' : '/ month');
+
+  if (ann) {
+    const note = document.createElement('div');
+    note.style.cssText = 'text-align:center;font-family:var(--mono);font-size:9.5px;color:var(--emerald);margin-top:.6rem;';
+    note.textContent = '✓ Annual plans save 2 months — billed as one payment per year';
+    $('plan-grid').after(note);
+  }
 }
 
 function selectPlan(plan) {
@@ -1579,9 +1740,8 @@ function selectPlan(plan) {
     updateNavLocks();
     if (_pendingSimAfterReg) {
       _pendingSimAfterReg = false;
-      // Check sim count gate for free tier
       if ((U.simCount || 0) >= 1) {
-        showToast('Free plan allows 1 simulation. Upgrade for unlimited.');
+        showToast('Free plan allows 1 simulation/month. Upgrade for unlimited.');
         return;
       }
       startSim();
@@ -1592,13 +1752,15 @@ function selectPlan(plan) {
   }
 }
 
-// ─── PAYMENT ──────────────────────────────────────────────────────────────────
+// ─── PAYMENT (Stripe placeholder — ready for real integration) ────────────────
 function openPayModal(plan) {
   _payingPlan = plan;
+  const labels = { starter:`STARTER — $${planPrice('starter',_billing)}/mo`, growth:`GROWTH — $${planPrice('growth',_billing)}/mo`, professional:`PROFESSIONAL — $${planPrice('professional',_billing)}/mo` };
+  const titles = { starter:'Upgrade to Starter', growth:'Upgrade to Growth', professional:'Upgrade to Professional' };
   const badge = $('pay-tier-badge');
-  badge.textContent = plan === 'pro' ? 'PRO — $29 / month' : 'GROWTH — $79 / month';
-  badge.className = 'pay-tier-badge ' + plan;
-  $('pay-modal-h').textContent = plan === 'pro' ? 'Upgrade to Pro' : 'Upgrade to Growth';
+  badge.textContent = labels[plan] || plan.toUpperCase();
+  badge.className = 'pay-tier-badge ' + (plan === 'pro' ? 'starter' : plan);
+  $('pay-modal-h').textContent = titles[plan] || 'Upgrade Plan';
   if (U) $('pay-name').value = U.name;
   $('pay-card').value = ''; $('pay-exp').value = ''; $('pay-cvc').value = '';
   $('pay-err').style.display = 'none';
@@ -1624,10 +1786,10 @@ function processPay() {
   const name = $('pay-name').value.trim();
   const err  = $('pay-err');
   err.style.display = 'none';
-  if (card.length < 16)                        { err.textContent = 'Enter a valid 16-digit card number.'; err.style.display = 'block'; return; }
-  if (!/^\d{2}\s?\/\s?\d{2}$/.test(exp))       { err.textContent = 'Enter expiry as MM / YY.'; err.style.display = 'block'; return; }
-  if (cvc.length < 3)                          { err.textContent = 'Enter a 3-digit CVC.'; err.style.display = 'block'; return; }
-  if (!name)                                   { err.textContent = 'Enter the name on your card.'; err.style.display = 'block'; return; }
+  if (card.length < 16)                  { err.textContent = 'Enter a valid 16-digit card number.'; err.style.display = 'block'; return; }
+  if (!/^\d{2}\s?\/\s?\d{2}$/.test(exp)){ err.textContent = 'Enter expiry as MM / YY.'; err.style.display = 'block'; return; }
+  if (cvc.length < 3)                    { err.textContent = 'Enter a 3-digit CVC.'; err.style.display = 'block'; return; }
+  if (!name)                             { err.textContent = 'Enter the name on your card.'; err.style.display = 'block'; return; }
 
   const btn = $('pay-submit-btn');
   btn.disabled = true; btn.textContent = 'Processing…';
@@ -1637,9 +1799,193 @@ function processPay() {
     $('pay-modal').style.display = 'none';
     showUserBadge();
     updateNavLocks();
-    showToast(`Welcome to ${_payingPlan.toUpperCase()}! All sections are now unlocked.`);
+    const unlocked = _payingPlan === 'starter' ? 'Full reports & analytics' : _payingPlan === 'growth' ? 'All sections + Sensitivity & Comparison' : 'All features unlocked';
+    showToast(`Welcome to ${planLabel(_payingPlan)}! ${unlocked}.`);
     if (_pendingSimAfterReg) { _pendingSimAfterReg = false; startSim(); }
   }, 1800);
+}
+
+// ─── SENSITIVITY ANALYSIS ─────────────────────────────────────────────────────
+let _sensDebounce = null;
+
+function updateSensitivity() {
+  const priceSlider = $('sens-price');
+  const mktSlider   = $('sens-mkt');
+  if (!priceSlider || !mktSlider) return;
+
+  const priceP = parseInt(priceSlider.value);
+  const mktP   = parseInt(mktSlider.value);
+
+  $('sens-price-disp').textContent = priceP + '%' + (priceP === 100 ? ' (original)' : priceP > 100 ? ' ▲' : ' ▼');
+  $('sens-mkt-disp').textContent   = (mktP / 100).toFixed(1) + '×' + (mktP === 100 ? ' (original)' : '');
+
+  clearTimeout(_sensDebounce);
+  _sensDebounce = setTimeout(() => {
+    if (!S.done) return;
+    const p = { ...S.params };
+    p.price  = p.price  * priceP / 100;
+    p.mktBud = p.mktBud * mktP   / 100;
+    const { days } = simulate(p);
+    const mc       = monteCarlo(p);
+    renderSensResult(days, mc, p, priceP, mktP);
+  }, 180);
+}
+
+function renderSensResult(days, mc, p, priceP, mktP) {
+  const totalRev  = days.reduce((s,d) => s + d.rev, 0);
+  const totalCost = days.reduce((s,d) => s + d.cost, 0);
+  const netProfit = totalRev - totalCost - p.capital + days[days.length-1]?.cash || 0;
+  const survived  = days.filter(d => d.cash >= 0).length;
+  const survRate  = (survived / 30 * 100).toFixed(0);
+
+  // Quick verdict
+  const sc = calcScoresFor(days, mc, p);
+  const avg = Object.values(sc).reduce((a,b)=>a+b,0) / Object.values(sc).length;
+  const vrd = avg >= 62 ? 'go' : avg >= 40 ? 'modify' : 'stop';
+  const vrdLabel = vrd === 'go' ? '▲ GO' : vrd === 'modify' ? '◆ MODIFY' : '▼ STOP';
+
+  // Deltas vs original
+  const origDays  = S.days;
+  const origRev   = origDays.reduce((s,d)=>s+d.rev,0);
+  const origSurv  = (origDays.filter(d=>d.cash>=0).length / 30 * 100).toFixed(0);
+
+  const delta = (cur, orig, pct=false) => {
+    const d = pct ? (cur - orig) : (cur - orig);
+    if (Math.abs(d) < 0.5) return '';
+    const cls = d > 0 ? 'up' : 'dn';
+    const sign = d > 0 ? '+' : '';
+    const val  = pct ? sign + d.toFixed(1) + '%' : sign + fmt(d);
+    return `<span class="sens-delta ${cls}">${val}</span>`;
+  };
+
+  $h('sens-result', `
+    <div class="card-lbl" style="margin-bottom:.85rem;">SIMULATED RESULT — Price ${priceP}% · Marketing ${(mktP/100).toFixed(1)}×</div>
+    <div class="sens-grid">
+      <div class="sens-kpi">
+        <div class="sens-kpi-val" style="color:var(--cyan)">${fmt(totalRev)} ${delta(totalRev,origRev)}</div>
+        <div class="sens-kpi-lbl">TOTAL REVENUE</div>
+      </div>
+      <div class="sens-kpi">
+        <div class="sens-kpi-val" style="color:${netProfit>=0?'var(--emerald)':'var(--red)'}">${fmt(netProfit)}</div>
+        <div class="sens-kpi-lbl">NET PROFIT</div>
+      </div>
+      <div class="sens-kpi">
+        <div class="sens-kpi-val" style="color:var(--purple)">${survRate}% ${delta(parseFloat(survRate),parseFloat(origSurv),true)}</div>
+        <div class="sens-kpi-lbl">SURVIVAL RATE</div>
+      </div>
+      <div class="sens-kpi">
+        <div class="sens-kpi-val" style="color:var(--amber)">${mc.survivalP.toFixed(0)}%</div>
+        <div class="sens-kpi-lbl">MC SURVIVAL</div>
+      </div>
+    </div>
+    <div style="margin-top:.75rem;display:flex;align-items:center;gap:.75rem;">
+      <span class="sens-verdict ${vrd}">${vrdLabel}</span>
+      <span style="font-family:var(--mono);font-size:10px;color:var(--muted);">Composite score: ${avg.toFixed(0)}/100</span>
+    </div>`);
+}
+
+function calcScoresFor(days, mc, p) {
+  const totalRev  = days.reduce((s,d)=>s+d.rev,0);
+  const netProfit = totalRev - days.reduce((s,d)=>s+d.cost,0) - p.capital + (days[days.length-1]?.cash||0);
+  const survived  = days.filter(d=>d.cash>=0).length;
+  const finalCust = days[days.length-1]?.customers || 0;
+  const profMargin = totalRev > 0 ? netProfit/totalRev*100 : -100;
+  return {
+    'Viability':  Math.min(100, Math.max(0, 50 + profMargin)),
+    'Risk':       Math.min(100, Math.max(0, mc.survivalP)),
+    'Growth':     Math.min(100, Math.max(0, finalCust * 2)),
+    'Resilience': Math.min(100, Math.max(0, survived / 30 * 100))
+  };
+}
+
+// ─── SCENARIO COMPARISON ─────────────────────────────────────────────────────
+const SCENARIOS = { a: null, b: null };
+let _nextSlot = 'a';
+
+function saveScenario() {
+  if (!S.done) { showToast('Run a simulation first.'); return; }
+  const slot = _nextSlot;
+  SCENARIOS[slot] = {
+    params: { ...S.params },
+    days:   S.days,
+    mc:     S.mc,
+    savedAt: new Date().toLocaleTimeString()
+  };
+  _nextSlot = slot === 'a' ? 'b' : 'a';
+  renderScenarioSlots();
+  const btnEl = $('save-scenario-btn');
+  if (btnEl) btnEl.textContent = `⊞ SAVED TO ${slot.toUpperCase()} · Save ${_nextSlot.toUpperCase()} →`;
+  showToast(`Scenario saved to Slot ${slot.toUpperCase()}. ${SCENARIOS.a && SCENARIOS.b ? 'Both slots filled — go to Compare.' : 'Run another sim to fill Slot ' + _nextSlot.toUpperCase() + '.'}`);
+}
+
+function renderScenarioSlots() {
+  ['a','b'].forEach(slot => {
+    const el = $('slot-' + slot);
+    if (!el) return;
+    const sc = SCENARIOS[slot];
+    if (!sc) {
+      el.className = 'sc-slot';
+      el.innerHTML = `<div class="sc-slot-lbl">SCENARIO ${slot.toUpperCase()}</div>
+        <div class="sc-slot-idea" style="color:var(--muted-2);">No scenario saved yet.</div>
+        <div class="sc-slot-meta">Run a simulation and click "Save Scenario" from the Dashboard.</div>`;
+    } else {
+      el.className = 'sc-slot saved';
+      const totalRev = sc.days.reduce((s,d)=>s+d.rev,0).toFixed(0);
+      el.innerHTML = `<div class="sc-slot-lbl">SCENARIO ${slot.toUpperCase()} · ${sc.savedAt}</div>
+        <div class="sc-slot-idea">${sc.params.idea || '(unnamed)'}</div>
+        <div class="sc-slot-meta">${sc.params.industry} · ${fmt(sc.params.capital)} capital · ${fmt(sc.params.price)}/unit · Revenue: ${fmt(totalRev)}</div>`;
+    }
+  });
+  renderComparisonTable();
+}
+
+function renderComparisonTable() {
+  const wrap = $('cmp-table-wrap');
+  if (!wrap) return;
+  if (!SCENARIOS.a || !SCENARIOS.b) {
+    wrap.innerHTML = `<div class="card" style="text-align:center;padding:2rem;">
+      <div style="font-family:var(--mono);font-size:10.5px;color:var(--muted-2);">Save two scenarios from the Dashboard to see a side-by-side comparison.</div>
+    </div>`;
+    return;
+  }
+  const A = SCENARIOS.a, B = SCENARIOS.b;
+  const m = sc => {
+    const days = sc.days;
+    const rev  = days.reduce((s,d)=>s+d.rev,0);
+    const cost = days.reduce((s,d)=>s+d.cost,0);
+    const net  = rev - cost - sc.params.capital + (days[days.length-1]?.cash||0);
+    const surv = (days.filter(d=>d.cash>=0).length/30*100);
+    const finalC= days[days.length-1]?.customers||0;
+    const be   = days.findIndex(d=>d.cash>sc.params.capital*1.05) + 1;
+    return { rev, net, surv, finalC, be: be > 0 ? be : 31, mcSurv: sc.mc.survivalP };
+  };
+  const mA = m(A), mB = m(B);
+
+  const row = (label, va, vb, format, higherIsBetter=true) => {
+    const fmtV = v => format === 'pct' ? v.toFixed(1)+'%' : format === 'day' ? (v>30?'N/A':v+'d') : fmt(v);
+    const better = higherIsBetter ? (va > vb ? 'better' : va < vb ? 'worse' : 'same') : (va < vb ? 'better' : va > vb ? 'worse' : 'same');
+    const betterB = higherIsBetter ? (vb > va ? 'better' : vb < va ? 'worse' : 'same') : (vb < va ? 'better' : vb > va ? 'worse' : 'same');
+    return `<tr><td class="metric">${label}</td><td class="r ${better}">${fmtV(va)}</td><td class="r ${betterB}">${fmtV(vb)}</td></tr>`;
+  };
+
+  wrap.innerHTML = `<div class="card" style="margin-top:1rem;overflow-x:auto;">
+    <table class="cmp-tbl">
+      <thead><tr>
+        <th>METRIC</th>
+        <th class="r" style="color:var(--cyan)">A · ${A.params.idea?.slice(0,20)||'Scenario A'}</th>
+        <th class="r" style="color:var(--purple)">B · ${B.params.idea?.slice(0,20)||'Scenario B'}</th>
+      </tr></thead>
+      <tbody>
+        ${row('Total Revenue', mA.rev, mB.rev, 'cur')}
+        ${row('Net Profit', mA.net, mB.net, 'cur')}
+        ${row('Survival Rate', mA.surv, mB.surv, 'pct')}
+        ${row('MC Survival', mA.mcSurv, mB.mcSurv, 'pct')}
+        ${row('Final Customers', mA.finalC, mB.finalC, 'cur')}
+        ${row('Break-Even Day', mA.be, mB.be, 'day', false)}
+      </tbody>
+    </table>
+    <div style="font-family:var(--mono);font-size:9px;color:var(--muted-2);margin-top:.75rem;">Green = better · Red = worse · relative to the other scenario</div>
+  </div>`;
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
