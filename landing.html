@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>INFINICUS ENGINE — Simulate Your Business Before You Risk Your Capital</title>
+<meta name="description" content="Run a 30-day statistical simulation of your business idea. Monte Carlo risk analysis, industry benchmarks, and a clear Go/Modify/Stop verdict. Free to start.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;600;700&family=Sora:wght@700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="./infinicus-mark.svg">
+<meta name="theme-color" content="#00e060">
+<style>
+:root {
+  --navy:#060a14; --n800:#0a1020; --n700:#0e1628; --n600:#141e35;
+  --glass:rgba(255,255,255,.04); --glass-2:rgba(255,255,255,.07); --glass-3:rgba(255,255,255,.1);
+  --line:rgba(255,255,255,.09); --line-2:rgba(255,255,255,.14);
+  --cyan:#00e060; --purple:#8b5cf6; --emerald:#10b981; --amber:#f59e0b; --red:#f43f5e;
+  --text:#e9eefb; --muted:#8893ad; --muted-2:#5d6885;
+  --mono:'IBM Plex Mono',monospace; --sans:'Inter',system-ui,sans-serif; --head:'Sora',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  font-family:var(--sans);color:var(--text);-webkit-font-smoothing:antialiased;
+  background:
+    radial-gradient(900px 500px at 10% -10%,rgba(0,224,96,.08),transparent 60%),
+    radial-gradient(800px 600px at 115% 5%,rgba(139,92,246,.1),transparent 55%),
+    radial-gradient(700px 500px at 50% 130%,rgba(16,185,129,.05),transparent 60%),
+    var(--navy);
+  min-height:100vh;overflow-x:hidden;
+}
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.015) 2px,rgba(0,0,0,.015) 4px);pointer-events:none;z-index:0;}
+
+/* ── NAV ── */
+nav{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.9rem 2rem;border-bottom:1px solid var(--line);
+  background:rgba(6,10,20,.92);backdrop-filter:blur(20px);
+  position:sticky;top:0;z-index:100;gap:12px;
+}
+.nav-logo{font-family:var(--head);font-size:18px;font-weight:800;display:flex;align-items:center;gap:9px;text-decoration:none;color:var(--text);}
+.nav-logo .mark{width:28px;height:28px;border-radius:8px;overflow:hidden;background:var(--n700);display:grid;place-items:center;box-shadow:0 0 14px rgba(0,224,96,.35);}
+.nav-logo .mark img{width:26px;height:26px;display:block;}
+.nav-logo .c{color:var(--cyan);}
+.nav-logo-ver{font-family:var(--mono);font-size:9px;color:var(--muted-2);align-self:flex-end;margin-bottom:3px;margin-left:3px;}
+.nav-links{display:flex;gap:4px;align-items:center;}
+.nl{font-family:var(--mono);font-size:9.5px;color:var(--muted);padding:5px 11px;border-radius:6px;text-decoration:none;letter-spacing:.04em;transition:all .15s;border:1px solid transparent;}
+.nl:hover{color:var(--cyan);border-color:rgba(0,224,96,.25);background:rgba(0,224,96,.06);}
+.nl.cta{background:rgba(0,224,96,.1);border-color:rgba(0,224,96,.28);color:var(--cyan);}
+.nl.cta:hover{background:rgba(0,224,96,.16);}
+
+/* ── HERO ── */
+.hero{
+  max-width:900px;margin:0 auto;padding:7rem 2rem 5rem;text-align:center;position:relative;z-index:1;
+}
+.hero-eyebrow{
+  display:inline-flex;align-items:center;gap:.5rem;
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;
+  color:var(--cyan);border:1px solid rgba(0,224,96,.25);
+  background:rgba(0,224,96,.07);padding:5px 14px;border-radius:100px;margin-bottom:1.75rem;
+}
+.hero-eyebrow::before{content:'●';font-size:7px;}
+.hero-h1{font-family:var(--head);font-size:clamp(2.2rem,6vw,4rem);font-weight:800;line-height:1.1;letter-spacing:-.025em;margin-bottom:1.25rem;}
+.hero-h1 span{
+  background:linear-gradient(120deg,var(--cyan),var(--purple));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.hero-sub{font-size:1.05rem;color:var(--muted);line-height:1.7;max-width:600px;margin:0 auto 2.5rem;}
+.hero-cta{display:flex;gap:.85rem;justify-content:center;flex-wrap:wrap;}
+.btn-primary{
+  font-family:var(--mono);font-size:11px;letter-spacing:.06em;
+  background:linear-gradient(135deg,rgba(0,224,96,.15),rgba(139,92,246,.12));
+  border:1px solid rgba(0,224,96,.35);color:var(--cyan);
+  padding:.75rem 1.8rem;border-radius:8px;cursor:pointer;text-decoration:none;
+  transition:all .2s;box-shadow:0 0 20px rgba(0,224,96,.1);
+}
+.btn-primary:hover{background:linear-gradient(135deg,rgba(0,224,96,.22),rgba(139,92,246,.18));box-shadow:0 0 30px rgba(0,224,96,.2);}
+.btn-secondary{
+  font-family:var(--mono);font-size:11px;letter-spacing:.06em;
+  background:var(--glass);border:1px solid var(--line-2);color:var(--muted);
+  padding:.75rem 1.8rem;border-radius:8px;cursor:pointer;text-decoration:none;transition:all .2s;
+}
+.btn-secondary:hover{color:var(--text);border-color:var(--line-2);background:var(--glass-2);}
+
+/* ── STATS STRIP ── */
+.stats{
+  border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+  background:var(--glass);display:flex;justify-content:center;flex-wrap:wrap;gap:0;position:relative;z-index:1;
+}
+.stat{
+  padding:1.5rem 2.5rem;text-align:center;border-right:1px solid var(--line);
+  min-width:150px;
+}
+.stat:last-child{border-right:none;}
+.stat-val{font-family:var(--head);font-size:2rem;font-weight:800;color:var(--cyan);}
+.stat-lbl{font-family:var(--mono);font-size:9.5px;color:var(--muted);letter-spacing:.06em;margin-top:.3rem;}
+
+/* ── SECTION WRAPPER ── */
+.section{max-width:1100px;margin:0 auto;padding:5rem 2rem;position:relative;z-index:1;}
+.section-eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--cyan);margin-bottom:.75rem;}
+.section-h{font-family:var(--head);font-size:clamp(1.6rem,3.5vw,2.5rem);font-weight:800;letter-spacing:-.02em;line-height:1.15;margin-bottom:1rem;}
+.section-sub{color:var(--muted);font-size:.96rem;line-height:1.7;max-width:620px;margin-bottom:3rem;}
+
+/* ── HOW IT WORKS ── */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;}
+@media(max-width:720px){.steps{grid-template-columns:1fr;}}
+.step{
+  background:var(--glass);border:1px solid var(--line);border-radius:12px;
+  padding:1.75rem 1.5rem;position:relative;transition:border-color .2s;
+}
+.step:hover{border-color:rgba(0,224,96,.25);}
+.step-num{
+  font-family:var(--mono);font-size:10px;letter-spacing:.06em;
+  color:var(--cyan);background:rgba(0,224,96,.1);border:1px solid rgba(0,224,96,.25);
+  border-radius:6px;padding:3px 9px;display:inline-block;margin-bottom:1.1rem;
+}
+.step-h{font-family:var(--head);font-size:1.1rem;font-weight:800;margin-bottom:.6rem;}
+.step-p{font-size:.89rem;color:var(--muted);line-height:1.65;}
+
+/* ── FEATURES ── */
+.features{display:grid;grid-template-columns:repeat(2,1fr);gap:1.25rem;}
+@media(max-width:720px){.features{grid-template-columns:1fr;}}
+.feat{
+  background:var(--glass);border:1px solid var(--line);border-radius:12px;
+  padding:1.5rem;display:flex;gap:1rem;align-items:flex-start;transition:border-color .2s;
+}
+.feat:hover{border-color:var(--line-2);}
+.feat-icon{font-size:1.5rem;flex-shrink:0;width:44px;height:44px;display:grid;place-items:center;background:var(--glass-2);border-radius:10px;}
+.feat-h{font-size:.95rem;font-weight:600;margin-bottom:.35rem;}
+.feat-p{font-size:.85rem;color:var(--muted);line-height:1.6;}
+.feat-tag{display:inline-block;font-family:var(--mono);font-size:9px;padding:2px 7px;border-radius:4px;margin-top:.5rem;letter-spacing:.04em;}
+.feat-tag.starter{background:rgba(0,224,96,.1);color:var(--cyan);border:1px solid rgba(0,224,96,.2);}
+.feat-tag.growth{background:rgba(139,92,246,.1);color:var(--purple);border:1px solid rgba(139,92,246,.2);}
+
+/* ── INDUSTRIES ── */
+.ind-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.85rem;}
+@media(max-width:900px){.ind-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:480px){.ind-grid{grid-template-columns:1fr;}}
+.ind-card{
+  background:var(--glass);border:1px solid var(--line);border-radius:10px;
+  padding:1.1rem 1.25rem;transition:border-color .2s;
+}
+.ind-card:hover{border-color:rgba(0,224,96,.22);}
+.ind-icon{font-size:1.4rem;margin-bottom:.5rem;}
+.ind-name{font-size:.88rem;font-weight:600;margin-bottom:.25rem;}
+.ind-detail{font-family:var(--mono);font-size:9px;color:var(--muted-2);line-height:1.6;}
+
+/* ── PRICING ── */
+.pricing-toggle{display:flex;align-items:center;justify-content:center;gap:.85rem;margin-bottom:2.5rem;}
+.ptgl-lbl{font-family:var(--mono);font-size:10.5px;color:var(--muted);cursor:pointer;transition:color .15s;}
+.ptgl-lbl.on{color:var(--text);}
+.ptgl-sw{
+  width:42px;height:22px;background:var(--glass-2);border:1px solid var(--line-2);
+  border-radius:11px;position:relative;cursor:pointer;transition:all .2s;
+}
+.ptgl-sw::after{content:'';position:absolute;top:3px;left:3px;width:14px;height:14px;background:var(--muted);border-radius:50%;transition:all .2s;}
+.ptgl-sw.on{background:rgba(0,224,96,.12);border-color:rgba(0,224,96,.3);}
+.ptgl-sw.on::after{left:23px;background:var(--cyan);}
+.ptgl-save{font-family:var(--mono);font-size:9px;background:rgba(16,185,129,.12);color:var(--emerald);border:1px solid rgba(16,185,129,.25);padding:2px 7px;border-radius:4px;}
+.price-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;}
+@media(max-width:960px){.price-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:520px){.price-grid{grid-template-columns:1fr;}}
+.price-card{
+  background:var(--glass);border:1px solid var(--line);border-radius:14px;
+  padding:1.6rem 1.4rem;transition:all .2s;
+}
+.price-card:hover{border-color:var(--line-2);}
+.price-card.featured{
+  border-color:rgba(0,224,96,.3);background:linear-gradient(160deg,rgba(0,224,96,.06),rgba(139,92,246,.04));
+  position:relative;
+}
+.pc-badge{
+  position:absolute;top:-12px;left:50%;transform:translateX(-50%);
+  font-family:var(--mono);font-size:9px;letter-spacing:.06em;
+  background:linear-gradient(135deg,var(--cyan),var(--purple));
+  color:#000;padding:3px 12px;border-radius:100px;white-space:nowrap;font-weight:700;
+}
+.pc-tier{font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--muted-2);margin-bottom:.6rem;}
+.pc-price{font-family:var(--head);font-size:2.2rem;font-weight:800;line-height:1;margin-bottom:.25rem;}
+.pc-price span{font-size:.9rem;font-weight:400;color:var(--muted);font-family:var(--sans);}
+.pc-price-sub{font-family:var(--mono);font-size:9px;color:var(--muted-2);margin-bottom:1.2rem;min-height:1.1em;}
+.pc-sep{height:1px;background:var(--line);margin:1rem 0;}
+.pc-feature{font-size:.83rem;color:var(--muted);padding:.28rem 0;display:flex;gap:.55rem;align-items:flex-start;}
+.pc-feature::before{content:'✓';color:var(--emerald);flex-shrink:0;font-size:.78rem;}
+.pc-feature.lock::before{content:'🔒';font-size:.7rem;}
+.pc-feature.lock{color:var(--muted-2);}
+.pc-cta{
+  width:100%;margin-top:1.5rem;font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;
+  padding:.7rem;border-radius:8px;cursor:pointer;transition:all .2s;text-decoration:none;display:block;text-align:center;
+}
+.pc-cta.free{background:var(--glass-2);border:1px solid var(--line-2);color:var(--text);}
+.pc-cta.free:hover{background:var(--glass-3);}
+.pc-cta.paid{background:rgba(0,224,96,.1);border:1px solid rgba(0,224,96,.28);color:var(--cyan);}
+.pc-cta.paid:hover{background:rgba(0,224,96,.17);}
+.pc-cta.featured-cta{background:linear-gradient(135deg,rgba(0,224,96,.18),rgba(139,92,246,.14));border-color:rgba(0,224,96,.4);}
+
+/* ── TESTIMONIALS ── */
+.testi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;}
+@media(max-width:800px){.testi-grid{grid-template-columns:1fr;}}
+.testi{
+  background:var(--glass);border:1px solid var(--line);border-radius:12px;padding:1.5rem;
+}
+.testi-q{font-size:.9rem;color:var(--text);line-height:1.7;margin-bottom:1rem;font-style:italic;}
+.testi-q::before{content:'"';font-family:var(--head);font-size:2rem;color:var(--cyan);line-height:0;vertical-align:-.55em;margin-right:.15em;}
+.testi-author{display:flex;align-items:center;gap:.65rem;}
+.testi-av{width:34px;height:34px;border-radius:50%;background:var(--glass-2);border:1px solid var(--line-2);display:grid;place-items:center;font-size:1rem;flex-shrink:0;}
+.testi-name{font-size:.85rem;font-weight:600;}
+.testi-role{font-family:var(--mono);font-size:9px;color:var(--muted-2);}
+
+/* ── FAQ ── */
+.faq-list{max-width:720px;}
+.faq-item{border-bottom:1px solid var(--line);padding:1.25rem 0;}
+.faq-q{font-size:.95rem;font-weight:600;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:1rem;}
+.faq-q::after{content:'›';color:var(--muted);font-size:1.2rem;transform:rotate(90deg);display:inline-block;transition:transform .2s;flex-shrink:0;}
+.faq-item.open .faq-q::after{transform:rotate(-90deg);}
+.faq-a{font-size:.88rem;color:var(--muted);line-height:1.75;max-height:0;overflow:hidden;transition:max-height .3s ease,padding .3s ease;}
+.faq-item.open .faq-a{max-height:200px;padding-top:.75rem;}
+
+/* ── CTA STRIP ── */
+.cta-strip{
+  background:linear-gradient(135deg,rgba(0,224,96,.07),rgba(139,92,246,.06));
+  border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+  text-align:center;padding:5rem 2rem;position:relative;z-index:1;
+}
+.cta-strip-h{font-family:var(--head);font-size:clamp(1.8rem,4vw,3rem);font-weight:800;letter-spacing:-.02em;margin-bottom:1rem;}
+.cta-strip-sub{color:var(--muted);font-size:.96rem;margin-bottom:2.25rem;max-width:500px;margin-left:auto;margin-right:auto;line-height:1.7;}
+.cta-note{font-family:var(--mono);font-size:9.5px;color:var(--muted-2);margin-top:1rem;}
+
+/* ── FOOTER ── */
+footer{
+  border-top:1px solid var(--line);padding:2.5rem 2rem;
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;
+  position:relative;z-index:1;
+}
+.footer-logo{font-family:var(--head);font-size:15px;font-weight:800;display:flex;align-items:center;gap:8px;color:var(--text);}
+.footer-logo .c{color:var(--cyan);}
+.footer-links{display:flex;gap:1.5rem;flex-wrap:wrap;}
+.footer-links a{font-family:var(--mono);font-size:9.5px;color:var(--muted-2);text-decoration:none;transition:color .15s;letter-spacing:.04em;}
+.footer-links a:hover{color:var(--muted);}
+.footer-copy{font-family:var(--mono);font-size:9px;color:var(--muted-2);}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:var(--navy);}
+::-webkit-scrollbar-thumb{background:var(--n600);border-radius:3px;}
+</style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav>
+  <a class="nav-logo" href="./landing.html">
+    <div class="mark"><img src="./infinicus-mark.svg" alt=""></div>
+    INFIN<span class="c">ICUS</span><span class="nav-logo-ver"> ENGINE v3</span>
+  </a>
+  <div class="nav-links">
+    <a class="nl" href="#how-it-works">How It Works</a>
+    <a class="nl" href="#features">Features</a>
+    <a class="nl" href="#pricing">Pricing</a>
+    <a class="nl" href="#faq">FAQ</a>
+    <a class="nl cta" href="./index.html">Launch Engine →</a>
+  </div>
+</nav>
+
+<!-- ── HERO ── -->
+<div class="hero">
+  <div class="hero-eyebrow">Statistical Business Simulation Engine</div>
+  <h1 class="hero-h1">
+    Know if your idea will<br>
+    <span>survive the real world</span><br>
+    before you invest.
+  </h1>
+  <p class="hero-sub">
+    INFINICUS ENGINE runs your business through 30 virtual days with Monte Carlo risk analysis, industry-calibrated cost models, and a data-backed Go / Modify / Stop verdict — in under 60 seconds.
+  </p>
+  <div class="hero-cta">
+    <a class="btn-primary" href="./index.html">Run My Free Simulation →</a>
+    <a class="btn-secondary" href="#how-it-works">See How It Works</a>
+  </div>
+</div>
+
+<!-- ── STATS ── -->
+<div class="stats">
+  <div class="stat"><div class="stat-val">30</div><div class="stat-lbl">SIMULATED DAYS</div></div>
+  <div class="stat"><div class="stat-val">500</div><div class="stat-lbl">MONTE CARLO RUNS</div></div>
+  <div class="stat"><div class="stat-val">10</div><div class="stat-lbl">INDUSTRY PROFILES</div></div>
+  <div class="stat"><div class="stat-val">60s</div><div class="stat-lbl">TO A VERDICT</div></div>
+</div>
+
+<!-- ── HOW IT WORKS ── -->
+<div class="section" id="how-it-works">
+  <div class="section-eyebrow">// HOW IT WORKS</div>
+  <h2 class="section-h">From idea to insight in three steps.</h2>
+  <p class="section-sub">No spreadsheets. No guesswork. Fill in your business parameters, let the engine run, and read your report.</p>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01 — INPUT</div>
+      <h3 class="step-h">Describe your business</h3>
+      <p class="step-p">Enter your idea, starting capital, location, target market, price point, marketing budget, and industry. Takes about 90 seconds.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">02 — SIMULATE</div>
+      <h3 class="step-h">The engine runs 500 scenarios</h3>
+      <p class="step-p">Our Monte Carlo engine simulates customer acquisition, revenue, fixed and variable costs, churn, random shocks, and cash flow — day by day for 30 days.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">03 — VERDICT</div>
+      <h3 class="step-h">Get a clear Go / Modify / Stop</h3>
+      <p class="step-p">The engine scores Viability, Market Fit, Execution, and Financial Health, then delivers a plain-English verdict with specific action items.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ── FEATURES ── -->
+<div class="section" id="features" style="padding-top:0;">
+  <div class="section-eyebrow">// FEATURES</div>
+  <h2 class="section-h">Built for founders who want evidence, not guesses.</h2>
+  <p class="section-sub">Every section is backed by a statistical model — not templates or averages you can game.</p>
+  <div class="features">
+    <div class="feat">
+      <div class="feat-icon">📊</div>
+      <div>
+        <div class="feat-h">30-Day P&amp;L Simulation</div>
+        <p class="feat-p">Daily revenue, cost breakdown (fixed, variable, marketing), and cash flow charted across all 30 days. Includes day-by-day heatmap and event log.</p>
+        <span class="feat-tag starter">FREE</span>
+      </div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">🎲</div>
+      <div>
+        <div class="feat-h">Monte Carlo Risk Analysis</div>
+        <p class="feat-p">500 independent simulations using Box-Muller Gaussian variance on cost rates, acquisition, and churn. Shows P10/P25/P50/P75/P90 outcomes and survival probability.</p>
+        <span class="feat-tag starter">STARTER+</span>
+      </div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">👥</div>
+      <div>
+        <div class="feat-h">Customer Analytics</div>
+        <p class="feat-p">Daily acquisition funnel, cumulative customer growth, cohort retention curves, and LTV calculation calibrated to your industry's transactional frequency.</p>
+        <span class="feat-tag starter">STARTER+</span>
+      </div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">⚡</div>
+      <div>
+        <div class="feat-h">Sensitivity Analysis</div>
+        <p class="feat-p">Live sliders to adjust price and marketing spend. The engine re-simulates in under 200ms and shows delta indicators — green for better, red for worse — against your baseline.</p>
+        <span class="feat-tag growth">GROWTH+</span>
+      </div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">⇔</div>
+      <div>
+        <div class="feat-h">Scenario A/B Comparison</div>
+        <p class="feat-p">Save two different simulations and compare them side-by-side: Revenue, Net Profit, Survival Rate, Final Customers, Break-Even Day.</p>
+        <span class="feat-tag growth">GROWTH+</span>
+      </div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">📄</div>
+      <div>
+        <div class="feat-h">PDF Business Report</div>
+        <p class="feat-p">Export a full business report including executive summary, weekly breakdown, risk profile, and strategic recommendations — ready to share with co-founders or investors.</p>
+        <span class="feat-tag starter">STARTER+</span>
+      </div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">🌍</div>
+      <div>
+        <div class="feat-h">10 Industry Profiles</div>
+        <p class="feat-p">Each industry has calibrated cost ratios, customer acquisition costs, churn rates, and transaction frequencies. Food, Retail, SaaS, Agency, Fitness, Healthcare, EdTech, Marketplace, Events, and FinTech.</p>
+        <span class="feat-tag starter">FREE</span>
+      </div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">📱</div>
+      <div>
+        <div class="feat-h">Mobile-Ready PWA</div>
+        <p class="feat-p">Works on any device — install it as a Progressive Web App on your phone or tablet. Offline-capable after first load. All data stored locally in your browser.</p>
+        <span class="feat-tag starter">FREE</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── INDUSTRIES ── -->
+<div class="section" style="padding-top:0;">
+  <div class="section-eyebrow">// INDUSTRY PROFILES</div>
+  <h2 class="section-h">Calibrated benchmarks for 10 industries.</h2>
+  <p class="section-sub">Generic business models lie. Ours are tuned to real cost structures, acquisition economics, and churn rates for each vertical.</p>
+  <div class="ind-grid">
+    <div class="ind-card"><div class="ind-icon">🍔</div><div class="ind-name">Food &amp; Beverage</div><div class="ind-detail">High transaction frequency · 18% monthly churn · $8 CAC</div></div>
+    <div class="ind-card"><div class="ind-icon">🛒</div><div class="ind-name">Retail / E-commerce</div><div class="ind-detail">Mid volume, high margins · 22% churn · $12 CAC</div></div>
+    <div class="ind-card"><div class="ind-icon">💻</div><div class="ind-name">SaaS / Software</div><div class="ind-detail">Low churn, high CAC · 7% monthly churn · $40 CAC</div></div>
+    <div class="ind-card"><div class="ind-icon">🤝</div><div class="ind-name">Service Business</div><div class="ind-detail">Recurring sessions · 9% churn · $25 CAC</div></div>
+    <div class="ind-card"><div class="ind-icon">🏋️</div><div class="ind-name">Fitness &amp; Wellness</div><div class="ind-detail">Membership model · 11% monthly churn · $20 CAC</div></div>
+    <div class="ind-card"><div class="ind-icon">📣</div><div class="ind-name">Agency / Consulting</div><div class="ind-detail">Retainer model · 5% churn · $80 CAC</div></div>
+    <div class="ind-card"><div class="ind-icon">🏥</div><div class="ind-name">Healthcare &amp; MedTech</div><div class="ind-detail">Regulated, sticky · 6% churn · $55 CAC</div></div>
+    <div class="ind-card"><div class="ind-icon">🎓</div><div class="ind-name">EdTech &amp; Training</div><div class="ind-detail">Cohort-based · 12% churn · $30 CAC</div></div>
+    <div class="ind-card"><div class="ind-icon">🏪</div><div class="ind-name">Marketplace / Platform</div><div class="ind-detail">Network effects · 15% churn · $18 CAC</div></div>
+    <div class="ind-card"><div class="ind-icon">💳</div><div class="ind-name">FinTech</div><div class="ind-detail">High compliance cost · 8% churn · $45 CAC</div></div>
+  </div>
+</div>
+
+<!-- ── PRICING ── -->
+<div class="section" id="pricing" style="padding-top:0;">
+  <div class="section-eyebrow">// PRICING</div>
+  <h2 class="section-h">Start free. Upgrade when the engine proves its value.</h2>
+  <p class="section-sub">One free simulation, no card required. Upgrade to run unlimited scenarios and unlock deeper analytics.</p>
+
+  <div class="pricing-toggle">
+    <span class="ptgl-lbl on" id="ptgl-monthly" onclick="setBillingMode('monthly')">Monthly</span>
+    <div class="ptgl-sw" id="ptgl-sw" onclick="toggleBillingMode()"></div>
+    <span class="ptgl-lbl" id="ptgl-annual" onclick="setBillingMode('annual')">Annual <span class="ptgl-save">Save 20%</span></span>
+  </div>
+
+  <div class="price-grid" id="price-grid">
+    <!-- rendered by JS -->
+  </div>
+</div>
+
+<!-- ── TESTIMONIALS ── -->
+<div class="section" style="padding-top:0;">
+  <div class="section-eyebrow">// WHAT FOUNDERS SAY</div>
+  <h2 class="section-h">Built for builders in emerging markets.</h2>
+  <p class="section-sub">Designed for founders in Africa, the Middle East, and globally who need rigorous validation tools without enterprise price tags.</p>
+  <div class="testi-grid">
+    <div class="testi">
+      <p class="testi-q">The Monte Carlo results showed my food truck would run out of cash by day 19 at my original price. I raised it by 30% — the simulation turned green.</p>
+      <div class="testi-author"><div class="testi-av">👩🏽</div><div><div class="testi-name">Amara O.</div><div class="testi-role">STREET FOOD FOUNDER · NAIROBI</div></div></div>
+    </div>
+    <div class="testi">
+      <p class="testi-q">I tested three different marketing budgets in the sensitivity panel before committing. Saved me from over-spending by at least $1,500 in month one.</p>
+      <div class="testi-author"><div class="testi-av">👨🏿</div><div><div class="testi-name">Kwame A.</div><div class="testi-role">SAAS FOUNDER · ACCRA</div></div></div>
+    </div>
+    <div class="testi">
+      <p class="testi-q">I showed the simulation PDF to two investors. One of them said it was the most honest financial projection they'd seen from a pre-revenue founder.</p>
+      <div class="testi-author"><div class="testi-av">👩🏾</div><div><div class="testi-name">Fatimah R.</div><div class="testi-role">AGENCY FOUNDER · DUBAI</div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── FAQ ── -->
+<div class="section" id="faq" style="padding-top:0;">
+  <div class="section-eyebrow">// FAQ</div>
+  <h2 class="section-h">Common questions.</h2>
+  <div class="faq-list">
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">Is this a real financial model or a toy?</div>
+      <div class="faq-a">It's a statistically rigorous simulation — not a toy, but also not a DCF or audited forecast. The Monte Carlo engine runs 500 independent scenarios with Gaussian variance on cost rates, acquisition, and churn. It's designed to surface risk and validate assumptions, not to replace an accountant.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">Where is my data stored?</div>
+      <div class="faq-a">Everything is stored locally in your browser's localStorage — no server, no database. Your name, email, business parameters, and simulation results never leave your device. We collect nothing. Future versions with cloud sync will be opt-in.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">How accurate are the industry profiles?</div>
+      <div class="faq-a">The cost ratios, CAC, and churn rates are calibrated from published benchmarks across African and Middle Eastern markets. They are approximations — your actual numbers will differ based on execution, market conditions, and team quality. The engine is most valuable for directional analysis: "is this structure viable at all?"</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">Can I export the results?</div>
+      <div class="faq-a">Yes. The Report & Plan tab includes a full PDF export with executive summary, weekly breakdown, risk analysis, customer metrics, and strategic recommendations. Available on the Starter plan and above.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">Do I need to know finance or statistics to use it?</div>
+      <div class="faq-a">No. You input plain business numbers: how much capital you have, what you charge per sale, how much you'll spend on marketing, and how many people are on your team. The engine handles all the modelling. The verdict is written in plain English.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">What is the free plan limit?</div>
+      <div class="faq-a">The free plan gives you one full simulation including the Dashboard, Economy, and Verdict tabs. To run additional simulations, access Customer Analytics, Risk Analysis, Sensitivity Sliders, or the PDF Report, upgrade to Starter ($19/month) or above.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── CTA STRIP ── -->
+<div class="cta-strip">
+  <h2 class="cta-strip-h">Your next step costs nothing.</h2>
+  <p class="cta-strip-sub">Run your first simulation free. No credit card, no install, no spreadsheet.</p>
+  <a class="btn-primary" href="./index.html" style="display:inline-block;">Run My Free Simulation →</a>
+  <p class="cta-note">Free · Works on any device · Data stays in your browser</p>
+</div>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div class="footer-logo">
+    INFIN<span class="c">ICUS</span> ENGINE
+    <span style="font-family:var(--mono);font-size:9px;color:var(--muted-2);font-weight:300;margin-left:4px;">v3</span>
+  </div>
+  <div class="footer-links">
+    <a href="./index.html">Launch App</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#faq">FAQ</a>
+    <a href="#features">Features</a>
+  </div>
+  <div class="footer-copy">© 2025 INFINICUS. All simulations are for informational purposes only.</div>
+</footer>
+
+<script>
+let _billingMode = 'monthly';
+
+const PRICES = {
+  monthly: { starter:19, growth:49, professional:99 },
+  annual:  { starter:15, growth:39, professional:79 }
+};
+
+function toggleBillingMode() { setBillingMode(_billingMode === 'monthly' ? 'annual' : 'monthly'); }
+
+function setBillingMode(mode) {
+  _billingMode = mode;
+  const sw = document.getElementById('ptgl-sw');
+  const ml = document.getElementById('ptgl-monthly');
+  const al = document.getElementById('ptgl-annual');
+  sw.className = 'ptgl-sw' + (mode === 'annual' ? ' on' : '');
+  ml.className = 'ptgl-lbl' + (mode === 'monthly' ? ' on' : '');
+  al.className = 'ptgl-lbl' + (mode === 'annual' ? ' on' : '');
+  renderPriceGrid();
+}
+
+function renderPriceGrid() {
+  const m = _billingMode;
+  const p = PRICES[m];
+  const annualNote = m === 'annual' ? `<div class="pc-price-sub">Billed $${Math.round(p.starter*12)}/yr · Save $${(19-p.starter)*12}</div>` : '<div class="pc-price-sub"> </div>';
+
+  document.getElementById('price-grid').innerHTML = `
+    <div class="price-card">
+      <div class="pc-tier">FREE</div>
+      <div class="pc-price">$0</div>
+      <div class="pc-price-sub">Forever free</div>
+      <div class="pc-sep"></div>
+      <div class="pc-feature">1 full simulation</div>
+      <div class="pc-feature">Dashboard + Economy + Verdict</div>
+      <div class="pc-feature">Quick-fill templates</div>
+      <div class="pc-feature lock">Customer Analytics</div>
+      <div class="pc-feature lock">Monte Carlo Risk</div>
+      <div class="pc-feature lock">Sensitivity & Compare</div>
+      <a class="pc-cta free" href="./index.html">Start Free →</a>
+    </div>
+    <div class="price-card">
+      <div class="pc-tier">STARTER</div>
+      <div class="pc-price">$${p.starter}<span>/mo</span></div>
+      ${m==='annual'?`<div class="pc-price-sub">Billed $${p.starter*12}/yr</div>`:'<div class="pc-price-sub"> </div>'}
+      <div class="pc-sep"></div>
+      <div class="pc-feature">Unlimited simulations</div>
+      <div class="pc-feature">Customer Analytics</div>
+      <div class="pc-feature">Monte Carlo Risk (500 runs)</div>
+      <div class="pc-feature">Event Log</div>
+      <div class="pc-feature">PDF Report & Export</div>
+      <div class="pc-feature lock">Sensitivity Analysis</div>
+      <div class="pc-feature lock">Scenario Comparison</div>
+      <a class="pc-cta paid" href="./index.html">Get Starter →</a>
+    </div>
+    <div class="price-card featured">
+      <div class="pc-badge">MOST POPULAR</div>
+      <div class="pc-tier">GROWTH</div>
+      <div class="pc-price">$${p.growth}<span>/mo</span></div>
+      ${m==='annual'?`<div class="pc-price-sub">Billed $${p.growth*12}/yr</div>`:'<div class="pc-price-sub"> </div>'}
+      <div class="pc-sep"></div>
+      <div class="pc-feature">Everything in Starter</div>
+      <div class="pc-feature">Sensitivity Analysis (live sliders)</div>
+      <div class="pc-feature">Scenario A/B Comparison</div>
+      <div class="pc-feature">Priority email support</div>
+      <div class="pc-feature">Early access to new industries</div>
+      <a class="pc-cta paid featured-cta" href="./index.html">Get Growth →</a>
+    </div>
+    <div class="price-card">
+      <div class="pc-tier">PROFESSIONAL</div>
+      <div class="pc-price">$${p.professional}<span>/mo</span></div>
+      ${m==='annual'?`<div class="pc-price-sub">Billed $${p.professional*12}/yr</div>`:'<div class="pc-price-sub"> </div>'}
+      <div class="pc-sep"></div>
+      <div class="pc-feature">Everything in Growth</div>
+      <div class="pc-feature">Multi-team access (up to 5 seats)</div>
+      <div class="pc-feature">White-label PDF reports</div>
+      <div class="pc-feature">Dedicated onboarding call</div>
+      <div class="pc-feature">API access (coming soon)</div>
+      <a class="pc-cta paid" href="./index.html">Get Pro →</a>
+    </div>
+  `;
+}
+
+function toggleFaq(el) {
+  const item = el.parentElement;
+  item.classList.toggle('open');
+}
+
+// Init
+renderPriceGrid();
+</script>
+</body>
+</html>
