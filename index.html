@@ -1874,7 +1874,7 @@ function renderSensResult(days, mc, p, priceP, mktP) {
         <div class="sens-kpi-lbl">SURVIVAL RATE</div>
       </div>
       <div class="sens-kpi">
-        <div class="sens-kpi-val" style="color:var(--amber)">${mc.survivalP.toFixed(0)}%</div>
+        <div class="sens-kpi-val" style="color:var(--amber)">${(mc.survivalRate*100).toFixed(0)}%</div>
         <div class="sens-kpi-lbl">MC SURVIVAL</div>
       </div>
     </div>
@@ -1892,7 +1892,7 @@ function calcScoresFor(days, mc, p) {
   const profMargin = totalRev > 0 ? netProfit/totalRev*100 : -100;
   return {
     'Viability':  Math.min(100, Math.max(0, 50 + profMargin)),
-    'Risk':       Math.min(100, Math.max(0, mc.survivalP)),
+    'Risk':       Math.min(100, Math.max(0, mc.survivalRate * 100)),
     'Growth':     Math.min(100, Math.max(0, finalCust * 2)),
     'Resilience': Math.min(100, Math.max(0, survived / 30 * 100))
   };
@@ -1957,7 +1957,7 @@ function renderComparisonTable() {
     const surv = (days.filter(d=>d.cash>=0).length/30*100);
     const finalC= days[days.length-1]?.customers||0;
     const be   = days.findIndex(d=>d.cash>sc.params.capital*1.05) + 1;
-    return { rev, net, surv, finalC, be: be > 0 ? be : 31, mcSurv: sc.mc.survivalP };
+    return { rev, net, surv, finalC, be: be > 0 ? be : 31, mcSurv: sc.mc.survivalRate * 100 };
   };
   const mA = m(A), mB = m(B);
 
