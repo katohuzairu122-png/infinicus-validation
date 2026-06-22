@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>INFINICUS ENGINE v3 — Business Reality Simulator</title>
-<meta name="description" content="Simulate your business idea across 30 virtual days with a statistical engine, Monte Carlo risk analysis, and a Go/Modify/Stop verdict. No signup required.">
+<meta name="description" content="Simulate your business idea across 30 virtual days with a statistical engine, Monte Carlo risk analysis, and a Go/Modify/Stop verdict.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;600;700&family=Sora:wght@700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -249,6 +249,67 @@ select option{background:var(--navy-800);}
   .phase{border-left:2px solid #555!important;}
   .phase-t,.phase-b,.rp-h,.rp-p,.rp-num{color:#000!important;}
 }
+
+/* ── MODALS ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(4,6,13,.88);backdrop-filter:blur(8px);z-index:500;display:flex;align-items:center;justify-content:center;padding:1rem;}
+.modal-box{background:var(--navy-700);border:1px solid var(--line-2);border-radius:16px;padding:2rem;width:100%;max-width:420px;position:relative;animation:fadeUp .2s ease;}
+.modal-box.modal-wide{max-width:860px;}
+.modal-close{position:absolute;top:1rem;right:1rem;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;line-height:1;padding:2px 6px;border-radius:4px;}
+.modal-close:hover{color:var(--text);background:var(--glass-2);}
+.modal-logo{display:flex;align-items:center;gap:8px;margin-bottom:1rem;}
+.modal-logo img{width:28px;height:28px;border-radius:8px;}
+.modal-logo-name{font-family:var(--head);font-size:14px;font-weight:800;}
+.modal-logo-name .c{color:var(--cyan);}
+.modal-logo-ver{font-family:var(--mono);font-size:8px;color:var(--muted-2);margin-left:2px;}
+.modal-h{font-family:var(--head);font-size:21px;font-weight:800;margin-bottom:.35rem;}
+.modal-sub{font-size:13px;color:var(--muted);margin-bottom:1.5rem;line-height:1.55;}
+.modal-field{margin-bottom:.9rem;}
+.modal-field label{display:block;font-family:var(--mono);font-size:9.5px;color:var(--muted);letter-spacing:.08em;margin-bottom:.35rem;}
+.modal-field input{width:100%;background:var(--navy-800);border:1px solid var(--line-2);border-radius:8px;padding:10px 12px;color:var(--text);font-family:var(--sans);font-size:13.5px;outline:none;transition:border-color .15s;}
+.modal-field input:focus{border-color:rgba(34,211,238,.45);}
+.modal-err{font-family:var(--mono);font-size:10.5px;color:var(--red);margin-bottom:.75rem;display:none;padding:.4rem .6rem;background:rgba(244,63,94,.08);border-radius:6px;border:1px solid rgba(244,63,94,.2);}
+.modal-fine{font-family:var(--mono);font-size:9px;color:var(--muted-2);text-align:center;margin-top:.75rem;}
+
+/* PLAN GRID */
+.plan-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:1.25rem;}
+@media(max-width:680px){.plan-grid{grid-template-columns:1fr;}}
+.plan-card{background:var(--navy-800);border:1px solid var(--line-2);border-radius:12px;padding:1.5rem;cursor:pointer;transition:border-color .2s,transform .15s;}
+.plan-card:hover{border-color:rgba(34,211,238,.3);transform:translateY(-2px);}
+.plan-card.featured{border-color:rgba(139,92,246,.35);background:rgba(139,92,246,.06);}
+.plan-badge-tag{font-family:var(--mono);font-size:8.5px;color:var(--purple);letter-spacing:.1em;margin-bottom:.45rem;min-height:14px;}
+.plan-nm{font-family:var(--head);font-size:19px;font-weight:800;margin-bottom:.2rem;}
+.plan-price{font-family:var(--mono);font-size:27px;font-weight:700;color:var(--cyan);margin-bottom:.9rem;line-height:1;}
+.plan-price span{font-size:11px;color:var(--muted);font-weight:400;}
+.plan-feats{list-style:none;font-family:var(--mono);font-size:10.5px;display:flex;flex-direction:column;gap:.38rem;margin-bottom:1.2rem;min-height:110px;}
+.plan-feats li.yes{color:var(--text);}
+.plan-feats li.no{color:var(--muted-2);text-decoration:line-through;}
+.btn-plan{width:100%;padding:9px;border-radius:7px;font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;cursor:pointer;border:1px solid var(--line-2);background:var(--glass);color:var(--muted);transition:all .2s;}
+.btn-plan.featured{background:rgba(139,92,246,.12);border-color:rgba(139,92,246,.35);color:var(--purple);}
+.btn-plan:hover{border-color:rgba(34,211,238,.3);color:var(--cyan);background:rgba(34,211,238,.05);}
+.btn-plan.featured:hover{background:rgba(139,92,246,.22);color:#a78bfa;}
+
+/* PAYMENT MODAL */
+.pay-row{display:grid;grid-template-columns:1fr 1fr;gap:.9rem;}
+.pay-tier-badge{font-family:var(--mono);font-size:9px;letter-spacing:.07em;padding:4px 10px;border-radius:5px;display:inline-block;margin-bottom:.65rem;border:1px solid;}
+.pay-tier-badge.pro{background:rgba(139,92,246,.1);color:var(--purple);border-color:rgba(139,92,246,.25);}
+.pay-tier-badge.growth{background:rgba(16,185,129,.08);color:var(--emerald);border-color:rgba(16,185,129,.25);}
+.pay-secure{font-family:var(--mono);font-size:9.5px;color:var(--muted-2);margin-bottom:1.25rem;display:flex;align-items:center;gap:5px;}
+.pay-demo-note{font-family:var(--mono);font-size:9px;color:var(--amber);text-align:center;margin:.65rem 0 .25rem;padding:.4rem;background:rgba(245,158,11,.06);border-radius:6px;border:1px solid rgba(245,158,11,.12);}
+.btn-skip-pay{width:100%;background:none;border:none;color:var(--muted-2);font-family:var(--mono);font-size:9.5px;cursor:pointer;padding:.5rem;margin-top:.25rem;letter-spacing:.04em;}
+.btn-skip-pay:hover{color:var(--muted);}
+
+/* USER BADGE (header) */
+.user-badge{font-family:var(--mono);font-size:9px;padding:4px 10px;border-radius:5px;letter-spacing:.06em;display:none;align-items:center;gap:5px;cursor:pointer;white-space:nowrap;border:1px solid;}
+.user-badge.free{background:rgba(93,104,133,.1);color:var(--muted);border-color:var(--line);}
+.user-badge.pro{background:rgba(139,92,246,.1);color:var(--purple);border-color:rgba(139,92,246,.2);}
+.user-badge.growth{background:rgba(16,185,129,.08);color:var(--emerald);border-color:rgba(16,185,129,.2);}
+
+/* LOCK OVERLAY */
+.section{position:relative;}
+.lock-overlay{position:absolute;inset:0;background:rgba(6,10,20,.82);backdrop-filter:blur(5px);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.7rem;z-index:20;min-height:240px;}
+.lock-icon{font-size:30px;}
+.lock-h{font-family:var(--head);font-size:16px;font-weight:800;}
+.lock-p{font-family:var(--mono);font-size:10px;color:var(--muted);text-align:center;max-width:230px;line-height:1.6;}
 </style>
 </head>
 <body>
@@ -261,16 +322,17 @@ select option{background:var(--navy-800);}
   </div>
   <button class="ham-btn" id="ham-btn" onclick="toggleNav()" aria-label="Menu">☰</button>
   <nav class="nav" id="main-nav">
-    <button class="nb active" onclick="nav('input')">INPUT</button>
-    <button class="nb" onclick="nav('dashboard')">DASHBOARD</button>
-    <button class="nb" onclick="nav('economy')">ECONOMY</button>
-    <button class="nb" onclick="nav('customers')">CUSTOMERS</button>
-    <button class="nb" onclick="nav('risk')">RISK / MONTE CARLO</button>
-    <button class="nb" onclick="nav('log')">EVENT LOG</button>
-    <button class="nb" onclick="nav('verdict')">VERDICT</button>
-    <button class="nb" onclick="nav('report')">REPORT &amp; PLAN</button>
+    <button class="nb active" data-section="input"     onclick="nav('input')">INPUT</button>
+    <button class="nb"        data-section="dashboard" onclick="nav('dashboard')">DASHBOARD</button>
+    <button class="nb"        data-section="economy"   onclick="nav('economy')">ECONOMY</button>
+    <button class="nb"        data-section="customers" onclick="nav('customers')">CUSTOMERS 🔒</button>
+    <button class="nb"        data-section="risk"      onclick="nav('risk')">RISK / MONTE CARLO 🔒</button>
+    <button class="nb"        data-section="log"       onclick="nav('log')">EVENT LOG 🔒</button>
+    <button class="nb"        data-section="verdict"   onclick="nav('verdict')">VERDICT</button>
+    <button class="nb"        data-section="report"    onclick="nav('report')">REPORT &amp; PLAN 🔒</button>
   </nav>
   <div class="hdr-right">
+    <span id="user-badge" class="user-badge free" onclick="openPlanModal()" title="View or change your plan"></span>
     <select id="cur-select" class="cur-select" onchange="setCurrency(this.value)" title="Display currency">
       <option value="USD">$ USD</option>
       <option value="EUR">€ EUR</option>
@@ -297,7 +359,7 @@ select option{background:var(--navy-800);}
 <section class="section active" id="sec-input">
   <div class="pg-title"><span class="c">SIMULATE</span> YOUR<br>BUSINESS REALITY</div>
   <div class="pg-sub">// STATISTICAL ENGINE · VIRTUAL ECONOMY · AGENT-BASED MODELING · MONTE CARLO</div>
-  <button class="btn-demo" onclick="instantDemo()">▶ TRY INSTANT DEMO — NO SIGNUP, RUNS OFFLINE</button>
+  <button class="btn-demo" onclick="instantDemo()">▶ TRY INSTANT DEMO — REGISTER FREE IN SECONDS</button>
   <div class="pills">
     <button class="pill" onclick="qf('food')">🚚 Food Truck</button>
     <button class="pill" onclick="qf('drop')">📦 Dropshipping</button>
@@ -503,6 +565,73 @@ select option{background:var(--navy-800);}
     <div class="empty-state"><p>Run a simulation to generate a report.</p></div>
   </div>
 </section>
+
+<!-- ══════════════════════════ REGISTRATION MODAL ══════════════════════════ -->
+<div class="modal-overlay" id="reg-modal" style="display:none" role="dialog" aria-modal="true" aria-labelledby="reg-modal-h">
+  <div class="modal-box">
+    <div class="modal-logo">
+      <img src="./infinicus-mark.svg" alt="">
+      <span class="modal-logo-name">INFIN<span class="c">ICUS</span><span class="modal-logo-ver"> ENGINE v3</span></span>
+    </div>
+    <div class="modal-h" id="reg-modal-h">Get Your Free Report</div>
+    <div class="modal-sub">Enter your details to receive your personalised 30-day business simulation analysis.</div>
+    <div class="modal-field">
+      <label for="reg-name">FULL NAME</label>
+      <input id="reg-name" type="text" placeholder="Jane Smith" autocomplete="name">
+    </div>
+    <div class="modal-field">
+      <label for="reg-email">EMAIL ADDRESS</label>
+      <input id="reg-email" type="email" placeholder="jane@example.com" autocomplete="email" onkeydown="if(event.key==='Enter')submitReg()">
+    </div>
+    <div class="modal-err" id="reg-err"></div>
+    <button class="btn-launch" style="width:100%;margin-top:.25rem" onclick="submitReg()">Get My Free Report →</button>
+    <p class="modal-fine">No spam. Your data is stored locally in your browser only.</p>
+  </div>
+</div>
+
+<!-- ══════════════════════════ PLAN SELECTION MODAL ═══════════════════════ -->
+<div class="modal-overlay" id="plan-modal" style="display:none" role="dialog" aria-modal="true" aria-labelledby="plan-modal-h">
+  <div class="modal-box modal-wide">
+    <button class="modal-close" onclick="closePlanModal()" aria-label="Close">×</button>
+    <div class="modal-h" id="plan-modal-h">Choose Your Plan</div>
+    <div class="modal-sub">Start free with one simulation. Upgrade any time for unlimited access, deep analytics, and export tools.</div>
+    <div class="plan-grid" id="plan-grid">
+      <!-- injected by renderPlanGrid() -->
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════ PAYMENT MODAL ══════════════════════════════ -->
+<div class="modal-overlay" id="pay-modal" style="display:none" role="dialog" aria-modal="true" aria-labelledby="pay-modal-h">
+  <div class="modal-box" style="max-width:420px">
+    <button class="modal-close" onclick="closePayModal()" aria-label="Close">×</button>
+    <div id="pay-tier-badge" class="pay-tier-badge pro">PRO — $29 / month</div>
+    <div class="modal-h" id="pay-modal-h">Upgrade to Pro</div>
+    <div class="pay-secure">🔒 Secure checkout · powered by Stripe</div>
+    <div class="modal-field">
+      <label for="pay-card">CARD NUMBER</label>
+      <input id="pay-card" type="text" placeholder="4242 4242 4242 4242" maxlength="19" oninput="fmtCard(this)" autocomplete="cc-number">
+    </div>
+    <div class="pay-row">
+      <div class="modal-field">
+        <label for="pay-exp">EXPIRY</label>
+        <input id="pay-exp" type="text" placeholder="MM / YY" maxlength="7" autocomplete="cc-exp">
+      </div>
+      <div class="modal-field">
+        <label for="pay-cvc">CVC</label>
+        <input id="pay-cvc" type="text" placeholder="•••" maxlength="3" autocomplete="cc-csc">
+      </div>
+    </div>
+    <div class="modal-field">
+      <label for="pay-name">NAME ON CARD</label>
+      <input id="pay-name" type="text" placeholder="Jane Smith" autocomplete="cc-name">
+    </div>
+    <div class="pay-demo-note">⚠ Demo mode — no real charges are processed</div>
+    <div class="modal-err" id="pay-err"></div>
+    <button class="btn-launch" id="pay-submit-btn" style="width:100%;margin-top:.25rem" onclick="processPay()">Subscribe Now →</button>
+    <button class="btn-skip-pay" onclick="selectPlan('free')">Continue with free tier instead</button>
+  </div>
+</div>
 
 <div class="toast" id="toast"></div>
 <div class="disclaimer-bar">
@@ -715,6 +844,11 @@ function calcScores() {
 
 // ─── NAVIGATION ───────────────────────────────────────────────────────────────
 function nav(id) {
+  // Gate: locked sections open plan modal for free/unregistered users
+  if (PRO_SECTIONS && PRO_SECTIONS.includes(id) && !isPro()) {
+    openPlanModal();
+    return;
+  }
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.nb').forEach(b => b.classList.remove('active'));
   $('sec-' + id).classList.add('active');
@@ -727,6 +861,19 @@ function nav(id) {
 
 // ─── START SIMULATION ─────────────────────────────────────────────────────────
 function startSim() {
+  // Gate 1: require registration
+  if (!U || U.plan === 'none') {
+    _pendingSimAfterReg = true;
+    if (!U) { openRegModal(); } else { openPlanModal(); }
+    return;
+  }
+  // Gate 2: free tier sim limit
+  if (U.plan === 'free' && (U.simCount || 0) >= 1) {
+    showToast('Free plan allows 1 simulation. Upgrade for unlimited.');
+    openPlanModal();
+    return;
+  }
+
   const idea    = $('i-idea').value.trim();
   const capital = parseFloat($('i-cap').value) || 0;
   const price   = parseFloat($('i-price').value) || 0;
@@ -796,6 +943,7 @@ function finalize() {
   $('dash-loading').style.display = 'none';
   $('dash-content').style.display = 'block';
 
+  if (U) { U.simCount = (U.simCount || 0) + 1; saveUser(); }
   saveToStorage();
   renderAll();
 }
@@ -1273,6 +1421,227 @@ function updatePriceLabel(ind) {
   if (lbl) lbl.innerHTML = prof.priceLabel + ' (<span class="cur-code">' + curCode + '</span>)';
 }
 
+// ─── USER / PLAN STATE ────────────────────────────────────────────────────────
+let U = null;
+let _pendingSimAfterReg = false;
+let _payingPlan = null;
+
+const PRO_SECTIONS = ['customers','risk','log','report'];
+
+function loadUser() {
+  try {
+    const raw = localStorage.getItem('infinicus_user');
+    if (raw) { U = JSON.parse(raw); return true; }
+  } catch(e) {}
+  return false;
+}
+
+function saveUser() {
+  try { localStorage.setItem('infinicus_user', JSON.stringify(U)); } catch(e) {}
+}
+
+function isPro() { return U && (U.plan === 'pro' || U.plan === 'growth'); }
+
+function showUserBadge() {
+  const el = $('user-badge');
+  if (!el || !U || U.plan === 'none') return;
+  el.className = 'user-badge ' + U.plan;
+  const planLabel = U.plan.toUpperCase();
+  const firstName = U.name.split(' ')[0];
+  el.innerHTML = planLabel + ' · ' + firstName;
+  el.style.display = 'flex';
+}
+
+// ─── NAV LOCK MANAGEMENT ─────────────────────────────────────────────────────
+function updateNavLocks() {
+  const locked = !isPro();
+  PRO_SECTIONS.forEach(id => {
+    const btn = document.querySelector(`.nb[data-section="${id}"]`);
+    if (!btn) return;
+    if (locked) {
+      if (!btn.textContent.includes('🔒')) btn.textContent += ' 🔒';
+    } else {
+      btn.textContent = btn.textContent.replace(' 🔒','');
+    }
+  });
+  applyLockOverlays();
+}
+
+function applyLockOverlays() {
+  PRO_SECTIONS.forEach(id => {
+    const sec = $('sec-' + id);
+    if (!sec) return;
+    const existing = sec.querySelector('.lock-overlay');
+    if (!isPro()) {
+      if (!existing) {
+        const ov = document.createElement('div');
+        ov.className = 'lock-overlay';
+        const names = { customers:'Customer Analytics', risk:'Risk / Monte Carlo', log:'Event Log', report:'Report & Plan' };
+        ov.innerHTML = `
+          <div class="lock-icon">🔒</div>
+          <div class="lock-h">${names[id]} — Pro Feature</div>
+          <div class="lock-p">Full analytics, Monte Carlo risk data, and the complete report are available on Pro and Growth plans.</div>
+          <button class="btn-launch" style="padding:10px 22px;font-size:11px;margin-top:.25rem" onclick="openPlanModal()">View Plans →</button>`;
+        sec.appendChild(ov);
+      }
+    } else {
+      if (existing) existing.remove();
+    }
+  });
+}
+
+// ─── REGISTRATION ─────────────────────────────────────────────────────────────
+function openRegModal() {
+  $('reg-modal').style.display = 'flex';
+  setTimeout(() => { try { $('reg-name').focus(); } catch(e) {} }, 120);
+}
+
+function submitReg() {
+  const name  = $('reg-name').value.trim();
+  const email = $('reg-email').value.trim();
+  const err   = $('reg-err');
+  err.style.display = 'none';
+  if (!name)  { err.textContent = 'Please enter your name.'; err.style.display = 'block'; return; }
+  if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+    err.textContent = 'Enter a valid email address.'; err.style.display = 'block'; return;
+  }
+  U = { name, email, plan: 'none', registeredAt: new Date().toISOString(), simCount: 0 };
+  saveUser();
+  $('reg-modal').style.display = 'none';
+  renderPlanGrid();
+  $('plan-modal').style.display = 'flex';
+}
+
+// ─── PLAN SELECTION ───────────────────────────────────────────────────────────
+function openPlanModal() {
+  if (!U) { openRegModal(); return; }
+  renderPlanGrid();
+  $('plan-modal').style.display = 'flex';
+}
+
+function closePlanModal() {
+  $('plan-modal').style.display = 'none';
+  _pendingSimAfterReg = false;
+}
+
+function renderPlanGrid() {
+  $('plan-grid').innerHTML = `
+    <div class="plan-card" onclick="selectPlan('free')">
+      <div class="plan-badge-tag"></div>
+      <div class="plan-nm">FREE</div>
+      <div class="plan-price">$0<span> / forever</span></div>
+      <ul class="plan-feats">
+        <li class="yes">1 free simulation</li>
+        <li class="yes">Dashboard KPIs</li>
+        <li class="yes">Economy chart</li>
+        <li class="yes">GO / MODIFY / STOP verdict</li>
+        <li class="no">Customer analytics</li>
+        <li class="no">Monte Carlo risk analysis</li>
+        <li class="no">Event log &amp; full report</li>
+      </ul>
+      <button class="btn-plan">${U && U.plan === 'free' ? '✓ Current Plan' : 'Start Free'}</button>
+    </div>
+    <div class="plan-card featured" onclick="selectPlan('pro')">
+      <div class="plan-badge-tag">★ MOST POPULAR</div>
+      <div class="plan-nm" style="color:var(--purple)">PRO</div>
+      <div class="plan-price" style="color:var(--purple)">$29<span> / month</span></div>
+      <ul class="plan-feats">
+        <li class="yes">Unlimited simulations</li>
+        <li class="yes">Full 8-section report</li>
+        <li class="yes">Monte Carlo / Risk analysis</li>
+        <li class="yes">Customer retention analysis</li>
+        <li class="yes">Event log</li>
+        <li class="yes">PDF export &amp; share link</li>
+      </ul>
+      <button class="btn-plan featured">${U && U.plan === 'pro' ? '✓ Current Plan' : 'Get Pro →'}</button>
+    </div>
+    <div class="plan-card" onclick="selectPlan('growth')">
+      <div class="plan-badge-tag"></div>
+      <div class="plan-nm" style="color:var(--emerald)">GROWTH</div>
+      <div class="plan-price" style="color:var(--emerald)">$79<span> / month</span></div>
+      <ul class="plan-feats">
+        <li class="yes">Everything in Pro</li>
+        <li class="yes">Scenario comparison</li>
+        <li class="yes">Sensitivity sliders</li>
+        <li class="yes">Investor-ready export</li>
+        <li class="yes">Priority support</li>
+        <li class="yes">API access</li>
+      </ul>
+      <button class="btn-plan">${U && U.plan === 'growth' ? '✓ Current Plan' : 'Get Growth →'}</button>
+    </div>`;
+}
+
+function selectPlan(plan) {
+  if (plan === 'free') {
+    if (U) { U.plan = 'free'; saveUser(); }
+    $('plan-modal').style.display = 'none';
+    showUserBadge();
+    updateNavLocks();
+    if (_pendingSimAfterReg) {
+      _pendingSimAfterReg = false;
+      // Check sim count gate for free tier
+      if ((U.simCount || 0) >= 1) {
+        showToast('Free plan allows 1 simulation. Upgrade for unlimited.');
+        return;
+      }
+      startSim();
+    }
+  } else {
+    $('plan-modal').style.display = 'none';
+    openPayModal(plan);
+  }
+}
+
+// ─── PAYMENT ──────────────────────────────────────────────────────────────────
+function openPayModal(plan) {
+  _payingPlan = plan;
+  const badge = $('pay-tier-badge');
+  badge.textContent = plan === 'pro' ? 'PRO — $29 / month' : 'GROWTH — $79 / month';
+  badge.className = 'pay-tier-badge ' + plan;
+  $('pay-modal-h').textContent = plan === 'pro' ? 'Upgrade to Pro' : 'Upgrade to Growth';
+  if (U) $('pay-name').value = U.name;
+  $('pay-card').value = ''; $('pay-exp').value = ''; $('pay-cvc').value = '';
+  $('pay-err').style.display = 'none';
+  const btn = $('pay-submit-btn');
+  btn.disabled = false; btn.textContent = 'Subscribe Now →';
+  $('pay-modal').style.display = 'flex';
+}
+
+function closePayModal() {
+  $('pay-modal').style.display = 'none';
+  openPlanModal();
+}
+
+function fmtCard(el) {
+  let v = el.value.replace(/\D/g, '').slice(0, 16);
+  el.value = v.match(/.{1,4}/g)?.join(' ') || v;
+}
+
+function processPay() {
+  const card = $('pay-card').value.replace(/\s/g, '');
+  const exp  = $('pay-exp').value.trim();
+  const cvc  = $('pay-cvc').value.trim();
+  const name = $('pay-name').value.trim();
+  const err  = $('pay-err');
+  err.style.display = 'none';
+  if (card.length < 16)                        { err.textContent = 'Enter a valid 16-digit card number.'; err.style.display = 'block'; return; }
+  if (!/^\d{2}\s?\/\s?\d{2}$/.test(exp))       { err.textContent = 'Enter expiry as MM / YY.'; err.style.display = 'block'; return; }
+  if (cvc.length < 3)                          { err.textContent = 'Enter a 3-digit CVC.'; err.style.display = 'block'; return; }
+  if (!name)                                   { err.textContent = 'Enter the name on your card.'; err.style.display = 'block'; return; }
+
+  const btn = $('pay-submit-btn');
+  btn.disabled = true; btn.textContent = 'Processing…';
+  setTimeout(() => {
+    btn.disabled = false; btn.textContent = 'Subscribe Now →';
+    if (U) { U.plan = _payingPlan; saveUser(); }
+    $('pay-modal').style.display = 'none';
+    showUserBadge();
+    updateNavLocks();
+    showToast(`Welcome to ${_payingPlan.toUpperCase()}! All sections are now unlocked.`);
+    if (_pendingSimAfterReg) { _pendingSimAfterReg = false; startSim(); }
+  }, 1800);
+}
+
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 function initHeatmap() {
   $h('day-heatmap', Array.from({length:30}, (_,i) =>
@@ -1280,6 +1649,11 @@ function initHeatmap() {
   ).join(''));
 }
 initHeatmap();
+
+// Load user and apply plan state
+loadUser();
+showUserBadge();
+updateNavLocks();
 
 // Restore last simulation from localStorage
 if (loadFromStorage()) {
