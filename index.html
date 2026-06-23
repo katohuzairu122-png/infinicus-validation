@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>INFINICUS ENGINE v3 — Business Reality Simulator</title>
+<title>INFINICUS ENGINE v3 â€” Business Reality Simulator</title>
 <meta name="description" content="Simulate your business idea across 30 virtual days with a statistical engine, Monte Carlo risk analysis, and a Go/Modify/Stop verdict.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -250,7 +250,7 @@ select option{background:var(--navy-800);}
   .phase-t,.phase-b,.rp-h,.rp-p,.rp-num{color:#000!important;}
 }
 
-/* ── MODALS ── */
+/* â”€â”€ MODALS â”€â”€ */
 .modal-overlay{position:fixed;inset:0;background:rgba(4,6,13,.88);backdrop-filter:blur(8px);z-index:500;display:flex;align-items:center;justify-content:center;padding:1rem;}
 .modal-box{background:var(--navy-700);border:1px solid var(--line-2);border-radius:16px;padding:2rem;width:100%;max-width:420px;position:relative;animation:fadeUp .2s ease;}
 .modal-box.modal-wide{max-width:1020px;}
@@ -367,68 +367,68 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
 <!-- HEADER -->
 <header>
   <div class="logo">
-    <span class="mark"><img src="./infinicus-mark.svg" alt="INFINICUS"></span>
+    <span class="mark"><img src="./infinicus-logo.jpg" alt="INFINICUS"></span>
     INFIN<span class="c">ICUS</span><span class="logo-ver">ENGINE v3</span>
   </div>
-  <button class="ham-btn" id="ham-btn" onclick="toggleNav()" aria-label="Menu">☰</button>
+  <button class="ham-btn" id="ham-btn" onclick="toggleNav()" aria-label="Menu">â˜°</button>
   <nav class="nav" id="main-nav">
     <button class="nb active" data-section="input"     onclick="nav('input')">INPUT</button>
     <button class="nb"        data-section="dashboard" onclick="nav('dashboard')">DASHBOARD</button>
     <button class="nb"        data-section="economy"   onclick="nav('economy')">ECONOMY</button>
-    <button class="nb"        data-section="customers" onclick="nav('customers')">CUSTOMERS 🔒</button>
-    <button class="nb"        data-section="risk"      onclick="nav('risk')">RISK / MONTE CARLO 🔒</button>
-    <button class="nb"        data-section="log"       onclick="nav('log')">EVENT LOG 🔒</button>
+    <button class="nb"        data-section="customers" onclick="nav('customers')">CUSTOMERS ðŸ”’</button>
+    <button class="nb"        data-section="risk"      onclick="nav('risk')">RISK / MONTE CARLO ðŸ”’</button>
+    <button class="nb"        data-section="log"       onclick="nav('log')">EVENT LOG ðŸ”’</button>
     <button class="nb"        data-section="verdict"   onclick="nav('verdict')">VERDICT</button>
-    <button class="nb"        data-section="report"      onclick="nav('report')">REPORT &amp; PLAN 🔒</button>
-    <button class="nb"        data-section="sensitivity" onclick="nav('sensitivity')">SENSITIVITY 🔒</button>
-    <button class="nb"        data-section="compare"     onclick="nav('compare')">COMPARE 🔒</button>
+    <button class="nb"        data-section="report"      onclick="nav('report')">REPORT &amp; PLAN ðŸ”’</button>
+    <button class="nb"        data-section="sensitivity" onclick="nav('sensitivity')">SENSITIVITY ðŸ”’</button>
+    <button class="nb"        data-section="compare"     onclick="nav('compare')">COMPARE ðŸ”’</button>
   </nav>
   <div class="hdr-right">
     <span id="user-badge" class="user-badge free" onclick="openPlanModal()" title="View or change your plan"></span>
     <select id="cur-select" class="cur-select" onchange="setCurrency(this.value)" title="Display currency">
       <option value="USD">$ USD</option>
-      <option value="EUR">€ EUR</option>
-      <option value="GBP">£ GBP</option>
-      <option value="JPY">¥ JPY</option>
-      <option value="CNY">¥ CNY</option>
-      <option value="INR">₹ INR</option>
+      <option value="EUR">â‚¬ EUR</option>
+      <option value="GBP">Â£ GBP</option>
+      <option value="JPY">Â¥ JPY</option>
+      <option value="CNY">Â¥ CNY</option>
+      <option value="INR">â‚¹ INR</option>
       <option value="CAD">C$ CAD</option>
       <option value="AUD">A$ AUD</option>
       <option value="AED">AED</option>
       <option value="SAR">SAR</option>
       <option value="KWD">KWD</option>
-      <option value="NGN">₦ NGN</option>
+      <option value="NGN">â‚¦ NGN</option>
       <option value="KES">KSh KES</option>
       <option value="UGX">USh UGX</option>
-      <option value="GHS">₵ GHS</option>
+      <option value="GHS">â‚µ GHS</option>
       <option value="ZAR">R ZAR</option>
     </select>
-    <span class="sim-badge idle" id="sim-badge">● IDLE</span>
+    <span class="sim-badge idle" id="sim-badge">â— IDLE</span>
   </div>
 </header>
 
-<!-- ═══════════════════════════════════════════════════════ INPUT ═══ -->
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• INPUT â•â•â• -->
 <section class="section active" id="sec-input">
   <div class="pg-title"><span class="c">SIMULATE</span> YOUR<br>BUSINESS REALITY</div>
-  <div class="pg-sub">// STATISTICAL ENGINE · VIRTUAL ECONOMY · AGENT-BASED MODELING · MONTE CARLO</div>
-  <button class="btn-demo" onclick="instantDemo()">▶ TRY INSTANT DEMO — REGISTER FREE IN SECONDS</button>
+  <div class="pg-sub">// STATISTICAL ENGINE Â· VIRTUAL ECONOMY Â· AGENT-BASED MODELING Â· MONTE CARLO</div>
+  <button class="btn-demo" onclick="instantDemo()">â–¶ TRY INSTANT DEMO â€” REGISTER FREE IN SECONDS</button>
   <div class="pills">
-    <button class="pill" onclick="qf('food')">🚚 Food Truck</button>
-    <button class="pill" onclick="qf('drop')">📦 Dropshipping</button>
-    <button class="pill" onclick="qf('saas')">💻 SaaS Tool</button>
-    <button class="pill" onclick="qf('gym')">💪 Private Gym</button>
-    <button class="pill" onclick="qf('agency')">🎯 Agency</button>
-    <button class="pill" onclick="qf('cafe')">☕ Café</button>
-    <button class="pill" onclick="qf('health')">🏥 Telemedicine</button>
-    <button class="pill" onclick="qf('edtech')">🎓 EdTech</button>
-    <button class="pill" onclick="qf('market')">🛒 Marketplace</button>
-    <button class="pill" onclick="qf('events')">🎉 Events</button>
-    <button class="pill" onclick="qf('fintech')">💳 FinTech</button>
+    <button class="pill" onclick="qf('food')">ðŸšš Food Truck</button>
+    <button class="pill" onclick="qf('drop')">ðŸ“¦ Dropshipping</button>
+    <button class="pill" onclick="qf('saas')">ðŸ’» SaaS Tool</button>
+    <button class="pill" onclick="qf('gym')">ðŸ’ª Private Gym</button>
+    <button class="pill" onclick="qf('agency')">ðŸŽ¯ Agency</button>
+    <button class="pill" onclick="qf('cafe')">â˜• CafÃ©</button>
+    <button class="pill" onclick="qf('health')">ðŸ¥ Telemedicine</button>
+    <button class="pill" onclick="qf('edtech')">ðŸŽ“ EdTech</button>
+    <button class="pill" onclick="qf('market')">ðŸ›’ Marketplace</button>
+    <button class="pill" onclick="qf('events')">ðŸŽ‰ Events</button>
+    <button class="pill" onclick="qf('fintech')">ðŸ’³ FinTech</button>
   </div>
   <div class="form-grid">
     <div class="fg full">
       <label>Business Idea *</label>
-      <textarea id="i-idea" placeholder="Describe your business — what you sell, how you sell it, who buys it…"></textarea>
+      <textarea id="i-idea" placeholder="Describe your business â€” what you sell, how you sell it, who buys itâ€¦"></textarea>
     </div>
     <div class="fg">
       <label>Startup Capital (<span class="cur-code">USD</span>)</label>
@@ -440,7 +440,7 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
     </div>
     <div class="fg">
       <label>Target Customers</label>
-      <input id="i-mkt" placeholder="e.g. office workers 25–40">
+      <input id="i-mkt" placeholder="e.g. office workers 25â€“40">
     </div>
     <div class="fg">
       <label>Industry Vertical</label>
@@ -472,22 +472,22 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
     </div>
   </div>
   <div class="sim-controls">
-    <button class="btn-launch" id="launch-btn" onclick="startSim()">▶ START SIMULATION</button>
-    <button class="btn-stop" id="stop-btn" onclick="stopSim()" disabled>⏸ STOP</button>
-    <button class="btn-reset" id="reset-btn" onclick="resetSim()">↺ RESET</button>
+    <button class="btn-launch" id="launch-btn" onclick="startSim()">â–¶ START SIMULATION</button>
+    <button class="btn-stop" id="stop-btn" onclick="stopSim()" disabled>â¸ STOP</button>
+    <button class="btn-reset" id="reset-btn" onclick="resetSim()">â†º RESET</button>
   </div>
   <div class="err" id="err-box"></div>
 </section>
 
-<!-- ═══════════════════════════════════════════════════ DASHBOARD ═══ -->
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• DASHBOARD â•â•â• -->
 <section class="section" id="sec-dashboard">
   <div id="dash-loading" class="loading-wrap" style="display:none;">
-    <img class="loading-logo" src="./infinicus-mark.svg" alt="INFINICUS">
-    <div class="loading-label" id="load-label">Initializing engines…</div>
+    <img class="loading-logo" src="./infinicus-logo.jpg" alt="INFINICUS">
+    <div class="loading-label" id="load-label">Initializing enginesâ€¦</div>
     <div class="loading-detail" id="load-detail">Building statistical distributions</div>
     <div class="sim-progress"><i id="sim-progress-bar"></i></div>
     <div class="loader-actions">
-      <button class="btn-stop" onclick="stopSim()">⏸ STOP SIMULATION</button>
+      <button class="btn-stop" onclick="stopSim()">â¸ STOP SIMULATION</button>
     </div>
   </div>
   <div id="dash-content">
@@ -495,23 +495,23 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
     <div class="pg-title" style="font-size:22px;margin-bottom:.1rem;">DASHBOARD</div>
     <div class="pg-sub" id="dash-sub">// RUN A SIMULATION TO SEE RESULTS</div>
     <div class="action-row" id="dash-actions" style="display:none;">
-      <button class="btn-action" id="save-scenario-btn" onclick="saveScenario()">⊞ SAVE SCENARIO</button>
-      <button class="btn-action" onclick="nav('sensitivity')">⌇ SENSITIVITY</button>
-      <button class="btn-action" onclick="nav('compare')">⇔ COMPARE</button>
+      <button class="btn-action" id="save-scenario-btn" onclick="saveScenario()">âŠž SAVE SCENARIO</button>
+      <button class="btn-action" onclick="nav('sensitivity')">âŒ‡ SENSITIVITY</button>
+      <button class="btn-action" onclick="nav('compare')">â‡” COMPARE</button>
     </div>
     <div class="g4" id="kpi-cards">
-      <div class="card"><div class="card-lbl">TOTAL REVENUE</div><div class="card-val" style="color:var(--muted-2)">—</div></div>
-      <div class="card"><div class="card-lbl">NET PROFIT</div><div class="card-val" style="color:var(--muted-2)">—</div></div>
-      <div class="card"><div class="card-lbl">END CASH</div><div class="card-val" style="color:var(--muted-2)">—</div></div>
-      <div class="card"><div class="card-lbl">SURVIVAL RATE</div><div class="card-val" style="color:var(--muted-2)">—</div></div>
+      <div class="card"><div class="card-lbl">TOTAL REVENUE</div><div class="card-val" style="color:var(--muted-2)">â€”</div></div>
+      <div class="card"><div class="card-lbl">NET PROFIT</div><div class="card-val" style="color:var(--muted-2)">â€”</div></div>
+      <div class="card"><div class="card-lbl">END CASH</div><div class="card-val" style="color:var(--muted-2)">â€”</div></div>
+      <div class="card"><div class="card-lbl">SURVIVAL RATE</div><div class="card-val" style="color:var(--muted-2)">â€”</div></div>
     </div>
     <div class="chart-panel">
       <div class="chart-title">30-DAY P&amp;L HEATMAP <span class="chart-badge">DAILY</span></div>
       <div class="day-heatmap" id="day-heatmap"></div>
       <div style="display:flex;gap:1.5rem;font-family:var(--mono);font-size:9px;color:var(--muted-2);">
-        <span style="color:var(--emerald)">■</span> Profitable &nbsp;
-        <span style="color:var(--amber)">■</span> Near breakeven &nbsp;
-        <span style="color:var(--red)">■</span> Loss day
+        <span style="color:var(--emerald)">â– </span> Profitable &nbsp;
+        <span style="color:var(--amber)">â– </span> Near breakeven &nbsp;
+        <span style="color:var(--red)">â– </span> Loss day
       </div>
     </div>
     <div class="g2">
@@ -527,13 +527,13 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
   </div>
 </section>
 
-<!-- ═══════════════════════════════════════════════════════ ECONOMY ═══ -->
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• ECONOMY â•â•â• -->
 <section class="section" id="sec-economy">
   <div class="pg-title" style="font-size:22px;margin-bottom:.1rem;">ECONOMY</div>
-  <div class="pg-sub">// REVENUE · EXPENSES · CASHFLOW</div>
+  <div class="pg-sub">// REVENUE Â· EXPENSES Â· CASHFLOW</div>
   <div class="g4" id="econ-kpis"></div>
   <div class="chart-panel">
-    <div class="chart-title">DAILY REVENUE <span style="color:var(--cyan)">■</span> vs COSTS <span style="color:var(--red)">■</span></div>
+    <div class="chart-title">DAILY REVENUE <span style="color:var(--cyan)">â– </span> vs COSTS <span style="color:var(--red)">â– </span></div>
     <div id="econ-chart" style="display:flex;align-items:flex-end;gap:3px;height:120px;"></div>
     <div class="mc-axis" id="econ-axis" style="margin-top:.5rem;"></div>
   </div>
@@ -549,13 +549,13 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
   </div>
 </section>
 
-<!-- ═══════════════════════════════════════════════════════ CUSTOMERS ═══ -->
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• CUSTOMERS â•â•â• -->
 <section class="section" id="sec-customers">
   <div class="pg-title" style="font-size:22px;margin-bottom:.1rem;">CUSTOMERS</div>
-  <div class="pg-sub">// ACQUISITION · RETENTION · LTV</div>
+  <div class="pg-sub">// ACQUISITION Â· RETENTION Â· LTV</div>
   <div class="g4" id="cust-kpis"></div>
   <div class="chart-panel">
-    <div class="chart-title">CUSTOMER COUNT — DAY BY DAY</div>
+    <div class="chart-title">CUSTOMER COUNT â€” DAY BY DAY</div>
     <div id="cust-chart" style="display:flex;align-items:flex-end;gap:3px;height:100px;"></div>
     <div class="mc-axis" id="cust-axis" style="margin-top:.5rem;"></div>
   </div>
@@ -571,10 +571,10 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
   </div>
 </section>
 
-<!-- ═══════════════════════════════════════════════════════════ RISK ═══ -->
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• RISK â•â•â• -->
 <section class="section" id="sec-risk">
   <div class="pg-title" style="font-size:22px;margin-bottom:.1rem;">RISK / MONTE CARLO</div>
-  <div class="pg-sub">// 500 SIMULATION RUNS · PROBABILITY DISTRIBUTION</div>
+  <div class="pg-sub">// 500 SIMULATION RUNS Â· PROBABILITY DISTRIBUTION</div>
   <div class="g4" id="risk-kpis"></div>
   <div class="chart-panel">
     <div class="chart-title">FINAL CASH DISTRIBUTION (500 RUNS) <span class="chart-badge">MONTE CARLO</span></div>
@@ -593,26 +593,26 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
   </div>
 </section>
 
-<!-- ═════════════════════════════════════════════════════ EVENT LOG ═══ -->
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• EVENT LOG â•â•â• -->
 <section class="section" id="sec-log">
   <div class="pg-title" style="font-size:22px;margin-bottom:.1rem;">EVENT LOG</div>
   <div class="pg-sub">// 30-DAY SIMULATION EVENTS</div>
   <div class="g3" id="log-summary"></div>
   <div class="card">
-    <div class="card-lbl">ALL EVENTS — CHRONOLOGICAL</div>
+    <div class="card-lbl">ALL EVENTS â€” CHRONOLOGICAL</div>
     <div class="event-log" id="event-log" style="margin-top:.75rem;">
       <div style="font-family:var(--mono);font-size:10.5px;color:var(--muted-2);padding:1rem 0;">No simulation data yet. Run a simulation first.</div>
     </div>
   </div>
 </section>
 
-<!-- ═══════════════════════════════════════════════════════ VERDICT ═══ -->
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• VERDICT â•â•â• -->
 <section class="section" id="sec-verdict">
   <div class="pg-title" style="font-size:22px;margin-bottom:.1rem;">VERDICT</div>
   <div class="pg-sub">// FINAL ASSESSMENT</div>
   <div class="action-row">
-    <button class="btn-action" onclick="shareLink()">⎋ SHARE LINK</button>
-    <button class="btn-action" onclick="nav('report')">↗ VIEW FULL REPORT</button>
+    <button class="btn-action" onclick="shareLink()">âŽ‹ SHARE LINK</button>
+    <button class="btn-action" onclick="nav('report')">â†— VIEW FULL REPORT</button>
   </div>
   <div id="verdict-panel">
     <div class="empty-state"><p>Run a simulation to receive a verdict.</p></div>
@@ -620,23 +620,23 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
   <div class="g2" id="verdict-detail"></div>
 </section>
 
-<!-- ══════════════════════════════════════════════════ REPORT & PLAN ═══ -->
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• REPORT & PLAN â•â•â• -->
 <section class="section" id="sec-report">
   <div class="pg-title" style="font-size:22px;margin-bottom:.1rem;">REPORT &amp; 30-DAY PLAN</div>
-  <div class="pg-sub">// EXECUTIVE SUMMARY · ACTION ROADMAP</div>
+  <div class="pg-sub">// EXECUTIVE SUMMARY Â· ACTION ROADMAP</div>
   <div class="action-row">
-    <button class="btn-action" onclick="window.print()">⎙ EXPORT PDF</button>
-    <button class="btn-action" onclick="shareLink()">⎋ SHARE LINK</button>
+    <button class="btn-action" onclick="window.print()">âŽ™ EXPORT PDF</button>
+    <button class="btn-action" onclick="shareLink()">âŽ‹ SHARE LINK</button>
   </div>
   <div id="report-content">
     <div class="empty-state"><p>Run a simulation to generate a report.</p></div>
   </div>
 </section>
 
-<!-- ═══════════════════════════════════════════════════ SENSITIVITY ═══ -->
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• SENSITIVITY â•â•â• -->
 <section class="section" id="sec-sensitivity">
   <div class="pg-title" style="font-size:22px;margin-bottom:.1rem;">SENSITIVITY ANALYSIS</div>
-  <div class="pg-sub">// LIVE PARAMETER ADJUSTMENT · INSTANT VERDICT UPDATE</div>
+  <div class="pg-sub">// LIVE PARAMETER ADJUSTMENT Â· INSTANT VERDICT UPDATE</div>
   <div class="g2" style="margin-bottom:1rem;">
     <div class="card">
       <div class="card-lbl">PRICE ADJUSTMENT</div>
@@ -649,9 +649,9 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
     <div class="card">
       <div class="card-lbl">MARKETING BUDGET MULTIPLIER</div>
       <div class="sens-slider-wrap" style="margin-top:.85rem;">
-        <div class="sens-label"><span>Multiply current marketing spend</span><strong id="sens-mkt-disp">1.0×</strong></div>
+        <div class="sens-label"><span>Multiply current marketing spend</span><strong id="sens-mkt-disp">1.0Ã—</strong></div>
         <input type="range" id="sens-mkt" min="0" max="300" value="100" oninput="updateSensitivity()">
-        <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;color:var(--muted-2);margin-top:.3rem;"><span>0×</span><span>1×</span><span>3×</span></div>
+        <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;color:var(--muted-2);margin-top:.3rem;"><span>0Ã—</span><span>1Ã—</span><span>3Ã—</span></div>
       </div>
     </div>
   </div>
@@ -660,7 +660,7 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
   </div>
 </section>
 
-<!-- ═══════════════════════════════════════════════════════ COMPARE ═══ -->
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• COMPARE â•â•â• -->
 <section class="section" id="sec-compare">
   <div class="pg-title" style="font-size:22px;margin-bottom:.1rem;">SCENARIO COMPARISON</div>
   <div class="pg-sub">// SIDE-BY-SIDE ANALYSIS OF TWO SIMULATIONS</div>
@@ -683,11 +683,11 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
   </div>
 </section>
 
-<!-- ══════════════════════════ REGISTRATION MODAL ══════════════════════════ -->
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• REGISTRATION MODAL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
 <div class="modal-overlay" id="reg-modal" style="display:none" role="dialog" aria-modal="true" aria-labelledby="reg-modal-h">
   <div class="modal-box">
     <div class="modal-logo">
-      <img src="./infinicus-mark.svg" alt="">
+      <img src="./infinicus-logo.jpg" alt="INFINICUS">
       <span class="modal-logo-name">INFIN<span class="c">ICUS</span><span class="modal-logo-ver"> ENGINE v3</span></span>
     </div>
     <div class="modal-h" id="reg-modal-h">Get Your Free Report</div>
@@ -701,15 +701,15 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
       <input id="reg-email" type="email" placeholder="jane@example.com" autocomplete="email" onkeydown="if(event.key==='Enter')submitReg()">
     </div>
     <div class="modal-err" id="reg-err"></div>
-    <button class="btn-launch" style="width:100%;margin-top:.25rem" onclick="submitReg()">Get My Free Report →</button>
+    <button class="btn-launch" style="width:100%;margin-top:.25rem" onclick="submitReg()">Get My Free Report â†’</button>
     <p class="modal-fine">No spam. Your data is stored locally in your browser only.</p>
   </div>
 </div>
 
-<!-- ══════════════════════════ PLAN SELECTION MODAL ═══════════════════════ -->
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• PLAN SELECTION MODAL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
 <div class="modal-overlay" id="plan-modal" style="display:none" role="dialog" aria-modal="true" aria-labelledby="plan-modal-h">
   <div class="modal-box modal-wide">
-    <button class="modal-close" onclick="closePlanModal()" aria-label="Close">×</button>
+    <button class="modal-close" onclick="closePlanModal()" aria-label="Close">Ã—</button>
     <div class="modal-h" id="plan-modal-h">Choose Your Plan</div>
     <div class="modal-sub">Start free with one simulation. Upgrade any time for unlimited access, deep analytics, and export tools.</div>
     <div class="billing-toggle">
@@ -723,13 +723,13 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
   </div>
 </div>
 
-<!-- ══════════════════════════ PAYMENT MODAL ══════════════════════════════ -->
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• PAYMENT MODAL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
 <div class="modal-overlay" id="pay-modal" style="display:none" role="dialog" aria-modal="true" aria-labelledby="pay-modal-h">
   <div class="modal-box" style="max-width:420px">
-    <button class="modal-close" onclick="closePayModal()" aria-label="Close">×</button>
-    <div id="pay-tier-badge" class="pay-tier-badge starter">STARTER — $19 / month</div>
+    <button class="modal-close" onclick="closePayModal()" aria-label="Close">Ã—</button>
+    <div id="pay-tier-badge" class="pay-tier-badge starter">STARTER â€” $19 / month</div>
     <div class="modal-h" id="pay-modal-h">Upgrade to Starter</div>
-    <div class="pay-secure">🔒 Secure checkout · powered by Stripe</div>
+    <div class="pay-secure">ðŸ”’ Secure checkout Â· powered by Stripe</div>
     <div class="modal-field">
       <label for="pay-card">CARD NUMBER</label>
       <input id="pay-card" type="text" placeholder="4242 4242 4242 4242" maxlength="19" oninput="fmtCard(this)" autocomplete="cc-number">
@@ -741,16 +741,16 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
       </div>
       <div class="modal-field">
         <label for="pay-cvc">CVC</label>
-        <input id="pay-cvc" type="text" placeholder="•••" maxlength="3" autocomplete="cc-csc">
+        <input id="pay-cvc" type="text" placeholder="â€¢â€¢â€¢" maxlength="3" autocomplete="cc-csc">
       </div>
     </div>
     <div class="modal-field">
       <label for="pay-name">NAME ON CARD</label>
       <input id="pay-name" type="text" placeholder="Jane Smith" autocomplete="cc-name">
     </div>
-    <div class="pay-demo-note">⚠ Demo mode — no real charges are processed</div>
+    <div class="pay-demo-note">âš  Demo mode â€” no real charges are processed</div>
     <div class="modal-err" id="pay-err"></div>
-    <button class="btn-launch" id="pay-submit-btn" style="width:100%;margin-top:.25rem" onclick="processPay()">Subscribe Now →</button>
+    <button class="btn-launch" id="pay-submit-btn" style="width:100%;margin-top:.25rem" onclick="processPay()">Subscribe Now â†’</button>
     <button class="btn-skip-pay" onclick="selectPlan('free')">Continue with free tier instead</button>
   </div>
 </div>
@@ -761,7 +761,7 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
 </div>
 
 <script>
-// ─── STATE ────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ STATE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const S = {
   running: false,
   done: false,
@@ -773,14 +773,14 @@ const S = {
   timer: null
 };
 
-// ─── CURRENCIES ───────────────────────────────────────────────────────────────
+// â”€â”€â”€ CURRENCIES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const CUR = {
-  USD:{ s:'$',    r:1       }, EUR:{ s:'€',     r:.92   }, GBP:{ s:'£',    r:.79    },
-  JPY:{ s:'¥',   r:149     }, CNY:{ s:'¥',     r:7.1   }, INR:{ s:'₹',   r:83     },
+  USD:{ s:'$',    r:1       }, EUR:{ s:'â‚¬',     r:.92   }, GBP:{ s:'Â£',    r:.79    },
+  JPY:{ s:'Â¥',   r:149     }, CNY:{ s:'Â¥',     r:7.1   }, INR:{ s:'â‚¹',   r:83     },
   CAD:{ s:'C$',  r:1.36    }, AUD:{ s:'A$',    r:1.53  },
   AED:{ s:'AED ',r:3.67    }, SAR:{ s:'SAR ',  r:3.75  }, KWD:{ s:'KWD ',r:.31    },
-  NGN:{ s:'₦',  r:1500    }, KES:{ s:'KSh ',  r:130   }, UGX:{ s:'USh ',r:3750   },
-  GHS:{ s:'₵',  r:12      }, ZAR:{ s:'R ',    r:18.5  }
+  NGN:{ s:'â‚¦',  r:1500    }, KES:{ s:'KSh ',  r:130   }, UGX:{ s:'USh ',r:3750   },
+  GHS:{ s:'â‚µ',  r:12      }, ZAR:{ s:'R ',    r:18.5  }
 };
 let curCode = 'USD';
 
@@ -797,9 +797,9 @@ function setCurrency(code) {
   if (S.done) renderAll();
 }
 
-// ─── INDUSTRY PROFILES ────────────────────────────────────────────────────────
+// â”€â”€â”€ INDUSTRY PROFILES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // visitsPerMonth: how many times a retained customer transacts per month.
-// For subscription models (saas/fitness/agency) this is 1 — price IS the monthly value.
+// For subscription models (saas/fitness/agency) this is 1 â€” price IS the monthly value.
 // For transactional models (food/retail/service) price is per-sale; multiply by visits.
 // season: 30 daily multipliers representing within-month demand variation (1.0 = baseline).
 const _flat = [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1];
@@ -819,19 +819,19 @@ const PROFILES = {
   fintech:    { fixR:.36, varR:.12, acqCost:45, churn:.08, mktMult:1.9, visitsPerMonth:8,  name:'FinTech',               priceLabel:'Fee Per Transaction',     season: _flat },
 };
 
-// ─── QUICK FILLS ──────────────────────────────────────────────────────────────
+// â”€â”€â”€ QUICK FILLS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const QF = {
-  food:   { idea:'Mobile food truck selling freshly cooked local meals during lunch and dinner hours near office districts. Daily specials, contactless ordering via QR code.', cap:8000, loc:'Nairobi, Kenya', mkt:'Office workers & students 18–35', ind:'food', price:8, mktbud:300, team:2 },
-  drop:   { idea:'Dropshipping niche fitness accessories — resistance bands, yoga mats, posture correctors — via a Shopify store targeting home gym enthusiasts.', cap:3000, loc:'Lagos, Nigeria', mkt:'Home gym enthusiasts 22–45', ind:'retail', price:35, mktbud:600, team:1 },
+  food:   { idea:'Mobile food truck selling freshly cooked local meals during lunch and dinner hours near office districts. Daily specials, contactless ordering via QR code.', cap:8000, loc:'Nairobi, Kenya', mkt:'Office workers & students 18â€“35', ind:'food', price:8, mktbud:300, team:2 },
+  drop:   { idea:'Dropshipping niche fitness accessories â€” resistance bands, yoga mats, posture correctors â€” via a Shopify store targeting home gym enthusiasts.', cap:3000, loc:'Lagos, Nigeria', mkt:'Home gym enthusiasts 22â€“45', ind:'retail', price:35, mktbud:600, team:1 },
   saas:   { idea:'B2B SaaS tool that automates social-media scheduling and analytics for African SMEs. Monthly subscription with 7-day free trial.', cap:15000, loc:'Accra, Ghana', mkt:'SME marketing managers', ind:'saas', price:29, mktbud:1200, team:2 },
-  gym:    { idea:'Boutique private gym offering personal training sessions, small-group classes (max 8), and monthly memberships in a residential area.', cap:20000, loc:'Dubai, UAE', mkt:'Health-conscious adults 25–50', ind:'fitness', price:120, mktbud:800, team:3 },
+  gym:    { idea:'Boutique private gym offering personal training sessions, small-group classes (max 8), and monthly memberships in a residential area.', cap:20000, loc:'Dubai, UAE', mkt:'Health-conscious adults 25â€“50', ind:'fitness', price:120, mktbud:800, team:3 },
   agency: { idea:'Digital marketing agency specialising in paid-ads management (Meta + Google) for e-commerce brands in the MENA region. Monthly retainer model.', cap:5000, loc:'Kuwait City, Kuwait', mkt:'E-commerce founders', ind:'agency', price:1500, mktbud:500, team:2 },
-  cafe:   { idea:'Specialty coffee café and co-working space combining artisan coffee with fast Wi-Fi and quiet work booths. Hourly and day-pass options available.', cap:25000, loc:'Cape Town, South Africa', mkt:'Remote workers & freelancers', ind:'food', price:18, mktbud:600, team:3 },
-  health: { idea:'Telemedicine platform connecting patients with licensed doctors for virtual consultations via mobile app. Per-appointment fee, no subscription required.', cap:18000, loc:'Lagos, Nigeria', mkt:'Urban patients 25–55 without easy clinic access', ind:'health', price:15, mktbud:1200, team:3 },
-  edtech: { idea:'Online coding bootcamp for African secondary-school graduates wanting to break into tech. 12-week cohort, monthly tuition model.', cap:12000, loc:'Kampala, Uganda', mkt:'School-leavers 18–26 seeking tech careers', ind:'edtech', price:89, mktbud:900, team:2 },
-  market: { idea:'Two-sided marketplace connecting freelance artisans (carpenters, tailors, electricians) with households needing home services. 15% platform take rate.', cap:9000, loc:'Dar es Salaam, Tanzania', mkt:'Urban homeowners 28–50', ind:'marketplace', price:12, mktbud:700, team:2 },
-  events: { idea:'Pop-up rooftop events — live music, food pop-ups, art shows — at leased venues. Ticket + bar revenue model, bi-weekly events.', cap:14000, loc:'Accra, Ghana', mkt:'Young urban professionals 22–38', ind:'events', price:22, mktbud:1100, team:4 },
-  fintech:{ idea:'Mobile money micro-savings app allowing users to round up transactions and invest the difference into treasury bonds. Fee per micro-investment.', cap:20000, loc:'Nairobi, Kenya', mkt:'Young salaried workers 22–35', ind:'fintech', price:0.30, mktbud:1500, team:3 }
+  cafe:   { idea:'Specialty coffee cafÃ© and co-working space combining artisan coffee with fast Wi-Fi and quiet work booths. Hourly and day-pass options available.', cap:25000, loc:'Cape Town, South Africa', mkt:'Remote workers & freelancers', ind:'food', price:18, mktbud:600, team:3 },
+  health: { idea:'Telemedicine platform connecting patients with licensed doctors for virtual consultations via mobile app. Per-appointment fee, no subscription required.', cap:18000, loc:'Lagos, Nigeria', mkt:'Urban patients 25â€“55 without easy clinic access', ind:'health', price:15, mktbud:1200, team:3 },
+  edtech: { idea:'Online coding bootcamp for African secondary-school graduates wanting to break into tech. 12-week cohort, monthly tuition model.', cap:12000, loc:'Kampala, Uganda', mkt:'School-leavers 18â€“26 seeking tech careers', ind:'edtech', price:89, mktbud:900, team:2 },
+  market: { idea:'Two-sided marketplace connecting freelance artisans (carpenters, tailors, electricians) with households needing home services. 15% platform take rate.', cap:9000, loc:'Dar es Salaam, Tanzania', mkt:'Urban homeowners 28â€“50', ind:'marketplace', price:12, mktbud:700, team:2 },
+  events: { idea:'Pop-up rooftop events â€” live music, food pop-ups, art shows â€” at leased venues. Ticket + bar revenue model, bi-weekly events.', cap:14000, loc:'Accra, Ghana', mkt:'Young urban professionals 22â€“38', ind:'events', price:22, mktbud:1100, team:4 },
+  fintech:{ idea:'Mobile money micro-savings app allowing users to round up transactions and invest the difference into treasury bonds. Fee per micro-investment.', cap:20000, loc:'Nairobi, Kenya', mkt:'Young salaried workers 22â€“35', ind:'fintech', price:0.30, mktbud:1500, team:3 }
 };
 
 function qf(type) {
@@ -843,12 +843,12 @@ function qf(type) {
 
 function instantDemo() { qf('food'); startSim(); }
 
-// ─── DOM HELPERS ──────────────────────────────────────────────────────────────
+// â”€â”€â”€ DOM HELPERS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function $(id) { return document.getElementById(id); }
 function $v(id, val) { const el = $(id); if (el) el.value = val; }
 function $h(id, html) { const el = $(id); if (el) el.innerHTML = html; }
 
-// ─── RANDOM ───────────────────────────────────────────────────────────────────
+// â”€â”€â”€ RANDOM â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function rnd(min, max) { return min + Math.random() * (max - min); }
 function rndi(min, max) { return Math.floor(min + Math.random() * (max - min + 1)); }
 function gauss() {
@@ -859,22 +859,22 @@ function gauss() {
 }
 function rNorm(mean, sd) { return mean + gauss() * sd; }
 
-// ─── EVENT TEMPLATES ──────────────────────────────────────────────────────────
+// â”€â”€â”€ EVENT TEMPLATES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const EVT_POOL = [
   { type:'econ', msg:'Raw material prices rose 7% due to supply chain disruption.',      impact:-.07 },
   { type:'econ', msg:'Favourable exchange rate dropped import costs by 5%.',             impact: .05 },
   { type:'econ', msg:'Government tax filing deadline reduced local discretionary spend.', impact:-.04 },
-  { type:'cust', msg:'Repeat customer posted a glowing review — organic reach spiked.',  impact: .10 },
+  { type:'cust', msg:'Repeat customer posted a glowing review â€” organic reach spiked.',  impact: .10 },
   { type:'cust', msg:'Batch of customers requested refunds after a quality complaint.',   impact:-.09 },
   { type:'cust', msg:'Local influencer shared your product unprompted.',                  impact: .14 },
   { type:'comp', msg:'A direct competitor launched a 20% discount campaign.',            impact:-.11 },
-  { type:'comp', msg:'Main competitor went offline for 3 days — customers migrated.',    impact: .12 },
-  { type:'ops',  msg:'Key team member was sick for two days — operations slowed.',       impact:-.08 },
+  { type:'comp', msg:'Main competitor went offline for 3 days â€” customers migrated.',    impact: .12 },
+  { type:'ops',  msg:'Key team member was sick for two days â€” operations slowed.',       impact:-.08 },
   { type:'ops',  msg:'Automation upgrade cut processing time by 30%.',                   impact: .06 },
   { type:'ops',  msg:'Equipment failure caused a 6-hour service outage.',                impact:-.13 },
-  { type:'mkt',  msg:'Ad creative outperformed baseline 2×; CPC dropped 40%.',           impact: .12 },
+  { type:'mkt',  msg:'Ad creative outperformed baseline 2Ã—; CPC dropped 40%.',           impact: .12 },
   { type:'mkt',  msg:'Ad account flagged and paused for 48 hours.',                      impact:-.10 },
-  { type:'mkt',  msg:'Email campaign achieved a 38% open rate — best this month.',       impact: .07 },
+  { type:'mkt',  msg:'Email campaign achieved a 38% open rate â€” best this month.',       impact: .07 },
 ];
 
 function pickEvents() {
@@ -889,7 +889,7 @@ function pickEvents() {
   }).sort((a, b) => a.day - b.day);
 }
 
-// ─── SIMULATION ───────────────────────────────────────────────────────────────
+// â”€â”€â”€ SIMULATION â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function simulate(params) {
   const prof = PROFILES[params.industry];
   const events = pickEvents();
@@ -921,7 +921,7 @@ function simulate(params) {
   return { days, events };
 }
 
-// ─── MONTE CARLO (500 runs) ───────────────────────────────────────────────────
+// â”€â”€â”€ MONTE CARLO (500 runs) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function monteCarlo(params) {
   const baseProf = PROFILES[params.industry];
   const finals = [];
@@ -959,7 +959,7 @@ function monteCarlo(params) {
   };
 }
 
-// ─── SCORES (computed once, memoised) ────────────────────────────────────────
+// â”€â”€â”€ SCORES (computed once, memoised) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function calcScores() {
   if (S.scores) return S.scores;
   const d = S.days;
@@ -979,7 +979,7 @@ function calcScores() {
   return S.scores;
 }
 
-// ─── NAVIGATION ───────────────────────────────────────────────────────────────
+// â”€â”€â”€ NAVIGATION â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function nav(id) {
   if (PRO_SECTIONS.includes(id) && !isPro()) { openPlanModal(); return; }
   if (GROWTH_SECTIONS.includes(id) && !isGrowthPlus()) { openPlanModal(); return; }
@@ -994,7 +994,7 @@ function nav(id) {
   if (id === 'compare') { renderScenarioSlots(); renderComparisonTable(); }
 }
 
-// ─── START SIMULATION ─────────────────────────────────────────────────────────
+// â”€â”€â”€ START SIMULATION â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function startSim() {
   // Gate 1: require registration
   if (!U || U.plan === 'none') {
@@ -1037,11 +1037,11 @@ function startSim() {
   $('dash-content').style.display = 'none';
 
   const STEPS = [
-    [350, 'Building market model…',              'Deriving customer acquisition curves'],
-    [700, 'Running day-by-day simulation…',      'Applying stochastic revenue shocks'],
-    [1100,'Running Monte Carlo (500 runs)…',     'Sampling parameter distributions'],
-    [1500,'Analysing risk scenarios…',           'Computing confidence intervals'],
-    [1900,'Generating verdict & report…',        'Applying decision framework'],
+    [350, 'Building market modelâ€¦',              'Deriving customer acquisition curves'],
+    [700, 'Running day-by-day simulationâ€¦',      'Applying stochastic revenue shocks'],
+    [1100,'Running Monte Carlo (500 runs)â€¦',     'Sampling parameter distributions'],
+    [1500,'Analysing risk scenariosâ€¦',           'Computing confidence intervals'],
+    [1900,'Generating verdict & reportâ€¦',        'Applying decision framework'],
   ];
   let stepIdx = 0;
   const bar = $('sim-progress-bar');
@@ -1109,10 +1109,10 @@ function resetSim() {
 function setBadge(state) {
   const b = $('sim-badge');
   b.className = 'sim-badge ' + state;
-  b.textContent = state === 'idle' ? '● IDLE' : state === 'running' ? '● RUNNING' : '● DONE';
+  b.textContent = state === 'idle' ? 'â— IDLE' : state === 'running' ? 'â— RUNNING' : 'â— DONE';
 }
 
-// ─── RENDER ALL ───────────────────────────────────────────────────────────────
+// â”€â”€â”€ RENDER ALL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderAll() {
   if (!S.done) return;
   renderTicker();
@@ -1125,7 +1125,7 @@ function renderAll() {
   renderReport();
 }
 
-// ─── TICKER ───────────────────────────────────────────────────────────────────
+// â”€â”€â”€ TICKER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderTicker() {
   const d = S.days;
   const totalRev  = d.reduce((s, x) => s + x.rev, 0);
@@ -1147,7 +1147,7 @@ function renderTicker() {
   ).join(''));
 }
 
-// ─── DASHBOARD ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ DASHBOARD â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderDashboard() {
   const d = S.days;
   const totalRev  = d.reduce((s, x) => s + x.rev, 0);
@@ -1156,12 +1156,12 @@ function renderDashboard() {
   const endCash   = d[d.length - 1]?.cash ?? 0;
   const roi       = S.params.capital > 0 ? netProfit / S.params.capital * 100 : 0;
 
-  $h('dash-sub', `// ${S.params.industry.toUpperCase()} · ${S.params.loc || 'GLOBAL'} · 30-DAY SIMULATION`);
+  $h('dash-sub', `// ${S.params.industry.toUpperCase()} Â· ${S.params.loc || 'GLOBAL'} Â· 30-DAY SIMULATION`);
 
   $h('kpi-cards', [
     { lbl:'TOTAL REVENUE', val:fmt(totalRev),  sub:'30-day gross',                       col:'cyan' },
     { lbl:'NET PROFIT',    val:fmt(netProfit), sub:(netProfit>=0?'+':'')+roi.toFixed(1)+'% ROI', col:netProfit>=0?'emerald':'red' },
-    { lbl:'END CASH',      val:fmt(endCash),   sub:endCash>=0?'Solvent':'⚠ Insolvent',   col:endCash>=0?'cyan':'red' },
+    { lbl:'END CASH',      val:fmt(endCash),   sub:endCash>=0?'Solvent':'âš  Insolvent',   col:endCash>=0?'cyan':'red' },
     { lbl:'SURVIVAL RATE', val:(S.mc.survivalRate*100).toFixed(0)+'%', sub:'Monte Carlo p(survive)', col:S.mc.survivalRate>.6?'emerald':S.mc.survivalRate>.35?'amber':'red' },
   ].map(k => `<div class="card"><div class="card-lbl">${k.lbl}</div><div class="card-val" style="color:var(--${k.col})">${k.val}</div><div class="card-sub">${k.sub}</div></div>`).join(''));
 
@@ -1217,7 +1217,7 @@ function renderDashboard() {
   </div>`).join(''));
 }
 
-// ─── ECONOMY ──────────────────────────────────────────────────────────────────
+// â”€â”€â”€ ECONOMY â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderEconomy() {
   const d = S.days;
   const totalRev   = d.reduce((s, x) => s + x.rev, 0);
@@ -1257,11 +1257,11 @@ function renderEconomy() {
   $h('cashflow-list', [[1,7],[8,14],[15,21],[22,30]].map(([s, e], i) => {
     const wP = d.filter(x => x.d >= s && x.d <= e).reduce((a, x) => a + x.profit, 0);
     const col = wP >= 0 ? 'emerald' : 'red';
-    return `<div class="rp-num"><b>W${i+1}</b>Days ${s}–${e}: <span style="color:var(--${col})">${fmt(wP)}</span></div>`;
+    return `<div class="rp-num"><b>W${i+1}</b>Days ${s}â€“${e}: <span style="color:var(--${col})">${fmt(wP)}</span></div>`;
   }).join(''));
 }
 
-// ─── CUSTOMERS ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ CUSTOMERS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderCustomers() {
   const d = S.days;
   const finalCust  = d[d.length - 1]?.customers ?? 0;
@@ -1300,12 +1300,12 @@ function renderCustomers() {
   $h('retention', [7, 14, 21, 30].map(day => {
     const ret = Math.max(0, Math.round((1 - churnRate / 30 * day) * 100));
     const col = ret >= 80 ? 'emerald' : ret >= 60 ? 'amber' : 'red';
-    const label = ret >= 80 ? '✓ Good' : ret >= 60 ? '~ OK' : '✗ High churn';
+    const label = ret >= 80 ? 'âœ“ Good' : ret >= 60 ? '~ OK' : 'âœ— High churn';
     return `<div class="rp-num"><b>D${day}</b>${ret}% retained <span style="color:var(--${col})">${label}</span></div>`;
   }).join(''));
 }
 
-// ─── RISK / MONTE CARLO ───────────────────────────────────────────────────────
+// â”€â”€â”€ RISK / MONTE CARLO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderRisk() {
   const mc  = S.mc;
   const sur = (mc.survivalRate * 100).toFixed(0);
@@ -1334,11 +1334,11 @@ function renderRisk() {
   // CI
   const range = mc.p90 - mc.p10 || 1;
   $h('ci-section', [
-    ['P10 — Pessimistic', mc.p10, 0],
+    ['P10 â€” Pessimistic', mc.p10, 0],
     ['P25',              mc.p25, 15],
-    ['P50 — Median',     mc.p50, 40],
+    ['P50 â€” Median',     mc.p50, 40],
     ['P75',              mc.p75, 65],
-    ['P90 — Optimistic', mc.p90, 88],
+    ['P90 â€” Optimistic', mc.p90, 88],
   ].map(([lbl, val, pin]) => {
     const col = val >= 0 ? 'cyan' : 'red';
     return `<div class="ci-bar">
@@ -1352,10 +1352,10 @@ function renderRisk() {
     { name:'Best Case',  prob: Math.min(99, Math.round(mc.survivalRate * 100 * 1.15)), val:mc.p90, col:'emerald' },
     { name:'Base Case',  prob: Math.round(mc.survivalRate * 100),                      val:mc.p50, col:'cyan' },
     { name:'Worst Case', prob: Math.min(99, Math.round((1 - mc.survivalRate) * 100)),  val:mc.p10, col:'red' },
-  ].map(s => `<div class="rp-num"><b style="color:var(--${s.col})">●</b>${s.name} — ${s.prob}% likely → ${fmt(s.val)}</div>`).join(''));
+  ].map(s => `<div class="rp-num"><b style="color:var(--${s.col})">â—</b>${s.name} â€” ${s.prob}% likely â†’ ${fmt(s.val)}</div>`).join(''));
 }
 
-// ─── EVENT LOG ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ EVENT LOG â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderLog() {
   const evts = S.events;
   $h('log-summary', [
@@ -1376,7 +1376,7 @@ function renderLog() {
   }).join('') : '<div style="font-family:var(--mono);font-size:10.5px;color:var(--muted-2);padding:1rem 0;">No events generated.</div>');
 }
 
-// ─── VERDICT ──────────────────────────────────────────────────────────────────
+// â”€â”€â”€ VERDICT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderVerdict() {
   const sc      = calcScores();
   const avg     = Object.values(sc).reduce((s, v) => s + v, 0) / Object.values(sc).length;
@@ -1388,27 +1388,27 @@ function renderVerdict() {
     verdict = 'GO'; cls = 'go';
     reasons = [
       'Simulation projects positive cash position at day 30',
-      `Survival probability: ${(surv*100).toFixed(0)}% across 500 Monte Carlo runs — above threshold`,
+      `Survival probability: ${(surv*100).toFixed(0)}% across 500 Monte Carlo runs â€” above threshold`,
       'Customer acquisition model is viable for this industry vertical',
       'Margin structure can support reinvestment into growth'
     ];
     actions = [
       'Launch a minimum viable version within 2 weeks',
       'Set a 30-day revenue target and review weekly against simulation',
-      'Allocate marketing budget as modelled — track CPA daily',
+      'Allocate marketing budget as modelled â€” track CPA daily',
       'Build a cash-flow dashboard and review it every 7 days'
     ];
   } else if (avg >= 40 || surv >= .35) {
     verdict = 'MODIFY'; cls = 'modify';
     reasons = [
       'Some metrics fall below industry benchmarks',
-      `Cash position is tight — risk of shortfall in weeks 2–3 (survival: ${(surv*100).toFixed(0)}%)`,
+      `Cash position is tight â€” risk of shortfall in weeks 2â€“3 (survival: ${(surv*100).toFixed(0)}%)`,
       'Customer acquisition cost may be high relative to per-unit revenue',
       'Model shows survival in fewer than 55% of Monte Carlo scenarios'
     ];
     actions = [
-      'Reduce fixed costs by 15–20% before committing to launch',
-      'Increase price point or reduce marketing burn rate — improve unit economics',
+      'Reduce fixed costs by 15â€“20% before committing to launch',
+      'Increase price point or reduce marketing burn rate â€” improve unit economics',
       'Validate demand with 10 real paying customers before scaling',
       'Extend runway by at least 30 days before full capital deployment'
     ];
@@ -1422,22 +1422,22 @@ function renderVerdict() {
     ];
     actions = [
       'Do not invest further capital until unit economics improve substantially',
-      'Revisit pricing — current price-to-cost ratio is unfavourable',
+      'Revisit pricing â€” current price-to-cost ratio is unfavourable',
       'Consider a different market segment, lower-cost delivery model, or niche pivot',
       'Run market validation (surveys, 10 interviews) before any further spend'
     ];
   }
 
-  const scoreSummary = Object.entries(sc).map(([k, v]) => `${k}: ${v}`).join(' · ');
+  const scoreSummary = Object.entries(sc).map(([k, v]) => `${k}: ${v}`).join(' Â· ');
   $h('verdict-panel', `<div class="verdict ${cls}">
     <div class="verdict-label">${verdict}</div>
-    <div class="verdict-meta">Score: ${avg.toFixed(0)}/100 · Survival: ${(surv*100).toFixed(0)}% · ${scoreSummary}</div>
+    <div class="verdict-meta">Score: ${avg.toFixed(0)}/100 Â· Survival: ${(surv*100).toFixed(0)}% Â· ${scoreSummary}</div>
   </div>`);
 
   $h('verdict-detail', `
     <div class="card">
       <div class="card-lbl">WHY THIS VERDICT</div>
-      ${reasons.map(r => `<div class="rp-num"><b>→</b>${r}</div>`).join('')}
+      ${reasons.map(r => `<div class="rp-num"><b>â†’</b>${r}</div>`).join('')}
     </div>
     <div class="card">
       <div class="card-lbl">RECOMMENDED ACTIONS</div>
@@ -1445,7 +1445,7 @@ function renderVerdict() {
     </div>`);
 }
 
-// ─── REPORT ───────────────────────────────────────────────────────────────────
+// â”€â”€â”€ REPORT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderReport() {
   const d = S.days, p = S.params;
   const prof = PROFILES[p.industry];
@@ -1463,14 +1463,14 @@ function renderReport() {
   $h('report-content', `
     <div class="rp-sec">
       <div class="rp-h">EXECUTIVE SUMMARY</div>
-      <div class="rp-p">Simulation for <strong>${p.idea.slice(0,100)}${p.idea.length>100?'…':''}</strong> in <strong>${p.loc||'an unspecified market'}</strong>. Starting capital: <strong>${fmt(p.capital)}</strong>. Industry: <strong>${prof.name}</strong>.</div>
+      <div class="rp-p">Simulation for <strong>${p.idea.slice(0,100)}${p.idea.length>100?'â€¦':''}</strong> in <strong>${p.loc||'an unspecified market'}</strong>. Starting capital: <strong>${fmt(p.capital)}</strong>. Industry: <strong>${prof.name}</strong>.</div>
       <div class="rp-p">The model projects <strong style="color:var(--cyan)">${fmt(totalRev)}</strong> gross revenue, <strong style="color:${netProfit>=0?'var(--emerald)':'var(--red)'}">${fmt(netProfit)}</strong> net P&amp;L, and an ending cash position of <strong>${fmt(endCash)}</strong>. Monte Carlo survival rate: <strong>${(S.mc.survivalRate*100).toFixed(0)}%</strong> across 500 runs.</div>
     </div>
 
     <div class="rp-sec">
       <div class="rp-h">WEEKLY BREAKDOWN</div>
       <div class="wk-grid">${wkData.map((w,i) => `<div class="card">
-        <div class="card-lbl">WEEK ${i+1} (DAYS ${w.s}–${w.e})</div>
+        <div class="card-lbl">WEEK ${i+1} (DAYS ${w.s}â€“${w.e})</div>
         <div style="font-family:var(--mono);font-size:10.5px;line-height:1.9;margin-top:.4rem;">
           <div>Rev: <span class="c">${fmt(w.rev)}</span></div>
           <div>Cost: <span class="a">${fmt(w.cost)}</span></div>
@@ -1483,18 +1483,18 @@ function renderReport() {
     <div class="rp-sec">
       <div class="rp-h">30-DAY ACTION PLAN</div>
       ${[
-        ['DAYS 1–7: LAUNCH',     `Activate operations and marketing. Target first paying customers. Track daily spend vs revenue. Cap weekly burn at ${fmt(p.mktBud/4)}.`],
-        ['DAYS 8–14: VALIDATE',  `Review customer acquisition cost vs LTV. A/B test messaging. If CAC exceeds ${fmt(p.price*.5)}, shift channel mix. Target ${Math.ceil((d[d.length-1]?.customers??1)*.3)} customers by day 14.`],
-        ['DAYS 15–21: OPTIMISE', 'Double down on what works. Cut underperforming channels. Introduce a referral incentive. Re-check pricing vs competitor rates.'],
-        ['DAYS 22–30: SCALE',    'If cash-positive: increase marketing spend by 20%. If cash-negative: reduce burn by 25%. Build month-2 forecast from actual data.'],
+        ['DAYS 1â€“7: LAUNCH',     `Activate operations and marketing. Target first paying customers. Track daily spend vs revenue. Cap weekly burn at ${fmt(p.mktBud/4)}.`],
+        ['DAYS 8â€“14: VALIDATE',  `Review customer acquisition cost vs LTV. A/B test messaging. If CAC exceeds ${fmt(p.price*.5)}, shift channel mix. Target ${Math.ceil((d[d.length-1]?.customers??1)*.3)} customers by day 14.`],
+        ['DAYS 15â€“21: OPTIMISE', 'Double down on what works. Cut underperforming channels. Introduce a referral incentive. Re-check pricing vs competitor rates.'],
+        ['DAYS 22â€“30: SCALE',    'If cash-positive: increase marketing spend by 20%. If cash-negative: reduce burn by 25%. Build month-2 forecast from actual data.'],
       ].map(([t,b]) => `<div class="phase"><div class="phase-t">${t}</div><div class="phase-b">${b}</div></div>`).join('')}
     </div>
 
     <div class="rp-sec">
       <div class="rp-h">KEY RISKS FLAGGED</div>
       ${S.events.filter(e=>e.impact<0).slice(0,5).map(e =>
-        `<div class="rp-num"><b>⚠</b>${e.msg} (Day ${e.day})</div>`
-      ).join('') || '<div class="rp-num"><b>✓</b>No severe negative events in this run — re-run for variance.</div>'}
+        `<div class="rp-num"><b>âš </b>${e.msg} (Day ${e.day})</div>`
+      ).join('') || '<div class="rp-num"><b>âœ“</b>No severe negative events in this run â€” re-run for variance.</div>'}
     </div>
 
     <div class="rp-disclaimer">
@@ -1502,7 +1502,7 @@ function renderReport() {
     </div>`);
 }
 
-// ─── STORAGE ──────────────────────────────────────────────────────────────────
+// â”€â”€â”€ STORAGE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function saveToStorage() {
   try {
     localStorage.setItem('infinicus_v3', JSON.stringify({
@@ -1522,7 +1522,7 @@ function loadFromStorage() {
   } catch(e) { return false; }
 }
 
-// ─── SHARE LINK ───────────────────────────────────────────────────────────────
+// â”€â”€â”€ SHARE LINK â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function shareLink() {
   if (!S.done) { showToast('Run a simulation first.'); return; }
   const p = S.params;
@@ -1533,10 +1533,10 @@ function shareLink() {
   }).toString();
   navigator.clipboard.writeText(url.toString())
     .then(() => showToast('Link copied to clipboard!'))
-    .catch(() => showToast('Copy: ' + url.toString().slice(0, 60) + '…'));
+    .catch(() => showToast('Copy: ' + url.toString().slice(0, 60) + 'â€¦'));
 }
 
-// ─── TOAST ────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ TOAST â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function showToast(msg) {
   const t = $('toast'); if (!t) return;
   t.textContent = msg; t.classList.add('show');
@@ -1544,12 +1544,12 @@ function showToast(msg) {
   t._tid = setTimeout(() => t.classList.remove('show'), 2600);
 }
 
-// ─── MOBILE NAV ───────────────────────────────────────────────────────────────
+// â”€â”€â”€ MOBILE NAV â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function toggleNav() {
   $('main-nav').classList.toggle('open');
 }
 
-// ─── PRICE LABEL ──────────────────────────────────────────────────────────────
+// â”€â”€â”€ PRICE LABEL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function updatePriceLabel(ind) {
   const prof = PROFILES[ind];
   if (!prof) return;
@@ -1557,7 +1557,7 @@ function updatePriceLabel(ind) {
   if (lbl) lbl.innerHTML = prof.priceLabel + ' (<span class="cur-code">' + curCode + '</span>)';
 }
 
-// ─── USER / PLAN STATE ────────────────────────────────────────────────────────
+// â”€â”€â”€ USER / PLAN STATE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 let U = null;
 let _pendingSimAfterReg = false;
 let _payingPlan = null;
@@ -1594,11 +1594,11 @@ function showUserBadge() {
   // Normalise legacy 'pro' to display as 'starter'
   const cls = U.plan === 'pro' ? 'starter' : U.plan;
   el.className = 'user-badge ' + cls;
-  el.innerHTML = planLabel(U.plan) + ' · ' + U.name.split(' ')[0];
+  el.innerHTML = planLabel(U.plan) + ' Â· ' + U.name.split(' ')[0];
   el.style.display = 'flex';
 }
 
-// ─── ANNUAL BILLING TOGGLE ────────────────────────────────────────────────────
+// â”€â”€â”€ ANNUAL BILLING TOGGLE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 let _billing = 'monthly';
 
 function toggleBilling() { setBilling(_billing === 'monthly' ? 'annual' : 'monthly'); }
@@ -1625,7 +1625,7 @@ function planPrice(plan, billing) {
   return billing === 'annual' ? annual[plan] : monthly[plan];
 }
 
-// ─── NAV LOCK MANAGEMENT ─────────────────────────────────────────────────────
+// â”€â”€â”€ NAV LOCK MANAGEMENT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function updateNavLocks() {
   const allLocked = [...PRO_SECTIONS, ...GROWTH_SECTIONS];
   allLocked.forEach(id => {
@@ -1635,9 +1635,9 @@ function updateNavLocks() {
     const needsGrowth = GROWTH_SECTIONS.includes(id);
     const locked = (needsPaid && !isPro()) || (needsGrowth && !isGrowthPlus());
     if (locked) {
-      if (!btn.textContent.includes('🔒')) btn.textContent += ' 🔒';
+      if (!btn.textContent.includes('ðŸ”’')) btn.textContent += ' ðŸ”’';
     } else {
-      btn.textContent = btn.textContent.replace(' 🔒','');
+      btn.textContent = btn.textContent.replace(' ðŸ”’','');
     }
   });
   applyLockOverlays();
@@ -1662,10 +1662,10 @@ function applyLockOverlays() {
         const ov = document.createElement('div');
         ov.className = 'lock-overlay';
         ov.innerHTML = `
-          <div class="lock-icon">🔒</div>
-          <div class="lock-h">${c.name} — ${c.tier}+ Feature</div>
+          <div class="lock-icon">ðŸ”’</div>
+          <div class="lock-h">${c.name} â€” ${c.tier}+ Feature</div>
           <div class="lock-p">Available on ${c.tier}, Growth, and Professional plans.</div>
-          <button class="btn-launch" style="padding:10px 22px;font-size:11px;margin-top:.25rem" onclick="openPlanModal()">View Plans →</button>`;
+          <button class="btn-launch" style="padding:10px 22px;font-size:11px;margin-top:.25rem" onclick="openPlanModal()">View Plans â†’</button>`;
         sec.appendChild(ov);
       }
     } else {
@@ -1674,7 +1674,7 @@ function applyLockOverlays() {
   });
 }
 
-// ─── REGISTRATION ─────────────────────────────────────────────────────────────
+// â”€â”€â”€ REGISTRATION â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function openRegModal() {
   $('reg-modal').style.display = 'flex';
   setTimeout(() => { try { $('reg-name').focus(); } catch(e) {} }, 120);
@@ -1696,7 +1696,7 @@ function submitReg() {
   $('plan-modal').style.display = 'flex';
 }
 
-// ─── PLAN SELECTION ───────────────────────────────────────────────────────────
+// â”€â”€â”€ PLAN SELECTION â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function openPlanModal() {
   if (!U) { openRegModal(); return; }
   renderPlanGrid();
@@ -1718,7 +1718,7 @@ function renderPlanGrid() {
       <div class="plan-nm" ${color ? `style="color:${color}"` : ''}>${nm}</div>
       <div class="plan-price" ${color ? `style="color:${color}"` : ''}>${price}<span> ${period}</span></div>
       <ul class="plan-feats">${feats.map(([cls,t]) => `<li class="${cls}">${t}</li>`).join('')}</ul>
-      <button class="btn-plan ${btnCls}">${cur === id || (id==='starter' && cur==='pro') ? '✓ Current Plan' : btnTxt}</button>
+      <button class="btn-plan ${btnCls}">${cur === id || (id==='starter' && cur==='pro') ? 'âœ“ Current Plan' : btnTxt}</button>
     </div>`;
 
   $('plan-grid').innerHTML =
@@ -1730,23 +1730,23 @@ function renderPlanGrid() {
     planCard('starter','STARTER','var(--cyan)','',
       [['yes','5 simulations / month'],['yes','Full 8-section report'],['yes','Monte Carlo / Risk'],
        ['yes','Customer retention analytics'],['yes','Event log'],['yes','PDF export & share link']],
-      '', ann ? 'Get Starter →' : 'Get Starter →',
+      '', ann ? 'Get Starter â†’' : 'Get Starter â†’',
       ann ? `$${planPrice('starter','annual')}` : `$${planPrice('starter','monthly')}`,
-      ann ? '/ mo · billed yearly' : '/ month') +
+      ann ? '/ mo Â· billed yearly' : '/ month') +
 
-    planCard('growth','GROWTH','var(--purple)','★ MOST POPULAR',
+    planCard('growth','GROWTH','var(--purple)','â˜… MOST POPULAR',
       [['yes','20 simulations / month'],['yes','Everything in Starter'],['yes','Sensitivity sliders'],
        ['yes','Scenario comparison'],['yes','Simulation history archive'],['yes','Priority support']],
-      'featured', ann ? 'Get Growth →' : 'Get Growth →',
+      'featured', ann ? 'Get Growth â†’' : 'Get Growth â†’',
       ann ? `$${planPrice('growth','annual')}` : `$${planPrice('growth','monthly')}`,
-      ann ? '/ mo · billed yearly' : '/ month') +
+      ann ? '/ mo Â· billed yearly' : '/ month') +
 
     planCard('professional','PROFESSIONAL','var(--amber)','',
       [['yes','60 simulations / month'],['yes','Everything in Growth'],['yes','White-label PDF export'],
        ['yes','Investor Pack export'],['yes','Client workspace'],['yes','API access (beta)']],
-      '', ann ? 'Get Professional →' : 'Get Professional →',
+      '', ann ? 'Get Professional â†’' : 'Get Professional â†’',
       ann ? `$${planPrice('professional','annual')}` : `$${planPrice('professional','monthly')}`,
-      ann ? '/ mo · billed yearly' : '/ month');
+      ann ? '/ mo Â· billed yearly' : '/ month');
 
   const existingNote = document.getElementById('annual-note');
   if (ann) {
@@ -1754,7 +1754,7 @@ function renderPlanGrid() {
       const note = document.createElement('div');
       note.id = 'annual-note';
       note.style.cssText = 'text-align:center;font-family:var(--mono);font-size:9.5px;color:var(--emerald);margin-top:.6rem;';
-      note.textContent = '✓ Annual plans save 2 months — billed as one payment per year';
+      note.textContent = 'âœ“ Annual plans save 2 months â€” billed as one payment per year';
       $('plan-grid').after(note);
     }
   } else {
@@ -1782,10 +1782,10 @@ function selectPlan(plan) {
   }
 }
 
-// ─── PAYMENT (Stripe placeholder — ready for real integration) ────────────────
+// â”€â”€â”€ PAYMENT (Stripe placeholder â€” ready for real integration) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function openPayModal(plan) {
   _payingPlan = plan;
-  const labels = { starter:`STARTER — $${planPrice('starter',_billing)}/mo`, growth:`GROWTH — $${planPrice('growth',_billing)}/mo`, professional:`PROFESSIONAL — $${planPrice('professional',_billing)}/mo` };
+  const labels = { starter:`STARTER â€” $${planPrice('starter',_billing)}/mo`, growth:`GROWTH â€” $${planPrice('growth',_billing)}/mo`, professional:`PROFESSIONAL â€” $${planPrice('professional',_billing)}/mo` };
   const titles = { starter:'Upgrade to Starter', growth:'Upgrade to Growth', professional:'Upgrade to Professional' };
   const badge = $('pay-tier-badge');
   badge.textContent = labels[plan] || plan.toUpperCase();
@@ -1795,7 +1795,7 @@ function openPayModal(plan) {
   $('pay-card').value = ''; $('pay-exp').value = ''; $('pay-cvc').value = '';
   $('pay-err').style.display = 'none';
   const btn = $('pay-submit-btn');
-  btn.disabled = false; btn.textContent = 'Subscribe Now →';
+  btn.disabled = false; btn.textContent = 'Subscribe Now â†’';
   $('pay-modal').style.display = 'flex';
 }
 
@@ -1822,9 +1822,9 @@ function processPay() {
   if (!name)                             { err.textContent = 'Enter the name on your card.'; err.style.display = 'block'; return; }
 
   const btn = $('pay-submit-btn');
-  btn.disabled = true; btn.textContent = 'Processing…';
+  btn.disabled = true; btn.textContent = 'Processingâ€¦';
   setTimeout(() => {
-    btn.disabled = false; btn.textContent = 'Subscribe Now →';
+    btn.disabled = false; btn.textContent = 'Subscribe Now â†’';
     if (U) { U.plan = _payingPlan; saveUser(); }
     $('pay-modal').style.display = 'none';
     showUserBadge();
@@ -1835,7 +1835,7 @@ function processPay() {
   }, 1800);
 }
 
-// ─── SENSITIVITY ANALYSIS ─────────────────────────────────────────────────────
+// â”€â”€â”€ SENSITIVITY ANALYSIS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 let _sensDebounce = null;
 
 function updateSensitivity() {
@@ -1846,8 +1846,8 @@ function updateSensitivity() {
   const priceP = parseInt(priceSlider.value);
   const mktP   = parseInt(mktSlider.value);
 
-  $('sens-price-disp').textContent = priceP + '%' + (priceP === 100 ? ' (original)' : priceP > 100 ? ' ▲' : ' ▼');
-  $('sens-mkt-disp').textContent   = (mktP / 100).toFixed(1) + '×' + (mktP === 100 ? ' (original)' : '');
+  $('sens-price-disp').textContent = priceP + '%' + (priceP === 100 ? ' (original)' : priceP > 100 ? ' â–²' : ' â–¼');
+  $('sens-mkt-disp').textContent   = (mktP / 100).toFixed(1) + 'Ã—' + (mktP === 100 ? ' (original)' : '');
 
   clearTimeout(_sensDebounce);
   _sensDebounce = setTimeout(() => {
@@ -1872,7 +1872,7 @@ function renderSensResult(days, mc, p, priceP, mktP) {
   const sc = calcScoresFor(days, mc, p);
   const avg = Object.values(sc).reduce((a,b)=>a+b,0) / Object.values(sc).length;
   const vrd = avg >= 62 ? 'go' : avg >= 40 ? 'modify' : 'stop';
-  const vrdLabel = vrd === 'go' ? '▲ GO' : vrd === 'modify' ? '◆ MODIFY' : '▼ STOP';
+  const vrdLabel = vrd === 'go' ? 'â–² GO' : vrd === 'modify' ? 'â—† MODIFY' : 'â–¼ STOP';
 
   // Deltas vs original
   const origDays  = S.days;
@@ -1889,7 +1889,7 @@ function renderSensResult(days, mc, p, priceP, mktP) {
   };
 
   $h('sens-result', `
-    <div class="card-lbl" style="margin-bottom:.85rem;">SIMULATED RESULT — Price ${priceP}% · Marketing ${(mktP/100).toFixed(1)}×</div>
+    <div class="card-lbl" style="margin-bottom:.85rem;">SIMULATED RESULT â€” Price ${priceP}% Â· Marketing ${(mktP/100).toFixed(1)}Ã—</div>
     <div class="sens-grid">
       <div class="sens-kpi">
         <div class="sens-kpi-val" style="color:var(--cyan)">${fmt(totalRev)} ${delta(totalRev,origRev)}</div>
@@ -1928,7 +1928,7 @@ function calcScoresFor(days, mc, p) {
   };
 }
 
-// ─── SCENARIO COMPARISON ─────────────────────────────────────────────────────
+// â”€â”€â”€ SCENARIO COMPARISON â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const SCENARIOS = { a: null, b: null };
 let _nextSlot = 'a';
 
@@ -1944,8 +1944,8 @@ function saveScenario() {
   _nextSlot = slot === 'a' ? 'b' : 'a';
   renderScenarioSlots();
   const btnEl = $('save-scenario-btn');
-  if (btnEl) btnEl.textContent = `⊞ SAVED TO ${slot.toUpperCase()} · Save ${_nextSlot.toUpperCase()} →`;
-  showToast(`Scenario saved to Slot ${slot.toUpperCase()}. ${SCENARIOS.a && SCENARIOS.b ? 'Both slots filled — go to Compare.' : 'Run another sim to fill Slot ' + _nextSlot.toUpperCase() + '.'}`);
+  if (btnEl) btnEl.textContent = `âŠž SAVED TO ${slot.toUpperCase()} Â· Save ${_nextSlot.toUpperCase()} â†’`;
+  showToast(`Scenario saved to Slot ${slot.toUpperCase()}. ${SCENARIOS.a && SCENARIOS.b ? 'Both slots filled â€” go to Compare.' : 'Run another sim to fill Slot ' + _nextSlot.toUpperCase() + '.'}`);
 }
 
 function renderScenarioSlots() {
@@ -1961,9 +1961,9 @@ function renderScenarioSlots() {
     } else {
       el.className = 'sc-slot saved';
       const totalRev = sc.days.reduce((s,d)=>s+d.rev,0).toFixed(0);
-      el.innerHTML = `<div class="sc-slot-lbl">SCENARIO ${slot.toUpperCase()} · ${sc.savedAt}</div>
+      el.innerHTML = `<div class="sc-slot-lbl">SCENARIO ${slot.toUpperCase()} Â· ${sc.savedAt}</div>
         <div class="sc-slot-idea">${sc.params.idea || '(unnamed)'}</div>
-        <div class="sc-slot-meta">${sc.params.industry} · ${fmt(sc.params.capital)} capital · ${fmt(sc.params.price)}/unit · Revenue: ${fmt(totalRev)}</div>`;
+        <div class="sc-slot-meta">${sc.params.industry} Â· ${fmt(sc.params.capital)} capital Â· ${fmt(sc.params.price)}/unit Â· Revenue: ${fmt(totalRev)}</div>`;
     }
   });
   renderComparisonTable();
@@ -2002,8 +2002,8 @@ function renderComparisonTable() {
     <table class="cmp-tbl">
       <thead><tr>
         <th>METRIC</th>
-        <th class="r" style="color:var(--cyan)">A · ${A.params.idea?.slice(0,20)||'Scenario A'}</th>
-        <th class="r" style="color:var(--purple)">B · ${B.params.idea?.slice(0,20)||'Scenario B'}</th>
+        <th class="r" style="color:var(--cyan)">A Â· ${A.params.idea?.slice(0,20)||'Scenario A'}</th>
+        <th class="r" style="color:var(--purple)">B Â· ${B.params.idea?.slice(0,20)||'Scenario B'}</th>
       </tr></thead>
       <tbody>
         ${row('Total Revenue', mA.rev, mB.rev, 'cur')}
@@ -2014,11 +2014,11 @@ function renderComparisonTable() {
         ${row('Break-Even Day', mA.be, mB.be, 'day', false)}
       </tbody>
     </table>
-    <div style="font-family:var(--mono);font-size:9px;color:var(--muted-2);margin-top:.75rem;">Green = better · Red = worse · relative to the other scenario</div>
+    <div style="font-family:var(--mono);font-size:9px;color:var(--muted-2);margin-top:.75rem;">Green = better Â· Red = worse Â· relative to the other scenario</div>
   </div>`;
 }
 
-// ─── INIT ─────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ INIT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function initHeatmap() {
   $h('day-heatmap', Array.from({length:30}, (_,i) =>
     `<div class="dhc future">${i+1}</div>`
@@ -2050,8 +2050,10 @@ if (loadFromStorage()) {
   $v('i-mkt', q.get('mkt')); $v('i-ind', q.get('ind')); $v('i-price', q.get('price'));
   $v('i-mktbud', q.get('mktbud')); $v('i-team', q.get('team'));
   updatePriceLabel(q.get('ind') || 'food');
-  showToast('Pre-filled from shared link — hit ▶ START to run the simulation.');
+  showToast('Pre-filled from shared link â€” hit â–¶ START to run the simulation.');
 })();
 </script>
 </body>
 </html>
+
+
