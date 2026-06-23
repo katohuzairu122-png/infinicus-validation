@@ -1,18 +1,20 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" role="img" aria-label="INFINICUS Engine mark">
-  <defs>
-    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
-      <feGaussianBlur stdDeviation="2.5" result="blur"/>
-      <feMerge>
-        <feMergeNode in="blur"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
-    </filter>
-  </defs>
-  <rect width="200" height="200" rx="36" fill="#000000"/>
-  <path d="M 100,85 C 100,57 28,57 28,85 C 28,113 100,113 100,85 C 100,57 172,57 172,85 C 172,113 100,113 100,85"
-    fill="#00e060" filter="url(#glow)"/>
-  <text x="100" y="140" font-family="'Arial Black','Arial',sans-serif" font-size="18" font-weight="900"
-    fill="#00e060" text-anchor="middle" letter-spacing="2" filter="url(#glow)">INFINICUS</text>
-  <text x="100" y="158" font-family="Arial,sans-serif" font-size="9.5" font-weight="400"
-    fill="#556678" text-anchor="middle" letter-spacing="2">SIMULATOR ENGINE</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="0" fill="#07080a"/>
+  <rect x="48" y="48" width="416" height="416" rx="72" fill="none" stroke="#00e676" stroke-width="6" opacity="0.85"/>
+  <!-- infinity mark -->
+  <g fill="none" stroke="#00e676" stroke-width="26" stroke-linecap="round">
+    <path d="M196 232
+             C 168 200, 120 200, 120 248
+             C 120 296, 168 296, 196 264
+             C 224 232, 288 232, 316 264
+             C 344 296, 392 296, 392 248
+             C 392 200, 344 200, 316 232
+             C 288 264, 224 264, 196 232 Z"
+          transform="translate(0,8)"/>
+  </g>
+  <text x="256" y="372" text-anchor="middle"
+        font-family="Bebas Neue, Arial, sans-serif" font-size="58"
+        letter-spacing="8" fill="#00e676">INFINICUS</text>
+  <text x="256" y="404" text-anchor="middle"
+        font-family="monospace" font-size="20" letter-spacing="4" fill="#5a6080">SIMULATOR ENGINE</text>
 </svg>
