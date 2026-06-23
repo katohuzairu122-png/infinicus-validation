@@ -54,7 +54,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.85
 @keyframes blink{50%{opacity:.5;}}
 
 /* SECTIONS */
-.section{display:none;padding:1.75rem;animation:fadeUp .2s ease;}
+.section{display:none;padding:1.75rem;animation:fadeUp .2s ease;position:relative;}
 .section.active{display:block;}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
 
@@ -356,7 +356,6 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
 .cmp-tbl td.same{color:var(--text);}
 
 /* LOCK OVERLAY */
-.section{position:relative;}
 .lock-overlay{position:absolute;inset:0;background:rgba(6,10,20,.82);backdrop-filter:blur(5px);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.7rem;z-index:20;min-height:240px;}
 .lock-icon{font-size:30px;}
 .lock-h{font-family:var(--head);font-size:16px;font-weight:800;}
@@ -420,6 +419,11 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
     <button class="pill" onclick="qf('gym')">💪 Private Gym</button>
     <button class="pill" onclick="qf('agency')">🎯 Agency</button>
     <button class="pill" onclick="qf('cafe')">☕ Café</button>
+    <button class="pill" onclick="qf('health')">🏥 Telemedicine</button>
+    <button class="pill" onclick="qf('edtech')">🎓 EdTech</button>
+    <button class="pill" onclick="qf('market')">🛒 Marketplace</button>
+    <button class="pill" onclick="qf('events')">🎉 Events</button>
+    <button class="pill" onclick="qf('fintech')">💳 FinTech</button>
   </div>
   <div class="form-grid">
     <div class="fg full">
@@ -1744,11 +1748,17 @@ function renderPlanGrid() {
       ann ? `$${planPrice('professional','annual')}` : `$${planPrice('professional','monthly')}`,
       ann ? '/ mo · billed yearly' : '/ month');
 
+  const existingNote = document.getElementById('annual-note');
   if (ann) {
-    const note = document.createElement('div');
-    note.style.cssText = 'text-align:center;font-family:var(--mono);font-size:9.5px;color:var(--emerald);margin-top:.6rem;';
-    note.textContent = '✓ Annual plans save 2 months — billed as one payment per year';
-    $('plan-grid').after(note);
+    if (!existingNote) {
+      const note = document.createElement('div');
+      note.id = 'annual-note';
+      note.style.cssText = 'text-align:center;font-family:var(--mono);font-size:9.5px;color:var(--emerald);margin-top:.6rem;';
+      note.textContent = '✓ Annual plans save 2 months — billed as one payment per year';
+      $('plan-grid').after(note);
+    }
+  } else {
+    if (existingNote) existingNote.remove();
   }
 }
 
