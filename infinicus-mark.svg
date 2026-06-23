@@ -1,20 +1,36 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="0" fill="#07080a"/>
-  <rect x="48" y="48" width="416" height="416" rx="72" fill="none" stroke="#00e676" stroke-width="6" opacity="0.85"/>
-  <!-- infinity mark -->
-  <g fill="none" stroke="#00e676" stroke-width="26" stroke-linecap="round">
-    <path d="M196 232
-             C 168 200, 120 200, 120 248
-             C 120 296, 168 296, 196 264
-             C 224 232, 288 232, 316 264
-             C 344 296, 392 296, 392 248
-             C 392 200, 344 200, 316 232
-             C 288 264, 224 264, 196 232 Z"
-          transform="translate(0,8)"/>
-  </g>
-  <text x="256" y="372" text-anchor="middle"
-        font-family="Bebas Neue, Arial, sans-serif" font-size="58"
-        letter-spacing="8" fill="#00e676">INFINICUS</text>
-  <text x="256" y="404" text-anchor="middle"
-        font-family="monospace" font-size="20" letter-spacing="4" fill="#5a6080">SIMULATOR ENGINE</text>
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" width="512" height="512" role="img">
+  <title>INFINICUS SIMULATOR ENGINE Logo</title>
+
+  <!-- Canvas -->
+  <rect width="512" height="512" fill="#000000"/>
+
+  <!-- Outer border -->
+  <rect x="28" y="28" width="456" height="456" rx="88" ry="88"
+        fill="none" stroke="#00E676" stroke-width="10" opacity="0.92"/>
+
+  <!-- Horizontal connecting bar (behind rings) -->
+  <rect x="46" y="243" width="420" height="18" fill="#00E676"/>
+
+  <!-- Left ring -->
+  <circle cx="130" cy="252" r="86" fill="#00E676"/>
+  <circle cx="130" cy="252" r="52" fill="#000000"/>
+
+  <!-- Right ring -->
+  <circle cx="382" cy="252" r="86" fill="#00E676"/>
+  <circle cx="382" cy="252" r="52" fill="#000000"/>
+
+  <!-- INFINICUS wordmark -->
+  <text x="256" y="394"
+        text-anchor="middle"
+        font-family="'Arial','Helvetica Neue',sans-serif"
+        font-size="50" font-weight="300" letter-spacing="10"
+        fill="#00E676">INFINICUS</text>
+
+  <!-- SIMULATOR ENGINE tagline -->
+  <text x="256" y="430"
+        text-anchor="middle"
+        font-family="'Arial','Helvetica Neue',sans-serif"
+        font-size="15" font-weight="300" letter-spacing="7"
+        fill="#7A7F9A">SIMULATOR ENGINE</text>
+
 </svg>
