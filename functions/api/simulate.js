@@ -162,7 +162,9 @@ export async function onRequest(context) {
 
     let aiData;
     try {
-      const cleaned = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      // Extract JSON from anywhere in the response (handles markdown fences, preamble, etc.)
+      const jsonMatch = raw.match(/\{[\s\S]*\}/);
+      const cleaned = jsonMatch ? jsonMatch[0] : raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
       aiData = JSON.parse(cleaned);
     } catch {
       aiData = {
