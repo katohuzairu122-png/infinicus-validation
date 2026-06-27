@@ -628,6 +628,7 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
     <div class="empty-state"><p>Run a simulation to receive a verdict.</p></div>
   </div>
   <div id="verdict-capital-advice"></div>
+  <div id="resim-panel"></div>
   <div class="g2" id="verdict-detail"></div>
 </section>
 
@@ -768,7 +769,7 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
 
 <script>
 // ─── STATE ───────────────────────────────────────────────────────────────────
-const S = { running:false, done:false, days:[], events:[], mc:null, scores:null, params:{}, timer:null };
+const S = { running:false, done:false, days:[], events:[], mc:null, scores:null, params:{}, timer:null, aiData:null };
 
 // ─── CURRENCIES ──────────────────────────────────────────────────────────────
 const CUR = {
@@ -1451,6 +1452,93 @@ function renderLog() {
 }
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
+// ─── SMART RE-SIMULATE ───────────────────────────────────────────────────────
+function calcSuggestedFix() {
+  if(!S.done) return null;
+  const p=S.params, d=S.days, last=d[d.length-1];
+  const profDays=d.filter(x=>x.profit>0).length;
+  const mcSurv=S.mc.survivalRate;
+  const totalRev=d.reduce((s,x)=>s+x.rev,0);
+  const totalCost=d.reduce((s,x)=>s+x.cost,0);
+  const v=computeVerdict();
+  if(v==='go') return null; // no fix needed
+
+  const fixes=[], newParams={...p};
+
+  // Too few profitable days → price is likely too low
+  if(profDays<20){
+    const newPrice=+(p.price*1.35).toFixed(2);
+    fixes.push({label:'Selling Price',old:fmt(p.price),new:fmt(newPrice),note:'Revenue per sale is too low. +35% price often flips profitability.',field:'price',val:newPrice});
+    newParams.price=newPrice;
+  }
+  // Cash went negative → need more capital
+  if(last.cash<0){
+    const newCap=Math.round(p.capital*1.6);
+    fixes.push({label:'Starting Capital',old:fmt(p.capital),new:fmt(newCap),note:'Business ran out of money. +60% capital buys time to reach profitability.',field:'capital',val:newCap});
+    newParams.capital=newCap;
+  }
+  // Low MC survival → burning too fast, cut marketing
+  if(mcSurv<0.45){
+    const newMkt=Math.round(p.mktBud*0.65);
+    fixes.push({label:'Marketing Budget',old:fmt(p.mktBud),new:fmt(newMkt),note:'High burn rate. Cut marketing -35% to reduce risk while validating the model.',field:'mktBud',val:newMkt});
+    newParams.mktBud=newMkt;
+  }
+  // Costs > revenue by huge margin → also cut marketing if not already
+  if(totalCost>totalRev*2 && mcSurv>=0.45){
+    const newMkt=Math.round(p.mktBud*0.7);
+    fixes.push({label:'Marketing Budget',old:fmt(p.mktBud),new:fmt(newMkt),note:'Costs are more than double revenue. Lean down spend to extend runway.',field:'mktBud',val:newMkt});
+    newParams.mktBud=newMkt;
+  }
+
+  return fixes.length ? {fixes, newParams} : null;
+}
+
+function renderResimPanel() {
+  const result=calcSuggestedFix();
+  if(!result) return '';
+  const {fixes}=result;
+  const v=computeVerdict();
+  const borderCol=v==='modify'?'var(--amber)':'rgba(244,63,94,.6)';
+  return `
+  <div style="background:rgba(0,0,0,.25);border:1px solid ${borderCol};border-left:3px solid ${borderCol};border-radius:12px;padding:1.25rem;margin-bottom:1.25rem;">
+    <div style="font-family:var(--mono);font-size:9px;letter-spacing:.12em;color:var(--amber);margin-bottom:.85rem;">🔧 SMART FIX · WHAT IF YOU CHANGED THESE NUMBERS?</div>
+    <div style="font-size:12px;color:var(--muted-2);margin-bottom:1rem;line-height:1.6">
+      Based on what broke in this simulation, here are the specific adjustments that could improve your outcome. Click <strong style="color:var(--text)">Apply & Re-Simulate</strong> to instantly see a new 60-day prediction with these changes.
+    </div>
+    <div style="display:flex;flex-direction:column;gap:.6rem;margin-bottom:1rem">
+      ${fixes.map(f=>`
+      <div style="background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:8px;padding:.75rem 1rem">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.25rem">
+          <span style="font-family:var(--mono);font-size:10px;color:var(--muted)">${f.label}</span>
+          <span style="font-family:var(--mono);font-size:11px">
+            <span style="color:var(--red);text-decoration:line-through">${f.old}</span>
+            <span style="color:var(--muted-2);margin:0 .35rem">→</span>
+            <span style="color:var(--emerald);font-weight:700">${f.new}</span>
+          </span>
+        </div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--muted-2)">${f.note}</div>
+      </div>`).join('')}
+    </div>
+    <button onclick="applyAndReSim()" style="width:100%;padding:.75rem;background:linear-gradient(135deg,rgba(0,224,118,.15),rgba(0,200,100,.08));border:1px solid rgba(0,224,118,.4);border-radius:8px;color:var(--emerald);font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.08em;cursor:pointer;">
+      ▶ APPLY FIXES &amp; RE-SIMULATE
+    </button>
+  </div>`;
+}
+
+function applyAndReSim() {
+  const result=calcSuggestedFix();
+  if(!result) return;
+  const {newParams}=result;
+  // Apply to form fields (convert back to display currency)
+  const rate=CUR[curCode]?.r||1;
+  if(newParams.capital!==S.params.capital){ const el=$('i-cap'); if(el) el.value=Math.round(newParams.capital*rate); }
+  if(newParams.price!==S.params.price){ const el=$('i-price'); if(el) el.value=+(newParams.price*rate).toFixed(2); }
+  if(newParams.mktBud!==S.params.mktBud){ const el=$('i-mktbud'); if(el) el.value=Math.round(newParams.mktBud*rate); }
+  showToast('Fixes applied — running new simulation…');
+  // Switch to input tab and re-run after short delay
+  setTimeout(()=>{ startSim(); }, 400);
+}
+
 function computeVerdict() {
   const sc=calcScores();
   const avg=Object.values(sc).reduce((s,v)=>s+v,0)/4;
@@ -1681,9 +1769,13 @@ function renderVerdict() {
     FINANCIAL:   {q:'Does the money flow make sense?', tip:'Above 70 = your cash and revenue ratio is solid. Below 50 = costs are eating your margins.'},
   };
 
-  // Inject capital advice above the score cards
+  // Inject capital advice and re-simulate panel
   const capAdviceEl = document.getElementById('verdict-capital-advice');
   if (capAdviceEl) capAdviceEl.innerHTML = renderCapitalAdvice();
+  // Re-simulate panel renders after AI loads (see callAI .then handler)
+  // But show a placeholder if verdict is not GO
+  const rsp=$('resim-panel');
+  if(rsp && v!=='go') rsp.innerHTML=`<div style="font-family:var(--mono);font-size:9px;color:var(--muted-2);text-align:center;padding:.5rem">Loading smart fix suggestions…</div>`;
 
   $h('verdict-detail',`
     <div class="card">
@@ -1730,6 +1822,7 @@ function renderVerdict() {
     breakEvenDay:(d.findIndex(x=>x.cash>S.params.capital)+1)||0
   };
   callAI(S.params,sc,metrics,v).then(ai=>{
+    S.aiData = ai; // store for report section
     const loading=$('ai-verdict-loading'), content=$('ai-verdict-content');
     if(!loading||!content) return;
     if(!ai){loading.textContent='AI analysis unavailable (API not configured).';return;}
@@ -1740,6 +1833,9 @@ function renderVerdict() {
       ${ai.actions?.length?`<div style="font-family:var(--mono);font-size:9px;color:var(--muted-2);letter-spacing:.1em;margin-bottom:.5rem">RECOMMENDED ACTIONS</div>
       ${ai.actions.map(a=>`<div class="ai-action-item ${a.priority||'LOW'}"><span style="font-size:8px;opacity:.7">${a.priority} · </span>${a.action}</div>`).join('')}`:''}
       ${ai.investorNote?`<div style="margin-top:.85rem;padding:.6rem .85rem;background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.15);border-radius:8px;font-family:var(--mono);font-size:10px;color:var(--purple)">💼 ${ai.investorNote}</div>`:''}`;
+    // Render re-simulate panel after AI loads
+    const rsp=$('resim-panel');
+    if(rsp) rsp.innerHTML=renderResimPanel();
   });
 }
 
@@ -1886,16 +1982,19 @@ function renderReport() {
     breakEvenDay:beDay>=0?beDay+1:0
   };
   callAI(S.params,sc,metrics,v).then(ai=>{
+    if(ai) S.aiData = ai;
     const loading=$('ai-report-loading'), content=$('ai-report-content');
     if(!loading||!content) return;
     if(!ai){loading.textContent='AI plan unavailable — API key not configured.';return;}
     loading.style.display='none'; content.style.display='block';
-    const plan=ai.thirtyDayPlan||{};
+    const plan=ai.sixtyDayPlan||ai.thirtyDayPlan||{};
+    const weekKeys=['week1','week2','week3','week4','week5','week6','week7','week8'];
+    const weekLabels=['Days 1–7','Days 8–14','Days 15–21','Days 22–28','Days 29–35','Days 36–42','Days 43–49','Days 50–60'];
     content.innerHTML=`
       <div style="font-size:13px;line-height:1.75;color:var(--muted);margin-bottom:1rem">${ai.summary||''}</div>
-      ${plan.week1||plan.week2?`<div class="wk-grid">
-        ${['week1','week2','week3','week4'].map((wk,i)=>plan[wk]?`
-        <div class="phase"><div class="phase-t">WEEK ${i+1}</div><div class="phase-b">${plan[wk]}</div></div>`:'').join('')}
+      ${weekKeys.some(wk=>plan[wk])?`<div class="wk-grid">
+        ${weekKeys.map((wk,i)=>plan[wk]?`
+        <div class="phase"><div class="phase-t">WEEK ${i+1} · ${weekLabels[i]}</div><div class="phase-b">${plan[wk]}</div></div>`:'').join('')}
       </div>`:''}
       ${ai.strengths?.length?`<div style="margin-top:.75rem"><div style="font-family:var(--mono);font-size:9px;color:var(--emerald);letter-spacing:.1em;margin-bottom:.4rem">STRENGTHS</div>
       ${ai.strengths.map(s=>`<div style="font-family:var(--mono);font-size:10.5px;padding:.3rem 0;border-bottom:1px solid var(--line)">✓ ${s}</div>`).join('')}</div>`:''}
