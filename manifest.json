@@ -1,0 +1,24 @@
+{
+  "name": "INFINICUS Engine v3",
+  "short_name": "INFINICUS",
+  "description": "60-day Monte Carlo business simulation. Go / Modify / Stop verdict in under 60 seconds.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#07080a",
+  "theme_color": "#07080a",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "./infinicus logo.jpeg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./infinicus logo.jpeg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,181 @@
+// api/simulate.js — INFINICUS ENGINE v3
+// Vercel serverless function · Anthropic-powered AI verdict & narrative
+// Deploy: vercel deploy · Env: ANTHROPIC_API_KEY
+
+import Anthropic from '@anthropic-ai/sdk';
+
+const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+// ─── CORS headers ─────────────────────────────────────────────────────────────
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, X-Infinicus-Key',
+  'Content-Type': 'application/json',
+};
+
+// ─── Rate limiting (per IP, in-memory — resets on cold start) ─────────────────
+const rateMap = new Map();
+const RATE_LIMIT = 10; // requests per hour per IP
+const RATE_WINDOW = 60 * 60 * 1000; // 1 hour
+
+function checkRate(ip) {
+  const now = Date.now();
+  const entry = rateMap.get(ip) || { count: 0, reset: now + RATE_WINDOW };
+  if (now > entry.reset) { entry.count = 0; entry.reset = now + RATE_WINDOW; }
+  entry.count++;
+  rateMap.set(ip, entry);
+  return entry.count <= RATE_LIMIT;
+}
+
+// ─── Input validation ──────────────────────────────────────────────────────────
+function validate(body) {
+  const required = ['idea', 'capital', 'price', 'mktBud', 'team', 'industry', 'scores', 'metrics'];
+  for (const k of required) {
+    if (body[k] === undefined || body[k] === null || body[k] === '') {
+      return `Missing required field: ${k}`;
+    }
+  }
+  if (typeof body.idea !== 'string' || body.idea.length > 1000) return 'Invalid idea field';
+  if (body.capital < 0 || body.capital > 100_000_000) return 'Capital out of range';
+  if (body.price < 0 || body.price > 1_000_000) return 'Price out of range';
+  return null;
+}
+
+// ─── Build the Claude prompt ───────────────────────────────────────────────────
+function buildPrompt(data) {
+  const {
+    idea, capital, price, mktBud, team, industry, loc, mkt,
+    scores, metrics, verdict, mcSurvival
+  } = data;
+
+  const scoreList = Object.entries(scores)
+    .map(([k, v]) => `  • ${k}: ${v}/100`).join('\n');
+
+  return `You are an expert startup analyst and business advisor providing a concise, data-backed assessment of a simulated business.
+
+BUSINESS INPUT:
+  Idea: ${idea}
+  Industry: ${industry}
+  Location: ${loc || 'Not specified'}
+  Target Market: ${mkt || 'Not specified'}
+  Startup Capital: $${Number(capital).toLocaleString()}
+  Price Point: $${price}
+  Monthly Marketing Budget: $${mktBud}
+  Team Size: ${team}
+
+SIMULATION RESULTS (30-day statistical engine):
+  Total Revenue: $${Math.round(metrics.totalRev).toLocaleString()}
+  Net Profit/Loss: $${Math.round(metrics.netProfit).toLocaleString()}
+  End Cash: $${Math.round(metrics.endCash).toLocaleString()}
+  Profitable Days: ${metrics.profDays}/30
+  Final Customer Count: ${metrics.finalCust}
+  Break-Even Day: ${metrics.breakEvenDay > 0 ? 'Day ' + metrics.breakEvenDay : 'Not reached'}
+  Monte Carlo Survival Rate: ${Math.round(mcSurvival * 100)}% (500 runs)
+
+SCORES:
+${scoreList}
+
+ENGINE VERDICT: ${verdict.toUpperCase()}
+
+Based strictly on these simulation results, provide a JSON response with the following structure:
+{
+  "headline": "One punchy sentence summarising the verdict (max 15 words)",
+  "summary": "2-3 sentence plain-English assessment of viability. Be direct and honest.",
+  "strengths": ["up to 3 specific strengths based on the data"],
+  "risks": ["up to 3 specific risks based on the data"],
+  "actions": [
+    {"priority": "HIGH|MEDIUM|LOW", "action": "Specific, actionable recommendation"},
+    {"priority": "HIGH|MEDIUM|LOW", "action": "Specific, actionable recommendation"},
+    {"priority": "HIGH|MEDIUM|LOW", "action": "Specific, actionable recommendation"}
+  ],
+  "investorNote": "One sentence an investor would say about this business at this stage",
+  "thirtyDayPlan": {
+    "week1": "Focus for days 1-7",
+    "week2": "Focus for days 8-14",
+    "week3": "Focus for days 15-21",
+    "week4": "Focus for days 22-30"
+  }
+}
+
+Respond with valid JSON only. No markdown. No preamble.`;
+}
+
+// ─── Main handler ──────────────────────────────────────────────────────────────
+export default async function handler(req, res) {
+  // Preflight
+  if (req.method === 'OPTIONS') {
+    return res.status(200).set(CORS).end();
+  }
+
+  // Method gate
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  // API key gate (optional — set INFINICUS_API_KEY in Vercel env to restrict)
+  const apiKey = process.env.INFINICUS_API_KEY;
+  if (apiKey && req.headers['x-infinicus-key'] !== apiKey) {
+    return res.status(401).set(CORS).json({ error: 'Unauthorized' });
+  }
+
+  // Rate limit
+  const ip = req.headers['x-forwarded-for']?.split(',')[0] || req.socket?.remoteAddress || 'unknown';
+  if (!checkRate(ip)) {
+    return res.status(429).set(CORS).json({ error: 'Rate limit exceeded. Try again in an hour.' });
+  }
+
+  // Parse body
+  let body;
+  try {
+    body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+  } catch {
+    return res.status(400).set(CORS).json({ error: 'Invalid JSON body' });
+  }
+
+  // Validate
+  const err = validate(body);
+  if (err) return res.status(400).set(CORS).json({ error: err });
+
+  // Call Anthropic
+  try {
+    const message = await client.messages.create({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 1024,
+      messages: [{ role: 'user', content: buildPrompt(body) }],
+    });
+
+    const raw = message.content[0]?.text || '';
+
+    // Parse JSON response
+    let aiData;
+    try {
+      // Strip any accidental markdown fences
+      const cleaned = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      aiData = JSON.parse(cleaned);
+    } catch {
+      // If JSON parse fails, return raw text in a safe wrapper
+      aiData = {
+        headline: 'AI analysis complete',
+        summary: raw.slice(0, 500),
+        strengths: [],
+        risks: [],
+        actions: [],
+        investorNote: '',
+        thirtyDayPlan: { week1: '', week2: '', week3: '', week4: '' }
+      };
+    }
+
+    return res.status(200).set(CORS).json({ ok: true, data: aiData });
+
+  } catch (e) {
+    console.error('Anthropic error:', e);
+
+    // Graceful degradation — return a null signal so client falls back to local verdict
+    return res.status(500).set(CORS).json({
+      ok: false,
+      error: 'AI analysis unavailable',
+      fallback: true
+    });
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "functions": {
+    "api/simulate.js": {
+      "maxDuration": 30
+    }
+  },
+  "env": {
+    "INFINICUS_API_KEY": "@infinicus_api_key",
+    "ANTHROPIC_API_KEY": "@anthropic_api_key"
+  }
+}
