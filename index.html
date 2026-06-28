@@ -10,6 +10,8 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;600;700&family=Sora:wght@700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <meta name="theme-color" content="#00e060">
 <link rel="manifest" href="./manifest.json">
+<!-- Cloudflare Web Analytics — replace TOKEN with your token from Cloudflare Dashboard → Analytics → Web Analytics -->
+<script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "REPLACE_WITH_YOUR_CF_ANALYTICS_TOKEN"}'></script>
 <link rel="icon" type="image/svg+xml" href="./infinicus-mark.svg">
 <!-- inline favicon fallback -->
 <link rel="shortcut icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230e1628'/><text y='67' x='50' text-anchor='middle' font-size='54' font-weight='800' fill='%2300e060' font-family='system-ui'>∞</text></svg>">
@@ -366,6 +368,36 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
 .lock-icon{font-size:30px;}
 .lock-h{font-family:var(--head);font-size:16px;font-weight:800;}
 .lock-p{font-family:var(--mono);font-size:10px;color:var(--muted);text-align:center;max-width:230px;line-height:1.6;}
+
+/* HISTORY PANEL */
+.hist-item{background:var(--glass);border:1px solid var(--line);border-radius:10px;padding:1rem 1.25rem;margin-bottom:.65rem;display:flex;align-items:center;gap:1rem;transition:border-color .2s,background .2s;}
+.hist-item:hover{border-color:rgba(0,224,96,.25);background:rgba(0,224,96,.02);}
+.hist-verdict-badge{font-family:var(--head);font-size:16px;font-weight:800;width:64px;flex-shrink:0;text-align:center;padding:.3rem .5rem;border-radius:6px;}
+.hist-verdict-badge.go{color:var(--emerald);background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.25);}
+.hist-verdict-badge.modify{color:var(--amber);background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2);}
+.hist-verdict-badge.stop{color:var(--red);background:rgba(244,63,94,.1);border:1px solid rgba(244,63,94,.2);}
+.hist-meta{flex:1;min-width:0;}
+.hist-idea{font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:.3rem;}
+.hist-stats{font-family:var(--mono);font-size:9.5px;color:var(--muted-2);display:flex;gap:1rem;flex-wrap:wrap;}
+.hist-date{font-family:var(--mono);font-size:9px;color:var(--muted-2);text-align:right;flex-shrink:0;}
+
+/* MOBILE */
+@media(max-width:600px){
+  .day-heatmap{grid-template-columns:repeat(6,1fr);gap:3px;}
+  .dhc{font-size:7px;}
+  .wk-grid{grid-template-columns:1fr 1fr;}
+  .verdict-label{font-size:40px;}
+  .pg-title{font-size:clamp(22px,6vw,36px);}
+  .hdr-right{gap:6px;}
+  .cur-select{font-size:8.5px;padding:4px 6px;}
+  section.section{padding:1.25rem;}
+}
+@media(max-width:420px){
+  .wk-grid{grid-template-columns:1fr;}
+  .day-heatmap{grid-template-columns:repeat(5,1fr);}
+  .hist-item{flex-wrap:wrap;gap:.6rem;}
+  .hist-date{width:100%;text-align:left;}
+}
 </style>
 </head>
 <body>
@@ -388,6 +420,7 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
     <button class="nb"        data-section="report"      onclick="nav('report')">REPORT &amp; PLAN</button>
     <button class="nb"        data-section="sensitivity" onclick="nav('sensitivity')">SENSITIVITY</button>
     <button class="nb"        data-section="compare"     onclick="nav('compare')">COMPARE</button>
+    <button class="nb"        data-section="history"     onclick="nav('history')">HISTORY</button>
   </nav>
   <div class="hdr-right">
     <span id="user-badge" class="user-badge free" onclick="openPlanModal()" title="View or change your plan"></span>
@@ -695,6 +728,37 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
     </div>
   </div>
 </section>
+
+<!-- ══ HISTORY ══ -->
+<section class="section" id="sec-history">
+  <div class="pg-title" style="font-size:22px;margin-bottom:.1rem;">SIMULATION <span class="c">HISTORY</span></div>
+  <div class="pg-sub">// YOUR LAST 20 RUNS · STORED LOCALLY IN YOUR BROWSER</div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;flex-wrap:wrap;gap:.5rem;">
+    <span style="font-family:var(--mono);font-size:10px;color:var(--muted-2);">
+      <span id="hist-count" style="color:var(--cyan)">0 runs</span> · Each simulation is auto-saved when it completes.
+    </span>
+    <button onclick="clearHistory()" style="background:none;border:1px solid rgba(244,63,94,.3);color:var(--red);font-family:var(--mono);font-size:9.5px;padding:5px 14px;border-radius:6px;cursor:pointer;letter-spacing:.05em;transition:background .2s;" onmouseover="this.style.background='rgba(244,63,94,.08)'" onmouseout="this.style.background='none'">✕ CLEAR ALL</button>
+  </div>
+  <div id="history-list"></div>
+</section>
+
+<!-- ══ EMAIL CAPTURE MODAL ══ -->
+<div class="modal-overlay" id="email-capture-modal" style="display:none" role="dialog" aria-modal="true">
+  <div class="modal-box" style="text-align:center;border-color:rgba(16,185,129,.3);">
+    <button class="modal-close" onclick="closeEmailCapture()" aria-label="Close">×</button>
+    <div style="font-size:36px;margin-bottom:.75rem;">🚀</div>
+    <div class="modal-h" style="color:var(--emerald)">Your Business Got a GO!</div>
+    <div class="modal-sub">The engine validated your concept. Get a free PDF report + weekly founder insights from INFINICUS.</div>
+    <div class="modal-field">
+      <label for="email-capture-input">YOUR EMAIL</label>
+      <input id="email-capture-input" type="email" placeholder="you@example.com" autocomplete="email" onkeydown="if(event.key==='Enter')submitEmailCapture()">
+    </div>
+    <div class="modal-err" id="email-capture-err"></div>
+    <button class="btn-launch" style="width:100%;background:linear-gradient(135deg,var(--emerald),var(--cyan));margin-top:.25rem" onclick="submitEmailCapture()">Send My Report →</button>
+    <p class="modal-fine" style="margin-top:.75rem">No spam. Unsubscribe any time. Data stored locally only.</p>
+    <button onclick="closeEmailCapture()" style="background:none;border:none;color:var(--muted-2);font-family:var(--mono);font-size:9.5px;cursor:pointer;margin-top:.35rem;letter-spacing:.04em;">No thanks, skip →</button>
+  </div>
+</div>
 
 <!-- ══ REGISTRATION MODAL ══ -->
 <div class="modal-overlay" id="reg-modal" style="display:none" role="dialog" aria-modal="true" aria-labelledby="reg-modal-h">
@@ -1067,6 +1131,7 @@ function nav(id) {
   window.scrollTo(0,0);
   if (id==='sensitivity'&&S.done) updateSensitivity();
   if (id==='compare'){renderScenarioSlots();renderComparisonTable();}
+  if (id==='history') renderHistory();
 }
 
 // ─── SIMULATION CONTROLS ─────────────────────────────────────────────────────
@@ -1094,6 +1159,7 @@ function startSim() {
   if (capital<=0){errBox.textContent='Enter a startup capital greater than 0.';errBox.style.display='block';return;}
   if (price<=0) {errBox.textContent='Enter a price point greater than 0.';errBox.style.display='block';return;}
   S.params={idea,capital,price,mktBud,team,industry,loc,mkt};
+  trackEvent('sim_start',{industry,cur:curCode});
   S.running=true;S.done=false;S.scores=null;
   setBadge('running');
   $('launch-btn').disabled=true;$('stop-btn').disabled=false;
@@ -1132,7 +1198,10 @@ function finalize() {
   if ($('dash-actions')) $('dash-actions').style.display='flex';
   if (U){U.simCount=(U.simCount||0)+1;saveUser();}
   saveToStorage();
+  saveToHistory();
   renderAll();
+  trackEvent('sim_complete',{verdict:computeVerdict(),industry:S.params.industry,surv:Math.round(S.mc.survivalRate*100)});
+  maybeShowEmailCapture();
 }
 
 function stopSim() {
@@ -2031,14 +2100,15 @@ function renderReport() {
       © 2026 INFINICUS ENGINE v3 · Generated ${new Date().toLocaleDateString()}
     </div>`);
 
-  // Async AI 30-day plan
+  // Async AI plan — use S.aiData cache if verdict section already fetched it
   const metrics={
     totalRev, netProfit:totalRev-totalCost, endCash:last.cash,
     profDays, finalCust:last.customers,
     breakEvenDay:beDay>=0?beDay+1:0
   };
-  callAI(S.params,sc,metrics,v).then(ai=>{
-    if(ai) S.aiData = ai;
+  const _rptAIPromise = S.aiData ? Promise.resolve(S.aiData) : callAI(S.params,sc,metrics,v);
+  _rptAIPromise.then(ai=>{
+    if(ai && !S.aiData) S.aiData = ai;
     const loading=$('ai-report-loading'), content=$('ai-report-content');
     if(!loading||!content) return;
     if(!ai){loading.textContent='AI plan unavailable — API key not configured.';return;}
@@ -2315,6 +2385,110 @@ function processPay() {
   },1400);
 }
 
+// ─── SIMULATION HISTORY ──────────────────────────────────────────────────────
+function saveToHistory() {
+  if(!S.done) return;
+  try{
+    const d=S.days, last=d[d.length-1];
+    const totalRev=d.reduce((s,x)=>s+x.rev,0);
+    const totalCost=d.reduce((s,x)=>s+x.cost,0);
+    const profDays=d.filter(x=>x.profit>0).length;
+    const rate=CUR[curCode]?.r||1;
+    const entry={
+      id:Date.now(),
+      date:new Date().toLocaleDateString(),
+      time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),
+      idea:S.params.idea.substring(0,90),
+      industry:S.params.industry,
+      currency:curCode,
+      verdict:computeVerdict(),
+      rev:Math.round(totalRev*rate),
+      profit:Math.round((totalRev-totalCost)*rate),
+      cash:Math.round(last.cash*rate),
+      profDays,
+      surv:Math.round(S.mc.survivalRate*100),
+      capital:Math.round(S.params.capital*rate),
+      customers:last.customers
+    };
+    let hist=[];
+    try{hist=JSON.parse(localStorage.getItem('infinicus_history')||'[]');}catch(e){}
+    hist.unshift(entry);
+    if(hist.length>20) hist=hist.slice(0,20);
+    localStorage.setItem('infinicus_history',JSON.stringify(hist));
+  }catch(e){}
+}
+
+function renderHistory() {
+  let hist=[];
+  try{hist=JSON.parse(localStorage.getItem('infinicus_history')||'[]');}catch(e){}
+  const el=$('history-list');
+  if(!el) return;
+  const countEl=$('hist-count');
+  if(countEl) countEl.textContent=hist.length+' run'+(hist.length===1?'':'s');
+  if(!hist.length){
+    el.innerHTML=`<div style="text-align:center;padding:3.5rem 1rem;font-family:var(--mono);font-size:11px;color:var(--muted-2);">
+      No simulations yet.<br><br>
+      <button onclick="nav('input')" style="margin-top:.5rem;padding:8px 18px;border:1px solid rgba(0,224,96,.3);background:none;color:var(--cyan);font-family:var(--mono);font-size:10px;border-radius:6px;cursor:pointer;letter-spacing:.06em;">▶ RUN YOUR FIRST SIMULATION</button>
+    </div>`;
+    return;
+  }
+  el.innerHTML=hist.map(h=>{
+    const sym=CUR[h.currency]?.s||'$';
+    const pCol=h.profit>=0?'var(--emerald)':'var(--red)';
+    const pSign=h.profit>=0?'+':'';
+    const profName=PROFILES[h.industry]?.name||h.industry;
+    return `<div class="hist-item">
+      <div class="hist-verdict-badge ${h.verdict}">${h.verdict.toUpperCase()}</div>
+      <div class="hist-meta">
+        <div class="hist-idea">${h.idea}${h.idea.length>=90?'…':''}</div>
+        <div class="hist-stats">
+          <span>🏭 ${profName}</span>
+          <span>💵 ${sym}${h.capital.toLocaleString()} capital</span>
+          <span style="color:${pCol}">${pSign}${sym}${Math.abs(h.profit).toLocaleString()} P&L</span>
+          <span>MC: <strong style="color:${h.surv>=55?'var(--emerald)':h.surv>=35?'var(--amber)':'var(--red)'}">${h.surv}%</strong></span>
+          <span>📅 ${h.profDays}/60 days</span>
+        </div>
+      </div>
+      <div class="hist-date">${h.date}<br>${h.time}<br><span style="font-size:8px;color:${h.currency==='USD'?'var(--muted-2)':'var(--cyan)'}">${h.currency}</span></div>
+    </div>`;
+  }).join('');
+}
+
+function clearHistory() {
+  if(!confirm('Clear all simulation history?')) return;
+  try{localStorage.removeItem('infinicus_history');}catch(e){}
+  renderHistory();
+  showToast('History cleared.');
+}
+
+// ─── EMAIL CAPTURE (GO verdict) ───────────────────────────────────────────────
+let _emailCaptured=false;
+function maybeShowEmailCapture() {
+  if(_emailCaptured) return;
+  if(computeVerdict()!=='go') return;
+  // Don't show if already registered
+  if(U&&U.email) return;
+  setTimeout(()=>{ $('email-capture-modal').style.display='flex'; },1200);
+}
+function closeEmailCapture() {
+  $('email-capture-modal').style.display='none';
+  _emailCaptured=true;
+}
+function submitEmailCapture() {
+  const email=$('email-capture-input').value.trim();
+  const errEl=$('email-capture-err');
+  if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+    errEl.textContent='Enter a valid email address.';errEl.style.display='block';return;
+  }
+  errEl.style.display='none';
+  if(!U){U={name:'',email,simCount:1,createdAt:Date.now(),plan:'free'};}
+  else{U.email=email;}
+  saveUser();
+  _emailCaptured=true;
+  $('email-capture-modal').style.display='none';
+  showToast('🎉 You\'re in! Check your inbox for insights.');
+}
+
 // ─── URL PARAM RESTORE ───────────────────────────────────────────────────────
 function restoreFromURL() {
   const params=new URLSearchParams(window.location.search);
@@ -2378,6 +2552,20 @@ function restoreFromURL() {
   if(SCENARIOS.length>=1&&$('save-scenario-btn'))
     $('save-scenario-btn').textContent=SCENARIOS.length>=2?'⊞ SCENARIOS FULL':'⊞ SAVE SCENARIO';
 })();
+
+// ─── ANALYTICS ───────────────────────────────────────────────────────────────
+// Track key events without collecting personal data
+function trackEvent(name,data){
+  try{
+    // Cloudflare Web Analytics — uses navigator.sendBeacon automatically
+    // Custom event store for internal reporting
+    let evts=[];
+    try{evts=JSON.parse(sessionStorage.getItem('inf_events')||'[]');}catch(e){}
+    evts.push({n:name,d:data,t:Date.now()});
+    if(evts.length>50) evts=evts.slice(-50);
+    sessionStorage.setItem('inf_events',JSON.stringify(evts));
+  }catch(e){}
+}
 
 // ─── SERVICE WORKER REGISTRATION ─────────────────────────────────────────────
 if ('serviceWorker' in navigator) {
