@@ -1532,8 +1532,10 @@ function applyAndReSim() {
   if(newParams.price!==S.params.price){ const el=$('i-price'); if(el) el.value=+(newParams.price*rate).toFixed(2); }
   if(newParams.mktBud!==S.params.mktBud){ const el=$('i-mktbud'); if(el) el.value=Math.round(newParams.mktBud*rate); }
   showToast('Fixes applied — running new simulation…');
-  // Switch to input tab and re-run after short delay
-  setTimeout(()=>{ startSim(); }, 400);
+  setTimeout(()=>{
+    startSim();
+    // After sim completes, nav() will go to dashboard automatically
+  }, 400);
 }
 
 function computeVerdict() {
@@ -1781,13 +1783,11 @@ function renderVerdict() {
     FINANCIAL:   {q:'Does the money flow make sense?', tip:'Above 70 = your cash and revenue ratio is solid. Below 50 = costs are eating your margins.'},
   };
 
-  // Inject capital advice and re-simulate panel
+  // Inject capital advice and re-simulate panel immediately
   const capAdviceEl = document.getElementById('verdict-capital-advice');
   if (capAdviceEl) capAdviceEl.innerHTML = renderCapitalAdvice();
-  // Re-simulate panel renders after AI loads (see callAI .then handler)
-  // But show a placeholder if verdict is not GO
   const rsp=$('resim-panel');
-  if(rsp && v!=='go') rsp.innerHTML=`<div style="font-family:var(--mono);font-size:9px;color:var(--muted-2);text-align:center;padding:.5rem">Loading smart fix suggestions…</div>`;
+  if(rsp) rsp.innerHTML = v!=='go' ? renderResimPanel() : '';
 
   $h('verdict-detail',`
     <div class="card">
@@ -1845,9 +1845,6 @@ function renderVerdict() {
       ${ai.actions?.length?`<div style="font-family:var(--mono);font-size:9px;color:var(--muted-2);letter-spacing:.1em;margin-bottom:.5rem">RECOMMENDED ACTIONS</div>
       ${ai.actions.map(a=>`<div class="ai-action-item ${a.priority||'LOW'}"><span style="font-size:8px;opacity:.7">${a.priority} · </span>${a.action}</div>`).join('')}`:''}
       ${ai.investorNote?`<div style="margin-top:.85rem;padding:.6rem .85rem;background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.15);border-radius:8px;font-family:var(--mono);font-size:10px;color:var(--purple)">💼 ${ai.investorNote}</div>`:''}`;
-    // Render re-simulate panel after AI loads
-    const rsp=$('resim-panel');
-    if(rsp) rsp.innerHTML=renderResimPanel();
   });
 }
 

@@ -88,17 +88,7 @@ Based strictly on these simulation results, provide a JSON response with the fol
     {"priority": "HIGH|MEDIUM|LOW", "action": "Specific, actionable recommendation"},
     {"priority": "HIGH|MEDIUM|LOW", "action": "Specific, actionable recommendation"}
   ],
-  "investorNote": "One sentence an investor would say about this business at this stage",
-  "sixtyDayPlan": {
-    "week1": "Focus for days 1-7",
-    "week2": "Focus for days 8-14",
-    "week3": "Focus for days 15-21",
-    "week4": "Focus for days 22-28",
-    "week5": "Focus for days 29-35",
-    "week6": "Focus for days 36-42",
-    "week7": "Focus for days 43-49",
-    "week8": "Focus for days 50-60"
-  }
+  "investorNote": "One sentence an investor would say about this business at this stage"
 }
 
 Respond with valid JSON only. No markdown. No preamble.`;
@@ -154,7 +144,7 @@ export async function onRequest(context) {
 
     const message = await client.messages.create({
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: 1024,
+      max_tokens: 2048,
       messages: [{ role: 'user', content: buildPrompt(body) }],
     });
 
@@ -169,10 +159,8 @@ export async function onRequest(context) {
     } catch {
       aiData = {
         headline: 'AI analysis complete',
-        summary: raw.slice(0, 500),
-        strengths: [], risks: [], actions: [],
-        investorNote: '',
-        sixtyDayPlan: { week1:'', week2:'', week3:'', week4:'', week5:'', week6:'', week7:'', week8:'' }
+        summary: raw.replace(/```json\n?/g,'').replace(/```\n?/g,'').slice(0,400),
+        strengths: [], risks: [], actions: [], investorNote: ''
       };
     }
 
