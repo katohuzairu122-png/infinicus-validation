@@ -1043,12 +1043,24 @@ function simulate(params) {
   let cash = params.capital, customers = 0;
   const dailyMkt = params.mktBud/60;
 
+  // Organic reach multiplier — reflects how discoverable the business is
+  // without paid marketing (foot traffic, community, walk-ins, word-of-mouth)
+  // Scales with team size (more people = wider community reach)
+  const organicBase = Math.max(0.8, Math.log(params.team+1) * 1.2);
+
   for (let d=1;d<=60;d++) {
     const shock = evMap[d]||1;
-    const acq   = Math.max(0,Math.floor(rNorm(dailyMkt/prof.acqCost,1.5)*shock));
+    const seasonMult = prof.season?prof.season[(d-1)%prof.season.length]:1;
+
+    // Paid acquisition (marketing budget driven)
+    const paidAcq  = Math.max(0,Math.floor(rNorm(dailyMkt/prof.acqCost,1.5)*shock));
+    // Organic acquisition: foot traffic + word-of-mouth referrals from existing base
+    const footTraffic = Math.max(0,Math.round(rNorm(organicBase,1.0)*seasonMult*shock));
+    const wordOfMouth  = Math.floor(customers*0.018); // 1.8% daily referral rate
+    const acq = paidAcq + footTraffic + wordOfMouth;
+
     const churned = Math.floor(customers*prof.churn/60);
     customers = Math.max(0,customers+acq-churned);
-    const seasonMult = prof.season?prof.season[(d-1)%prof.season.length]:1;
     const rev    = customers*(params.price*prof.visitsPerMonth/60)*rnd(.75,1.25)*shock*seasonMult;
     const fixed  = params.capital*prof.fixR/60;
     const varC   = rev*prof.varR;
@@ -1064,6 +1076,7 @@ function simulate(params) {
 function monteCarlo(params) {
   const baseProf = PROFILES[params.industry];
   const finals = [];
+  const organicBase=Math.max(0.8,Math.log(params.team+1)*1.2);
   for (let r=0;r<500;r++) {
     const p = {
       fixR:   Math.max(.03, rNorm(baseProf.fixR,   baseProf.fixR*.25)),
@@ -1075,7 +1088,10 @@ function monteCarlo(params) {
     let cash=params.capital, customers=0;
     const dailyMkt=params.mktBud/60;
     for (let d=1;d<=60;d++) {
-      const acq=Math.max(0,Math.floor(rNorm(dailyMkt/p.acqCost,1.2)));
+      const paidAcq=Math.max(0,Math.floor(rNorm(dailyMkt/p.acqCost,1.2)));
+      const footTraffic=Math.max(0,Math.round(rNorm(organicBase,1.0)));
+      const wordOfMouth=Math.floor(customers*0.018);
+      const acq=paidAcq+footTraffic+wordOfMouth;
       customers=Math.max(0,customers+acq-Math.floor(customers*p.churn/60));
       const rev=customers*(params.price*baseProf.visitsPerMonth/60)*rnd(.6,1.4);
       cash+=rev-(params.capital*p.fixR/60+rev*p.varR+dailyMkt);
