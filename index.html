@@ -381,13 +381,13 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
     <button class="nb active" data-section="input"       onclick="nav('input')">INPUT</button>
     <button class="nb"        data-section="dashboard"   onclick="nav('dashboard')">DASHBOARD</button>
     <button class="nb"        data-section="economy"     onclick="nav('economy')">ECONOMY</button>
-    <button class="nb"        data-section="customers"   onclick="nav('customers')">CUSTOMERS 🔒</button>
-    <button class="nb"        data-section="risk"        onclick="nav('risk')">RISK / MONTE CARLO 🔒</button>
-    <button class="nb"        data-section="log"         onclick="nav('log')">EVENT LOG 🔒</button>
+    <button class="nb"        data-section="customers"   onclick="nav('customers')">CUSTOMERS</button>
+    <button class="nb"        data-section="risk"        onclick="nav('risk')">RISK / MONTE CARLO</button>
+    <button class="nb"        data-section="log"         onclick="nav('log')">EVENT LOG</button>
     <button class="nb"        data-section="verdict"     onclick="nav('verdict')">VERDICT</button>
-    <button class="nb"        data-section="report"      onclick="nav('report')">REPORT &amp; PLAN 🔒</button>
-    <button class="nb"        data-section="sensitivity" onclick="nav('sensitivity')">SENSITIVITY 🔒</button>
-    <button class="nb"        data-section="compare"     onclick="nav('compare')">COMPARE 🔒</button>
+    <button class="nb"        data-section="report"      onclick="nav('report')">REPORT &amp; PLAN</button>
+    <button class="nb"        data-section="sensitivity" onclick="nav('sensitivity')">SENSITIVITY</button>
+    <button class="nb"        data-section="compare"     onclick="nav('compare')">COMPARE</button>
   </nav>
   <div class="hdr-right">
     <span id="user-badge" class="user-badge free" onclick="openPlanModal()" title="View or change your plan"></span>
@@ -1057,8 +1057,7 @@ function isGrowthPlus(){ return U&&['growth','professional'].includes(U.plan); }
 
 // ─── NAVIGATION ──────────────────────────────────────────────────────────────
 function nav(id) {
-  if (PRO_SECTIONS.includes(id)    && !isPro())       { openPlanModal(); return; }
-  if (GROWTH_SECTIONS.includes(id) && !isGrowthPlus()){ openPlanModal(); return; }
+  // Gating removed — all sections open during early access
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
   $('sec-'+id).classList.add('active');
@@ -1079,10 +1078,7 @@ function startSim() {
     if (!U){openRegModal();}else{openPlanModal();}
     return;
   }
-  if (U.plan==='free'&&(U.simCount||0)>=1) {
-    showToast('Free plan allows 1 simulation. Upgrade for unlimited.');
-    openPlanModal(); return;
-  }
+  // Sim limit removed during early access — unlimited for all users
   const idea   =$('i-idea').value.trim();
   const rate   = CUR[curCode]?.r || 1; // inputs are in display currency → normalise to USD
   const capital=(parseFloat($('i-cap').value)   ||0) / rate;
