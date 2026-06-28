@@ -409,6 +409,7 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
       <option value="GHS">₵ GHS</option>
       <option value="ZAR">R ZAR</option>
     </select>
+    <button id="pwa-install-btn" onclick="triggerInstall()" title="Install app" style="display:none;align-items:center;gap:5px;background:rgba(0,224,118,.08);border:1px solid rgba(0,224,118,.25);border-radius:7px;padding:5px 10px;color:var(--emerald);font-family:var(--mono);font-size:9.5px;cursor:pointer;letter-spacing:.05em;">⬇ INSTALL</button>
     <span class="sim-badge idle" id="sim-badge">● IDLE</span>
   </div>
 </header>
@@ -1570,19 +1571,34 @@ function showToast(msg,dur=2800) {
 function shareLink() {
   if (!S.done){showToast('Run a simulation first.');return;}
   const p=S.params;
-  // Convert stored USD values back to display currency for the link
   const rate=CUR[curCode]?.r||1;
+  const d=S.days, last=d[d.length-1];
+  const totalRev=d.reduce((s,x)=>s+x.rev,0);
+  const totalCost=d.reduce((s,x)=>s+x.cost,0);
+  const profDays=d.filter(x=>x.profit>0).length;
+  // Encode key results so recipient sees same verdict without re-running
+  const results=btoa(JSON.stringify({
+    v:computeVerdict(),
+    rev:Math.round(totalRev*rate),
+    cost:Math.round(totalCost*rate),
+    cash:Math.round(last.cash*rate),
+    cust:last.customers,
+    prof:profDays,
+    surv:Math.round(S.mc.survivalRate*100),
+    sc:calcScores()
+  }));
   const params=new URLSearchParams({
     idea:p.idea.substring(0,200),
     cap:Math.round(p.capital*rate),
     price:+(p.price*rate).toFixed(2),
     mkt:Math.round(p.mktBud*rate),
-    team:p.team,ind:p.industry,
-    loc:p.loc||'',mktSeg:p.mkt||'',
-    cur:curCode   // include currency so recipient sees the same context
+    team:p.team, ind:p.industry,
+    loc:p.loc||'', mktSeg:p.mkt||'',
+    cur:curCode,
+    r:results  // encoded results snapshot
   });
   const url=window.location.origin+window.location.pathname+'?'+params.toString();
-  navigator.clipboard.writeText(url).then(()=>showToast('Share link copied!')).catch(()=>showToast('Could not copy link.'));
+  navigator.clipboard.writeText(url).then(()=>showToast('Share link copied — results included!')).catch(()=>showToast('Could not copy link.'));
 }
 
 function fmtCard(el) {
@@ -2275,6 +2291,29 @@ function restoreFromURL() {
   $v('i-mkt',  params.get('mktSeg')||'');
   const ind=params.get('ind')||'food';
   $v('i-ind',  ind); updatePriceLabel(ind);
+  // If results snapshot is included, show a preview banner
+  const r=params.get('r');
+  if(r){
+    try{
+      const res=JSON.parse(atob(r));
+      const vCol=res.v==='go'?'var(--emerald)':res.v==='modify'?'var(--amber)':'var(--red)';
+      const cur2=params.get('cur')||'USD';
+      const sym=CUR[cur2]?.s||'$';
+      const banner=document.createElement('div');
+      banner.style.cssText='position:fixed;top:60px;left:50%;transform:translateX(-50%);z-index:400;background:var(--navy-700);border:1px solid var(--line-2);border-left:3px solid '+vCol+';border-radius:10px;padding:.75rem 1.25rem;font-family:var(--mono);font-size:10.5px;color:var(--text);max-width:420px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,.4);';
+      banner.innerHTML=`<div style="font-size:9px;color:var(--muted-2);margin-bottom:.4rem">📊 SHARED SIMULATION RESULTS</div>
+        <div style="display:flex;gap:1rem;flex-wrap:wrap">
+          <span>Verdict: <strong style="color:${vCol}">${res.v.toUpperCase()}</strong></span>
+          <span>Survival: <strong>${res.surv}%</strong></span>
+          <span>Profit days: <strong>${res.prof}/60</strong></span>
+          <span>End cash: <strong style="color:${res.cash>=0?'var(--emerald)':'var(--red)'}">${sym}${Math.abs(res.cash).toLocaleString()}</strong></span>
+        </div>
+        <div style="margin-top:.5rem;font-size:9px;color:var(--muted-2)">Re-run the simulation below to explore the full results.</div>
+        <button onclick="this.parentElement.remove()" style="position:absolute;top:.4rem;right:.6rem;background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px">×</button>`;
+      document.body.appendChild(banner);
+      setTimeout(()=>banner.remove(),12000);
+    }catch(e){}
+  }
   showToast('Simulation parameters loaded from share link.');
 }
 
@@ -2299,6 +2338,32 @@ function restoreFromURL() {
   if(SCENARIOS.length>=1&&$('save-scenario-btn'))
     $('save-scenario-btn').textContent=SCENARIOS.length>=2?'⊞ SCENARIOS FULL':'⊞ SAVE SCENARIO';
 })();
+
+// ─── SERVICE WORKER REGISTRATION ─────────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
+}
+
+// ─── PWA INSTALL PROMPT ───────────────────────────────────────────────────────
+let _deferredInstall = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  _deferredInstall = e;
+  const btn = document.getElementById('pwa-install-btn');
+  if (btn) btn.style.display = 'flex';
+});
+window.addEventListener('appinstalled', () => {
+  const btn = document.getElementById('pwa-install-btn');
+  if (btn) btn.style.display = 'none';
+  _deferredInstall = null;
+});
+function triggerInstall() {
+  if (!_deferredInstall) return;
+  _deferredInstall.prompt();
+  _deferredInstall.userChoice.then(() => { _deferredInstall = null; });
+}
 
 </script>
 </body>
