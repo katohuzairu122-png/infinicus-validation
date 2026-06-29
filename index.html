@@ -773,6 +773,20 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
   </div>
 </div>
 
+<!-- ══ CAPITAL ALTERNATIVE CONFIRM MODAL ══ -->
+<div class="modal-overlay" id="alt-confirm-modal" style="display:none" role="dialog" aria-modal="true">
+  <div class="modal-box" style="text-align:center;max-width:380px;">
+    <button class="modal-close" onclick="closeAltConfirm()" aria-label="Close">×</button>
+    <div style="font-size:30px;margin-bottom:.6rem;" id="alt-confirm-icon">⚡</div>
+    <div class="modal-h" id="alt-confirm-title" style="font-size:16px;margin-bottom:.4rem;"></div>
+    <div id="alt-confirm-body" style="font-family:var(--mono);font-size:10.5px;line-height:1.8;color:var(--muted);text-align:left;background:var(--glass);border-radius:8px;padding:.75rem 1rem;margin-bottom:1.1rem;"></div>
+    <div style="display:flex;gap:.65rem;">
+      <button onclick="closeAltConfirm()" style="flex:1;background:none;border:1px solid var(--line-2);border-radius:8px;color:var(--muted-2);font-family:var(--mono);font-size:11px;padding:10px 0;cursor:pointer;letter-spacing:.05em;transition:background .15s;" onmouseenter="this.style.background='var(--glass)'" onmouseleave="this.style.background='none'">CANCEL</button>
+      <button id="alt-confirm-apply-btn" onclick="applyAltConfirmed()" style="flex:2;border:none;border-radius:8px;font-family:var(--mono);font-size:11px;font-weight:700;padding:10px 0;cursor:pointer;letter-spacing:.07em;transition:opacity .15s;">APPLY &amp; REVIEW →</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ REGISTRATION MODAL ══ -->
 <div class="modal-overlay" id="reg-modal" style="display:none" role="dialog" aria-modal="true" aria-labelledby="reg-modal-h">
   <div class="modal-box">
@@ -1700,8 +1714,57 @@ function applyAndReSim() {
   showToast('Smart fixes applied — review highlighted fields, then press Simulate', 4000);
 }
 
+// ─── CAPITAL ALTERNATIVE CONFIRM ─────────────────────────────────────────────
+let _pendingAltMode = null;
+
+function showAltConfirm(mode) {
+  if(!S.done) { showToast('Run a simulation first.'); return; }
+  _pendingAltMode = mode;
+  const rate = CUR[curCode]?.r || 1;
+  const origCap = S.params.capital;
+  const origMkt = S.params.mktBud;
+  const origPrice = S.params.price;
+  const currentVerdict = computeVerdict();
+
+  let newCapUSD, newMktUSD, label, btnColor, btnBg, icon;
+  if (mode === 'plus60') {
+    newCapUSD = origCap * 1.60; newMktUSD = origMkt * 1.30;
+    label = 'OPTION A: +60% CAPITAL'; btnColor = '#f59e0b'; btnBg = 'linear-gradient(135deg,rgba(245,158,11,.85),rgba(245,158,11,.6))'; icon = '📈';
+  } else {
+    newCapUSD = origCap * 2.00; newMktUSD = origMkt * 1.60;
+    label = 'OPTION B: ×2 DOUBLE CAPITAL'; btnColor = '#10b981'; btnBg = 'linear-gradient(135deg,rgba(16,185,129,.85),rgba(0,224,118,.7))'; icon = '🚀';
+  }
+  const priceChanged = currentVerdict === 'stop';
+  const priceMult = mode === 'plus60' ? 1.20 : 1.35;
+  const newPriceUSD = priceChanged ? +(origPrice * priceMult).toFixed(4) : origPrice;
+
+  const titleEl=$('alt-confirm-title'), bodyEl=$('alt-confirm-body');
+  const iconEl=$('alt-confirm-icon'), btn=$('alt-confirm-apply-btn');
+  if(iconEl) iconEl.textContent = icon;
+  if(titleEl) titleEl.textContent = 'Apply ' + label + '?';
+  if(btn){ btn.style.background=btnBg; btn.style.color='#0a0a0f'; }
+  if(bodyEl) bodyEl.innerHTML =
+    `Capital: <strong style="color:var(--text)">${fmt(origCap)} → ${fmt(newCapUSD)}</strong><br>` +
+    `Marketing: <strong style="color:var(--text)">${fmt(origMkt)} → ${fmt(newMktUSD)}</strong>` +
+    (priceChanged ? `<br>Price: <strong style="color:var(--text)">${fmt(origPrice)} → ${fmt(newPriceUSD)}</strong> <span style="color:var(--muted-2);font-size:9px;">(unit economics nudge)</span>` : '') +
+    `<br><br><span style="color:var(--muted-2);">These values will be filled into your input form. Review them and press <strong style="color:var(--text);">Simulate</strong> to run the new scenario.</span>`;
+
+  const modal=$('alt-confirm-modal');
+  if(modal){ modal.style.display='flex'; modal.querySelector('.modal-box').style.borderColor=btnColor+'55'; }
+}
+
+function closeAltConfirm() {
+  const modal=$('alt-confirm-modal');
+  if(modal) modal.style.display='none';
+  _pendingAltMode=null;
+}
+
+function applyAltConfirmed() {
+  closeAltConfirm();
+  if(_pendingAltMode) applyCapitalAlternative(_pendingAltMode);
+}
+
 // ─── CAPITAL ALTERNATIVE APPLY ────────────────────────────────────────────────
-// Called when user clicks a capital alternative card in the capital advice section.
 // Fills form inputs with adjusted values and navigates to the input form.
 // User must press Simulate manually — no auto-run.
 function applyCapitalAlternative(mode) {
@@ -1989,7 +2052,7 @@ function renderCapitalAdvice() {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem;">
 
       <!-- Option A: +60% -->
-      <div onclick="applyCapitalAlternative('plus60')"
+      <div onclick="showAltConfirm('plus60')"
            onmouseenter="${hoverIn}" onmouseleave="${hoverOut}"
            style="background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.35);border-radius:10px;padding:1rem;text-align:center;cursor:pointer;transition:transform .15s,box-shadow .15s;position:relative;">
         <div style="font-family:var(--mono);font-size:8px;color:var(--amber);letter-spacing:.1em;margin-bottom:.4rem;">OPTION A · +60% CAPITAL</div>
@@ -2004,7 +2067,7 @@ function renderCapitalAdvice() {
       </div>
 
       <!-- Option B: ×2 Double -->
-      <div onclick="applyCapitalAlternative('double')"
+      <div onclick="showAltConfirm('double')"
            onmouseenter="${hoverIn}" onmouseleave="${hoverOut}"
            style="background:rgba(16,185,129,.07);border:1px solid rgba(16,185,129,.3);border-radius:10px;padding:1rem;text-align:center;cursor:pointer;transition:transform .15s,box-shadow .15s;position:relative;">
         <div style="font-family:var(--mono);font-size:8px;color:var(--emerald);letter-spacing:.1em;margin-bottom:.4rem;">OPTION B · ×2 DOUBLE CAPITAL</div>
@@ -2596,12 +2659,10 @@ function renderScenarioSlots() {
     } else {
       el.className='sc-slot saved';
       el.innerHTML=`
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.5rem;">
-          <div class="sc-slot-lbl">SCENARIO ${key.toUpperCase()}</div>
-          <button onclick="clearScenario(${i})" title="Clear this scenario" style="background:none;border:1px solid rgba(244,63,94,.35);border-radius:4px;color:var(--red);font-family:var(--mono);font-size:9px;letter-spacing:.08em;padding:2px 7px;cursor:pointer;flex-shrink:0;line-height:1.6;" onmouseenter="this.style.background='rgba(244,63,94,.12)'" onmouseleave="this.style.background='none'">✕ CLEAR</button>
-        </div>
+        <div class="sc-slot-lbl">SCENARIO ${key.toUpperCase()}</div>
         <div class="sc-slot-idea">${sc.idea.substring(0,60)}${sc.idea.length>60?'…':''}</div>
-        <div class="sc-slot-meta">${PROFILES[sc.industry]?.name||sc.industry} · ${fmt(sc.capital)} capital · verdict: <strong style="color:${sc.verdict==='go'?'var(--emerald)':sc.verdict==='modify'?'var(--amber)':'var(--red)'}">${sc.verdict.toUpperCase()}</strong></div>`;
+        <div class="sc-slot-meta">${PROFILES[sc.industry]?.name||sc.industry} · ${fmt(sc.capital)} capital · verdict: <strong style="color:${sc.verdict==='go'?'var(--emerald)':sc.verdict==='modify'?'var(--amber)':'var(--red)'}">${sc.verdict.toUpperCase()}</strong></div>
+        <button onclick="clearScenario(${i})" style="width:100%;margin-top:.75rem;background:rgba(244,63,94,.07);border:1px solid rgba(244,63,94,.35);border-radius:7px;color:var(--red);font-family:var(--mono);font-size:10px;letter-spacing:.07em;padding:7px 0;cursor:pointer;transition:background .15s;" onmouseenter="this.style.background='rgba(244,63,94,.18)'" onmouseleave="this.style.background='rgba(244,63,94,.07)'">✕ CLEAR SCENARIO</button>`;
     }
   });
 }
