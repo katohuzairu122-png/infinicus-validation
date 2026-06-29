@@ -1,7 +1,7 @@
 {
   "name": "INFINICUS Engine v3",
   "short_name": "INFINICUS",
-  "description": "60-day Monte Carlo business simulation. Go / Modify / Stop verdict in under 60 seconds.",
+  "description": "90-day Monte Carlo business simulation with AI venture analysis. Go / Modify / Stop verdict in under 60 seconds.",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#07080a",

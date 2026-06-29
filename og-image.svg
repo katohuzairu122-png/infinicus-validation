@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#060a14"/>
+      <stop offset="100%" style="stop-color:#0a1020"/>
+    </linearGradient>
+    <radialGradient id="g1" cx="15%" cy="10%" r="45%">
+      <stop offset="0%" style="stop-color:#00e060;stop-opacity:.12"/>
+      <stop offset="100%" style="stop-color:#00e060;stop-opacity:0"/>
+    </radialGradient>
+    <radialGradient id="g2" cx="90%" cy="5%" r="40%">
+      <stop offset="0%" style="stop-color:#8b5cf6;stop-opacity:.14"/>
+      <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#g1)"/>
+  <rect width="1200" height="630" fill="url(#g2)"/>
+
+  <!-- Scanline overlay -->
+  <rect width="1200" height="630" fill="none" opacity=".03"
+    style="background:repeating-linear-gradient(0deg,#000 0,#000 1px,transparent 1px,transparent 3px)"/>
+
+  <!-- Logo mark -->
+  <rect x="80" y="80" width="60" height="60" rx="14" fill="#0e1628" stroke="#00e060" stroke-opacity=".4" stroke-width="1.5"/>
+  <text x="110" y="124" font-family="system-ui" font-size="36" font-weight="800" fill="#00e060" text-anchor="middle">∞</text>
+
+  <!-- Brand name -->
+  <text x="158" y="115" font-family="system-ui,sans-serif" font-size="26" font-weight="800" fill="#e9eefb" letter-spacing="-0.5">INFIN</text>
+  <text x="284" y="115" font-family="system-ui,sans-serif" font-size="26" font-weight="800" fill="#00e060" letter-spacing="-0.5">ICUS</text>
+  <text x="158" y="135" font-family="monospace" font-size="11" fill="#5d6885" letter-spacing="2">ENGINE v3</text>
+
+  <!-- Headline -->
+  <text x="80" y="230" font-family="system-ui,sans-serif" font-size="58" font-weight="800" fill="#ffffff" letter-spacing="-1.5">Know if your idea</text>
+  <text x="80" y="305" font-family="system-ui,sans-serif" font-size="58" font-weight="800" fill="#00e060" letter-spacing="-1.5">survives the real world</text>
+  <text x="80" y="380" font-family="system-ui,sans-serif" font-size="58" font-weight="800" fill="#ffffff" letter-spacing="-1.5">before you invest.</text>
+
+  <!-- Sub -->
+  <text x="80" y="435" font-family="system-ui,sans-serif" font-size="20" fill="#8893ad">90-day Monte Carlo simulation · AI venture analysis · Go / Modify / Stop verdict</text>
+
+  <!-- Stat pills -->
+  <!-- Pill 1 -->
+  <rect x="80" y="490" width="200" height="46" rx="8" fill="#0a1020" stroke="#1a2035" stroke-width="1"/>
+  <text x="180" y="508" font-family="monospace" font-size="10" fill="#5d6885" text-anchor="middle" letter-spacing="1">SIMULATED DAYS</text>
+  <text x="180" y="528" font-family="system-ui" font-size="18" font-weight="800" fill="#00e060" text-anchor="middle">90</text>
+
+  <!-- Pill 2 -->
+  <rect x="296" y="490" width="200" height="46" rx="8" fill="#0a1020" stroke="#1a2035" stroke-width="1"/>
+  <text x="396" y="508" font-family="monospace" font-size="10" fill="#5d6885" text-anchor="middle" letter-spacing="1">MONTE CARLO RUNS</text>
+  <text x="396" y="528" font-family="system-ui" font-size="18" font-weight="800" fill="#8b5cf6" text-anchor="middle">500</text>
+
+  <!-- Pill 3 -->
+  <rect x="512" y="490" width="200" height="46" rx="8" fill="#0a1020" stroke="#1a2035" stroke-width="1"/>
+  <text x="612" y="508" font-family="monospace" font-size="10" fill="#5d6885" text-anchor="middle" letter-spacing="1">INDUSTRY PROFILES</text>
+  <text x="612" y="528" font-family="system-ui" font-size="18" font-weight="800" fill="#10b981" text-anchor="middle">12</text>
+
+  <!-- Pill 4 -->
+  <rect x="728" y="490" width="200" height="46" rx="8" fill="#0a1020" stroke="#1a2035" stroke-width="1"/>
+  <text x="828" y="508" font-family="monospace" font-size="10" fill="#5d6885" text-anchor="middle" letter-spacing="1">FREE AI ANALYSES</text>
+  <text x="828" y="528" font-family="system-ui" font-size="18" font-weight="800" fill="#f59e0b" text-anchor="middle">10</text>
+
+  <!-- URL -->
+  <text x="80" y="600" font-family="monospace" font-size="13" fill="#5d6885" letter-spacing="1">infinicus-validation.pages.dev</text>
+
+  <!-- Right side: verdict preview card -->
+  <rect x="980" y="200" width="160" height="200" rx="12" fill="#0a1020" stroke="#1a2035" stroke-width="1"/>
+  <rect x="980" y="200" width="160" height="60" rx="12" fill="#00e06018"/>
+  <rect x="980" y="248" width="160" height="12" fill="#00e06018"/>
+  <text x="1060" y="238" font-family="system-ui" font-size="14" font-weight="800" fill="#00e060" text-anchor="middle">✅ GO</text>
+  <text x="1060" y="260" font-family="monospace" font-size="8" fill="#5d6885" text-anchor="middle" letter-spacing="1">VERDICT</text>
+  <text x="1060" y="290" font-family="monospace" font-size="9" fill="#8893ad" text-anchor="middle">SURVIVAL</text>
+  <text x="1060" y="308" font-family="system-ui" font-size="16" font-weight="800" fill="#8b5cf6" text-anchor="middle">78%</text>
+  <text x="1060" y="332" font-family="monospace" font-size="9" fill="#8893ad" text-anchor="middle">PROFIT DAYS</text>
+  <text x="1060" y="350" font-family="system-ui" font-size="16" font-weight="800" fill="#00e0ff" text-anchor="middle">61/90</text>
+  <text x="1060" y="375" font-family="monospace" font-size="9" fill="#8893ad" text-anchor="middle">NET PROFIT</text>
+  <text x="1060" y="393" font-family="system-ui" font-size="16" font-weight="800" fill="#10b981" text-anchor="middle">+$8,420</text>
+</svg>
