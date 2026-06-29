@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>INFINICUS ENGINE v3 — Business Reality Simulator</title>
-<meta name="description" content="Simulate your business idea across 60 virtual days with a statistical engine, Monte Carlo risk analysis, and a Go/Modify/Stop verdict.">
+<meta name="description" content="Simulate your business idea across 90 virtual days with a statistical engine, Monte Carlo risk analysis, and a Go/Modify/Stop verdict.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;600;700&family=Sora:wght@700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -560,7 +560,7 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
       <div class="card"><div class="card-lbl">SURVIVAL RATE</div><div class="card-val" style="color:var(--muted-2)">—</div></div>
     </div>
     <div class="chart-panel">
-      <div class="chart-title">60-DAY P&amp;L HEATMAP <span class="chart-badge">DAILY</span></div>
+      <div class="chart-title">90-DAY P&amp;L HEATMAP <span class="chart-badge">DAILY</span></div>
       <div class="day-heatmap" id="day-heatmap"></div>
       <div style="display:flex;gap:1.5rem;font-family:var(--mono);font-size:9px;color:var(--muted-2);">
         <span style="color:var(--emerald)">■</span> Profitable &nbsp;
@@ -619,7 +619,7 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
       <div id="funnel" style="margin-top:.75rem;"></div>
     </div>
     <div class="card">
-      <div class="card-lbl">RETENTION (DAYS 14 / 28 / 42 / 60)</div>
+      <div class="card-lbl">RETENTION (DAYS 14 / 30 / 60 / 90)</div>
       <div id="retention" style="margin-top:.75rem;"></div>
     </div>
   </div>
@@ -650,7 +650,7 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
 <!-- ══ EVENT LOG ══ -->
 <section class="section" id="sec-log">
   <div class="pg-title" style="font-size:22px;margin-bottom:.1rem;">EVENT LOG</div>
-  <div class="pg-sub">// 60-DAY SIMULATION EVENTS</div>
+  <div class="pg-sub">// 90-DAY SIMULATION EVENTS</div>
   <div class="g3" id="log-summary"></div>
   <div class="card">
     <div class="card-lbl">ALL EVENTS — CHRONOLOGICAL</div>
@@ -678,7 +678,7 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
 
 <!-- ══ REPORT & PLAN ══ -->
 <section class="section" id="sec-report">
-  <div class="pg-title" style="font-size:22px;margin-bottom:.1rem;">REPORT &amp; 60-DAY PLAN</div>
+  <div class="pg-title" style="font-size:22px;margin-bottom:.1rem;">REPORT &amp; 90-DAY PLAN</div>
   <div class="pg-sub">// EXECUTIVE SUMMARY · ACTION ROADMAP</div>
   <div class="action-row">
     <button class="btn-action" onclick="window.print()">⎙ EXPORT PDF</button>
@@ -781,7 +781,7 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
       <span class="modal-logo-name">INFIN<span class="c">ICUS</span><span class="modal-logo-ver"> ENGINE v3</span></span>
     </div>
     <div class="modal-h" id="reg-modal-h">Get Your Free Report</div>
-    <div class="modal-sub">Enter your details to receive your personalised 60-day business simulation analysis.</div>
+    <div class="modal-sub">Enter your details to receive your personalised 90-day business simulation analysis.</div>
     <div class="modal-field">
       <label for="reg-name">FULL NAME</label>
       <input id="reg-name" type="text" placeholder="Jane Smith" autocomplete="name">
@@ -941,28 +941,29 @@ function autoDetectCurrency(locValue) {
 }
 
 // ─── INDUSTRY PROFILES ───────────────────────────────────────────────────────
-const _flat = Array(60).fill(1);
+const SIM_DAYS = 90;
+const _flat = Array(SIM_DAYS).fill(1);
 const _wknd = d => (d%7===0||d%7===6) ? 1.35 : 0.92;
-const _ramp = d => 0.6 + (d-1)/59 * 0.8;
+const _ramp = d => 0.6 + (d-1)/(SIM_DAYS-1) * 0.8;
 // fixBase     = realistic daily fixed cost (USD) per team member (decoupled from capital)
 // organicMult = foot-traffic / community discovery multiplier by industry type
 //   Physical/walk-in businesses: high (5–8) — food stalls, retail shops, gyms
 //   Referral/service businesses: medium (1.5–3) — clinics, service providers
 //   Digital-only businesses: low (0.2–0.5) — SaaS, fintech, edtech
 const PROFILES = {
-  food:       {fixR:.32,varR:.42,acqCost:8,  churn:.18,mktMult:1.2,visitsPerMonth:14, fixBase:8,  organicMult:5.0, name:'Food & Beverage',        priceLabel:'Price Per Sale',          season:Array.from({length:60},(_,i)=>_wknd(i+1))},
-  retail:     {fixR:.22,varR:.52,acqCost:12, churn:.22,mktMult:1.5,visitsPerMonth:2.5,fixBase:7,  organicMult:4.0, name:'Retail / E-commerce',    priceLabel:'Price Per Order',          season:Array.from({length:60},(_,i)=>0.7+i/59*.7)},
+  food:       {fixR:.32,varR:.42,acqCost:8,  churn:.18,mktMult:1.2,visitsPerMonth:14, fixBase:8,  organicMult:5.0, name:'Food & Beverage',        priceLabel:'Price Per Sale',          season:Array.from({length:SIM_DAYS},(_,i)=>_wknd(i+1))},
+  retail:     {fixR:.22,varR:.52,acqCost:12, churn:.22,mktMult:1.5,visitsPerMonth:2.5,fixBase:7,  organicMult:4.0, name:'Retail / E-commerce',    priceLabel:'Price Per Order',          season:Array.from({length:SIM_DAYS},(_,i)=>0.7+i/(SIM_DAYS-1)*.7)},
   saas:       {fixR:.38,varR:.08,acqCost:40, churn:.07,mktMult:2.0,visitsPerMonth:1,  fixBase:28, organicMult:0.3, name:'SaaS / Software',        priceLabel:'Monthly Subscription',     season:_flat},
   service:    {fixR:.28,varR:.28,acqCost:25, churn:.09,mktMult:1.3,visitsPerMonth:3,  fixBase:18, organicMult:2.0, name:'Service Business',       priceLabel:'Price Per Session',        season:_flat},
   fitness:    {fixR:.42,varR:.18,acqCost:20, churn:.11,mktMult:1.1,visitsPerMonth:1,  fixBase:22, organicMult:3.5, name:'Fitness & Wellness',     priceLabel:'Monthly Membership',       season:_flat},
   agency:     {fixR:.32,varR:.18,acqCost:80, churn:.05,mktMult:1.6,visitsPerMonth:1,  fixBase:22, organicMult:0.8, name:'Agency / Consulting',    priceLabel:'Monthly Retainer',         season:_flat},
   health:     {fixR:.40,varR:.22,acqCost:55, churn:.06,mktMult:1.1,visitsPerMonth:2,  fixBase:18, organicMult:2.5, name:'Healthcare & MedTech',   priceLabel:'Price Per Appointment',    season:_flat},
-  edtech:     {fixR:.34,varR:.14,acqCost:30, churn:.12,mktMult:1.8,visitsPerMonth:1,  fixBase:20, organicMult:0.4, name:'EdTech & Training',      priceLabel:'Course / Subscription',    season:Array.from({length:60},(_,i)=>_ramp(i+1))},
-  marketplace:{fixR:.18,varR:.28,acqCost:18, churn:.15,mktMult:2.2,visitsPerMonth:4,  fixBase:20, organicMult:0.5, name:'Marketplace / Platform', priceLabel:'GMV Take Rate (price=avg)',season:Array.from({length:60},(_,i)=>0.5+i/59*1.2)},
-  events:     {fixR:.45,varR:.35,acqCost:22, churn:.30,mktMult:1.4,visitsPerMonth:1.5,fixBase:18, organicMult:5.0, name:'Events & Hospitality',   priceLabel:'Ticket / Cover Price',     season:Array.from({length:60},(_,i)=>_wknd(i+1)*1.1)},
+  edtech:     {fixR:.34,varR:.14,acqCost:30, churn:.12,mktMult:1.8,visitsPerMonth:1,  fixBase:20, organicMult:0.4, name:'EdTech & Training',      priceLabel:'Course / Subscription',    season:Array.from({length:SIM_DAYS},(_,i)=>_ramp(i+1))},
+  marketplace:{fixR:.18,varR:.28,acqCost:18, churn:.15,mktMult:2.2,visitsPerMonth:4,  fixBase:20, organicMult:0.5, name:'Marketplace / Platform', priceLabel:'GMV Take Rate (price=avg)',season:Array.from({length:SIM_DAYS},(_,i)=>0.5+i/(SIM_DAYS-1)*1.2)},
+  events:     {fixR:.45,varR:.35,acqCost:22, churn:.30,mktMult:1.4,visitsPerMonth:1.5,fixBase:18, organicMult:5.0, name:'Events & Hospitality',   priceLabel:'Ticket / Cover Price',     season:Array.from({length:SIM_DAYS},(_,i)=>_wknd(i+1)*1.1)},
   fintech:    {fixR:.36,varR:.12,acqCost:45, churn:.08,mktMult:1.9,visitsPerMonth:8,  fixBase:28, organicMult:0.2, name:'FinTech',                priceLabel:'Fee Per Transaction',      season:_flat},
   realestate: {fixR:.35,varR:.15,acqCost:90, churn:.04,mktMult:1.3,visitsPerMonth:1,  fixBase:18, organicMult:1.2, name:'Real Estate / PropTech', priceLabel:'Commission / Platform Fee', season:_flat},
-  logistics:  {fixR:.30,varR:.45,acqCost:15, churn:.20,mktMult:1.4,visitsPerMonth:8,  fixBase:14, organicMult:3.5, name:'Logistics & Delivery',   priceLabel:'Price Per Delivery',       season:Array.from({length:60},(_,i)=>_wknd(i+1))},
+  logistics:  {fixR:.30,varR:.45,acqCost:15, churn:.20,mktMult:1.4,visitsPerMonth:8,  fixBase:14, organicMult:3.5, name:'Logistics & Delivery',   priceLabel:'Price Per Delivery',       season:Array.from({length:SIM_DAYS},(_,i)=>_wknd(i+1))},
 };
 
 // ─── QUICK FILLS ─────────────────────────────────────────────────────────────
@@ -1061,14 +1062,14 @@ function simulate(params) {
 
   const days = [];
   let cash = params.capital, customers = 0;
-  const dailyMkt = params.mktBud/60;
+  const dailyMkt = params.mktBud/SIM_DAYS;
 
   // Organic reach: industry foot-traffic × team size reach
   // Physical businesses (food, retail, events) get high baseline walk-ins
   // Digital businesses (SaaS, fintech) rely almost entirely on paid/SEO
   const organicBase = Math.max(0.5, Math.log(params.team+1) * 1.2) * prof.organicMult;
 
-  for (let d=1;d<=60;d++) {
+  for (let d=1;d<=SIM_DAYS;d++) {
     const shock = evMap[d]||1;
     const seasonMult = prof.season?prof.season[(d-1)%prof.season.length]:1;
 
@@ -1079,12 +1080,12 @@ function simulate(params) {
     const wordOfMouth  = Math.round(customers*0.018); // 1.8% daily referral rate (round, not floor — activates at 28 customers not 56)
     const acq = paidAcq + footTraffic + wordOfMouth;
 
-    const churned = Math.floor(customers*prof.churn/60);
+    const churned = Math.floor(customers*prof.churn/SIM_DAYS);
     customers = Math.max(0,customers+acq-churned);
-    const rev    = customers*(params.price*prof.visitsPerMonth/60)*rnd(.75,1.25)*shock*seasonMult;
+    const rev    = customers*(params.price*prof.visitsPerMonth/SIM_DAYS)*rnd(.75,1.25)*shock*seasonMult;
     // Fixed costs: industry baseline per team member (realistic daily ops cost)
     // + a small capital-scaled overhead (5% of original weight) for equipment/insurance at scale
-    const fixed  = prof.fixBase*params.team + params.capital*prof.fixR*0.05/60;
+    const fixed  = prof.fixBase*params.team + params.capital*prof.fixR*0.05/SIM_DAYS;
     const varC   = rev*prof.varR;
     const totalCost = fixed+varC+dailyMkt;
     const profit = rev-totalCost;
@@ -1108,16 +1109,16 @@ function monteCarlo(params) {
       mktMult:baseProf.mktMult
     };
     let cash=params.capital, customers=0;
-    const dailyMkt=params.mktBud/60;
-    for (let d=1;d<=60;d++) {
+    const dailyMkt=params.mktBud/SIM_DAYS;
+    for (let d=1;d<=SIM_DAYS;d++) {
       const paidAcq=Math.max(0,Math.floor(rNorm(dailyMkt/p.acqCost,1.2)));
       const footTraffic=Math.max(0,Math.round(rNorm(organicBase,1.0)));
       const wordOfMouth=Math.round(customers*0.018);
       const acq=paidAcq+footTraffic+wordOfMouth;
-      customers=Math.max(0,customers+acq-Math.floor(customers*p.churn/60));
-      const rev=customers*(params.price*baseProf.visitsPerMonth/60)*rnd(.6,1.4);
+      customers=Math.max(0,customers+acq-Math.floor(customers*p.churn/SIM_DAYS));
+      const rev=customers*(params.price*baseProf.visitsPerMonth/SIM_DAYS)*rnd(.6,1.4);
       // Same cost model as simulate(): industry baseline + scaled capital overhead
-      cash+=rev-(baseProf.fixBase*params.team+params.capital*p.fixR*0.05/60+rev*p.varR+dailyMkt);
+      cash+=rev-(baseProf.fixBase*params.team+params.capital*p.fixR*0.05/SIM_DAYS+rev*p.varR+dailyMkt);
     }
     finals.push(cash);
   }
@@ -1142,9 +1143,9 @@ function calcScores() {
   const surv     =S.mc.survivalRate;
   const totalRev =d.reduce((s,x)=>s+x.rev,0);
   const totalCost=d.reduce((s,x)=>s+x.cost,0);
-  const viability=Math.round(Math.min(100,Math.max(0,surv*55+(profDays/60)*30+(endCash>0?15:0))));
+  const viability=Math.round(Math.min(100,Math.max(0,surv*55+(profDays/SIM_DAYS)*30+(endCash>0?15:0))));
   const mktFit   =Math.round(Math.min(100,Math.max(0,Math.min(finalCust/20,1)*45+(totalRev>totalCost?35:10)+15)));
-  const execution=Math.round(Math.min(100,Math.max(0,profDays/60*60+Math.min(finalCust,30)/30*40)));
+  const execution=Math.round(Math.min(100,Math.max(0,profDays/SIM_DAYS*60+Math.min(finalCust,30)/30*40)));
   const financial=Math.round(Math.min(100,Math.max(0,Math.min(endCash/S.params.capital,1)*50+(totalRev>0?30:0)+(endCash>0?20:0))));
   S.scores={VIABILITY:viability,'MKT FIT':mktFit,EXECUTION:execution,FINANCIAL:financial};
   return S.scores;
@@ -1310,7 +1311,7 @@ function renderDashboard() {
     <div class="card">
       <div class="card-lbl">TOTAL REVENUE</div>
       <div class="card-val c">${fmt(totalRev)}</div>
-      <div class="card-sub">${profDays}/60 profitable days</div>
+      <div class="card-sub">${profDays}/${SIM_DAYS} profitable days</div>
     </div>
     <div class="card">
       <div class="card-lbl">NET PROFIT</div>
@@ -1351,7 +1352,7 @@ function renderDashboard() {
   const profMargin=totalRev>0?((totalRev-totalCost)/totalRev*100):0;
   const bars=[
     ['Profit Margin',  Math.max(0,profMargin), profMargin>0?'var(--emerald)':'var(--red)',   profMargin.toFixed(1)+'%'],
-    ['Profitable Days',profDays/60*100,         'var(--cyan)',                                profDays+'/60'],
+    ['Profitable Days',profDays/SIM_DAYS*100,    'var(--cyan)',                                profDays+'/'+SIM_DAYS],
     ['MC Survival',    S.mc.survivalRate*100,   S.mc.survivalRate>.6?'var(--emerald)':'var(--amber)', Math.round(S.mc.survivalRate*100)+'%'],
     ['Customer Growth',Math.min(last.customers,100), 'var(--purple)',                        last.customers+' customers'],
   ];
@@ -1374,7 +1375,7 @@ function renderHeatmap() {
 }
 
 function initHeatmap() {
-  $h('day-heatmap',Array.from({length:60},(_,i)=>`<div class="dhc future">${i+1}</div>`).join(''));
+  $h('day-heatmap',Array.from({length:SIM_DAYS},(_,i)=>`<div class="dhc future">${i+1}</div>`).join(''));
 }
 
 // ─── ECONOMY ─────────────────────────────────────────────────────────────────
@@ -1389,8 +1390,8 @@ function renderEconomy() {
   const beDay=d.find(x=>x.cash>S.params.capital);
 
   $h('econ-kpis',`
-    <div class="card"><div class="card-lbl">GROSS REVENUE</div><div class="card-val c">${fmt(totalRev)}</div><div class="card-sub">${fmt(totalRev/60)}/day avg</div></div>
-    <div class="card"><div class="card-lbl">TOTAL COSTS</div><div class="card-val r">${fmt(totalCost)}</div><div class="card-sub">${fmt(totalCost/60)}/day avg</div></div>
+    <div class="card"><div class="card-lbl">GROSS REVENUE</div><div class="card-val c">${fmt(totalRev)}</div><div class="card-sub">${fmt(totalRev/SIM_DAYS)}/day avg</div></div>
+    <div class="card"><div class="card-lbl">TOTAL COSTS</div><div class="card-val r">${fmt(totalCost)}</div><div class="card-sub">${fmt(totalCost/SIM_DAYS)}/day avg</div></div>
     <div class="card"><div class="card-lbl">NET PROFIT</div><div class="card-val" style="color:${netProfit>=0?'var(--emerald)':'var(--red)'}">${fmt(netProfit)}</div><div class="card-sub">Margin: ${totalRev>0?(netProfit/totalRev*100).toFixed(1):'0'}%</div></div>
     <div class="card"><div class="card-lbl">BREAK-EVEN</div><div class="card-val a">${beDay?'Day '+beDay.d:'Not reached'}</div><div class="card-sub">${beDay?'Cash crossed starting capital':'Needs more runway'}</div></div>`);
 
@@ -1403,7 +1404,7 @@ function renderEconomy() {
       <div style="width:100%;background:rgba(0,224,96,.35);border-radius:2px 2px 0 0;height:${(day.rev/maxH*110).toFixed(1)}px;min-height:${day.rev>0?2:0}px;"></div>
       <div style="width:100%;background:rgba(244,63,94,.35);border-radius:2px 2px 0 0;height:${(day.cost/maxH*110).toFixed(1)}px;min-height:2px;"></div>
     </div>`).join(''));
-  $h('econ-axis',`<span>Day 1</span><span>Day 30</span><span>Day 60</span>`);
+  $h('econ-axis',`<span>Day 1</span><span>Day 45</span><span>Day 90</span>`);
 
   // Cost breakdown bars
   const costs=[
@@ -1418,7 +1419,7 @@ function renderEconomy() {
     </div>`).join(''));
 
   // Weekly cashflow
-  const weeks=[[1,7],[8,14],[15,21],[22,28],[29,35],[36,42],[43,49],[50,60]];
+  const weeks=[[1,7],[8,14],[15,21],[22,28],[29,35],[36,42],[43,49],[50,56],[57,63],[64,70],[71,77],[78,90]];
   $h('cashflow-list',weeks.map(([a,b],wi)=>{
     const wDays=d.filter(x=>x.d>=a&&x.d<=b);
     const wRev=wDays.reduce((s,x)=>s+x.rev,0);
@@ -1440,7 +1441,7 @@ function renderCustomers() {
 
   $h('cust-kpis',`
     <div class="card"><div class="card-lbl">FINAL CUSTOMERS</div><div class="card-val c">${last.customers}</div><div class="card-sub">Peak: ${peakCust}</div></div>
-    <div class="card"><div class="card-lbl">TOTAL ACQUIRED</div><div class="card-val e">${totalAcq}</div><div class="card-sub">${(totalAcq/60).toFixed(1)}/day avg</div></div>
+    <div class="card"><div class="card-lbl">TOTAL ACQUIRED</div><div class="card-val e">${totalAcq}</div><div class="card-sub">${(totalAcq/SIM_DAYS).toFixed(1)}/day avg</div></div>
     <div class="card"><div class="card-lbl">TOTAL CHURNED</div><div class="card-val r">${totalChurn}</div><div class="card-sub">${(prof.churn*100).toFixed(0)}% monthly rate</div></div>
     <div class="card"><div class="card-lbl">EST. LTV</div><div class="card-val a">${fmt(Number(ltv))}</div><div class="card-sub">Price × visits / churn</div></div>`);
 
@@ -1448,18 +1449,18 @@ function renderCustomers() {
   const maxC=Math.max(peakCust,1);
   $h('cust-chart',d.map(day=>`
     <div style="flex:1;background:rgba(139,92,246,.35);border-radius:2px 2px 0 0;height:${(day.customers/maxC*95).toFixed(1)}px;min-height:${day.customers>0?2:0}px;" title="Day ${day.d}: ${day.customers} customers"></div>`).join(''));
-  $h('cust-axis','<span>Day 1</span><span>Day 30</span><span>Day 60</span>');
+  $h('cust-axis','<span>Day 1</span><span>Day 45</span><span>Day 90</span>');
 
   // Funnel
-  const visits=Math.round(totalAcq/((S.params.mktBud/60)/prof.acqCost)*100)||'—';
+  const visits=Math.round(totalAcq/((S.params.mktBud/SIM_DAYS)/prof.acqCost)*100)||'—';
   $h('funnel',`
     <div class="rp-num"><b>👁</b> Impressions (est.) <span style="color:var(--muted)">${typeof visits==='number'?visits.toLocaleString():visits}</span></div>
     <div class="rp-num"><b>🖱</b> Clicks / Leads <span style="color:var(--cyan)">${Math.round(totalAcq*3.5)}</span></div>
     <div class="rp-num"><b>✅</b> Converted Customers <span style="color:var(--emerald)">${totalAcq}</span></div>
-    <div class="rp-num"><b>🔄</b> Retained at Day 60 <span style="color:var(--purple)">${last.customers}</span></div>`);
+    <div class="rp-num"><b>🔄</b> Retained at Day 90 <span style="color:var(--purple)">${last.customers}</span></div>`);
 
   // Retention
-  const retDays=[14,28,42,60];
+  const retDays=[14,30,60,90];
   const startCust=d[6]?.customers||1;
   $h('retention',retDays.map(rd=>{
     const custs=d[rd-1]?.customers||0;
@@ -1540,7 +1541,7 @@ function renderLog() {
   const negative=evts.filter(e=>e.impact<0).length;
 
   $h('log-summary',`
-    <div class="card"><div class="card-lbl">TOTAL EVENTS</div><div class="card-val c">${evts.length}</div><div class="card-sub">Across 60 days</div></div>
+    <div class="card"><div class="card-lbl">TOTAL EVENTS</div><div class="card-val c">${evts.length}</div><div class="card-sub">Across 90 days</div></div>
     <div class="card"><div class="card-lbl">POSITIVE EVENTS</div><div class="card-val e">${positive}</div><div class="card-sub">Revenue boosters</div></div>
     <div class="card"><div class="card-lbl">NEGATIVE EVENTS</div><div class="card-val r">${negative}</div><div class="card-sub">Revenue drags</div></div>`);
 
@@ -1562,13 +1563,13 @@ function quickVerdictPreview(params) {
   const {days}=simulate(params);
   const last=days[days.length-1];
   const profDays=days.filter(x=>x.profit>0).length;
-  const profDaysRatio=profDays/60;
+  const profDaysRatio=profDays/days.length;
   const totalRev=days.reduce((s,x)=>s+x.rev,0);
   const totalCost=days.reduce((s,x)=>s+x.cost,0); // needed for correct mktFit
   const endCash=last.cash;
   const finalCust=last.customers;
   const cashPosDays=days.filter(x=>x.cash>0).length;
-  const estSurv=Math.min(0.95, cashPosDays/60*0.85+(endCash>0?0.10:0));
+  const estSurv=Math.min(0.95, cashPosDays/days.length*0.85+(endCash>0?0.10:0));
   // Must match calcScores() exactly — mktFit uses totalRev>totalCost, not totalRev>0
   const viability=Math.round(Math.min(100,Math.max(0,estSurv*55+profDaysRatio*30+(endCash>0?15:0))));
   const mktFit=Math.round(Math.min(100,Math.max(0,Math.min(finalCust/20,1)*45+(totalRev>totalCost?35:10)+15)));
@@ -1600,7 +1601,7 @@ function calcSuggestedFix() {
   const fixes=[];
 
   // Price — almost always the root issue when profDays < 35
-  if(profDays/60 < 0.35){
+  if(profDays/SIM_DAYS < 0.35){
     const newPrice=+(p.price*priceMult).toFixed(2);
     const pct=Math.round((priceMult-1)*100);
     fixes.push({label:'Selling Price',old:fmt(p.price),new:fmt(newPrice),
@@ -1916,7 +1917,7 @@ function calcCapitalAdvice() {
     ? (cap + Math.abs(cashTrough)) * 1.25
     : cap * 0.75;
 
-  // Recommended: covers the full 60-day cost base + 40% operating cushion
+  // Recommended: covers the full 90-day cost base + 40% operating cushion
   const recUSD = Math.max(minUSD * 1.5, totalCost * 0.40);
 
   // Comfortable / scaling budget: 2.5× minimum, enough to scale marketing
@@ -2040,7 +2041,7 @@ function renderVerdict() {
   const avgScore=Math.round(Object.values(sc).reduce((s,x)=>s+x,0)/4);
   const vDesc={
     go:`<strong>🎉 Great news — your business idea passed the simulation!</strong><br><br>
-        This means: over 60 simulated days, your business earned money, kept cash in the bank, and survived in <strong>${Math.round(S.mc.survivalRate*100)}%</strong> of 500 different "what if" scenarios the engine tested.<br><br>
+        This means: over 90 simulated days, your business earned money, kept cash in the bank, and survived in <strong>${Math.round(S.mc.survivalRate*100)}%</strong> of 500 different "what if" scenarios the engine tested.<br><br>
         <em>Think of it like a stress test:</em> the simulator threw random events at your business — good and bad — and your idea held up. That's a positive signal worth acting on.<br><br>
         ✅ <strong>What to do next:</strong> Don't treat this as a guarantee — treat it as a green light to take the next small real-world step. Validate your price with real customers, keep your costs lean, and track your numbers from day one.`,
     modify:`<strong>⚠️ Your business idea has potential, but needs some adjustments.</strong><br><br>
@@ -2048,7 +2049,7 @@ function renderVerdict() {
         <em>This is not a rejection</em> — it's the engine pointing at what to fix. Most successful businesses needed adjustments before they worked.<br><br>
         🔧 <strong>What to do next:</strong> Read the full report below. Focus on the red scores. Try raising your price, reducing startup costs, or starting with a smaller team. Then re-run the simulation and see if the verdict changes.`,
     stop:`<strong>🛑 The simulation is flagging serious risk with the current numbers.</strong><br><br>
-        This means: in <strong>${Math.round((1-S.mc.survivalRate)*100)}%</strong> of 500 different scenarios tested, your business ran out of money before 60 days. That's a strong warning that something in the foundation — your price, costs, or market size — needs rethinking.<br><br>
+        This means: in <strong>${Math.round((1-S.mc.survivalRate)*100)}%</strong> of 500 different scenarios tested, your business ran out of money before 90 days. That's a strong warning that something in the foundation — your price, costs, or market size — needs rethinking.<br><br>
         <em>This does NOT mean your idea is bad.</em> It means the numbers as entered don't work yet. Many great businesses got a STOP on early versions.<br><br>
         🔁 <strong>What to do next:</strong> Don't give up — iterate. Try increasing your selling price, cutting startup capital needs, or targeting a smaller, easier-to-reach customer group. Run the simulation again. Each run teaches you something.`
   };
@@ -2095,23 +2096,23 @@ function renderVerdict() {
       <div class="card-lbl">KEY NUMBERS EXPLAINED</div>
       <div class="rp-num" style="flex-direction:column;gap:2px;padding:.6rem 0">
         <div style="display:flex;justify-content:space-between"><span>💰 Total Money Earned</span><span class="c">${fmt(totalRev)}</span></div>
-        <div style="font-family:var(--mono);font-size:9px;color:var(--muted-2)">All sales revenue across 60 days combined</div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--muted-2)">All sales revenue across 90 days combined</div>
       </div>
       <div class="rp-num" style="flex-direction:column;gap:2px;padding:.6rem 0">
-        <div style="display:flex;justify-content:space-between"><span>📅 Profitable Days</span><span class="e">${profDays}/60</span></div>
-        <div style="font-family:var(--mono);font-size:9px;color:var(--muted-2)">Days where earnings beat costs. Aim for at least 30+ days profitable</div>
+        <div style="display:flex;justify-content:space-between"><span>📅 Profitable Days</span><span class="e">${profDays}/90</span></div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--muted-2)">Days where earnings beat costs. Aim for at least 45+ days profitable</div>
       </div>
       <div class="rp-num" style="flex-direction:column;gap:2px;padding:.6rem 0">
-        <div style="display:flex;justify-content:space-between"><span>💵 Cash Left at Day 60</span><span style="color:${last.cash>=0?'var(--emerald)':'var(--red)'}">${fmt(last.cash)}</span></div>
-        <div style="font-family:var(--mono);font-size:9px;color:var(--muted-2)">${last.cash>=0?'Positive = still in business. This is the money remaining after all expenses.':'Negative = ran out of money before day 60. A serious warning sign.'}</div>
+        <div style="display:flex;justify-content:space-between"><span>💵 Cash Left at Day 90</span><span style="color:${last.cash>=0?'var(--emerald)':'var(--red)'}">${fmt(last.cash)}</span></div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--muted-2)">${last.cash>=0?'Positive = still in business. This is the money remaining after all expenses.':'Negative = ran out of money before day 90. A serious warning sign.'}</div>
       </div>
       <div class="rp-num" style="flex-direction:column;gap:2px;padding:.6rem 0">
         <div style="display:flex;justify-content:space-between"><span>🎲 Stress Test Result</span><span style="color:${S.mc.survivalRate>.6?'var(--emerald)':'var(--amber)'}">${Math.round(S.mc.survivalRate*100)}% survived</span></div>
-        <div style="font-family:var(--mono);font-size:9px;color:var(--muted-2)">The engine ran your business 500 times with random variations. This % made it to day 60 with money left.</div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--muted-2)">The engine ran your business 500 times with random variations. This % made it to day 90 with money left.</div>
       </div>
       <div class="rp-num" style="flex-direction:column;gap:2px;padding:.6rem 0">
         <div style="display:flex;justify-content:space-between"><span>👥 Customers at End</span><span class="p">${last.customers}</span></div>
-        <div style="font-family:var(--mono);font-size:9px;color:var(--muted-2)">Active paying customers you had by day 60. More = better growth signal.</div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--muted-2)">Active paying customers you had by day 90. More = better growth signal.</div>
       </div>
     </div>`);
 
@@ -2208,7 +2209,7 @@ function renderReport() {
   $h('report-content',`
     <div class="rp-sec">
       <div class="rp-h">What Did We Simulate?</div>
-      <div class="rp-p">We ran a 60-day simulation of: <strong>"${p.idea.substring(0,150)}"</strong></div>
+      <div class="rp-p">We ran a 90-day simulation of: <strong>"${p.idea.substring(0,150)}"</strong></div>
       <div class="rp-p">
         📍 Location: <strong>${p.loc||'Not specified'}</strong> &nbsp;·&nbsp;
         🎯 Target customers: <strong>${p.mkt||'General market'}</strong> &nbsp;·&nbsp;
@@ -2222,8 +2223,8 @@ function renderReport() {
       </div>
       <div class="rp-p" style="margin-top:.75rem;padding:.75rem 1rem;border-radius:8px;border-left:3px solid ${v==='go'?'var(--emerald)':v==='modify'?'var(--amber)':'var(--red)'};background:${v==='go'?'rgba(16,185,129,.05)':v==='modify'?'rgba(245,158,11,.05)':'rgba(244,63,94,.05)'}">
         <strong>Final verdict: <span style="color:${v==='go'?'var(--emerald)':v==='modify'?'var(--amber)':'var(--red)'}">${v.toUpperCase()}</span></strong><br>
-        Over 60 days, your business ${totalRev-totalCost>=0?'made a profit':'ran at a loss'} of <strong style="color:${totalRev-totalCost>=0?'var(--emerald)':'var(--red)'}">${fmt(Math.abs(totalRev-totalCost))}</strong>.
-        You finished with <strong>${fmt(last.cash)}</strong> in the bank and had <strong>${profDays} out of 60 days</strong> where income beat expenses.
+        Over 90 days, your business ${totalRev-totalCost>=0?'made a profit':'ran at a loss'} of <strong style="color:${totalRev-totalCost>=0?'var(--emerald)':'var(--red)'}">${fmt(Math.abs(totalRev-totalCost))}</strong>.
+        You finished with <strong>${fmt(last.cash)}</strong> in the bank and had <strong>${profDays} out of 90 days</strong> where income beat expenses.
         When the engine stress-tested your business 500 times with random real-world variations, it survived <strong>${Math.round(S.mc.survivalRate*100)}%</strong> of those tests.
       </div>
     </div>
@@ -2231,8 +2232,8 @@ function renderReport() {
     <div class="rp-sec">
       <div class="rp-h">Your Numbers, Explained</div>
       <div class="rp-num" style="flex-direction:column;gap:3px;padding:.65rem 0">
-        <div><b>1</b> <strong>Total Sales Revenue (60 days): ${fmt(totalRev)}</strong> · ${fmt(totalRev/60)}/day average</div>
-        <div style="font-family:var(--mono);font-size:9.5px;color:var(--muted-2);margin-left:1.5rem">This is all the money customers paid you over 60 days. Higher is better, but revenue alone doesn't mean profit.</div>
+        <div><b>1</b> <strong>Total Sales Revenue (90 days): ${fmt(totalRev)}</strong> · ${fmt(totalRev/SIM_DAYS)}/day average</div>
+        <div style="font-family:var(--mono);font-size:9.5px;color:var(--muted-2);margin-left:1.5rem">This is all the money customers paid you over 90 days. Higher is better, but revenue alone doesn't mean profit.</div>
       </div>
       <div class="rp-num" style="flex-direction:column;gap:3px;padding:.65rem 0">
         <div><b>2</b> <strong>Total Business Costs: ${fmt(totalCost)}</strong></div>
@@ -2244,19 +2245,19 @@ function renderReport() {
       </div>
       <div class="rp-num" style="flex-direction:column;gap:3px;padding:.65rem 0">
         <div><b>4</b> <strong>Cash Remaining: ${fmt(last.cash)}</strong> <span style="color:var(--muted-2);font-size:10px">(started with ${fmt(p.capital)})</span></div>
-        <div style="font-family:var(--mono);font-size:9.5px;color:var(--muted-2);margin-left:1.5rem">${last.cash>=0?'Still have money at the end. Even if you made a loss, your starting capital cushioned you through day 60.':'Ran out of money before day 60. This means the starting capital wasn\'t enough to cover the losses.'}</div>
+        <div style="font-family:var(--mono);font-size:9.5px;color:var(--muted-2);margin-left:1.5rem">${last.cash>=0?'Still have money at the end. Even if you made a loss, your starting capital cushioned you through day 90.':'Ran out of money before day 90. This means the starting capital wasn\'t enough to cover the losses.'}</div>
       </div>
       <div class="rp-num" style="flex-direction:column;gap:3px;padding:.65rem 0">
-        <div><b>5</b> <strong>Break-Even Point: ${beDay>=0?'Day '+(beDay+1):'Not reached in 60 days'}</strong></div>
-        <div style="font-family:var(--mono);font-size:9.5px;color:var(--muted-2);margin-left:1.5rem">${beDay>=0?'The day your cumulative cash first exceeded your starting capital — meaning the business "paid itself back". Earlier = better.':'The business never fully covered its startup costs within 60 days. This is common for new businesses — but track it carefully.'}</div>
+        <div><b>5</b> <strong>Break-Even Point: ${beDay>=0?'Day '+(beDay+1):'Not reached in 90 days'}</strong></div>
+        <div style="font-family:var(--mono);font-size:9.5px;color:var(--muted-2);margin-left:1.5rem">${beDay>=0?'The day your cumulative cash first exceeded your starting capital — meaning the business "paid itself back". Earlier = better.':'The business never fully covered its startup costs within 90 days. This is common for new businesses — but track it carefully.'}</div>
       </div>
       <div class="rp-num" style="flex-direction:column;gap:3px;padding:.65rem 0">
-        <div><b>6</b> <strong>Customers at Day 60: ${last.customers}</strong></div>
+        <div><b>6</b> <strong>Customers at Day 90: ${last.customers}</strong></div>
         <div style="font-family:var(--mono);font-size:9.5px;color:var(--muted-2);margin-left:1.5rem">Active paying customers at the end of the simulation. Customer growth over time is one of the strongest signals of a healthy business.</div>
       </div>
       <div class="rp-num" style="flex-direction:column;gap:3px;padding:.65rem 0">
         <div><b>7</b> <strong>Stress Test Survival: ${Math.round(S.mc.survivalRate*100)}%</strong> <span style="color:var(--muted-2);font-size:10px">out of 500 simulations</span></div>
-        <div style="font-family:var(--mono);font-size:9.5px;color:var(--muted-2);margin-left:1.5rem">The engine ran 500 versions of your business with slightly different conditions (good months, bad months, random events). This % ended day 60 with cash still in the bank. Above 70% is a healthy sign.</div>
+        <div style="font-family:var(--mono);font-size:9.5px;color:var(--muted-2);margin-left:1.5rem">The engine ran 500 versions of your business with slightly different conditions (good months, bad months, random events). This % ended day 90 with cash still in the bank. Above 70% is a healthy sign.</div>
       </div>
       <div class="rp-num" style="flex-direction:column;gap:3px;padding:.65rem 0">
         <div><b>8</b> <strong>Cash Range Across Scenarios:</strong> Best case ${fmt(S.mc.p90)} · Middle ${fmt(S.mc.p50)} · Worst case ${fmt(S.mc.p10)}</div>
@@ -2297,7 +2298,7 @@ function renderReport() {
     </div>
 
     <div class="rp-sec" id="ai-report-section">
-      <div class="rp-h">AI-Powered 60-Day Action Plan</div>
+      <div class="rp-h">AI-Powered 90-Day Action Plan</div>
       <div class="ai-panel">
         <div class="ai-panel-hdr">✦ POWERED BY CLAUDE · claude-haiku-4-5</div>
         <div class="ai-loading" id="ai-report-loading">Generating personalised plan…</div>
@@ -2306,16 +2307,21 @@ function renderReport() {
     </div>
 
     <div class="rp-sec">
-      <div class="rp-h">Statistical 60-Day Roadmap</div>
+      <div class="rp-h">Statistical 90-Day Roadmap</div>
       <div class="wk-grid">
-        ${[['WEEK 1','Days 1–7',  'Validate core assumptions. Track daily acquisition cost vs budget. Identify top-performing channel.',v==='stop'?'Pause spending. Run customer interviews.':'Launch with minimum viable offer.'],
-           ['WEEK 2','Days 8–14', 'Analyse day-7 retention. Double down on best-performing acquisition channel. Reduce churn drivers.',v==='go'?'Begin scaling marketing budget 20%.':'Adjust pricing or offer.'],
-           ['WEEK 3','Days 15–21','Review break-even trajectory. Optimise variable costs. Introduce first upsell or retention incentive.',v==='go'?'Hire or contract first support role.':'Pilot alternate pricing model.'],
-           ['WEEK 4','Days 22–28','Full month-1 review. Document unit economics. Refine CAC and LTV estimates. Identify top churn reasons.',v==='go'?'Prepare month-2 scaling plan.':'Set survival targets for month 2.'],
-           ['WEEK 5','Days 29–35','Enter month 2. Scale what worked in month 1. Test secondary acquisition channel. Monitor churn rate trend.',v==='go'?'Increase ad spend on proven channel.':'Run price sensitivity test.'],
-           ['WEEK 6','Days 36–42','Mid-point check. Compare actual vs projected revenue. Adjust marketing mix. Introduce referral or loyalty mechanism.',v==='go'?'Hire or contract support/ops role.':'Explore partnerships or bundling.'],
-           ['WEEK 7','Days 43–49','Optimise operations. Reduce variable costs through volume or renegotiation. Build repeatable sales process.',v==='go'?'Document playbook for scaling.':'Run final pivot experiment.'],
-           ['WEEK 8','Days 50–60','Final 60-day review. Prepare investor-ready metrics. Decide: scale, pivot, or exit. Set 90-day roadmap.',v==='go'?'Secure next funding milestone.':'Define minimum viable pivot criteria.']
+        ${[['WEEK 1', 'Days 1–7',  'Validate core assumptions. Track daily acquisition cost vs budget. Identify top-performing channel.',       v==='stop'?'Pause spending. Run customer interviews.':'Launch with minimum viable offer.'],
+           ['WEEK 2', 'Days 8–14', 'Analyse day-7 retention. Double down on best-performing acquisition channel. Reduce churn drivers.',       v==='go'?'Begin scaling marketing budget 20%.':'Adjust pricing or offer.'],
+           ['WEEK 3', 'Days 15–21','Review break-even trajectory. Optimise variable costs. Introduce first upsell or retention incentive.',   v==='go'?'Hire or contract first support role.':'Pilot alternate pricing model.'],
+           ['WEEK 4', 'Days 22–28','Full month-1 review. Document unit economics. Refine CAC and LTV estimates. Identify top churn reasons.', v==='go'?'Prepare month-2 scaling plan.':'Set survival targets for month 2.'],
+           ['WEEK 5', 'Days 29–35','Enter month 2. Scale what worked in month 1. Test secondary acquisition channel. Monitor churn rate.',     v==='go'?'Increase ad spend on proven channel.':'Run price sensitivity test.'],
+           ['WEEK 6', 'Days 36–42','Mid-point check. Compare actual vs projected revenue. Adjust marketing mix. Introduce referral mechanism.',v==='go'?'Hire or contract support/ops role.':'Explore partnerships or bundling.'],
+           ['WEEK 7', 'Days 43–49','Optimise operations. Reduce variable costs through renegotiation. Build repeatable sales process.',        v==='go'?'Document playbook for scaling.':'Run final pivot experiment.'],
+           ['WEEK 8', 'Days 50–56','Month-2 close. Lock in unit economics — finalise your real CAC and LTV from observed data.',              v==='go'?'Begin hiring or outsourcing for scale.':'Decide: iterate or pivot.'],
+           ['WEEK 9', 'Days 57–63','Enter month 3. Apply month-2 lessons. Launch one new retention or upsell mechanism.',                     v==='go'?'Introduce referral or loyalty programme.':'Run final pricing experiment.'],
+           ['WEEK 10','Days 64–70','Stress-test operations at higher volume. Identify bottlenecks before scaling further.',                    v==='go'?'Set revenue and customer targets for month 4.':'Define minimum viable turnaround metric.'],
+           ['WEEK 11','Days 71–77','Competitive review. Identify any new entrants or shifts in customer demand.',                             v==='go'?'Begin building defensible advantage (brand, data, partnerships).':'Validate pivot with a new cohort.'],
+           ['WEEK 12','Days 78–84','Finalise 90-day financials. Prepare investor-ready metrics: revenue, CAC, LTV, churn, growth rate.',      v==='go'?'Secure next funding milestone or reinvest profits.':'Define minimum viable pivot criteria.'],
+           ['WEEK 13','Days 85–90','90-day close. Full review. Decide: scale, pivot, or exit. Build 6-month roadmap based on real data.',     v==='go'?'Plan Series A readiness or growth capital raise.':'Present pivot plan to stakeholders.']
           ].map(([wk,days,action,extra])=>`
           <div class="phase">
             <div class="phase-t">${wk} · ${days}</div>
@@ -2359,7 +2365,7 @@ function renderReport() {
       <!-- Execution Roadmap Phases -->
       ${(rm.phase1||rm.phase2||rm.phase3)?`
       <div style="margin-bottom:1.1rem;">
-        <div style="font-family:var(--mono);font-size:8.5px;color:var(--cyan);letter-spacing:.12em;margin-bottom:.6rem;">⚡ 60-DAY EXECUTION ROADMAP</div>
+        <div style="font-family:var(--mono);font-size:8.5px;color:var(--cyan);letter-spacing:.12em;margin-bottom:.6rem;">⚡ 90-DAY EXECUTION ROADMAP</div>
         <div class="wk-grid">
           ${rm.phase1?`<div class="phase"><div class="phase-t">PHASE 1 · DAYS 1–14</div><div class="phase-b">${rm.phase1}</div></div>`:''}
           ${rm.phase2?`<div class="phase"><div class="phase-t">PHASE 2 · DAYS 15–30</div><div class="phase-b">${rm.phase2}</div></div>`:''}
@@ -2439,9 +2445,9 @@ function updateSensitivity() {
   const profDays=days.filter(x=>x.profit>0).length;
   const surv=adjMC.survivalRate;
   const avg=(()=>{
-    const viability=Math.min(100,Math.max(0,surv*55+(profDays/60)*30+(last.cash>0?15:0)));
+    const viability=Math.min(100,Math.max(0,surv*55+(profDays/SIM_DAYS)*30+(last.cash>0?15:0)));
     const mktFit=Math.min(100,Math.max(0,Math.min(last.customers/20,1)*45+(totalRev>totalCost?35:10)+15));
-    const execution=Math.min(100,Math.max(0,profDays/60*60+Math.min(last.customers,30)/30*40));
+    const execution=Math.min(100,Math.max(0,profDays/SIM_DAYS*60+Math.min(last.customers,30)/30*40));
     const financial=Math.min(100,Math.max(0,Math.min(last.cash/adjParams.capital,1)*50+(totalRev>0?30:0)+(last.cash>0?20:0)));
     return (viability+mktFit+execution+financial)/4;
   })();
