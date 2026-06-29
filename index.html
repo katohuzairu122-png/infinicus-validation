@@ -718,7 +718,10 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
 
 <!-- ══ COMPARE ══ -->
 <section class="section" id="sec-compare">
-  <div class="pg-title" style="font-size:22px;margin-bottom:.1rem;">SCENARIO COMPARISON</div>
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:.5rem;margin-bottom:.1rem;">
+    <div class="pg-title" style="font-size:22px;margin-bottom:0;">SCENARIO COMPARISON</div>
+    <button onclick="clearAllScenarios()" style="background:none;border:1px solid rgba(244,63,94,.35);border-radius:6px;color:var(--red);font-family:var(--mono);font-size:9px;letter-spacing:.1em;padding:5px 12px;cursor:pointer;" onmouseenter="this.style.background='rgba(244,63,94,.1)'" onmouseleave="this.style.background='none'">✕ CLEAR ALL</button>
+  </div>
   <div class="pg-sub">// SIDE-BY-SIDE ANALYSIS OF TWO SIMULATIONS</div>
   <div class="sc-slots">
     <div class="sc-slot" id="slot-a">
@@ -2486,6 +2489,26 @@ function saveScenario() {
     $('save-scenario-btn').textContent=SCENARIOS.length>=2?'⊞ SCENARIOS FULL':'⊞ SAVE SCENARIO';
 }
 
+function clearScenario(idx) {
+  SCENARIOS.splice(idx, 1);
+  try{localStorage.setItem('infinicus_scenarios',JSON.stringify(SCENARIOS));}catch(e){}
+  const btn=$('save-scenario-btn');
+  if(btn) btn.textContent=SCENARIOS.length>=2?'⊞ SCENARIOS FULL':'⊞ SAVE SCENARIO';
+  renderScenarioSlots();
+  renderComparisonTable();
+  showToast('Scenario cleared.');
+}
+
+function clearAllScenarios() {
+  SCENARIOS.length=0;
+  try{localStorage.removeItem('infinicus_scenarios');}catch(e){}
+  const btn=$('save-scenario-btn');
+  if(btn) btn.textContent='⊞ SAVE SCENARIO';
+  renderScenarioSlots();
+  renderComparisonTable();
+  showToast('All scenarios cleared.');
+}
+
 function renderScenarioSlots() {
   ['a','b'].forEach((key,i)=>{
     const sc=SCENARIOS[i], el=$('slot-'+key);
@@ -2497,7 +2520,11 @@ function renderScenarioSlots() {
         <div class="sc-slot-meta">Run a simulation and click "Save Scenario".</div>`;
     } else {
       el.className='sc-slot saved';
-      el.innerHTML=`<div class="sc-slot-lbl">SCENARIO ${key.toUpperCase()}</div>
+      el.innerHTML=`
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.5rem;">
+          <div class="sc-slot-lbl">SCENARIO ${key.toUpperCase()}</div>
+          <button onclick="clearScenario(${i})" title="Clear this scenario" style="background:none;border:1px solid rgba(244,63,94,.35);border-radius:4px;color:var(--red);font-family:var(--mono);font-size:9px;letter-spacing:.08em;padding:2px 7px;cursor:pointer;flex-shrink:0;line-height:1.6;" onmouseenter="this.style.background='rgba(244,63,94,.12)'" onmouseleave="this.style.background='none'">✕ CLEAR</button>
+        </div>
         <div class="sc-slot-idea">${sc.idea.substring(0,60)}${sc.idea.length>60?'…':''}</div>
         <div class="sc-slot-meta">${PROFILES[sc.industry]?.name||sc.industry} · ${fmt(sc.capital)} capital · verdict: <strong style="color:${sc.verdict==='go'?'var(--emerald)':sc.verdict==='modify'?'var(--amber)':'var(--red)'}">${sc.verdict.toUpperCase()}</strong></div>`;
     }
