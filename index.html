@@ -754,6 +754,31 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
 </section>
 
 <!-- ══ EMAIL CAPTURE MODAL ══ -->
+<!-- ══ AI LIMIT MODAL ══ -->
+<div class="modal-overlay" id="ai-limit-modal" style="display:none;z-index:550;" role="dialog" aria-modal="true">
+  <div class="modal-box" style="text-align:center;max-width:400px;border-color:rgba(0,224,255,.25);">
+    <div style="font-size:36px;margin-bottom:.6rem;">🧠</div>
+    <div class="modal-h" style="font-size:18px;color:var(--cyan);">Free Analysis Limit Reached</div>
+    <div style="font-size:12px;color:var(--muted-2);font-family:var(--mono);letter-spacing:.08em;margin-bottom:1rem;">YOU'VE USED <span id="ai-limit-used">10</span> / 10 FREE AI ANALYSES</div>
+    <p style="font-size:13px;color:var(--fg-2);line-height:1.6;margin-bottom:1.2rem;">You've unlocked the full power of INFINICUS. Upgrade to continue getting AI-powered business intelligence — market analysis, competitor mapping, risk matrices and 90-day execution roadmaps.</p>
+    <div style="background:rgba(0,224,255,.04);border:1px solid rgba(0,224,255,.15);border-radius:10px;padding:.85rem 1rem;margin-bottom:1.1rem;">
+      <div style="font-family:var(--mono);font-size:9px;color:var(--cyan);letter-spacing:.12em;margin-bottom:.5rem;">WHAT YOU GET WITH STARTER</div>
+      <div style="font-size:12px;color:var(--fg-2);text-align:left;line-height:1.8;">
+        ✅ Unlimited AI analyses<br>
+        ✅ Full INFINICUS 8-phase framework<br>
+        ✅ Market intelligence + competitor map<br>
+        ✅ PDF export of every report<br>
+        ✅ Priority simulation queue
+      </div>
+    </div>
+    <div style="display:flex;gap:.65rem;">
+      <button onclick="closeAILimitModal()" style="flex:1;padding:.65rem;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:8px;color:var(--muted);font-family:var(--mono);font-size:11px;cursor:pointer;">LATER</button>
+      <button onclick="closeAILimitModal();openPlanModal();" style="flex:2;padding:.65rem;background:var(--cyan);border:none;border-radius:8px;color:#04060d;font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.05em;cursor:pointer;">UPGRADE NOW →</button>
+    </div>
+    <div style="margin-top:.75rem;font-size:10px;color:var(--muted-2);font-family:var(--mono);">The simulation engine still runs — only AI analysis is gated.</div>
+  </div>
+</div>
+
 <!-- ══ TERMS & CONDITIONS MODAL ══ -->
 <div class="modal-overlay" id="tc-modal" style="display:none;z-index:600;" role="dialog" aria-modal="true" aria-labelledby="tc-modal-h">
   <div class="modal-box" style="max-width:480px;">
@@ -1974,8 +1999,24 @@ function loadFromStorage() {
   } catch(e){}
 }
 
+// ─── AI USAGE GATE ───────────────────────────────────────────────────────────
+const AI_FREE_LIMIT = 10;
+function getAIUsage(){try{return parseInt(localStorage.getItem('infinicus_ai_used')||'0',10);}catch(e){return 0;}}
+function incAIUsage(){try{localStorage.setItem('infinicus_ai_used',String(getAIUsage()+1));}catch(e){}}
+function hasAIAccess(){
+  try{if(localStorage.getItem('infinicus_ai_unlimited')==='1')return true;}catch(e){}
+  return getAIUsage()<AI_FREE_LIMIT;
+}
+function showAILimitModal(){
+  const used=getAIUsage();
+  $('ai-limit-used').textContent=used;
+  $('ai-limit-modal').style.display='flex';
+}
+function closeAILimitModal(){$('ai-limit-modal').style.display='none';}
+
 // ─── AI CALL ─────────────────────────────────────────────────────────────────
 async function callAI(params,scores,metrics,verdict) {
+  if(!hasAIAccess()){showAILimitModal();return null;}
   try {
     const resp=await fetch('/api/simulate',{
       method:'POST',
@@ -1988,7 +2029,7 @@ async function callAI(params,scores,metrics,verdict) {
       })
     });
     const json=await resp.json();
-    if(json.ok) return json.data;
+    if(json.ok){incAIUsage();return json.data;}
   } catch(e){}
   return null;
 }
@@ -2992,7 +3033,7 @@ function closeEmailCapture() {
   $('email-capture-modal').style.display='none';
   _emailCaptured=true;
 }
-function submitEmailCapture() {
+async function submitEmailCapture() {
   const email=$('email-capture-input').value.trim();
   const errEl=$('email-capture-err');
   if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
@@ -3004,7 +3045,45 @@ function submitEmailCapture() {
   saveUser();
   _emailCaptured=true;
   $('email-capture-modal').style.display='none';
-  showToast('🎉 You\'re in! Check your inbox for insights.');
+  showToast('🎉 Sending your report…');
+
+  // Build email payload from current simulation state
+  const ai=S.aiData||{};
+  const metrics=S.done?{
+    revenue: S.days.reduce((s,x)=>s+x.rev,0),
+    profit:  S.days.reduce((s,x)=>s+x.profit,0),
+    profDays: S.days.filter(x=>x.profit>0).length,
+    mcSurvival: S.mc?.survivalRate??0,
+  }:{};
+
+  try {
+    const resp = await fetch('/api/send-email',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        name: U.name||'',
+        email,
+        idea: S.params?.idea||'',
+        verdict: S.verdict||'',
+        headline: ai.headline||'',
+        summary: ai.summary||'',
+        capital: S.params?.capital||0,
+        revenue: Math.round(metrics.revenue||0),
+        profit:  Math.round(metrics.profit||0),
+        profDays: metrics.profDays||0,
+        mcSurvival: metrics.mcSurvival||0,
+        score_viability: S.scores?.viability||0,
+        score_market:    S.scores?.market||0,
+        score_execution: S.scores?.execution||0,
+        score_financial: S.scores?.financial||0,
+      })
+    });
+    const json=await resp.json();
+    if(json.ok) showToast('📬 Report sent! Check your inbox.');
+    else showToast('✅ Saved! Email delivery coming soon.');
+  } catch(e){
+    showToast('✅ Saved! Email delivery coming soon.');
+  }
 }
 
 // ─── URL PARAM RESTORE ───────────────────────────────────────────────────────
