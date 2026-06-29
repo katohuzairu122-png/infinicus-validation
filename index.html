@@ -2098,12 +2098,71 @@ function renderVerdict() {
     if(!loading||!content) return;
     if(!ai){loading.textContent='AI analysis unavailable (API not configured).';return;}
     loading.style.display='none'; content.style.display='block';
+
+    const priCol={HIGH:'var(--red)',MEDIUM:'var(--amber)',LOW:'var(--emerald)'};
+
     content.innerHTML=`
-      <div style="font-family:var(--head);font-size:16px;font-weight:800;margin-bottom:.5rem;color:var(--text)">${ai.headline||''}</div>
-      <div style="font-size:13px;line-height:1.75;color:var(--muted);margin-bottom:.85rem">${ai.summary||''}</div>
-      ${ai.actions?.length?`<div style="font-family:var(--mono);font-size:9px;color:var(--muted-2);letter-spacing:.1em;margin-bottom:.5rem">RECOMMENDED ACTIONS</div>
-      ${ai.actions.map(a=>`<div class="ai-action-item ${a.priority||'LOW'}"><span style="font-size:8px;opacity:.7">${a.priority} · </span>${a.action}</div>`).join('')}`:''}
-      ${ai.investorNote?`<div style="margin-top:.85rem;padding:.6rem .85rem;background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.15);border-radius:8px;font-family:var(--mono);font-size:10px;color:var(--purple)">💼 ${ai.investorNote}</div>`:''}`;
+      <!-- Headline + Summary -->
+      <div style="font-family:var(--head);font-size:17px;font-weight:800;margin-bottom:.5rem;color:var(--text)">${ai.headline||''}</div>
+      <div style="font-size:13px;line-height:1.8;color:var(--muted);margin-bottom:.85rem">${ai.summary||''}</div>
+
+      ${ai.verdict_reasoning?`
+      <div style="font-family:var(--mono);font-size:10px;line-height:1.7;color:var(--muted-2);background:var(--glass);border-left:2px solid var(--cyan);border-radius:0 6px 6px 0;padding:.6rem .85rem;margin-bottom:1rem;">
+        📊 ${ai.verdict_reasoning}
+      </div>`:''}
+
+      <!-- Strengths & Risks side by side -->
+      ${(ai.strengths?.length||ai.risks?.length)?`
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem;">
+        ${ai.strengths?.length?`<div>
+          <div style="font-family:var(--mono);font-size:8.5px;color:var(--emerald);letter-spacing:.1em;margin-bottom:.4rem;">✓ STRENGTHS</div>
+          ${ai.strengths.map(s=>`<div style="font-family:var(--mono);font-size:10px;padding:.3rem 0;border-bottom:1px solid var(--line);line-height:1.5;">${s}</div>`).join('')}
+        </div>`:''}
+        ${ai.risks?.length?`<div>
+          <div style="font-family:var(--mono);font-size:8.5px;color:var(--red);letter-spacing:.1em;margin-bottom:.4rem;">⚠ RISKS</div>
+          ${ai.risks.map(r=>`<div style="font-family:var(--mono);font-size:10px;padding:.3rem 0;border-bottom:1px solid var(--line);line-height:1.5;">${r}</div>`).join('')}
+        </div>`:''}
+      </div>`:''}
+
+      <!-- Unit Economics -->
+      ${ai.unit_economics?`
+      <div style="font-family:var(--mono);font-size:10px;line-height:1.7;color:var(--text);background:rgba(0,224,118,.04);border:1px solid rgba(0,224,118,.12);border-radius:8px;padding:.7rem .9rem;margin-bottom:.85rem;">
+        <span style="color:var(--emerald);font-weight:700;">UNIT ECONOMICS · </span>${ai.unit_economics}
+      </div>`:''}
+
+      <!-- Validation Assumptions -->
+      ${ai.validation_assumptions?.length?`
+      <div style="margin-bottom:.85rem;">
+        <div style="font-family:var(--mono);font-size:8.5px;color:var(--amber);letter-spacing:.1em;margin-bottom:.5rem;">🔬 VALIDATE BEFORE INVESTING MORE</div>
+        ${ai.validation_assumptions.map((a,i)=>`
+        <div style="font-family:var(--mono);font-size:10px;padding:.4rem .6rem;margin-bottom:.3rem;background:rgba(245,158,11,.05);border-left:2px solid rgba(245,158,11,.4);border-radius:0 6px 6px 0;line-height:1.6;">
+          <span style="color:var(--amber);font-weight:700;">${i+1}.</span> ${a}
+        </div>`).join('')}
+      </div>`:''}
+
+      <!-- Prioritised Actions -->
+      ${ai.actions?.length?`
+      <div style="margin-bottom:.85rem;">
+        <div style="font-family:var(--mono);font-size:8.5px;color:var(--muted-2);letter-spacing:.1em;margin-bottom:.5rem;">⚡ EXECUTION ROADMAP</div>
+        ${ai.actions.map(a=>`
+        <div class="ai-action-item ${a.priority||'LOW'}" style="display:flex;gap:.6rem;align-items:flex-start;">
+          <span style="font-family:var(--mono);font-size:8px;color:${priCol[a.priority]||'var(--muted-2)'};white-space:nowrap;padding-top:.15rem;min-width:52px;">${a.phase}</span>
+          <span style="flex:1;font-size:10.5px;">${a.action}</span>
+          <span style="font-family:var(--mono);font-size:8px;color:${priCol[a.priority]||'var(--muted-2)'};flex-shrink:0;">${a.priority}</span>
+        </div>`).join('')}
+      </div>`:''}
+
+      <!-- Differentiation -->
+      ${ai.differentiation?`
+      <div style="font-family:var(--mono);font-size:10px;line-height:1.7;color:var(--text);padding:.65rem .85rem;background:rgba(139,92,246,.05);border:1px solid rgba(139,92,246,.15);border-radius:8px;margin-bottom:.75rem;">
+        <span style="color:var(--purple);font-weight:700;">🛡 COMPETITIVE EDGE · </span>${ai.differentiation}
+      </div>`:''}
+
+      <!-- Investor Note -->
+      ${ai.investorNote?`
+      <div style="padding:.65rem .85rem;background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.2);border-radius:8px;font-family:var(--mono);font-size:10px;color:var(--purple);">
+        💼 <strong>INVESTOR VIEW:</strong> ${ai.investorNote}
+      </div>`:''}`;
   });
 }
 
@@ -2256,19 +2315,80 @@ function renderReport() {
     if(!loading||!content) return;
     if(!ai){loading.textContent='AI plan unavailable — API key not configured.';return;}
     loading.style.display='none'; content.style.display='block';
-    const plan=ai.sixtyDayPlan||ai.thirtyDayPlan||{};
-    const weekKeys=['week1','week2','week3','week4','week5','week6','week7','week8'];
-    const weekLabels=['Days 1–7','Days 8–14','Days 15–21','Days 22–28','Days 29–35','Days 36–42','Days 43–49','Days 50–60'];
+
+    const priCol={HIGH:'var(--red)',MEDIUM:'var(--amber)',LOW:'var(--emerald)'};
+    const rm=ai.execution_roadmap||{};
+
     content.innerHTML=`
-      <div style="font-size:13px;line-height:1.75;color:var(--muted);margin-bottom:1rem">${ai.summary||''}</div>
-      ${weekKeys.some(wk=>plan[wk])?`<div class="wk-grid">
-        ${weekKeys.map((wk,i)=>plan[wk]?`
-        <div class="phase"><div class="phase-t">WEEK ${i+1} · ${weekLabels[i]}</div><div class="phase-b">${plan[wk]}</div></div>`:'').join('')}
+      <!-- Summary + Financial Verdict -->
+      <div style="font-size:13px;line-height:1.8;color:var(--muted);margin-bottom:.85rem">${ai.summary||''}</div>
+      ${ai.financial_verdict?`
+      <div style="font-family:var(--mono);font-size:10px;line-height:1.7;color:var(--text);background:var(--glass);border-left:2px solid var(--cyan);padding:.6rem .85rem;border-radius:0 6px 6px 0;margin-bottom:1rem;">
+        📊 ${ai.financial_verdict}
       </div>`:''}
-      ${ai.strengths?.length?`<div style="margin-top:.75rem"><div style="font-family:var(--mono);font-size:9px;color:var(--emerald);letter-spacing:.1em;margin-bottom:.4rem">STRENGTHS</div>
-      ${ai.strengths.map(s=>`<div style="font-family:var(--mono);font-size:10.5px;padding:.3rem 0;border-bottom:1px solid var(--line)">✓ ${s}</div>`).join('')}</div>`:''}
-      ${ai.risks?.length?`<div style="margin-top:.75rem"><div style="font-family:var(--mono);font-size:9px;color:var(--red);letter-spacing:.1em;margin-bottom:.4rem">RISKS</div>
-      ${ai.risks.map(r=>`<div style="font-family:var(--mono);font-size:10.5px;padding:.3rem 0;border-bottom:1px solid var(--line)">⚠ ${r}</div>`).join('')}</div>`:''}`;
+
+      <!-- Execution Roadmap Phases -->
+      ${(rm.phase1||rm.phase2||rm.phase3)?`
+      <div style="margin-bottom:1.1rem;">
+        <div style="font-family:var(--mono);font-size:8.5px;color:var(--cyan);letter-spacing:.12em;margin-bottom:.6rem;">⚡ 60-DAY EXECUTION ROADMAP</div>
+        <div class="wk-grid">
+          ${rm.phase1?`<div class="phase"><div class="phase-t">PHASE 1 · DAYS 1–14</div><div class="phase-b">${rm.phase1}</div></div>`:''}
+          ${rm.phase2?`<div class="phase"><div class="phase-t">PHASE 2 · DAYS 15–30</div><div class="phase-b">${rm.phase2}</div></div>`:''}
+          ${rm.phase3?`<div class="phase"><div class="phase-t">PHASE 3 · DAYS 31–60</div><div class="phase-b">${rm.phase3}</div></div>`:''}
+          ${rm.decision_checkpoint?`<div class="phase" style="border-color:rgba(245,158,11,.3);"><div class="phase-t" style="color:var(--amber);">🚦 DECISION CHECKPOINT</div><div class="phase-b">${rm.decision_checkpoint}</div></div>`:''}
+        </div>
+      </div>`:''}
+
+      <!-- Prioritised Actions -->
+      ${ai.actions?.length?`
+      <div style="margin-bottom:1rem;">
+        <div style="font-family:var(--mono);font-size:8.5px;color:var(--muted-2);letter-spacing:.1em;margin-bottom:.5rem;">RECOMMENDED ACTIONS</div>
+        ${ai.actions.map(a=>`
+        <div class="ai-action-item ${a.priority||'LOW'}" style="display:flex;gap:.6rem;align-items:flex-start;">
+          <span style="font-family:var(--mono);font-size:8px;color:${priCol[a.priority]||'var(--muted-2)'};white-space:nowrap;padding-top:.15rem;min-width:52px;">${a.phase}</span>
+          <span style="flex:1;font-size:10.5px;">${a.action}</span>
+          <span style="font-family:var(--mono);font-size:8px;color:${priCol[a.priority]||'var(--muted-2)'};flex-shrink:0;">${a.priority}</span>
+        </div>`).join('')}
+      </div>`:''}
+
+      <!-- Strengths & Risks -->
+      ${(ai.strengths?.length||ai.risks?.length)?`
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem;">
+        ${ai.strengths?.length?`<div>
+          <div style="font-family:var(--mono);font-size:8.5px;color:var(--emerald);letter-spacing:.1em;margin-bottom:.4rem">✓ STRENGTHS</div>
+          ${ai.strengths.map(s=>`<div style="font-family:var(--mono);font-size:10.5px;padding:.3rem 0;border-bottom:1px solid var(--line);line-height:1.5">✓ ${s}</div>`).join('')}
+        </div>`:''}
+        ${ai.risks?.length?`<div>
+          <div style="font-family:var(--mono);font-size:8.5px;color:var(--red);letter-spacing:.1em;margin-bottom:.4rem">⚠ RISKS</div>
+          ${ai.risks.map(r=>`<div style="font-family:var(--mono);font-size:10.5px;padding:.3rem 0;border-bottom:1px solid var(--line);line-height:1.5">⚠ ${r}</div>`).join('')}
+        </div>`:''}
+      </div>`:''}
+
+      <!-- Validation Assumptions -->
+      ${ai.validation_assumptions?.length?`
+      <div style="margin-bottom:1rem;">
+        <div style="font-family:var(--mono);font-size:8.5px;color:var(--amber);letter-spacing:.1em;margin-bottom:.5rem;">🔬 ASSUMPTIONS TO VALIDATE IN MARKET</div>
+        ${ai.validation_assumptions.map((a,i)=>`
+        <div style="font-family:var(--mono);font-size:10.5px;padding:.4rem .65rem;margin-bottom:.3rem;background:rgba(245,158,11,.05);border-left:2px solid rgba(245,158,11,.4);border-radius:0 6px 6px 0;line-height:1.6;">
+          <span style="color:var(--amber);font-weight:700;">${i+1}.</span> ${a}
+        </div>`).join('')}
+      </div>`:''}
+
+      <!-- Differentiation + Scale Path -->
+      ${ai.differentiation?`
+      <div style="font-family:var(--mono);font-size:10.5px;line-height:1.7;padding:.65rem .85rem;background:rgba(139,92,246,.05);border:1px solid rgba(139,92,246,.15);border-radius:8px;margin-bottom:.75rem;">
+        <span style="color:var(--purple);font-weight:700;">🛡 COMPETITIVE EDGE · </span>${ai.differentiation}
+      </div>`:''}
+      ${ai.scale_path?`
+      <div style="font-family:var(--mono);font-size:10.5px;line-height:1.7;padding:.65rem .85rem;background:rgba(0,224,255,.04);border:1px solid rgba(0,224,255,.15);border-radius:8px;margin-bottom:.75rem;">
+        <span style="color:var(--cyan);font-weight:700;">📈 SCALE PATH · </span>${ai.scale_path}
+      </div>`:''}
+
+      <!-- Investor Note -->
+      ${ai.investorNote?`
+      <div style="padding:.65rem .85rem;background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.2);border-radius:8px;font-family:var(--mono);font-size:10.5px;color:var(--purple);">
+        💼 <strong>INVESTOR VIEW:</strong> ${ai.investorNote}
+      </div>`:''}`;
   });
 }
 
