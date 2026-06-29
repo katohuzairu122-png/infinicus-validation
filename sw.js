@@ -1,5 +1,6 @@
 // sw.js — INFINICUS Engine v3 Service Worker
 // Bump CACHE_VERSION when deploying significant updates to force re-cache
+// Deployed: 2026-06-29
 const CACHE_VERSION = 'v4';
 const CACHE = 'infinicus-' + CACHE_VERSION;
 
