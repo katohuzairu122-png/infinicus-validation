@@ -1073,7 +1073,7 @@ function simulate(params) {
     const paidAcq  = Math.max(0,Math.floor(rNorm(dailyMkt/prof.acqCost,1.5)*shock));
     // Organic acquisition: foot traffic + word-of-mouth referrals from existing base
     const footTraffic = Math.max(0,Math.round(rNorm(organicBase,1.0)*seasonMult*shock));
-    const wordOfMouth  = Math.floor(customers*0.018); // 1.8% daily referral rate
+    const wordOfMouth  = Math.round(customers*0.018); // 1.8% daily referral rate (round, not floor — activates at 28 customers not 56)
     const acq = paidAcq + footTraffic + wordOfMouth;
 
     const churned = Math.floor(customers*prof.churn/60);
@@ -1109,7 +1109,7 @@ function monteCarlo(params) {
     for (let d=1;d<=60;d++) {
       const paidAcq=Math.max(0,Math.floor(rNorm(dailyMkt/p.acqCost,1.2)));
       const footTraffic=Math.max(0,Math.round(rNorm(organicBase,1.0)));
-      const wordOfMouth=Math.floor(customers*0.018);
+      const wordOfMouth=Math.round(customers*0.018);
       const acq=paidAcq+footTraffic+wordOfMouth;
       customers=Math.max(0,customers+acq-Math.floor(customers*p.churn/60));
       const rev=customers*(params.price*baseProf.visitsPerMonth/60)*rnd(.6,1.4);
@@ -1194,7 +1194,7 @@ function startSim() {
   if (price<=0) {errBox.textContent='Enter a price point greater than 0.';errBox.style.display='block';return;}
   S.params={idea,capital,price,mktBud,team,industry,loc,mkt};
   trackEvent('sim_start',{industry,cur:curCode});
-  S.running=true;S.done=false;S.scores=null;
+  S.running=true;S.done=false;S.scores=null;S.aiData=null;
   setBadge('running');
   $('launch-btn').disabled=true;$('stop-btn').disabled=false;
   nav('dashboard');
@@ -1561,14 +1561,14 @@ function quickVerdictPreview(params) {
   const profDays=days.filter(x=>x.profit>0).length;
   const profDaysRatio=profDays/60;
   const totalRev=days.reduce((s,x)=>s+x.rev,0);
+  const totalCost=days.reduce((s,x)=>s+x.cost,0); // needed for correct mktFit
   const endCash=last.cash;
   const finalCust=last.customers;
-  // Estimate survival from how many days cash stayed positive
   const cashPosDays=days.filter(x=>x.cash>0).length;
   const estSurv=Math.min(0.95, cashPosDays/60*0.85+(endCash>0?0.10:0));
-  // Replicate score formulas
+  // Must match calcScores() exactly — mktFit uses totalRev>totalCost, not totalRev>0
   const viability=Math.round(Math.min(100,Math.max(0,estSurv*55+profDaysRatio*30+(endCash>0?15:0))));
-  const mktFit=Math.round(Math.min(100,Math.max(0,Math.min(finalCust/20,1)*45+(totalRev>0?35:10)+15)));
+  const mktFit=Math.round(Math.min(100,Math.max(0,Math.min(finalCust/20,1)*45+(totalRev>totalCost?35:10)+15)));
   const execution=Math.round(Math.min(100,Math.max(0,profDaysRatio*60+Math.min(finalCust,30)/30*40)));
   const financial=Math.round(Math.min(100,Math.max(0,Math.min(endCash/params.capital,1)*50+(totalRev>0?30:0)+(endCash>0?20:0))));
   const avg=Math.round((viability+mktFit+execution+financial)/4);
@@ -1616,12 +1616,15 @@ function calcSuggestedFix() {
     newParams.capital=newCap;
   }
 
-  // Marketing — cut burn when survival is low or costs dwarf revenue
-  if(mcSurv<0.55||totalCost>totalRev*1.5){
+  // Marketing — only cut for digital/low-organic businesses where marketing is a primary cost driver
+  // Physical businesses (food, retail, events etc.) rely on foot traffic, not paid ads — don't cut
+  const prof=PROFILES[p.industry];
+  const isDigital=(prof.organicMult||1) < 1.5; // SaaS, fintech, edtech, agency, marketplace
+  if(isDigital && (mcSurv<0.55||totalCost>totalRev*1.5)){
     const newMkt=Math.round(p.mktBud*mktCut);
     const pct=Math.round((1-mktCut)*100);
     fixes.push({label:'Marketing Budget',old:fmt(p.mktBud),new:fmt(newMkt),
-      note:`-${pct}% reduces daily burn rate. Lean spend while pricing & capital stabilise.`,
+      note:`-${pct}% reduces daily burn rate. Organic acquisition is low — lean spend while pricing stabilises.`,
       field:'mktBud',val:newMkt});
     newParams.mktBud=newMkt;
   }
@@ -1668,7 +1671,7 @@ function renderResimPanel() {
       <span style="margin-left:auto;color:var(--muted-2);font-size:8px;">PREVIEW · SINGLE RUN</span>
     </div>
     <button onclick="applyAndReSim()" style="width:100%;padding:.75rem;background:linear-gradient(135deg,rgba(0,224,118,.15),rgba(0,200,100,.08));border:1px solid rgba(0,224,118,.4);border-radius:8px;color:var(--emerald);font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.08em;cursor:pointer;">
-      ▶ APPLY FIXES &amp; RE-SIMULATE
+      ↗ APPLY FIXES → GO TO INPUT FORM
     </button>
   </div>`;
 }
@@ -1678,14 +1681,19 @@ function applyAndReSim() {
   if(!result) return;
   const {newParams}=result;
   const rate=CUR[curCode]?.r||1;
-  if(newParams.capital!==S.params.capital){ const el=$('i-cap'); if(el) el.value=Math.round(newParams.capital*rate); }
-  if(newParams.price!==S.params.price){ const el=$('i-price'); if(el) el.value=+(newParams.price*rate).toFixed(2); }
-  if(newParams.mktBud!==S.params.mktBud){ const el=$('i-mktbud'); if(el) el.value=Math.round(newParams.mktBud*rate); }
-  showToast('Fixes applied — running new simulation…');
-  setTimeout(()=>{
-    startSim();
-    window.scrollTo({top:0,behavior:'smooth'});
-  },400);
+  const glowEl=el=>{
+    if(!el)return;
+    el.style.transition='border-color .2s,box-shadow .2s';
+    el.style.borderColor='var(--cyan)';
+    el.style.boxShadow='0 0 0 2px rgba(0,224,255,.2)';
+    setTimeout(()=>{el.style.borderColor='';el.style.boxShadow='';el.style.transition='';},4000);
+  };
+  if(newParams.capital!==S.params.capital){ const el=$('i-cap'); if(el){el.value=Math.round(newParams.capital*rate);glowEl(el);} }
+  if(newParams.price!==S.params.price){ const el=$('i-price'); if(el){el.value=+(newParams.price*rate).toFixed(2);glowEl(el);} }
+  if(newParams.mktBud!==S.params.mktBud){ const el=$('i-mktbud'); if(el){el.value=Math.round(newParams.mktBud*rate);glowEl(el);} }
+  // Navigate to form so user can review changes, then press Simulate themselves
+  nav('input');
+  showToast('Smart fixes applied — review highlighted fields, then press Simulate', 4000);
 }
 
 // ─── CAPITAL ALTERNATIVE APPLY ────────────────────────────────────────────────
@@ -1713,48 +1721,64 @@ function applyCapitalAlternative(mode) {
     tagColor   = 'var(--emerald)';
   }
 
+  // If current verdict is STOP, also apply a price nudge to improve unit economics
+  // Capital alone doesn't change per-unit profitability — price does
+  const currentVerdict = computeVerdict();
+  let newPriceUSD = origPrice;
+  let priceChanged = false;
+  if (currentVerdict === 'stop') {
+    const priceMult = mode === 'plus60' ? 1.20 : 1.35; // +20% / +35% price nudge
+    newPriceUSD = +(origPrice * priceMult).toFixed(4);
+    priceChanged = true;
+  }
+
   // Compute display values
-  const newCapDisp  = Math.round(newCapUSD  * rate);
-  const newMktDisp  = Math.round(newMktUSD  * rate);
-  const origCapDisp = Math.round(origCap    * rate);
-  const origMktDisp = Math.round(origMkt    * rate);
+  const newCapDisp   = Math.round(newCapUSD   * rate);
+  const newMktDisp   = Math.round(newMktUSD   * rate);
+  const newPriceDisp = +(newPriceUSD * rate).toFixed(2);
 
   // Fill form fields
-  const capEl = $('i-cap');
-  const mktEl = $('i-mktbud');
-  if (capEl) capEl.value = newCapDisp;
-  if (mktEl) mktEl.value = newMktDisp;
+  const capEl   = $('i-cap');
+  const mktEl   = $('i-mktbud');
+  const priceEl = $('i-price');
+  if (capEl)   capEl.value   = newCapDisp;
+  if (mktEl)   mktEl.value   = newMktDisp;
+  if (priceEl && priceChanged) priceEl.value = newPriceDisp;
 
   // Highlight changed fields with a glow for 4 seconds
-  const glowHex = mode === 'plus60' ? '#f59e0b' : '#10b981';
+  const glowHex  = mode === 'plus60' ? '#f59e0b' : '#10b981';
   const glowRgba = mode === 'plus60' ? 'rgba(245,158,11,.25)' : 'rgba(16,185,129,.25)';
   function glowField(el) {
     if (!el) return;
     el.style.transition = 'border-color .2s, box-shadow .2s';
     el.style.borderColor = glowHex;
-    el.style.boxShadow  = `0 0 0 2px ${glowRgba}`;
+    el.style.boxShadow   = `0 0 0 2px ${glowRgba}`;
     setTimeout(()=>{ el.style.borderColor=''; el.style.boxShadow=''; el.style.transition=''; }, 4000);
   }
   glowField(capEl);
   glowField(mktEl);
+  if (priceChanged) glowField(priceEl);
 
   // Navigate to input form
   nav('input');
 
   // Populate and show the banner
-  const banner = $('alt-applied-banner');
+  const banner  = $('alt-applied-banner');
   const titleEl = $('alt-banner-title');
   const bodyEl  = $('alt-banner-body');
   if (titleEl) titleEl.textContent = label + ' APPLIED';
   if (bodyEl) {
+    const priceNote = priceChanged
+      ? `<br>Price: <strong style="color:var(--text)">${fmt(origPrice)} → ${fmt(newPriceUSD)}</strong> <span style="color:var(--muted-2);font-size:9px;">(nudge to improve unit economics)</span>`
+      : `<br><span style="font-size:9.5px;color:var(--muted-2)">Price kept from original — adjust below if needed.</span>`;
     bodyEl.innerHTML =
-      `Capital: <strong style="color:var(--text)">${fmt(origCapUSD)} → ${fmt(newCapUSD)}</strong> &nbsp;|&nbsp; ` +
-      `Marketing: <strong style="color:var(--text)">${fmt(origMkt)} → ${fmt(newMktUSD)}</strong><br>` +
-      `<span style="font-size:9.5px;color:var(--muted-2)">Price and team size were kept from your original inputs. Adjust them below if needed.</span>`;
+      `Capital: <strong style="color:var(--text)">${fmt(origCap)} → ${fmt(newCapUSD)}</strong> &nbsp;|&nbsp; ` +
+      `Marketing: <strong style="color:var(--text)">${fmt(origMkt)} → ${fmt(newMktUSD)}</strong>` +
+      priceNote;
   }
   if (banner) {
     banner.style.display = 'block';
-    banner.style.borderColor = tagColor.includes('amber') ? 'rgba(245,158,11,.4)' : 'rgba(16,185,129,.35)';
+    banner.style.borderColor = mode === 'plus60' ? 'rgba(245,158,11,.4)' : 'rgba(16,185,129,.35)';
   }
 
   showToast('Alternative applied — review inputs, then press Simulate', 4000);
