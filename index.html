@@ -413,9 +413,8 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
     <button class="nb"        data-section="dashboard"   onclick="nav('dashboard')">DASH</button>
     <button class="nb"        data-section="history"     onclick="nav('history')">HISTORY</button>
     <button class="nb"        data-section="economy"     onclick="nav('economy')">ECON</button>
-    <button class="nb"        data-section="customers"   onclick="nav('customers')">CUST</button>
+    <button class="nb"        data-section="customers"   onclick="nav('customers')">CUST / LOG</button>
     <button class="nb"        data-section="risk"        onclick="nav('risk')">RISK / MC</button>
-    <button class="nb"        data-section="log"         onclick="nav('log')">LOG</button>
     <button class="nb"        data-section="verdict"     onclick="nav('verdict')">VERDICT</button>
     <button class="nb"        data-section="report"      onclick="nav('report')">REPORT</button>
     <button class="nb"        data-section="sensitivity" onclick="nav('sensitivity')">SENSI</button>
@@ -624,6 +623,16 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
       <div id="retention" style="margin-top:.75rem;"></div>
     </div>
   </div>
+  <!-- ── EVENT LOG (merged) ── -->
+  <div class="pg-title" style="font-size:16px;margin-top:1.5rem;margin-bottom:.1rem;">EVENT LOG</div>
+  <div class="pg-sub" style="margin-bottom:.75rem;">// 90-DAY SIMULATION EVENTS</div>
+  <div class="g3" id="log-summary"></div>
+  <div class="card" style="margin-top:.75rem;">
+    <div class="card-lbl">ALL EVENTS — CHRONOLOGICAL</div>
+    <div class="event-log" id="event-log" style="margin-top:.75rem;">
+      <div style="font-family:var(--mono);font-size:10.5px;color:var(--muted-2);padding:1rem 0;">No simulation data yet. Run a simulation first.</div>
+    </div>
+  </div>
 </section>
 
 <!-- ══ RISK ══ -->
@@ -648,18 +657,6 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
   </div>
 </section>
 
-<!-- ══ EVENT LOG ══ -->
-<section class="section" id="sec-log">
-  <div class="pg-title" style="font-size:22px;margin-bottom:.1rem;">EVENT LOG</div>
-  <div class="pg-sub">// 90-DAY SIMULATION EVENTS</div>
-  <div class="g3" id="log-summary"></div>
-  <div class="card">
-    <div class="card-lbl">ALL EVENTS — CHRONOLOGICAL</div>
-    <div class="event-log" id="event-log" style="margin-top:.75rem;">
-      <div style="font-family:var(--mono);font-size:10.5px;color:var(--muted-2);padding:1rem 0;">No simulation data yet. Run a simulation first.</div>
-    </div>
-  </div>
-</section>
 
 <!-- ══ VERDICT ══ -->
 <section class="section" id="sec-verdict">
