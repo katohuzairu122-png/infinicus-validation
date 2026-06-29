@@ -42,7 +42,8 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.85
 .logo .mark img{width:26px;height:26px;display:block;}
 .logo .c{color:var(--cyan);}
 .logo-ver{font-family:var(--mono);font-size:9px;color:var(--muted-2);font-weight:300;align-self:flex-end;margin-bottom:2px;margin-left:4px;}
-.nav{display:flex;gap:3px;flex-wrap:wrap;}
+.nav{display:flex;gap:3px;flex:1;min-width:0;overflow-x:auto;scrollbar-width:none;}
+.nav::-webkit-scrollbar{display:none;}
 .nb{font-family:var(--mono);font-size:9.5px;color:var(--muted);background:none;border:1px solid transparent;padding:5px 10px;border-radius:6px;cursor:pointer;letter-spacing:.05em;transition:all .15s;white-space:nowrap;}
 .nb:hover,.nb.active{color:var(--cyan);border-color:rgba(0,224,96,.25);background:rgba(0,224,96,.06);}
 .hdr-right{display:flex;align-items:center;gap:10px;flex-shrink:0;}
@@ -412,7 +413,7 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
     <button class="nb"        data-section="dashboard"   onclick="nav('dashboard')">DASHBOARD</button>
     <button class="nb"        data-section="economy"     onclick="nav('economy')">ECONOMY</button>
     <button class="nb"        data-section="customers"   onclick="nav('customers')">CUSTOMERS</button>
-    <button class="nb"        data-section="risk"        onclick="nav('risk')">RISK / MONTE CARLO</button>
+    <button class="nb"        data-section="risk"        onclick="nav('risk')">RISK / MC</button>
     <button class="nb"        data-section="log"         onclick="nav('log')">EVENT LOG</button>
     <button class="nb"        data-section="verdict"     onclick="nav('verdict')">VERDICT</button>
     <button class="nb"        data-section="report"      onclick="nav('report')">REPORT &amp; PLAN</button>
