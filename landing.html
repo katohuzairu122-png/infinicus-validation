@@ -282,9 +282,11 @@ footer{
 .auth-submit{width:100%;padding:.78rem;background:linear-gradient(135deg,rgba(0,224,96,.14),rgba(139,92,246,.1));border:1px solid rgba(0,224,96,.38);border-radius:9px;color:var(--cyan);font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:.08em;cursor:pointer;transition:all .15s;margin-top:.35rem;}
 .auth-submit:hover:not(:disabled){background:linear-gradient(135deg,rgba(0,224,96,.22),rgba(139,92,246,.16));box-shadow:0 0 20px rgba(0,224,96,.15);}
 .auth-submit:disabled{opacity:.45;cursor:not-allowed;}
-.auth-err{font-family:var(--mono);font-size:10px;color:#f43f5e;margin-top:.7rem;padding:.5rem .7rem;background:rgba(244,63,94,.07);border:1px solid rgba(244,63,94,.2);border-radius:6px;display:none;}
-.auth-ok{font-family:var(--mono);font-size:10px;color:var(--cyan);margin-top:.7rem;padding:.5rem .7rem;background:rgba(0,224,96,.07);border:1px solid rgba(0,224,96,.2);border-radius:6px;display:none;}
+.auth-err{font-family:var(--mono);font-size:11px;color:#f43f5e;margin-top:.7rem;padding:.65rem .85rem;background:rgba(244,63,94,.09);border:1px solid rgba(244,63,94,.28);border-radius:7px;display:none;line-height:1.5;}
+.auth-ok{font-family:var(--mono);font-size:11px;color:var(--cyan);margin-top:.7rem;padding:.65rem .85rem;background:rgba(0,224,96,.09);border:1px solid rgba(0,224,96,.28);border-radius:7px;display:none;text-align:center;line-height:1.7;}
 .auth-fine{font-family:var(--mono);font-size:9px;color:var(--muted-2);text-align:center;margin-top:1rem;line-height:1.6;}
+.auth-engine-btn{display:block;width:100%;padding:.7rem;margin-top:.65rem;background:linear-gradient(135deg,rgba(0,224,96,.18),rgba(139,92,246,.12));border:1px solid rgba(0,224,96,.45);border-radius:9px;color:var(--cyan);font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.08em;cursor:pointer;text-align:center;text-decoration:none;transition:all .15s;}
+.auth-engine-btn:hover{background:linear-gradient(135deg,rgba(0,224,96,.28),rgba(139,92,246,.2));box-shadow:0 0 24px rgba(0,224,96,.18);}
 </style>
 </head>
 <body>
@@ -687,165 +689,149 @@ renderPriceGrid();
       <span class="auth-logo-name">INFIN<span class="c">ICUS</span> <span style="font-family:var(--mono);font-size:9px;color:var(--muted-2);font-weight:300;">ENGINE v3</span></span>
     </div>
 
-    <div class="auth-tabs">
-      <button class="auth-tab active" id="tab-signup" onclick="switchAuthTab('signup')">CREATE ACCOUNT</button>
-      <button class="auth-tab" id="tab-signin" onclick="switchAuthTab('signin')">SIGN IN</button>
+    <!-- Single unified form — sign in OR auto-register -->
+    <div class="auth-field">
+      <label for="auth-email">EMAIL</label>
+      <input type="email" id="auth-email" placeholder="you@example.com" autocomplete="email"
+        onkeydown="if(event.key==='Enter')document.getElementById('auth-pass').focus()">
+    </div>
+    <div class="auth-field">
+      <label for="auth-pass">PASSWORD <span style="color:var(--muted-2);font-weight:300;">(min 8 characters)</span></label>
+      <input type="password" id="auth-pass" placeholder="Minimum 8 characters" autocomplete="current-password"
+        onkeydown="if(event.key==='Enter')doAuth()">
     </div>
 
-    <!-- Sign Up -->
-    <div id="auth-signup">
-      <div class="auth-field">
-        <label for="su-email">EMAIL</label>
-        <input type="email" id="su-email" placeholder="you@example.com" autocomplete="email" onkeydown="if(event.key==='Enter')doSignUp()">
-      </div>
-      <div class="auth-field">
-        <label for="su-pass">PASSWORD</label>
-        <input type="password" id="su-pass" placeholder="Minimum 8 characters" autocomplete="new-password" onkeydown="if(event.key==='Enter')doSignUp()">
-      </div>
-      <div class="auth-field">
-        <label for="su-pass2">CONFIRM PASSWORD</label>
-        <input type="password" id="su-pass2" placeholder="Repeat password" autocomplete="new-password" onkeydown="if(event.key==='Enter')doSignUp()">
-      </div>
-      <button class="auth-submit" id="su-btn" onclick="doSignUp()">Create Account →</button>
-      <div class="auth-err" id="su-err"></div>
-      <div class="auth-ok" id="su-ok" style="text-align:center;">
-        ✓ Account created! Redirecting…<br>
-        <a href="index.html" style="color:var(--cyan);font-family:var(--mono);font-size:11px;display:inline-block;margin-top:.6rem;text-decoration:none;border:1px solid rgba(0,224,96,.4);border-radius:7px;padding:.5rem 1.2rem;background:rgba(0,224,96,.07);">Open Engine →</a>
-      </div>
-      <p class="auth-fine">Free account · No credit card required · <a href="index.html" style="color:var(--muted,#8893ad);text-decoration:none;">Try without account →</a></p>
+    <div class="auth-err" id="auth-err"></div>
+
+    <button class="auth-submit" id="auth-btn" onclick="doAuth()">Continue to Engine →</button>
+
+    <div class="auth-ok" id="auth-ok" style="display:none;">
+      ✓ Success! Redirecting…<br>
+      <a href="index.html" class="auth-engine-btn" id="auth-engine-link">Open Engine →</a>
     </div>
 
-    <!-- Sign In -->
-    <div id="auth-signin" style="display:none;">
-      <div class="auth-field">
-        <label for="si-email">EMAIL</label>
-        <input type="email" id="si-email" placeholder="you@example.com" autocomplete="email" onkeydown="if(event.key==='Enter')doSignIn()">
-      </div>
-      <div class="auth-field">
-        <label for="si-pass">PASSWORD</label>
-        <input type="password" id="si-pass" placeholder="Your password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doSignIn()">
-      </div>
-      <button class="auth-submit" id="si-btn" onclick="doSignIn()">Sign In →</button>
-      <div class="auth-err" id="si-err"></div>
-      <div class="auth-ok" id="si-ok" style="display:none;text-align:center;padding:.5rem 0;">
-        ✓ Signed in! Redirecting…<br>
-        <a id="si-engine-link" href="index.html" style="color:var(--cyan);font-family:var(--mono);font-size:11px;display:inline-block;margin-top:.6rem;text-decoration:none;border:1px solid rgba(0,224,96,.4);border-radius:7px;padding:.5rem 1.2rem;background:rgba(0,224,96,.07);">Open Engine →</a>
-      </div>
-      <p class="auth-fine">Don't have an account? <button onclick="switchAuthTab('signup')" style="background:none;border:none;color:var(--cyan);font-family:var(--mono);font-size:9px;cursor:pointer;padding:0;text-decoration:underline;">Create one free</button></p>
-      <p class="auth-fine" style="margin-top:.3rem;"><a href="index.html" style="color:var(--muted,#8893ad);font-size:9px;text-decoration:none;">Skip — try engine without account →</a></p>
-    </div>
+    <p class="auth-fine">New user? We'll create your account automatically.</p>
+    <p class="auth-fine" style="margin-top:.3rem;">
+      <a href="index.html" style="color:var(--muted-2);text-decoration:none;">Skip — go to engine without an account →</a>
+    </p>
   </div>
 </div>
 
 <script>
 // ── AUTH MODAL ──────────────────────────────────────────────────────────────
-function openAuth(tab) {
-  switchAuthTab(tab || 'signup');
-  // Clear previous state
-  ['su-email','su-pass','su-pass2','si-email','si-pass'].forEach(id => {
-    const el = document.getElementById(id); if(el) el.value = '';
-  });
-  ['su-err','su-ok','si-err','si-ok'].forEach(id => {
-    const el = document.getElementById(id); if(el) el.style.display = 'none';
-  });
-  ['su-btn','si-btn'].forEach(id => {
-    const el = document.getElementById(id);
-    if(el) { el.disabled = false; el.style.display = ''; el.textContent = id === 'su-btn' ? 'Create Account →' : 'Sign In →'; }
-  });
+function openAuth() {
+  const errEl = document.getElementById('auth-err');
+  const okEl  = document.getElementById('auth-ok');
+  const btn   = document.getElementById('auth-btn');
+  if(errEl) { errEl.style.display='none'; errEl.textContent=''; }
+  if(okEl)  okEl.style.display='none';
+  if(btn)   { btn.disabled=false; btn.style.display=''; btn.textContent='Continue to Engine →'; }
+  const emailEl = document.getElementById('auth-email');
+  const passEl  = document.getElementById('auth-pass');
+  if(emailEl) emailEl.value='';
+  if(passEl)  passEl.value='';
   document.getElementById('auth-overlay').classList.add('open');
-  setTimeout(() => {
-    const focusId = (tab === 'signin') ? 'si-email' : 'su-email';
-    const el = document.getElementById(focusId); if(el) el.focus();
-  }, 60);
+  setTimeout(()=>{ if(emailEl) emailEl.focus(); }, 60);
 }
 
 function closeAuth() {
   document.getElementById('auth-overlay').classList.remove('open');
 }
 
-function switchAuthTab(tab) {
-  document.getElementById('auth-signup').style.display = (tab === 'signup') ? 'block' : 'none';
-  document.getElementById('auth-signin').style.display = (tab === 'signin') ? 'block' : 'none';
-  document.getElementById('tab-signup').classList.toggle('active', tab === 'signup');
-  document.getElementById('tab-signin').classList.toggle('active', tab === 'signin');
-}
+// Kept for backward-compat with any onclick="openAuth('signup')" / openAuth('signin')
+function switchAuthTab() {}
 
-function showAuthErr(prefix, msg) {
-  const el = document.getElementById(prefix + '-err');
+function showAuthErr(msg) {
+  const el = document.getElementById('auth-err');
   if(el) { el.textContent = msg; el.style.display = 'block'; }
 }
 
-async function doSignUp() {
-  const email = (document.getElementById('su-email').value || '').trim();
-  const pass  =  document.getElementById('su-pass').value  || '';
-  const pass2 =  document.getElementById('su-pass2').value || '';
-  const btn   =  document.getElementById('su-btn');
-  document.getElementById('su-err').style.display = 'none';
-  document.getElementById('su-ok').style.display  = 'none';
+async function doAuth() {
+  const email = (document.getElementById('auth-email').value || '').trim().toLowerCase();
+  const pass  =  document.getElementById('auth-pass').value  || '';
+  const btn   =  document.getElementById('auth-btn');
+  const errEl =  document.getElementById('auth-err');
+  const okEl  =  document.getElementById('auth-ok');
 
-  if (!email || !email.includes('@')) { showAuthErr('su','Enter a valid email address.'); return; }
-  if (pass.length < 8)                { showAuthErr('su','Password must be at least 8 characters.'); return; }
-  if (pass !== pass2)                 { showAuthErr('su','Passwords do not match.'); return; }
+  if(errEl) { errEl.style.display='none'; errEl.textContent=''; }
+  if(okEl)  okEl.style.display='none';
 
-  btn.textContent = 'Creating account…'; btn.disabled = true;
+  if (!email || !email.includes('@')) { showAuthErr('Enter a valid email address.'); return; }
+  if (pass.length < 8)                { showAuthErr('Password must be at least 8 characters.'); return; }
+
+  btn.textContent = 'Connecting…'; btn.disabled = true;
+
+  // Step 1: Try login
   try {
-    const res  = await fetch('/api/auth/register', {
-      method: 'POST', headers: {'Content-Type':'application/json'},
+    const loginRes  = await fetch('/api/auth/login', {
+      method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ email, password: pass })
     });
-    const data = await res.json();
-    if (!res.ok || !data.ok) {
-      showAuthErr('su', data.error || 'Registration failed. Please try again.');
-      btn.textContent = 'Create Account →'; btn.disabled = false;
+
+    let loginData = {};
+    try { loginData = await loginRes.json(); } catch(e) {}
+
+    if (loginRes.ok && loginData.ok) {
+      // ✓ Login succeeded
+      _authSuccess({ email: loginData.email, plan: loginData.plan||'free', simCount: loginData.simCount||0, createdAt: loginData.createdAt||Date.now() });
       return;
     }
-    // Persist user in localStorage (same key used by the engine)
-    const user = { email: data.email, plan: data.plan || 'free', simCount: 0, createdAt: Date.now() };
-    try { localStorage.setItem('infinicus_user', JSON.stringify(user)); } catch(e) {}
-    document.getElementById('su-ok').style.display = 'block';
-    window.location.href = 'index.html';
-  } catch(e) {
-    showAuthErr('su','Network error. Please try again.');
-    btn.textContent = 'Create Account →'; btn.disabled = false;
+
+    // If wrong password → show error, don't try register
+    if (loginRes.status === 401) {
+      showAuthErr('Incorrect password. Please try again.');
+      btn.textContent='Continue to Engine →'; btn.disabled=false;
+      return;
+    }
+
+    // 404 = no account → auto-register
+    if (loginRes.status === 404) {
+      btn.textContent = 'Creating account…';
+      const regRes  = await fetch('/api/auth/register', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ email, password: pass })
+      });
+      let regData = {};
+      try { regData = await regRes.json(); } catch(e) {}
+
+      if (regRes.ok && regData.ok) {
+        // ✓ Registered + redirect
+        _authSuccess({ email: regData.email, plan:'free', simCount:0, createdAt:Date.now() });
+        return;
+      }
+
+      // Registration also failed
+      showAuthErr(regData.error || 'Could not create account. Please try again.');
+      btn.textContent='Continue to Engine →'; btn.disabled=false;
+      return;
+    }
+
+    // Other error from login
+    showAuthErr(loginData.error || 'Authentication failed. Please try again.');
+    btn.textContent='Continue to Engine →'; btn.disabled=false;
+
+  } catch(networkErr) {
+    // Network/API unreachable — bypass auth and go directly
+    showAuthErr('Could not reach server. Click "Open Engine →" below to continue.');
+    if(okEl) {
+      okEl.innerHTML = '<a href="index.html" class="auth-engine-btn">Open Engine →</a>';
+      okEl.style.display='block';
+    }
+    btn.textContent='Continue to Engine →'; btn.disabled=false;
   }
 }
 
-async function doSignIn() {
-  const email = (document.getElementById('si-email').value || '').trim();
-  const pass  =  document.getElementById('si-pass').value  || '';
-  const btn   =  document.getElementById('si-btn');
-  document.getElementById('si-err').style.display = 'none';
-  document.getElementById('si-ok').style.display  = 'none';
-
-  if (!email) { showAuthErr('si','Enter your email.'); return; }
-  if (!pass)  { showAuthErr('si','Enter your password.'); return; }
-
-  btn.textContent = 'Signing in…'; btn.disabled = true;
-  try {
-    const res  = await fetch('/api/auth/login', {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ email, password: pass })
-    });
-    const data = await res.json();
-    if (!res.ok || !data.ok) {
-      showAuthErr('si', data.error || 'Sign in failed. Please check your details.');
-      btn.textContent = 'Sign In →'; btn.disabled = false;
-      return;
-    }
-    const user = { email: data.email, plan: data.plan || 'free', simCount: data.simCount || 0, createdAt: data.createdAt || Date.now() };
-    try { localStorage.setItem('infinicus_user', JSON.stringify(user)); } catch(e) {}
-
-    document.getElementById('si-engine-link').href = 'index.html';
-    document.getElementById('si-ok').style.display = 'block';
-    btn.style.display = 'none';
-    window.location.href = 'index.html';
-  } catch(e) {
-    showAuthErr('si','Network error. Please try again.');
-    btn.textContent = 'Sign In →'; btn.disabled = false;
-  }
+function _authSuccess(user) {
+  try { localStorage.setItem('infinicus_user', JSON.stringify(user)); } catch(e) {}
+  const btn   = document.getElementById('auth-btn');
+  const okEl  = document.getElementById('auth-ok');
+  if(btn) btn.style.display='none';
+  if(okEl) okEl.style.display='block';
+  // Navigate — use replace() so back button doesn't return to landing
+  window.location.replace('index.html');
 }
 
-// Check if already logged in — swap nav button to "Open Engine"
+// Check if already logged in — swap nav CTA
 (function() {
   try {
     const u = JSON.parse(localStorage.getItem('infinicus_user') || 'null');
@@ -853,7 +839,7 @@ async function doSignIn() {
       const ctaBtn = document.querySelector('.nl.cta');
       if (ctaBtn) {
         ctaBtn.textContent = 'Open Engine →';
-        ctaBtn.onclick = () => { window.location.href = './index.html'; };
+        ctaBtn.onclick = function() { window.location.replace('index.html'); };
       }
     }
   } catch(e) {}
