@@ -3331,6 +3331,21 @@ function declineTerms() {
   try{accepted=localStorage.getItem('infinicus_tc_accepted')==='1';}catch(e){}
   if(!accepted) showTermsModal();
 })();
+// ── AUTH GUARD ──────────────────────────────────────────────────────────────
+// Require a registered user to access the engine.
+// If infinicus_user is missing or malformed, bounce back to landing.html.
+(function(){
+  try{
+    const u=JSON.parse(localStorage.getItem('infinicus_user')||'null');
+    if(!u||!u.email){ window.location.replace('./landing.html'); }
+  }catch(e){ window.location.replace('./landing.html'); }
+})();
+// If the user signs out in another tab, redirect this tab too.
+window.addEventListener('storage',function(e){
+  if(e.key==='infinicus_user'&&!e.newValue){
+    window.location.replace('./landing.html');
+  }
+});
 // Fix agree button opacity toggle
 document.addEventListener('DOMContentLoaded',function(){
   const btn=$('tc-agree-btn');
