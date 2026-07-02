@@ -26,7 +26,7 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;600;700&family=Sora:wght@700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <meta name="theme-color" content="#00e060">
 <link rel="manifest" href="./manifest.json">
-<link rel="icon" type="image/svg+xml" href="./infinicus-mark.svg">
+<link rel="icon" type="image/svg+xml" href="/infinicus-mark.svg">
 <!-- inline favicon fallback -->
 <link rel="shortcut icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230e1628'/><text y='67' x='50' text-anchor='middle' font-size='54' font-weight='800' fill='%2300e060' font-family='system-ui'>∞</text></svg>">
 <style>
@@ -460,12 +460,16 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
   .hdr-right{gap:6px;}
   .cur-select{font-size:8.5px;padding:4px 6px;}
   section.section{padding:1.25rem;}
+  .sim-badge{display:none;}
 }
 @media(max-width:420px){
   .wk-grid{grid-template-columns:1fr;}
   .day-heatmap{grid-template-columns:repeat(5,1fr);}
   .hist-item{flex-wrap:wrap;gap:.6rem;}
   .hist-date{width:100%;text-align:left;}
+  .logo{font-size:15px;}
+  .logo-ver{display:none;}
+  header{padding:.65rem 1rem;}
 }
 </style>
 </head>
@@ -474,7 +478,7 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
 <!-- HEADER -->
 <header>
   <div class="logo">
-    <span class="mark"><img src="./infinicus-mark.svg" width="26" height="26" alt="INFINICUS mark" style="border-radius:8px;display:block;"></span>
+    <span class="mark"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="26" height="26" style="display:block;border-radius:8px;" aria-label="INFINICUS mark"><rect width="100" height="100" rx="22" fill="#07080a"/><rect x="2" y="2" width="96" height="96" rx="21" fill="none" stroke="#00e676" stroke-width="2" opacity="0.7"/><path d="M 50,50 C 50,34 38,24 28,30 C 18,36 18,64 28,70 C 38,76 50,66 50,50 Z" fill="none" stroke="#00e676" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><path d="M 50,50 C 50,34 62,24 72,30 C 82,36 82,64 72,70 C 62,76 50,66 50,50 Z" fill="none" stroke="#00e676" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
     INFIN<span class="c">ICUS</span><span class="logo-ver">ENGINE v3</span>
   </div>
   <button class="ham-btn" id="ham-btn" onclick="toggleNav()" aria-label="Menu">☰</button>
@@ -491,6 +495,7 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
     <button class="nb"        data-section="compare"     onclick="nav('compare')">COMPARE</button>
   </nav>
   <div class="hdr-right">
+    <button id="signin-btn" class="nb" onclick="openRegModal()" style="display:none;border-color:rgba(0,224,96,.25);color:var(--cyan);" title="Sign in or create account">SIGN IN</button>
     <span id="user-badge" class="user-badge free" onclick="openPlanModal()" title="View or change your plan"></span>
     <select id="cur-select" class="cur-select" onchange="setCurrency(this.value)" title="Display currency">
       <option value="USD">$ USD</option>
@@ -910,26 +915,43 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
   </div>
 </div>
 
-<!-- ══ REGISTRATION MODAL ══ -->
+<!-- ══ MAGIC LINK AUTH MODAL ══ -->
 <div class="modal-overlay" id="reg-modal" style="display:none" role="dialog" aria-modal="true" aria-labelledby="reg-modal-h">
   <div class="modal-box">
     <div class="modal-logo">
-      <img src="./infinicus-mark.svg" width="28" height="28" alt="INFINICUS" style="border-radius:8px;display:block;">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="28" height="28" style="display:block;border-radius:8px;"><rect width="100" height="100" rx="22" fill="#07080a"/><rect x="2" y="2" width="96" height="96" rx="21" fill="none" stroke="#00e676" stroke-width="2" opacity="0.7"/><path d="M 50,50 C 50,34 38,24 28,30 C 18,36 18,64 28,70 C 38,76 50,66 50,50 Z" fill="none" stroke="#00e676" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><path d="M 50,50 C 50,34 62,24 72,30 C 82,36 82,64 72,70 C 62,76 50,66 50,50 Z" fill="none" stroke="#00e676" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/></svg>
       <span class="modal-logo-name">INFIN<span class="c">ICUS</span><span class="modal-logo-ver"> ENGINE v3</span></span>
     </div>
-    <div class="modal-h" id="reg-modal-h">Get Your Free Report</div>
-    <div class="modal-sub">Enter your details to receive your personalised 90-day business simulation analysis.</div>
-    <div class="modal-field">
-      <label for="reg-name">FULL NAME</label>
-      <input id="reg-name" type="text" placeholder="Jane Smith" autocomplete="name">
+
+    <!-- Step 1: email input -->
+    <div id="auth-step-email">
+      <div class="modal-h" id="reg-modal-h">Sign In / Create Account</div>
+      <div class="modal-sub">Enter your email and we'll send you a magic sign-in link — no password needed.</div>
+      <div class="modal-field">
+        <label for="reg-email">EMAIL ADDRESS</label>
+        <input id="reg-email" type="email" placeholder="you@example.com" autocomplete="email" onkeydown="if(event.key==='Enter')requestMagicLink()">
+      </div>
+      <div class="modal-err" id="reg-err"></div>
+      <button class="btn-launch" style="width:100%;margin-top:.25rem" id="magic-link-btn" onclick="requestMagicLink()">Send Magic Link →</button>
+      <p class="modal-fine">No password. No spam. One click and you're in.</p>
     </div>
-    <div class="modal-field">
-      <label for="reg-email">EMAIL ADDRESS</label>
-      <input id="reg-email" type="email" placeholder="jane@example.com" autocomplete="email" onkeydown="if(event.key==='Enter')submitReg()">
+
+    <!-- Step 2: sent confirmation -->
+    <div id="auth-step-sent" style="display:none;text-align:center;padding:.5rem 0">
+      <div style="font-size:40px;margin-bottom:.75rem">📬</div>
+      <div class="modal-h" style="font-size:20px">Check your inbox</div>
+      <div class="modal-sub" style="margin-top:.5rem">We sent a sign-in link to <strong id="auth-sent-email" style="color:var(--cyan)"></strong>.<br>The link expires in 30 minutes.</div>
+      <p class="modal-fine" style="margin-top:1.25rem">Didn't receive it? <button onclick="resetAuthModal()" style="background:none;border:none;color:var(--cyan);cursor:pointer;font-family:var(--mono);font-size:10px;padding:0;letter-spacing:.04em">Try again →</button></p>
     </div>
-    <div class="modal-err" id="reg-err"></div>
-    <button class="btn-launch" style="width:100%;margin-top:.25rem" onclick="submitReg()">Get My Free Report →</button>
-    <p class="modal-fine">No spam. Your data is stored locally in your browser only.</p>
+
+    <!-- Step 3: verifying spinner -->
+    <div id="auth-step-verify" style="display:none;text-align:center;padding:.5rem 0">
+      <div class="loading-logo" style="width:48px;height:48px;margin:0 auto 1rem">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="48" height="48" style="display:block;border-radius:12px;animation:spin 1.2s linear infinite;filter:drop-shadow(0 0 10px rgba(0,224,96,.5));"><rect width="100" height="100" rx="22" fill="#07080a"/><rect x="2" y="2" width="96" height="96" rx="21" fill="none" stroke="#00e676" stroke-width="2" opacity="0.7"/><path d="M 50,50 C 50,34 38,24 28,30 C 18,36 18,64 28,70 C 38,76 50,66 50,50 Z" fill="none" stroke="#00e676" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><path d="M 50,50 C 50,34 62,24 72,30 C 82,36 82,64 72,70 C 62,76 50,66 50,50 Z" fill="none" stroke="#00e676" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="modal-h" style="font-size:18px">Verifying your link…</div>
+      <div class="modal-sub">Just a second while we sign you in.</div>
+    </div>
   </div>
 </div>
 
@@ -2853,7 +2875,7 @@ function renderComparisonTable() {
     </table></div>`);
 }
 
-// ─── USER AUTH ───────────────────────────────────────────────────────────────
+// ─── USER AUTH — MAGIC LINK ───────────────────────────────────────────────────
 let U=null;
 let _billingAnnual=false;
 
@@ -2877,27 +2899,136 @@ function saveUser() {
 }
 
 function renderUserBadge() {
-  const badge=$('user-badge'); if(!badge||!U) return;
+  const badge=$('user-badge');
+  const signinBtn=$('signin-btn');
+  if(!badge) return;
+  if(!U){
+    badge.style.display='none';
+    if(signinBtn) signinBtn.style.display='flex';
+    return;
+  }
+  if(signinBtn) signinBtn.style.display='none';
   const plan=U.plan||'free';
   badge.className='user-badge '+(plan==='none'?'free':plan);
   badge.style.display='flex';
-  const name=U.name?U.name.split(' ')[0]:'Account';
+  const name=U.email?U.email.split('@')[0]:'Account';
   const planLabel=PLANS[plan]?.label||'Free';
   badge.textContent=`${name} · ${planLabel}`;
 }
 
-function openRegModal() { $('reg-modal').style.display='flex'; setTimeout(()=>$('reg-name')?.focus(),50); }
+// ── Magic link modal helpers ──
+function openRegModal() {
+  resetAuthModal();
+  $('reg-modal').style.display='flex';
+  setTimeout(()=>$('reg-email')?.focus(),50);
+}
 function closeRegModal(){ $('reg-modal').style.display='none'; }
 
-function submitReg() {
-  const name=$('reg-name').value.trim();
-  const email=$('reg-email').value.trim();
+function resetAuthModal() {
+  $('auth-step-email').style.display='block';
+  $('auth-step-sent').style.display='none';
+  $('auth-step-verify').style.display='none';
   const errEl=$('reg-err');
-  if(!name){errEl.textContent='Please enter your name.';errEl.style.display='block';return;}
-  if(!email||!email.includes('@')){errEl.textContent='Please enter a valid email.';errEl.style.display='block';return;}
-  U={name,email,plan:'none',simCount:0,createdAt:Date.now()};
-  saveUser(); closeRegModal(); renderUserBadge();
-  openPlanModal();
+  if(errEl){errEl.textContent='';errEl.style.display='none';}
+  const btn=$('magic-link-btn');
+  if(btn){btn.textContent='Send Magic Link →';btn.disabled=false;}
+  const emailEl=$('reg-email');
+  if(emailEl) emailEl.value='';
+}
+
+async function requestMagicLink() {
+  const emailEl=$('reg-email');
+  const errEl=$('reg-err');
+  const btn=$('magic-link-btn');
+  const email=(emailEl?.value||'').trim();
+
+  if(!email||!email.includes('@')){
+    errEl.textContent='Please enter a valid email address.';
+    errEl.style.display='block';
+    return;
+  }
+  errEl.style.display='none';
+  btn.textContent='Sending…'; btn.disabled=true;
+
+  try {
+    const res=await fetch('/api/auth/request',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email})
+    });
+    const data=await res.json();
+
+    if(!res.ok || !data.ok){
+      errEl.textContent=data.error||'Could not send email. Please try again.';
+      errEl.style.display='block';
+      btn.textContent='Send Magic Link →'; btn.disabled=false;
+      return;
+    }
+
+    // Dev mode: server returned a direct link
+    if(data.dev_link){
+      window.location.href=data.dev_link;
+      return;
+    }
+
+    // Show "check inbox" state
+    $('auth-sent-email').textContent=email;
+    $('auth-step-email').style.display='none';
+    $('auth-step-sent').style.display='block';
+
+  } catch(e){
+    errEl.textContent='Network error. Please try again.';
+    errEl.style.display='block';
+    btn.textContent='Send Magic Link →'; btn.disabled=false;
+  }
+}
+
+// ── Handle magic link callback on page load ──
+async function checkMagicLink() {
+  const params=new URLSearchParams(window.location.search);
+  const token=params.get('magic_token');
+  const email=params.get('email');
+  if(!token||!email) return;
+
+  // Show verifying modal immediately
+  $('auth-step-email').style.display='none';
+  $('auth-step-sent').style.display='none';
+  $('auth-step-verify').style.display='block';
+  $('reg-modal').style.display='flex';
+
+  // Clean URL
+  const clean=window.location.pathname+(window.location.hash||'');
+  history.replaceState(null,'',clean);
+
+  try {
+    const res=await fetch(`/api/auth/verify?token=${encodeURIComponent(token)}`);
+    const data=await res.json();
+
+    closeRegModal();
+
+    if(!res.ok || !data.ok){
+      showToast(data.error||'Link expired. Please sign in again.');
+      return;
+    }
+
+    // Log the user in
+    const prev=U||{};
+    U={email:data.email,plan:prev.plan||'free',simCount:prev.simCount||0,createdAt:prev.createdAt||Date.now(),verifiedAt:Date.now()};
+    saveUser(); renderUserBadge();
+    showToast(`Signed in as ${data.email} ✓`);
+    if(_pendingSimAfterReg){_pendingSimAfterReg=false;startSim();}
+
+  } catch(e){
+    closeRegModal();
+    showToast('Verification failed. Please try again.');
+  }
+}
+
+function signOut() {
+  U=null;
+  try{localStorage.removeItem('infinicus_user');}catch(e){}
+  renderUserBadge();
+  showToast('Signed out.');
 }
 
 function openPlanModal() {
@@ -2939,11 +3070,19 @@ function renderPlanGrid() {
       </button>
     </div>`;
   }).join(''));
+  // Add sign-out option if logged in
+  if(U){
+    const footer=document.createElement('div');
+    footer.style.cssText='grid-column:1/-1;text-align:center;margin-top:.5rem';
+    footer.innerHTML=`<button onclick="signOut();closePlanModal();" style="background:none;border:none;color:var(--muted-2);font-family:var(--mono);font-size:10px;cursor:pointer;padding:4px 8px;letter-spacing:.06em">Sign out</button>`;
+    const pg=$('plan-grid');
+    if(pg) pg.appendChild(footer);
+  }
 }
 
 function selectPlan(tier) {
   if(tier==='free'){
-    if(!U){U={name:'Guest',email:'',plan:'free',simCount:0,createdAt:Date.now()};}
+    if(!U){U={email:'',plan:'free',simCount:0,createdAt:Date.now()};}
     else{U.plan='free';}
     saveUser(); renderUserBadge(); closePlanModal();
     if(_pendingSimAfterReg){_pendingSimAfterReg=false;startSim();}
@@ -2979,7 +3118,7 @@ function processPay() {
   const btn=$('pay-submit-btn');
   btn.textContent='Processing…'; btn.disabled=true;
   setTimeout(()=>{
-    if(!U){U={name,email:'',simCount:0,createdAt:Date.now()};}
+    if(!U){U={email:'',simCount:0,createdAt:Date.now()};}
     U.plan=tier; saveUser(); renderUserBadge(); closePayModal();
     btn.textContent='Subscribe Now →'; btn.disabled=false;
     showToast(`Welcome to ${PLANS[tier]?.label||tier}! 🎉`);
@@ -3214,6 +3353,7 @@ function restoreFromURL() {
 (function init() {
   initHeatmap();
   loadUser();
+  checkMagicLink(); // handle ?magic_token= callback
   try {
     const saved=localStorage.getItem('infinicus_scenarios');
     if(saved){const arr=JSON.parse(saved);arr.forEach(s=>SCENARIOS.push(s));}
