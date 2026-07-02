@@ -2956,8 +2956,9 @@ function closeUserMenu() { const m=$('user-menu'); if(m) m.classList.remove('ope
 function signOutEngine() {
   closeUserMenu();
   try{localStorage.removeItem('infinicus_user');}catch(e){}
-  U=null; renderUserBadge();
-  showToast('Signed out.');
+  try{localStorage.removeItem('infinicus_tc_accepted');}catch(e){}
+  U=null;
+  window.location.replace('./landing.html');
 }
 // Close menu on outside click
 document.addEventListener('click', function(e){
@@ -3074,10 +3075,10 @@ async function checkMagicLink() {
 }
 
 function signOut() {
-  U=null;
   try{localStorage.removeItem('infinicus_user');}catch(e){}
-  renderUserBadge();
-  showToast('Signed out.');
+  try{localStorage.removeItem('infinicus_tc_accepted');}catch(e){}
+  U=null;
+  window.location.replace('./landing.html');
 }
 
 function openPlanModal() {
