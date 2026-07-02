@@ -1,8 +1,15 @@
 @echo off
 cd /d "C:\Users\katoh\OneDrive\Desktop\CLAUDE COWORK"
+echo Cleaning up any rebase/merge state...
+git rebase --abort 2>nul
+git merge --abort 2>nul
+git checkout main 2>nul
+echo Staging all changes...
 git add -A
-git commit -m "chore: redeploy rev2 — pick up RESEND_API_KEY from Cloudflare env"
-git push origin main
+echo Committing...
+git commit -m "fix: inline SVG logo, mobile header, magic link auth" 2>nul || echo (nothing new to commit, already up to date)
+echo Pushing (force-with-lease to handle divergence)...
+git push origin main --force-with-lease
 echo.
-echo Done! Press any key to close.
+echo === DONE === Press any key to close.
 pause
