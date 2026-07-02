@@ -798,12 +798,7 @@ async function doSignUp() {
     const user = { email: data.email, plan: data.plan || 'free', simCount: 0, createdAt: Date.now() };
     try { localStorage.setItem('infinicus_user', JSON.stringify(user)); } catch(e) {}
     document.getElementById('su-ok').style.display = 'block';
-    const engineUrl2 = (function() {
-      const p = window.location.pathname;
-      if (p === '/' || p === '/landing.html') return '/index.html';
-      return p.replace(/\/[^/]*$/, '/index.html');
-    })();
-    setTimeout(() => { window.location.href = engineUrl2; }, 900);
+    window.location.href = 'index.html';
   } catch(e) {
     showAuthErr('su','Network error. Please try again.');
     btn.textContent = 'Create Account →'; btn.disabled = false;
@@ -835,19 +830,10 @@ async function doSignIn() {
     const user = { email: data.email, plan: data.plan || 'free', simCount: data.simCount || 0, createdAt: data.createdAt || Date.now() };
     try { localStorage.setItem('infinicus_user', JSON.stringify(user)); } catch(e) {}
 
-    // Determine engine URL — same-origin path that serves the engine
-    const engineUrl = (function() {
-      const p = window.location.pathname;
-      // If landing page is at root /landing.html or /
-      if (p === '/' || p === '/landing.html') return '/index.html';
-      // If under a subfolder e.g. /engine/landing.html
-      return p.replace(/\/[^/]*$/, '/index.html');
-    })();
-
-    document.getElementById('si-engine-link').href = engineUrl;
+    document.getElementById('si-engine-link').href = 'index.html';
     document.getElementById('si-ok').style.display = 'block';
     btn.style.display = 'none';
-    setTimeout(() => { window.location.href = engineUrl; }, 1200);
+    window.location.href = 'index.html';
   } catch(e) {
     showAuthErr('si','Network error. Please try again.');
     btn.textContent = 'Sign In →'; btn.disabled = false;
