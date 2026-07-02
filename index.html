@@ -1335,9 +1335,14 @@ function nav(id) {
 let _pendingSimAfterReg = false;
 
 function startSim() {
-  if (!U||U.plan==='none') {
+  if (!U) {
+    // Auto-assign free plan so mobile users can run sims without mandatory registration
+    U={email:'',plan:'free',simCount:0,createdAt:Date.now()};
+    saveUser(); renderUserBadge();
+  }
+  if (U.plan==='none') {
     _pendingSimAfterReg=true;
-    if (!U){openRegModal();}else{openPlanModal();}
+    openPlanModal();
     return;
   }
   // Sim limit removed during early access — unlimited for all users
@@ -2770,7 +2775,7 @@ function updateSensitivity() {
       <div class="sens-kpi"><div class="sens-kpi-val" style="color:${surv>.6?'var(--emerald)':'var(--amber)'}">${Math.round(surv*100)}%</div><div class="sens-kpi-lbl">MC SURVIVAL</div></div>
     </div>
     <div style="font-family:var(--mono);font-size:9.5px;color:var(--muted-2);margin-top:.5rem">
-      Price: ${fmt(adjParams.price)} · Marketing: ${fmt(adjParams.mktBud)}/mo · ${profDays}/60 profitable days
+      Price: ${fmt(adjParams.price)} · Marketing: ${fmt(adjParams.mktBud)}/mo · ${profDays}/90 profitable days
     </div>`);
 }
 
@@ -2854,7 +2859,7 @@ function renderComparisonTable() {
     ['End Cash',         fmt(a.endCash),                              fmt(b.endCash),                              true,  a.endCash,   b.endCash],
     ['Customers',        a.customers,                                 b.customers,                                 true,  a.customers, b.customers],
     ['MC Survival',      Math.round(a.survival*100)+'%',              Math.round(b.survival*100)+'%',              true,  a.survival,  b.survival],
-    ['Profitable Days',  a.profDays+'/60',                            b.profDays+'/60',                            true,  a.profDays,  b.profDays],
+    ['Profitable Days',  a.profDays+'/90',                            b.profDays+'/90',                            true,  a.profDays,  b.profDays],
     ['Verdict',          a.verdict.toUpperCase(),                     b.verdict.toUpperCase(),                     false],
   ];
   $h('cmp-table-wrap',`<div class="card" style="padding:0;overflow:hidden;">
@@ -3149,7 +3154,12 @@ function saveToHistory() {
       profDays,
       surv:Math.round(S.mc.survivalRate*100),
       capital:Math.round(S.params.capital*rate),
-      customers:last.customers
+      customers:last.customers,
+      // Full state for restore
+      params:{...S.params},
+      days:S.days.map(d=>({...d})),
+      mc:{p10:S.mc.p10,p25:S.mc.p25,p50:S.mc.p50,p75:S.mc.p75,p90:S.mc.p90,survivalRate:S.mc.survivalRate,runs:S.mc.runs},
+      events:[...S.events]
     };
     let hist=[];
     try{hist=JSON.parse(localStorage.getItem('infinicus_history')||'[]');}catch(e){}
@@ -3187,12 +3197,56 @@ function renderHistory() {
           <span>💵 ${sym}${h.capital.toLocaleString()} capital</span>
           <span style="color:${pCol}">${pSign}${sym}${Math.abs(h.profit).toLocaleString()} P&L</span>
           <span>MC: <strong style="color:${h.surv>=55?'var(--emerald)':h.surv>=35?'var(--amber)':'var(--red)'}">${h.surv}%</strong></span>
-          <span>📅 ${h.profDays}/60 days</span>
+          <span>📅 ${h.profDays}/90 days</span>
         </div>
       </div>
       <div class="hist-date">${h.date}<br>${h.time}<br><span style="font-size:8px;color:${h.currency==='USD'?'var(--muted-2)':'var(--cyan)'}">${h.currency}</span></div>
+      <button onclick="restoreFromHistory(${h.id})" style="flex-shrink:0;padding:6px 12px;background:rgba(0,224,96,.08);border:1px solid rgba(0,224,96,.25);border-radius:7px;color:var(--cyan);font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;cursor:pointer;white-space:nowrap;transition:background .15s;" onmouseenter="this.style.background='rgba(0,224,96,.15)'" onmouseleave="this.style.background='rgba(0,224,96,.08)'">▶ RESTORE</button>
     </div>`;
   }).join('');
+}
+
+function populateFormFromParams(p) {
+  const rate=CUR[curCode]?.r||1;
+  $v('i-idea',   p.idea||'');
+  $v('i-cap',    p.capital  ? Math.round(p.capital*rate)  : '');
+  $v('i-price',  p.price    ? Math.round(p.price*rate*100)/100 : '');
+  $v('i-mktbud', p.mktBud   ? Math.round(p.mktBud*rate)  : '');
+  $v('i-team',   p.team||1);
+  if($('i-ind')) $('i-ind').value=p.industry||'food';
+  $v('i-loc',    p.loc||'');
+  $v('i-mkt',    p.mkt||'');
+  if(typeof updatePriceLabel==='function') updatePriceLabel(p.industry||'food');
+}
+
+function restoreFromHistory(id) {
+  let hist=[];
+  try{hist=JSON.parse(localStorage.getItem('infinicus_history')||'[]');}catch(e){}
+  const entry=hist.find(h=>h.id===id);
+  if(!entry){showToast('History entry not found.');return;}
+
+  // Legacy entries (saved before restore support): populate form and re-run
+  if(!entry.days||!entry.mc||!entry.params){
+    if(entry.params) populateFormFromParams(entry.params);
+    nav('input');
+    showToast('Params loaded — press Start to re-run.');
+    return;
+  }
+
+  // Full state restore — no re-run needed
+  S.params  = {...entry.params};
+  S.days    = entry.days.map(d=>({...d}));
+  S.mc      = {...entry.mc};
+  S.events  = [...(entry.events||[])];
+  S.done    = true; S.running=false; S.scores=null; S.aiData=null;
+  setBadge('done');
+  $('dash-loading').style.display='none';
+  $('dash-content').style.display='block';
+  if($('dash-actions')) $('dash-actions').style.display='flex';
+  populateFormFromParams(entry.params);
+  renderAll();
+  nav('dashboard');
+  showToast('Simulation restored ✓');
 }
 
 function clearHistory() {
