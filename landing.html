@@ -262,6 +262,29 @@ footer{
 ::-webkit-scrollbar{width:5px;height:5px;}
 ::-webkit-scrollbar-track{background:var(--navy);}
 ::-webkit-scrollbar-thumb{background:var(--n600);border-radius:3px;}
+
+/* -- AUTH MODAL -- */
+.auth-overlay{position:fixed;inset:0;background:rgba(4,6,13,.92);backdrop-filter:blur(14px);z-index:300;display:none;align-items:center;justify-content:center;padding:1rem;}
+.auth-overlay.open{display:flex;}
+.auth-box{background:var(--n800);border:1px solid var(--line-2);border-radius:18px;padding:2rem;width:100%;max-width:420px;position:relative;box-shadow:0 24px 64px rgba(0,0,0,.5);}
+.auth-logo{display:flex;align-items:center;gap:.7rem;margin-bottom:1.5rem;}
+.auth-logo-name{font-family:var(--head);font-size:16px;font-weight:800;}
+.auth-logo-name .c{color:var(--cyan);}
+.auth-tabs{display:flex;border-bottom:1px solid var(--line);margin-bottom:1.5rem;}
+.auth-tab{flex:1;padding:.65rem;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;cursor:pointer;transition:all .15s;margin-bottom:-1px;}
+.auth-tab.active{color:var(--cyan);border-bottom-color:var(--cyan);}
+.auth-close{position:absolute;top:1rem;right:1.1rem;background:none;border:none;color:var(--muted);font-size:22px;line-height:1;cursor:pointer;padding:2px 6px;border-radius:6px;transition:color .15s;}
+.auth-close:hover{color:var(--text);}
+.auth-field{margin-bottom:.9rem;}
+.auth-field label{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;color:var(--muted-2);margin-bottom:.4rem;}
+.auth-field input{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--line-2);border-radius:8px;padding:.65rem .9rem;color:var(--text);font-family:var(--mono);font-size:12.5px;outline:none;transition:border-color .15s;}
+.auth-field input:focus{border-color:rgba(0,224,96,.45);background:rgba(0,224,96,.03);}
+.auth-submit{width:100%;padding:.78rem;background:linear-gradient(135deg,rgba(0,224,96,.14),rgba(139,92,246,.1));border:1px solid rgba(0,224,96,.38);border-radius:9px;color:var(--cyan);font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:.08em;cursor:pointer;transition:all .15s;margin-top:.35rem;}
+.auth-submit:hover:not(:disabled){background:linear-gradient(135deg,rgba(0,224,96,.22),rgba(139,92,246,.16));box-shadow:0 0 20px rgba(0,224,96,.15);}
+.auth-submit:disabled{opacity:.45;cursor:not-allowed;}
+.auth-err{font-family:var(--mono);font-size:10px;color:#f43f5e;margin-top:.7rem;padding:.5rem .7rem;background:rgba(244,63,94,.07);border:1px solid rgba(244,63,94,.2);border-radius:6px;display:none;}
+.auth-ok{font-family:var(--mono);font-size:10px;color:var(--cyan);margin-top:.7rem;padding:.5rem .7rem;background:rgba(0,224,96,.07);border:1px solid rgba(0,224,96,.2);border-radius:6px;display:none;}
+.auth-fine{font-family:var(--mono);font-size:9px;color:var(--muted-2);text-align:center;margin-top:1rem;line-height:1.6;}
 </style>
 </head>
 <body>
@@ -277,7 +300,8 @@ footer{
     <a class="nl" href="#features">Features</a>
     <a class="nl" href="#pricing">Pricing</a>
     <a class="nl" href="#faq">FAQ</a>
-    <a class="nl cta" href="./index.html">Launch Engine &rarr;</a>
+    <button class="nl" onclick="openAuth('signin')" style="cursor:pointer;">Sign In</button>
+    <button class="nl cta" onclick="openAuth('signup')" style="cursor:pointer;">Get Started &rarr;</button>
   </div>
 </nav>
 
@@ -293,7 +317,7 @@ footer{
     INFINICUS ENGINE runs your business through 90 virtual days with Monte Carlo risk analysis, industry-calibrated cost models, and a data-backed Go / Modify / Stop verdict &mdash; in under 60 seconds.
   </p>
   <div class="hero-cta">
-    <a class="btn-primary" href="./index.html">Run My Free Simulation &rarr;</a>
+    <button class="btn-primary" onclick="openAuth('signup')" style="cursor:pointer;">Create Free Account &rarr;</button>
     <a class="btn-secondary" href="#how-it-works">See How It Works</a>
   </div>
 </div>
@@ -519,7 +543,7 @@ footer{
 <div class="cta-strip">
   <h2 class="cta-strip-h">Your next step costs nothing.</h2>
   <p class="cta-strip-sub">Run your first simulation free. No credit card, no install, no spreadsheet.</p>
-  <a class="btn-primary" href="./index.html" style="display:inline-block;">Run My Free Simulation &rarr;</a>
+  <button class="btn-primary" onclick="openAuth('signup')" style="cursor:pointer;">Create Free Account &rarr;</button>
   <p class="cta-note">Free &middot; Works on any device &middot; Data stays in your browser</p>
 </div>
 
@@ -584,7 +608,7 @@ function renderPriceGrid() {
       <div class="pc-feature lock">Customer Analytics</div>
       <div class="pc-feature lock">Monte Carlo Risk</div>
       <div class="pc-feature lock">Sensitivity &amp; Compare</div>
-      <a class="pc-cta free" href="./index.html">Start Free &rarr;</a>
+      <button class="pc-cta free" onclick="openAuth('signup')">Start Free &rarr;</button>
     </div>
     <div class="price-card">
       <div class="pc-tier">STARTER</div>
@@ -598,7 +622,7 @@ function renderPriceGrid() {
       <div class="pc-feature">PDF Report &amp; Export</div>
       <div class="pc-feature lock">Sensitivity Analysis</div>
       <div class="pc-feature lock">Scenario Comparison</div>
-      <a class="pc-cta paid" href="./index.html">Get Starter &rarr;</a>
+      <button class="pc-cta paid" onclick="openAuth('signup')">Get Starter &rarr;</button>
     </div>
     <div class="price-card featured">
       <div class="pc-badge">MOST POPULAR</div>
@@ -611,7 +635,7 @@ function renderPriceGrid() {
       <div class="pc-feature">Scenario A/B Comparison</div>
       <div class="pc-feature">Priority email support</div>
       <div class="pc-feature">Early access to new industries</div>
-      <a class="pc-cta paid featured-cta" href="./index.html">Get Growth &rarr;</a>
+      <button class="pc-cta paid featured-cta" onclick="openAuth('signup')">Get Growth &rarr;</button>
     </div>
     <div class="price-card">
       <div class="pc-tier">PROFESSIONAL</div>
@@ -623,7 +647,7 @@ function renderPriceGrid() {
       <div class="pc-feature">White-label PDF reports</div>
       <div class="pc-feature">Dedicated onboarding call</div>
       <div class="pc-feature">API access (coming soon)</div>
-      <a class="pc-cta paid" href="./index.html">Get Pro &rarr;</a>
+      <button class="pc-cta paid" onclick="openAuth('signup')">Get Pro &rarr;</button>
     </div>
   `;
 }
@@ -647,6 +671,180 @@ renderPriceGrid();
     <a href="./legal.html#dmca" style="color:#5d6885;text-decoration:none;">Contact & DMCA</a>
   </span>
 </footer>
+
+<!-- ── AUTH MODAL ── -->
+<div class="auth-overlay" id="auth-overlay" onclick="if(event.target===this)closeAuth()">
+  <div class="auth-box">
+    <button class="auth-close" onclick="closeAuth()" aria-label="Close">×</button>
+    <div class="auth-logo">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="28" height="28" style="display:block;border-radius:8px;flex-shrink:0;">
+        <rect width="100" height="100" rx="22" fill="#07080a"/>
+        <rect x="2" y="2" width="96" height="96" rx="21" fill="none" stroke="#00e676" stroke-width="2" opacity="0.7"/>
+        <path d="M 50,50 C 50,34 38,24 28,30 C 18,36 18,64 28,70 C 38,76 50,66 50,50 Z" fill="none" stroke="#00e676" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M 50,50 C 50,34 62,24 72,30 C 82,36 82,64 72,70 C 62,76 50,66 50,50 Z" fill="none" stroke="#00e676" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="auth-logo-name">INFIN<span class="c">ICUS</span> <span style="font-family:var(--mono);font-size:9px;color:var(--muted-2);font-weight:300;">ENGINE v3</span></span>
+    </div>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-signup" onclick="switchAuthTab('signup')">CREATE ACCOUNT</button>
+      <button class="auth-tab" id="tab-signin" onclick="switchAuthTab('signin')">SIGN IN</button>
+    </div>
+
+    <!-- Sign Up -->
+    <div id="auth-signup">
+      <div class="auth-field">
+        <label for="su-email">EMAIL</label>
+        <input type="email" id="su-email" placeholder="you@example.com" autocomplete="email" onkeydown="if(event.key==='Enter')doSignUp()">
+      </div>
+      <div class="auth-field">
+        <label for="su-pass">PASSWORD</label>
+        <input type="password" id="su-pass" placeholder="Minimum 8 characters" autocomplete="new-password" onkeydown="if(event.key==='Enter')doSignUp()">
+      </div>
+      <div class="auth-field">
+        <label for="su-pass2">CONFIRM PASSWORD</label>
+        <input type="password" id="su-pass2" placeholder="Repeat password" autocomplete="new-password" onkeydown="if(event.key==='Enter')doSignUp()">
+      </div>
+      <button class="auth-submit" id="su-btn" onclick="doSignUp()">Create Account →</button>
+      <div class="auth-err" id="su-err"></div>
+      <div class="auth-ok"  id="su-ok">✓ Account created! Taking you to the engine…</div>
+      <p class="auth-fine">Free account · No credit card required · Data stays in your browser</p>
+    </div>
+
+    <!-- Sign In -->
+    <div id="auth-signin" style="display:none;">
+      <div class="auth-field">
+        <label for="si-email">EMAIL</label>
+        <input type="email" id="si-email" placeholder="you@example.com" autocomplete="email" onkeydown="if(event.key==='Enter')doSignIn()">
+      </div>
+      <div class="auth-field">
+        <label for="si-pass">PASSWORD</label>
+        <input type="password" id="si-pass" placeholder="Your password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doSignIn()">
+      </div>
+      <button class="auth-submit" id="si-btn" onclick="doSignIn()">Sign In →</button>
+      <div class="auth-err" id="si-err"></div>
+      <p class="auth-fine">Don't have an account? <button onclick="switchAuthTab('signup')" style="background:none;border:none;color:var(--cyan);font-family:var(--mono);font-size:9px;cursor:pointer;padding:0;text-decoration:underline;">Create one free</button></p>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── AUTH MODAL ──────────────────────────────────────────────────────────────
+function openAuth(tab) {
+  switchAuthTab(tab || 'signup');
+  // Clear previous state
+  ['su-email','su-pass','su-pass2','si-email','si-pass'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.value = '';
+  });
+  ['su-err','su-ok','si-err'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.style.display = 'none';
+  });
+  ['su-btn','si-btn'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) { el.disabled = false; el.textContent = id === 'su-btn' ? 'Create Account →' : 'Sign In →'; }
+  });
+  document.getElementById('auth-overlay').classList.add('open');
+  setTimeout(() => {
+    const focusId = (tab === 'signin') ? 'si-email' : 'su-email';
+    const el = document.getElementById(focusId); if(el) el.focus();
+  }, 60);
+}
+
+function closeAuth() {
+  document.getElementById('auth-overlay').classList.remove('open');
+}
+
+function switchAuthTab(tab) {
+  document.getElementById('auth-signup').style.display = (tab === 'signup') ? 'block' : 'none';
+  document.getElementById('auth-signin').style.display = (tab === 'signin') ? 'block' : 'none';
+  document.getElementById('tab-signup').classList.toggle('active', tab === 'signup');
+  document.getElementById('tab-signin').classList.toggle('active', tab === 'signin');
+}
+
+function showAuthErr(prefix, msg) {
+  const el = document.getElementById(prefix + '-err');
+  if(el) { el.textContent = msg; el.style.display = 'block'; }
+}
+
+async function doSignUp() {
+  const email = (document.getElementById('su-email').value || '').trim();
+  const pass  =  document.getElementById('su-pass').value  || '';
+  const pass2 =  document.getElementById('su-pass2').value || '';
+  const btn   =  document.getElementById('su-btn');
+  document.getElementById('su-err').style.display = 'none';
+  document.getElementById('su-ok').style.display  = 'none';
+
+  if (!email || !email.includes('@')) { showAuthErr('su','Enter a valid email address.'); return; }
+  if (pass.length < 8)                { showAuthErr('su','Password must be at least 8 characters.'); return; }
+  if (pass !== pass2)                 { showAuthErr('su','Passwords do not match.'); return; }
+
+  btn.textContent = 'Creating account…'; btn.disabled = true;
+  try {
+    const res  = await fetch('/api/auth/register', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ email, password: pass })
+    });
+    const data = await res.json();
+    if (!res.ok || !data.ok) {
+      showAuthErr('su', data.error || 'Registration failed. Please try again.');
+      btn.textContent = 'Create Account →'; btn.disabled = false;
+      return;
+    }
+    // Persist user in localStorage (same key used by the engine)
+    const user = { email: data.email, plan: data.plan || 'free', simCount: 0, createdAt: Date.now() };
+    try { localStorage.setItem('infinicus_user', JSON.stringify(user)); } catch(e) {}
+    document.getElementById('su-ok').style.display = 'block';
+    setTimeout(() => { window.location.href = './index.html'; }, 900);
+  } catch(e) {
+    showAuthErr('su','Network error. Please try again.');
+    btn.textContent = 'Create Account →'; btn.disabled = false;
+  }
+}
+
+async function doSignIn() {
+  const email = (document.getElementById('si-email').value || '').trim();
+  const pass  =  document.getElementById('si-pass').value  || '';
+  const btn   =  document.getElementById('si-btn');
+  document.getElementById('si-err').style.display = 'none';
+
+  if (!email) { showAuthErr('si','Enter your email.'); return; }
+  if (!pass)  { showAuthErr('si','Enter your password.'); return; }
+
+  btn.textContent = 'Signing in…'; btn.disabled = true;
+  try {
+    const res  = await fetch('/api/auth/login', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ email, password: pass })
+    });
+    const data = await res.json();
+    if (!res.ok || !data.ok) {
+      showAuthErr('si', data.error || 'Sign in failed. Please check your details.');
+      btn.textContent = 'Sign In →'; btn.disabled = false;
+      return;
+    }
+    const user = { email: data.email, plan: data.plan || 'free', simCount: data.simCount || 0, createdAt: data.createdAt || Date.now() };
+    try { localStorage.setItem('infinicus_user', JSON.stringify(user)); } catch(e) {}
+    window.location.href = './index.html';
+  } catch(e) {
+    showAuthErr('si','Network error. Please try again.');
+    btn.textContent = 'Sign In →'; btn.disabled = false;
+  }
+}
+
+// Check if already logged in — swap nav button to "Open Engine"
+(function() {
+  try {
+    const u = JSON.parse(localStorage.getItem('infinicus_user') || 'null');
+    if (u && u.email) {
+      const ctaBtn = document.querySelector('.nl.cta');
+      if (ctaBtn) {
+        ctaBtn.textContent = 'Open Engine →';
+        ctaBtn.onclick = () => { window.location.href = './index.html'; };
+      }
+    }
+  } catch(e) {}
+})();
+</script>
 
 <script>
 if ('serviceWorker' in navigator) {
