@@ -639,6 +639,7 @@ footer{position:relative;z-index:1;border-top:1px solid var(--line);padding:3rem
       <button class="reg-submit" id="reg-btn" onclick="joinFree()">⚡ Create Free Account & Launch Engine →</button>
       <div class="reg-ok" id="reg-ok">✓ Account created! Launching engine…<br><a href="index.html" style="color:var(--cyan);display:inline-block;margin-top:.5rem;text-decoration:none;border:1px solid rgba(0,224,96,.3);border-radius:6px;padding:.4rem 1rem;font-size:11px;">Open Engine →</a></div>
       <div class="reg-already">Already have an account? <a onclick="openAccount()">View your account →</a></div>
+      <div class="reg-already" style="margin-top:.5rem;font-size:10px;opacity:.5;">By creating an account you agree to our <a href="legal.html#terms" style="color:var(--cyan);">Terms of Service</a> and <a href="legal.html#privacy" style="color:var(--cyan);">Privacy Policy</a>.</div>
     </div>
     <div class="reg-features">
       <div class="reg-feat-item">Free forever tier</div>
@@ -1106,6 +1107,7 @@ function joinFree() {
   btn.textContent = 'Launching…';
   U = { name: name || email.split('@')[0], email, plan:'free', simCount:0, createdAt:Date.now() };
   try { localStorage.setItem('infinicus_user', JSON.stringify(U)); } catch(e) {}
+  try { localStorage.setItem('infinicus_tc_accepted', 'true'); } catch(e) {}
   okEl.style.display = 'block';
   window.location.replace('index.html');
 }
