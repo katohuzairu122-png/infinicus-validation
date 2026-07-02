@@ -723,6 +723,10 @@ renderPriceGrid();
       </div>
       <button class="auth-submit" id="si-btn" onclick="doSignIn()">Sign In →</button>
       <div class="auth-err" id="si-err"></div>
+      <div class="auth-ok" id="si-ok" style="display:none;">
+        ✓ Signed in!
+        <a id="si-engine-link" href="./index.html" style="color:var(--cyan);font-family:var(--mono);font-size:10px;display:block;margin-top:.5rem;text-decoration:none;border:1px solid rgba(0,224,96,.3);border-radius:6px;padding:.4rem .7rem;text-align:center;">Open Engine →</a>
+      </div>
       <p class="auth-fine">Don't have an account? <button onclick="switchAuthTab('signup')" style="background:none;border:none;color:var(--cyan);font-family:var(--mono);font-size:9px;cursor:pointer;padding:0;text-decoration:underline;">Create one free</button></p>
     </div>
   </div>
@@ -736,12 +740,12 @@ function openAuth(tab) {
   ['su-email','su-pass','su-pass2','si-email','si-pass'].forEach(id => {
     const el = document.getElementById(id); if(el) el.value = '';
   });
-  ['su-err','su-ok','si-err'].forEach(id => {
+  ['su-err','su-ok','si-err','si-ok'].forEach(id => {
     const el = document.getElementById(id); if(el) el.style.display = 'none';
   });
   ['su-btn','si-btn'].forEach(id => {
     const el = document.getElementById(id);
-    if(el) { el.disabled = false; el.textContent = id === 'su-btn' ? 'Create Account →' : 'Sign In →'; }
+    if(el) { el.disabled = false; el.style.display = ''; el.textContent = id === 'su-btn' ? 'Create Account →' : 'Sign In →'; }
   });
   document.getElementById('auth-overlay').classList.add('open');
   setTimeout(() => {
@@ -794,7 +798,12 @@ async function doSignUp() {
     const user = { email: data.email, plan: data.plan || 'free', simCount: 0, createdAt: Date.now() };
     try { localStorage.setItem('infinicus_user', JSON.stringify(user)); } catch(e) {}
     document.getElementById('su-ok').style.display = 'block';
-    setTimeout(() => { window.location.href = './index.html'; }, 900);
+    const engineUrl2 = (function() {
+      const p = window.location.pathname;
+      if (p === '/' || p === '/landing.html') return '/index.html';
+      return p.replace(/\/[^/]*$/, '/index.html');
+    })();
+    setTimeout(() => { window.location.href = engineUrl2; }, 900);
   } catch(e) {
     showAuthErr('su','Network error. Please try again.');
     btn.textContent = 'Create Account →'; btn.disabled = false;
@@ -806,6 +815,7 @@ async function doSignIn() {
   const pass  =  document.getElementById('si-pass').value  || '';
   const btn   =  document.getElementById('si-btn');
   document.getElementById('si-err').style.display = 'none';
+  document.getElementById('si-ok').style.display  = 'none';
 
   if (!email) { showAuthErr('si','Enter your email.'); return; }
   if (!pass)  { showAuthErr('si','Enter your password.'); return; }
@@ -824,7 +834,20 @@ async function doSignIn() {
     }
     const user = { email: data.email, plan: data.plan || 'free', simCount: data.simCount || 0, createdAt: data.createdAt || Date.now() };
     try { localStorage.setItem('infinicus_user', JSON.stringify(user)); } catch(e) {}
-    window.location.href = './index.html';
+
+    // Determine engine URL — same-origin path that serves the engine
+    const engineUrl = (function() {
+      const p = window.location.pathname;
+      // If landing page is at root /landing.html or /
+      if (p === '/' || p === '/landing.html') return '/index.html';
+      // If under a subfolder e.g. /engine/landing.html
+      return p.replace(/\/[^/]*$/, '/index.html');
+    })();
+
+    document.getElementById('si-engine-link').href = engineUrl;
+    document.getElementById('si-ok').style.display = 'block';
+    btn.style.display = 'none';
+    setTimeout(() => { window.location.href = engineUrl; }, 1200);
   } catch(e) {
     showAuthErr('si','Network error. Please try again.');
     btn.textContent = 'Sign In →'; btn.disabled = false;

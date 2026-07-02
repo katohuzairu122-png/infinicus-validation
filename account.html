@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Account — INFINICUS ENGINE</title>
+<link rel="icon" type="image/svg+xml" href="/infinicus-mark.svg">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;600;700&family=Sora:wght@700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#060a14;--n800:#0a1020;--n700:#0e1628;--n600:#141e35;
+  --glass:rgba(255,255,255,.04);--glass-2:rgba(255,255,255,.07);--glass-3:rgba(255,255,255,.1);
+  --line:rgba(255,255,255,.09);--line-2:rgba(255,255,255,.14);
+  --cyan:#00e676;--purple:#8b5cf6;--emerald:#10b981;--amber:#f59e0b;--red:#f43f5e;
+  --text:#e9eefb;--fg-2:#b8c2d8;--muted:#8893ad;--muted-2:#5d6885;
+  --mono:'IBM Plex Mono',monospace;--sans:'Inter',system-ui,sans-serif;--head:'Sora',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:var(--sans);background:var(--navy);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;overflow-x:hidden;}
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.015) 2px,rgba(0,0,0,.015) 4px);pointer-events:none;z-index:0;}
+
+/* ── HEADER ── */
+header{display:flex;align-items:center;gap:12px;padding:.85rem 1.75rem;border-bottom:1px solid var(--line);background:rgba(6,10,20,.92);backdrop-filter:blur(20px);position:sticky;top:0;z-index:100;}
+.logo{font-family:var(--head);font-size:18px;font-weight:800;display:flex;align-items:center;gap:9px;text-decoration:none;color:var(--text);}
+.logo .mark{width:28px;height:28px;border-radius:8px;background:var(--n700);display:grid;place-items:center;box-shadow:0 0 14px rgba(0,224,96,.35);flex-shrink:0;}
+.logo .c{color:var(--cyan);}
+.hdr-right{margin-left:auto;display:flex;align-items:center;gap:.75rem;}
+.hdr-btn{font-family:var(--mono);font-size:9.5px;color:var(--muted);background:none;border:1px solid var(--line);border-radius:6px;padding:5px 11px;cursor:pointer;letter-spacing:.05em;text-decoration:none;transition:all .15s;display:inline-flex;align-items:center;gap:.35rem;}
+.hdr-btn:hover{color:var(--cyan);border-color:rgba(0,224,96,.25);}
+
+/* ── LAYOUT ── */
+.page{display:flex;min-height:calc(100vh - 58px);}
+
+/* ── SIDEBAR ── */
+.sidebar{width:248px;flex-shrink:0;border-right:1px solid var(--line);display:flex;flex-direction:column;background:rgba(6,10,20,.45);}
+.sb-profile{padding:1.5rem 1.25rem 1.25rem;border-bottom:1px solid var(--line);text-align:center;}
+.avatar-wrap{position:relative;display:inline-block;margin-bottom:.75rem;cursor:pointer;}
+.avatar{width:76px;height:76px;border-radius:50%;background:linear-gradient(135deg,rgba(0,224,96,.25),rgba(139,92,246,.25));border:2px solid rgba(0,224,96,.3);display:flex;align-items:center;justify-content:center;font-family:var(--head);font-size:26px;font-weight:800;color:var(--cyan);overflow:hidden;margin:0 auto;}
+.avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.avatar-cam{position:absolute;bottom:1px;right:1px;width:22px;height:22px;border-radius:50%;background:var(--cyan);border:2px solid var(--navy);display:flex;align-items:center;justify-content:center;font-size:10px;color:#04060d;}
+.sb-name{font-family:var(--head);font-size:13px;font-weight:700;margin-bottom:.2rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sb-email{font-family:var(--mono);font-size:9px;color:var(--muted-2);margin-bottom:.5rem;word-break:break-all;}
+.plan-chip{display:inline-flex;align-items:center;font-family:var(--mono);font-size:8.5px;letter-spacing:.07em;padding:3px 9px;border-radius:100px;}
+.plan-chip.free{background:rgba(93,104,133,.15);color:var(--muted);border:1px solid var(--line);}
+.plan-chip.starter{background:rgba(0,224,96,.1);color:var(--cyan);border:1px solid rgba(0,224,96,.25);}
+.plan-chip.growth{background:rgba(139,92,246,.12);color:var(--purple);border:1px solid rgba(139,92,246,.25);}
+.plan-chip.professional{background:rgba(245,158,11,.1);color:var(--amber);border:1px solid rgba(245,158,11,.2);}
+
+/* Sidebar nav */
+.sb-nav{flex:1;padding:.75rem .65rem;overflow-y:auto;}
+.sb-grp-label{font-family:var(--mono);font-size:8px;letter-spacing:.14em;color:var(--muted-2);padding:.6rem .7rem .3rem;}
+.sb-item{display:flex;align-items:center;gap:.7rem;padding:.55rem .7rem;border-radius:8px;cursor:pointer;font-family:var(--mono);font-size:9.5px;letter-spacing:.04em;color:var(--muted);border:none;background:none;width:100%;text-align:left;transition:all .15s;}
+.sb-item:hover{color:var(--text);background:var(--glass);}
+.sb-item.active{color:var(--cyan);background:rgba(0,224,96,.08);}
+.sb-item .ic{font-size:13px;width:18px;text-align:center;flex-shrink:0;}
+.sb-bottom{padding:.75rem;border-top:1px solid var(--line);}
+.signout-btn{width:100%;font-family:var(--mono);font-size:10px;color:var(--red);background:rgba(244,63,94,.06);border:1px solid rgba(244,63,94,.18);border-radius:8px;padding:.55rem;cursor:pointer;letter-spacing:.05em;transition:all .15s;}
+.signout-btn:hover{background:rgba(244,63,94,.12);}
+
+/* ── CONTENT ── */
+.content{flex:1;padding:2rem 2.5rem;min-width:0;}
+.sec{display:none;animation:fadeUp .2s ease;}
+.sec.active{display:block;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+.sec-h{font-family:var(--head);font-size:22px;font-weight:800;margin-bottom:.2rem;}
+.sec-sub{font-family:var(--mono);font-size:9.5px;color:var(--muted-2);letter-spacing:.08em;margin-bottom:1.75rem;}
+
+/* Cards */
+.card{background:var(--glass);border:1px solid var(--line);border-radius:13px;padding:1.25rem 1.5rem;margin-bottom:1.25rem;}
+.card-h{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--cyan);margin-bottom:1.1rem;display:flex;align-items:center;gap:.45rem;}
+.card-h::before{content:'//';color:var(--muted-2);}
+
+/* Form */
+.fg{display:flex;flex-direction:column;gap:.35rem;}
+.fl{font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--muted-2);}
+.fi{background:rgba(255,255,255,.04);border:1px solid var(--line-2);border-radius:8px;padding:.6rem .85rem;color:var(--text);font-family:var(--mono);font-size:11.5px;outline:none;transition:border-color .15s;width:100%;}
+.fi:focus{border-color:rgba(0,224,96,.4);background:rgba(0,224,96,.03);}
+.fi:disabled{opacity:.35;cursor:not-allowed;}
+.fi.err{border-color:rgba(244,63,94,.4);}
+select.fi{cursor:pointer;}
+select.fi option{background:var(--n700);}
+textarea.fi{resize:vertical;}
+.fh{font-family:var(--mono);font-size:8.5px;color:var(--muted-2);margin-top:.25rem;}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:.9rem;}
+.frow.s{grid-template-columns:1fr;}
+.frow.t{grid-template-columns:1fr 1fr 1fr;}
+
+/* Buttons */
+.btn-primary{font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.08em;padding:.62rem 1.4rem;background:linear-gradient(135deg,rgba(0,224,96,.14),rgba(139,92,246,.1));border:1px solid rgba(0,224,96,.35);border-radius:8px;color:var(--cyan);cursor:pointer;transition:all .15s;}
+.btn-primary:hover:not(:disabled){background:linear-gradient(135deg,rgba(0,224,96,.22),rgba(139,92,246,.18));box-shadow:0 0 20px rgba(0,224,96,.12);}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed;}
+.btn-ghost{font-family:var(--mono);font-size:10.5px;letter-spacing:.07em;padding:.62rem 1.2rem;background:none;border:1px solid var(--line-2);border-radius:8px;color:var(--muted);cursor:pointer;transition:all .15s;}
+.btn-ghost:hover{color:var(--text);background:var(--glass);}
+.btn-sm{font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;padding:.42rem .9rem;background:var(--glass);border:1px solid var(--line-2);border-radius:7px;color:var(--muted-2);cursor:pointer;transition:all .15s;}
+.btn-sm:hover{color:var(--text);background:var(--glass-2);}
+.btn-danger{font-family:var(--mono);font-size:9.5px;font-weight:600;letter-spacing:.07em;padding:.55rem 1rem;background:rgba(244,63,94,.07);border:1px solid rgba(244,63,94,.28);border-radius:8px;color:var(--red);cursor:pointer;transition:all .15s;}
+.btn-danger:hover{background:rgba(244,63,94,.14);}
+.btn-row{display:flex;align-items:center;gap:.65rem;margin-top:1.1rem;flex-wrap:wrap;}
+
+/* Status messages */
+.msg{font-family:var(--mono);font-size:9.5px;padding:.45rem .7rem;border-radius:6px;margin-top:.55rem;display:none;}
+.msg.ok{color:var(--cyan);background:rgba(0,224,96,.07);border:1px solid rgba(0,224,96,.2);}
+.msg.err{color:var(--red);background:rgba(244,63,94,.07);border:1px solid rgba(244,63,94,.2);}
+
+/* Badge */
+.badge{font-family:var(--mono);font-size:8.5px;letter-spacing:.07em;padding:2px 7px;border-radius:4px;display:inline-block;}
+.badge.v{background:rgba(16,185,129,.12);color:var(--emerald);border:1px solid rgba(16,185,129,.25);}
+.badge.w{background:rgba(245,158,11,.1);color:var(--amber);border:1px solid rgba(245,158,11,.2);}
+.badge.p{background:rgba(139,92,246,.1);color:var(--purple);border:1px solid rgba(139,92,246,.2);}
+.badge.go{color:var(--emerald);}
+.badge.modify{color:var(--amber);}
+.badge.stop{color:var(--red);}
+
+/* Toggle switch */
+.tgl-row{display:flex;align-items:center;justify-content:space-between;padding:.75rem 0;border-bottom:1px solid rgba(255,255,255,.05);}
+.tgl-row:last-child{border-bottom:none;}
+.tgl-lbl{font-size:13px;color:var(--fg-2);}
+.tgl-sub{font-family:var(--mono);font-size:9px;color:var(--muted-2);margin-top:.2rem;}
+.tgl{position:relative;width:40px;height:22px;flex-shrink:0;}
+.tgl input{opacity:0;width:0;height:0;}
+.tgl-sl{position:absolute;inset:0;background:rgba(255,255,255,.09);border-radius:22px;cursor:pointer;transition:.2s;border:1px solid var(--line);}
+.tgl-sl::before{content:'';position:absolute;width:16px;height:16px;left:2px;top:2px;background:var(--muted-2);border-radius:50%;transition:.2s;}
+.tgl input:checked+.tgl-sl{background:rgba(0,224,96,.18);border-color:rgba(0,224,96,.4);}
+.tgl input:checked+.tgl-sl::before{transform:translateX(18px);background:var(--cyan);}
+
+/* Stats */
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.85rem;margin-bottom:1.25rem;}
+.stat-box{background:var(--glass);border:1px solid var(--line);border-radius:11px;padding:1rem;text-align:center;}
+.stat-v{font-family:var(--head);font-size:28px;font-weight:800;color:var(--cyan);line-height:1;}
+.stat-l{font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;color:var(--muted-2);margin-top:.35rem;}
+
+/* Table */
+.tbl{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:10px;}
+.tbl th{text-align:left;padding:.5rem .7rem;color:var(--muted-2);letter-spacing:.09em;font-size:8.5px;border-bottom:1px solid var(--line);}
+.tbl td{padding:.65rem .7rem;border-bottom:1px solid rgba(255,255,255,.04);color:var(--fg-2);vertical-align:middle;}
+.tbl tr:last-child td{border-bottom:none;}
+.tbl tr:hover td{background:rgba(255,255,255,.02);}
+
+/* Progress bar */
+.pb-wrap{margin-bottom:.85rem;}
+.pb-labels{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;color:var(--muted-2);margin-bottom:.35rem;}
+.pb{height:5px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden;}
+.pb-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--cyan),var(--emerald));transition:width .8s cubic-bezier(.4,0,.2,1);}
+
+/* API key box */
+.api-box{display:flex;align-items:center;gap:.6rem;background:rgba(0,0,0,.2);border:1px solid var(--line);border-radius:8px;padding:.6rem 1rem;margin-bottom:.75rem;}
+.api-val{font-family:var(--mono);font-size:11px;color:var(--cyan);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:.04em;}
+
+/* Pass strength */
+.ps-bar{height:4px;border-radius:2px;background:rgba(255,255,255,.07);overflow:hidden;margin-top:.4rem;}
+.ps-fill{height:100%;border-radius:2px;width:0%;transition:width .3s,background .3s;}
+
+/* 2FA */
+.qr-box{width:136px;height:136px;background:#fff;border-radius:10px;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;padding:4px;}
+.backup-grid{display:grid;grid-template-columns:1fr 1fr;gap:.4rem;margin-top:.75rem;}
+.bc{font-family:var(--mono);font-size:10px;background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:6px;padding:.35rem .6rem;text-align:center;letter-spacing:.08em;color:var(--text);}
+
+/* Device row */
+.dev-row{display:flex;align-items:center;gap:1rem;padding:.75rem 0;border-bottom:1px solid rgba(255,255,255,.05);}
+.dev-row:last-child{border-bottom:none;}
+.dev-ic{font-size:24px;width:36px;text-align:center;flex-shrink:0;}
+.dev-info{flex:1;}
+.dev-name{font-size:12.5px;color:var(--text);margin-bottom:.2rem;display:flex;align-items:center;gap:.5rem;}
+.dev-meta{font-family:var(--mono);font-size:9px;color:var(--muted-2);}
+.curr-badge{font-family:var(--mono);font-size:8px;padding:1px 6px;border-radius:3px;background:rgba(0,224,96,.1);color:var(--cyan);border:1px solid rgba(0,224,96,.25);}
+
+/* Plan display */
+.plan-hero{display:flex;align-items:center;gap:1rem;padding:1.1rem 1.25rem;background:rgba(0,224,96,.05);border:1px solid rgba(0,224,96,.2);border-radius:12px;margin-bottom:1.25rem;}
+.plan-hero-icon{font-size:30px;flex-shrink:0;}
+.plan-hero-name{font-family:var(--head);font-size:16px;font-weight:800;color:var(--cyan);}
+.plan-hero-desc{font-family:var(--mono);font-size:9.5px;color:var(--muted-2);margin-top:.2rem;}
+
+/* Profile photo area */
+.photo-area{display:flex;align-items:center;gap:1.25rem;padding-bottom:1.25rem;border-bottom:1px solid var(--line);margin-bottom:1.25rem;}
+.photo-avatar{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,rgba(0,224,96,.25),rgba(139,92,246,.25));border:2px solid rgba(0,224,96,.3);display:flex;align-items:center;justify-content:center;font-family:var(--head);font-size:28px;font-weight:800;color:var(--cyan);overflow:hidden;flex-shrink:0;cursor:pointer;}
+.photo-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+
+/* Account info table */
+.ai-row{display:flex;align-items:center;padding:.6rem 0;border-bottom:1px solid rgba(255,255,255,.04);}
+.ai-row:last-child{border-bottom:none;}
+.ai-label{font-family:var(--mono);font-size:9.5px;color:var(--muted-2);width:160px;flex-shrink:0;}
+.ai-val{font-family:var(--mono);font-size:10.5px;color:var(--fg-2);}
+
+/* Danger zone */
+.danger-card{border:1px solid rgba(244,63,94,.2);border-radius:13px;padding:1.25rem 1.5rem;background:rgba(244,63,94,.025);}
+.danger-h{font-family:var(--mono);font-size:9px;letter-spacing:.12em;color:var(--red);margin-bottom:1rem;}
+.danger-item{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.8rem 0;border-bottom:1px solid rgba(244,63,94,.08);}
+.danger-item:last-child{border-bottom:none;}
+.danger-item-title{font-size:13px;color:var(--text);margin-bottom:.2rem;}
+.danger-item-sub{font-family:var(--mono);font-size:9px;color:var(--muted-2);}
+
+/* Confirm modal */
+.overlay{position:fixed;inset:0;background:rgba(4,6,13,.92);backdrop-filter:blur(14px);z-index:400;align-items:center;justify-content:center;display:none;}
+.overlay.open{display:flex;}
+.modal-box{background:var(--n800);border:1px solid var(--line-2);border-radius:16px;padding:2rem;max-width:400px;width:90%;text-align:center;position:relative;}
+
+/* Toast */
+#toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%) translateY(20px);background:var(--n700);border:1px solid var(--line-2);border-radius:8px;padding:.6rem 1.25rem;font-family:var(--mono);font-size:11px;color:var(--cyan);opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;z-index:500;white-space:nowrap;}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* Hidden file input */
+#photo-input{display:none;}
+
+/* Responsive */
+@media(max-width:820px){
+  .page{flex-direction:column;}
+  .sidebar{width:100%;border-right:none;border-bottom:1px solid var(--line);flex-direction:row;flex-wrap:wrap;}
+  .sb-profile{padding:.75rem 1rem;border-bottom:none;border-right:1px solid var(--line);display:flex;align-items:center;gap:.75rem;text-align:left;flex-shrink:0;}
+  .avatar{width:42px;height:42px;font-size:16px;}
+  .avatar-cam{display:none;}
+  .sb-name{font-size:12px;margin-bottom:0;}
+  .sb-email{display:none;}
+  .plan-chip{margin-top:0;}
+  .sb-nav{display:flex;flex-direction:row;padding:.5rem;overflow-x:auto;scrollbar-width:none;flex:1;}
+  .sb-grp-label{display:none;}
+  .sb-item{flex-direction:row;white-space:nowrap;flex-shrink:0;font-size:9px;padding:.4rem .7rem;}
+  .sb-item .ic{font-size:11px;width:auto;}
+  .sb-bottom{display:none;}
+  .content{padding:1.25rem;}
+  .frow{grid-template-columns:1fr;}
+  .frow.t{grid-template-columns:1fr 1fr;}
+  .stat-grid{grid-template-columns:1fr 1fr;}
+}
+@media(max-width:480px){
+  .stat-grid{grid-template-columns:1fr;}
+  .frow.t{grid-template-columns:1fr;}
+  header{padding:.7rem 1rem;}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="./index.html">
+    <div class="mark">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="26" height="26" style="display:block;border-radius:8px;">
+        <rect width="100" height="100" rx="22" fill="#07080a"/>
+        <rect x="2" y="2" width="96" height="96" rx="21" fill="none" stroke="#00e676" stroke-width="2" opacity="0.7"/>
+        <path d="M 50,50 C 50,34 38,24 28,30 C 18,36 18,64 28,70 C 38,76 50,66 50,50 Z" fill="none" stroke="#00e676" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M 50,50 C 50,34 62,24 72,30 C 82,36 82,64 72,70 C 62,76 50,66 50,50 Z" fill="none" stroke="#00e676" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    INFIN<span class="c">ICUS</span>
+    <span style="font-family:var(--mono);font-size:9px;color:var(--muted-2);font-weight:300;align-self:flex-end;margin-bottom:2px;">ENGINE v3</span>
+  </a>
+  <div class="hdr-right">
+    <span id="hdr-page-label" style="font-family:var(--mono);font-size:9.5px;color:var(--muted-2);letter-spacing:.06em;">ACCOUNT SETTINGS</span>
+    <a class="hdr-btn" href="./index.html">← Back to Engine</a>
+  </div>
+</header>
+
+<input type="file" id="photo-input" accept="image/*" onchange="handlePhotoUpload(event)">
+
+<div class="page">
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar">
+    <div class="sb-profile">
+      <div class="avatar-wrap" onclick="document.getElementById('photo-input').click()">
+        <div class="avatar" id="sb-avatar">?</div>
+        <div class="avatar-cam">✎</div>
+      </div>
+      <div>
+        <div class="sb-name" id="sb-name">—</div>
+        <div class="sb-email" id="sb-email">—</div>
+        <span class="plan-chip free" id="sb-plan">FREE</span>
+      </div>
+    </div>
+
+    <div class="sb-nav">
+      <div class="sb-grp-label">ACCOUNT</div>
+      <button class="sb-item active" data-tab="profile"   onclick="showTab('profile')"><span class="ic">👤</span> Profile</button>
+      <button class="sb-item"        data-tab="security"  onclick="showTab('security')"><span class="ic">🔒</span> Security</button>
+
+      <div class="sb-grp-label">SETTINGS</div>
+      <button class="sb-item" data-tab="preferences"  onclick="showTab('preferences')"><span class="ic">⚙️</span> Preferences</button>
+      <button class="sb-item" data-tab="subscription" onclick="showTab('subscription')"><span class="ic">💳</span> Subscription</button>
+
+      <div class="sb-grp-label">ACTIVITY</div>
+      <button class="sb-item" data-tab="stats"     onclick="showTab('stats')"><span class="ic">📊</span> Stats</button>
+      <button class="sb-item" data-tab="developer" onclick="showTab('developer')"><span class="ic">⌨️</span> Developer</button>
+
+      <div class="sb-grp-label" style="color:rgba(244,63,94,.5);">DANGER</div>
+      <button class="sb-item" data-tab="danger" onclick="showTab('danger')" style="color:rgba(244,63,94,.65);"><span class="ic">⚠️</span> Danger Zone</button>
+    </div>
+
+    <div class="sb-bottom">
+      <button class="signout-btn" onclick="signOut()">⎋  Sign Out</button>
+    </div>
+  </aside>
+
+  <!-- ── CONTENT ── -->
+  <main class="content">
+
+    <!-- ════════════ PROFILE ════════════ -->
+    <div class="sec active" id="tab-profile">
+      <div class="sec-h">Profile</div>
+      <div class="sec-sub">// PERSONAL INFORMATION & IDENTITY</div>
+
+      <div class="card">
+        <div class="card-h">PHOTO & IDENTITY</div>
+
+        <div class="photo-area">
+          <div class="photo-avatar" id="profile-avatar" onclick="document.getElementById('photo-input').click()">?</div>
+          <div>
+            <div style="font-size:13px;color:var(--text);margin-bottom:.3rem;">Profile Photo</div>
+            <div style="font-family:var(--mono);font-size:9px;color:var(--muted-2);margin-bottom:.6rem;">PNG or JPG · Max 2 MB</div>
+            <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+              <button class="btn-sm" onclick="document.getElementById('photo-input').click()">Upload Photo</button>
+              <button class="btn-sm" id="rm-photo-btn" onclick="removePhoto()" style="display:none;">Remove</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="frow">
+          <div class="fg"><label class="fl">FULL NAME</label><input class="fi" type="text" id="f-name" placeholder="Your full name" autocomplete="name"></div>
+          <div class="fg"><label class="fl">USERNAME</label><input class="fi" type="text" id="f-username" placeholder="@username"></div>
+        </div>
+        <div class="frow">
+          <div class="fg">
+            <label class="fl">EMAIL &nbsp;<span class="badge v" id="email-verify-badge">VERIFIED</span></label>
+            <input class="fi" type="email" id="f-email" disabled>
+            <div class="fh">Email is managed by your auth provider and cannot be changed here.</div>
+          </div>
+          <div class="fg"><label class="fl">PHONE (OPTIONAL)</label><input class="fi" type="tel" id="f-phone" placeholder="+1 555 000 0000" autocomplete="tel"></div>
+        </div>
+        <div class="frow">
+          <div class="fg">
+            <label class="fl">COUNTRY</label>
+            <select class="fi" id="f-country">
+              <option value="">Select country…</option>
+              <option>United States</option><option>United Kingdom</option><option>Canada</option><option>Australia</option>
+              <option>Germany</option><option>France</option><option>Netherlands</option><option>Sweden</option>
+              <option>Japan</option><option>China</option><option>South Korea</option><option>Singapore</option>
+              <option>India</option><option>Pakistan</option><option>Bangladesh</option><option>Philippines</option>
+              <option>Nigeria</option><option>South Africa</option><option>Kenya</option><option>Ghana</option>
+              <option>Ethiopia</option><option>Tanzania</option><option>Uganda</option>
+              <option>Brazil</option><option>Mexico</option><option>Argentina</option><option>Colombia</option>
+              <option>UAE</option><option>Saudi Arabia</option><option>Israel</option>
+              <option>New Zealand</option><option>Other</option>
+            </select>
+          </div>
+          <div class="fg"><label class="fl">CITY / LOCATION</label><input class="fi" type="text" id="f-city" placeholder="e.g. Lagos"></div>
+        </div>
+        <div class="frow s">
+          <div class="fg">
+            <label class="fl">BIO (OPTIONAL)</label>
+            <textarea class="fi" id="f-bio" rows="3" placeholder="Founder, investor, or builder? Tell us about yourself…"></textarea>
+          </div>
+        </div>
+
+        <div class="msg ok" id="profile-ok">✓ Profile saved successfully.</div>
+        <div class="msg err" id="profile-err"></div>
+        <div class="btn-row">
+          <button class="btn-primary" onclick="saveProfile()">Save Changes</button>
+          <button class="btn-ghost"   onclick="loadProfile()">Cancel</button>
+        </div>
+      </div>
+
+      <!-- Account info -->
+      <div class="card">
+        <div class="card-h">ACCOUNT INFO</div>
+        <div class="ai-row"><div class="ai-label">Member since</div><div class="ai-val" id="ai-created">—</div></div>
+        <div class="ai-row"><div class="ai-label">Account ID</div><div class="ai-val" id="ai-id" style="font-size:9.5px;color:var(--muted-2);">—</div></div>
+        <div class="ai-row"><div class="ai-label">Current plan</div><div class="ai-val"><span class="badge p" id="ai-plan">FREE</span></div></div>
+        <div class="ai-row"><div class="ai-label">Email status</div><div class="ai-val"><span class="badge v">✓ VERIFIED</span></div></div>
+        <div class="ai-row"><div class="ai-label">2FA</div><div class="ai-val"><span class="badge w" id="ai-2fa">NOT ENABLED</span></div></div>
+        <div class="ai-row"><div class="ai-label">Last login</div><div class="ai-val" id="ai-last-login">This session</div></div>
+      </div>
+    </div>
+
+    <!-- ════════════ SECURITY ════════════ -->
+    <div class="sec" id="tab-security">
+      <div class="sec-h">Security</div>
+      <div class="sec-sub">// PASSWORD, 2FA & SESSION MANAGEMENT</div>
+
+      <!-- Change password -->
+      <div class="card">
+        <div class="card-h">CHANGE PASSWORD</div>
+        <div class="frow s"><div class="fg"><label class="fl">CURRENT PASSWORD</label><input class="fi" type="password" id="s-cur" placeholder="Enter current password"></div></div>
+        <div class="frow">
+          <div class="fg">
+            <label class="fl">NEW PASSWORD</label>
+            <input class="fi" type="password" id="s-new" placeholder="Minimum 8 characters" oninput="checkStrength(this.value)">
+            <div class="ps-bar"><div class="ps-fill" id="ps-fill"></div></div>
+            <div class="fh" id="ps-lbl" style="margin-top:.3rem;">—</div>
+          </div>
+          <div class="fg"><label class="fl">CONFIRM NEW PASSWORD</label><input class="fi" type="password" id="s-conf" placeholder="Repeat new password"></div>
+        </div>
+        <div class="msg ok" id="pass-ok">✓ Password changed successfully.</div>
+        <div class="msg err" id="pass-err"></div>
+        <div class="btn-row"><button class="btn-primary" onclick="changePassword()">Update Password</button></div>
+      </div>
+
+      <!-- 2FA -->
+      <div class="card">
+        <div class="card-h">TWO-FACTOR AUTHENTICATION</div>
+        <div class="tgl-row" style="margin-bottom:.75rem;">
+          <div>
+            <div class="tgl-lbl">Enable Authenticator App (2FA)</div>
+            <div class="tgl-sub">Require a 6-digit code from Google Authenticator or Authy on every sign-in</div>
+          </div>
+          <label class="tgl"><input type="checkbox" id="twofa-toggle" onchange="on2FAToggle(this)"><span class="tgl-sl"></span></label>
+        </div>
+        <div id="twofa-panel" style="display:none;border-top:1px solid var(--line);padding-top:1rem;">
+          <div style="font-family:var(--mono);font-size:9.5px;color:var(--muted-2);text-align:center;margin-bottom:.9rem;">Scan with your authenticator app, then enter the 6-digit code below to verify.</div>
+          <div class="qr-box">
+            <svg viewBox="0 0 100 100" width="120" height="120" xmlns="http://www.w3.org/2000/svg">
+              <rect width="100" height="100" fill="white"/>
+              <rect x="8" y="8" width="32" height="32" fill="black" rx="2"/><rect x="12" y="12" width="24" height="24" fill="white"/><rect x="16" y="16" width="16" height="16" fill="black"/>
+              <rect x="60" y="8" width="32" height="32" fill="black" rx="2"/><rect x="64" y="12" width="24" height="24" fill="white"/><rect x="68" y="16" width="16" height="16" fill="black"/>
+              <rect x="8" y="60" width="32" height="32" fill="black" rx="2"/><rect x="12" y="64" width="24" height="24" fill="white"/><rect x="16" y="68" width="16" height="16" fill="black"/>
+              <rect x="44" y="8" width="8" height="8" fill="black"/><rect x="44" y="20" width="8" height="8" fill="black"/>
+              <rect x="8" y="44" width="8" height="8" fill="black"/><rect x="20" y="44" width="8" height="8" fill="black"/>
+              <rect x="44" y="44" width="8" height="8" fill="black"/><rect x="60" y="44" width="8" height="8" fill="black"/><rect x="76" y="44" width="8" height="8" fill="black"/>
+              <rect x="44" y="60" width="8" height="8" fill="black"/><rect x="60" y="60" width="8" height="8" fill="black"/>
+              <rect x="76" y="60" width="8" height="8" fill="black"/><rect x="44" y="76" width="8" height="8" fill="black"/>
+              <rect x="60" y="76" width="8" height="8" fill="black"/><rect x="76" y="76" width="8" height="8" fill="black"/>
+            </svg>
+          </div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--muted-2);text-align:center;margin-bottom:.75rem;letter-spacing:.04em;">Manual key: <span style="color:var(--cyan);">INFI-XXXX-YYYY-ZZZZ-0000</span></div>
+          <div class="frow s"><div class="fg"><label class="fl">VERIFICATION CODE</label><input class="fi" type="text" id="twofa-code" placeholder="000 000" maxlength="7" style="text-align:center;letter-spacing:.4em;font-size:18px;"></div></div>
+          <div class="btn-row"><button class="btn-primary" onclick="verify2FA()">Verify & Enable</button></div>
+          <div style="margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--line);">
+            <div style="font-family:var(--mono);font-size:9px;color:var(--amber);letter-spacing:.08em;margin-bottom:.65rem;">⚠ BACKUP CODES — SAVE THESE IN A SAFE PLACE</div>
+            <div class="backup-grid">
+              <div class="bc">A3F9-7K2M</div><div class="bc">X8R1-9P4N</div>
+              <div class="bc">B2J6-4L7T</div><div class="bc">Q5W3-8M1V</div>
+              <div class="bc">N7H2-6C9R</div><div class="bc">Y4E8-1D5S</div>
+            </div>
+            <div class="btn-row"><button class="btn-sm" onclick="downloadBackupCodes()">↓ Download Backup Codes</button></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Active sessions -->
+      <div class="card">
+        <div class="card-h">ACTIVE SESSIONS</div>
+        <div id="sessions-list">
+          <div class="dev-row">
+            <div class="dev-ic">💻</div>
+            <div class="dev-info">
+              <div class="dev-name">Chrome on Windows &nbsp;<span class="curr-badge">CURRENT</span></div>
+              <div class="dev-meta">Active now · This device</div>
+            </div>
+          </div>
+          <div class="dev-row">
+            <div class="dev-ic">📱</div>
+            <div class="dev-info">
+              <div class="dev-name">Mobile Browser</div>
+              <div class="dev-meta">2 hours ago · Mobile</div>
+            </div>
+            <button class="btn-sm" onclick="revokeSession(this)">Revoke</button>
+          </div>
+        </div>
+        <div class="btn-row"><button class="btn-danger" onclick="revokeAllSessions()" style="font-size:9px;">Revoke All Other Sessions</button></div>
+      </div>
+
+      <!-- Login history -->
+      <div class="card">
+        <div class="card-h">LOGIN HISTORY</div>
+        <table class="tbl">
+          <thead><tr><th>DATE & TIME</th><th>DEVICE</th><th>LOCATION</th><th>STATUS</th></tr></thead>
+          <tbody id="login-hist"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ════════════ PREFERENCES ════════════ -->
+    <div class="sec" id="tab-preferences">
+      <div class="sec-h">Preferences</div>
+      <div class="sec-sub">// NOTIFICATIONS, PRIVACY, LANGUAGE & THEME</div>
+
+      <div class="card">
+        <div class="card-h">NOTIFICATIONS</div>
+        <div class="tgl-row"><div><div class="tgl-lbl">Simulation Complete</div><div class="tgl-sub">Email when your simulation finishes</div></div><label class="tgl"><input type="checkbox" id="n-sim" checked><span class="tgl-sl"></span></label></div>
+        <div class="tgl-row"><div><div class="tgl-lbl">Weekly Digest</div><div class="tgl-sub">Your activity summary every Monday</div></div><label class="tgl"><input type="checkbox" id="n-digest"><span class="tgl-sl"></span></label></div>
+        <div class="tgl-row"><div><div class="tgl-lbl">Product Updates</div><div class="tgl-sub">New features and improvements</div></div><label class="tgl"><input type="checkbox" id="n-product" checked><span class="tgl-sl"></span></label></div>
+        <div class="tgl-row"><div><div class="tgl-lbl">Marketing Emails</div><div class="tgl-sub">Tips, guides, and promotional content</div></div><label class="tgl"><input type="checkbox" id="n-mkt"><span class="tgl-sl"></span></label></div>
+      </div>
+
+      <div class="card">
+        <div class="card-h">PRIVACY</div>
+        <div class="tgl-row"><div><div class="tgl-lbl">Share Usage Analytics</div><div class="tgl-sub">Anonymous usage data to help improve INFINICUS</div></div><label class="tgl"><input type="checkbox" id="p-analytics" checked><span class="tgl-sl"></span></label></div>
+        <div class="tgl-row"><div><div class="tgl-lbl">Public Profile</div><div class="tgl-sub">Allow others to view your simulation count and verdict history</div></div><label class="tgl"><input type="checkbox" id="p-public"><span class="tgl-sl"></span></label></div>
+        <div class="tgl-row"><div><div class="tgl-lbl">Personalised AI Suggestions</div><div class="tgl-sub">Use your simulation history to personalise AI analysis output</div></div><label class="tgl"><input type="checkbox" id="p-ai" checked><span class="tgl-sl"></span></label></div>
+      </div>
+
+      <div class="card">
+        <div class="card-h">APPEARANCE & LANGUAGE</div>
+        <div class="frow">
+          <div class="fg">
+            <label class="fl">LANGUAGE</label>
+            <select class="fi" id="pref-lang">
+              <option value="en">English (Default)</option><option value="fr">Français</option>
+              <option value="es">Español</option><option value="de">Deutsch</option>
+              <option value="pt">Português</option><option value="ar">العربية</option>
+              <option value="sw">Kiswahili</option><option value="ja">日本語</option><option value="zh">中文</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label class="fl">THEME</label>
+            <select class="fi" id="pref-theme">
+              <option value="dark">Dark (Default)</option>
+              <option value="light">Light (Coming Soon)</option>
+              <option value="system">Follow System</option>
+            </select>
+          </div>
+        </div>
+        <div class="frow">
+          <div class="fg">
+            <label class="fl">DEFAULT CURRENCY</label>
+            <select class="fi" id="pref-currency">
+              <option value="USD">USD — US Dollar</option><option value="EUR">EUR — Euro</option>
+              <option value="GBP">GBP — British Pound</option><option value="NGN">NGN — Naira</option>
+              <option value="KES">KES — Kenyan Shilling</option><option value="GHS">GHS — Ghanaian Cedi</option>
+              <option value="ZAR">ZAR — Rand</option><option value="INR">INR — Indian Rupee</option>
+              <option value="JPY">JPY — Japanese Yen</option><option value="CAD">CAD — Canadian Dollar</option>
+              <option value="AUD">AUD — Australian Dollar</option><option value="AED">AED — UAE Dirham</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label class="fl">DATE FORMAT</label>
+            <select class="fi" id="pref-date">
+              <option value="mdy">MM/DD/YYYY</option>
+              <option value="dmy">DD/MM/YYYY</option>
+              <option value="ymd">YYYY-MM-DD</option>
+            </select>
+          </div>
+        </div>
+        <div class="msg ok" id="pref-ok">✓ Preferences saved.</div>
+        <div class="btn-row"><button class="btn-primary" onclick="savePreferences()">Save Preferences</button></div>
+      </div>
+    </div>
+
+    <!-- ════════════ SUBSCRIPTION ════════════ -->
+    <div class="sec" id="tab-subscription">
+      <div class="sec-h">Subscription</div>
+      <div class="sec-sub">// PLAN, BILLING & PAYMENT</div>
+
+      <div class="plan-hero">
+        <div class="plan-hero-icon" id="plan-icon">🌱</div>
+        <div>
+          <div class="plan-hero-name" id="plan-name">FREE PLAN</div>
+          <div class="plan-hero-desc" id="plan-desc">1 simulation · Basic dashboard · Verdict only</div>
+        </div>
+        <div style="margin-left:auto;flex-shrink:0;">
+          <button class="btn-primary" onclick="window.location.href='./landing.html#pricing'">Upgrade Plan →</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-h">USAGE THIS PERIOD</div>
+        <div class="pb-wrap">
+          <div class="pb-labels"><span>Simulations</span><span id="u-sim-lbl">0 / 1</span></div>
+          <div class="pb"><div class="pb-fill" id="u-sim-bar" style="width:0%"></div></div>
+        </div>
+        <div class="pb-wrap">
+          <div class="pb-labels"><span>AI Analyses</span><span id="u-ai-lbl">0 / 10</span></div>
+          <div class="pb"><div class="pb-fill" id="u-ai-bar" style="width:0%;background:linear-gradient(90deg,var(--purple),var(--cyan));"></div></div>
+        </div>
+        <div class="pb-wrap">
+          <div class="pb-labels"><span>Saved History Slots</span><span id="u-hist-lbl">0 / 20</span></div>
+          <div class="pb"><div class="pb-fill" id="u-hist-bar" style="width:0%;background:linear-gradient(90deg,var(--amber),var(--emerald));"></div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-h">BILLING HISTORY</div>
+        <table class="tbl">
+          <thead><tr><th>DATE</th><th>DESCRIPTION</th><th>AMOUNT</th><th>STATUS</th></tr></thead>
+          <tbody>
+            <tr><td colspan="4" style="text-align:center;color:var(--muted-2);padding:1.5rem;font-family:var(--mono);font-size:10px;">No billing history — you are on the Free plan.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-h">PAYMENT METHOD</div>
+        <div style="font-family:var(--mono);font-size:10.5px;color:var(--muted-2);padding:.5rem 0 1rem;">No payment method on file. Upgrade to a paid plan to add one.</div>
+        <button class="btn-ghost" style="font-size:10px;" onclick="showToast('Payment methods available after upgrading.')">+ Add Payment Method</button>
+      </div>
+    </div>
+
+    <!-- ════════════ STATS ════════════ -->
+    <div class="sec" id="tab-stats">
+      <div class="sec-h">Stats & Activity</div>
+      <div class="sec-sub">// YOUR SIMULATION PERFORMANCE AT A GLANCE</div>
+
+      <div class="stat-grid">
+        <div class="stat-box"><div class="stat-v" id="st-total">0</div><div class="stat-l">TOTAL SIMULATIONS</div></div>
+        <div class="stat-box"><div class="stat-v" id="st-saved">0</div><div class="stat-l">SAVED IN HISTORY</div></div>
+        <div class="stat-box"><div class="stat-v" id="st-go">0</div><div class="stat-l">GO VERDICTS</div></div>
+        <div class="stat-box"><div class="stat-v" id="st-surv" style="color:var(--emerald);">—</div><div class="stat-l">AVG SURVIVAL RATE</div></div>
+        <div class="stat-box"><div class="stat-v" id="st-top-ind" style="font-size:13px;color:var(--purple);">—</div><div class="stat-l">TOP INDUSTRY</div></div>
+        <div class="stat-box"><div class="stat-v" id="st-scenarios" style="color:var(--amber);">0</div><div class="stat-l">SCENARIOS SAVED</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-h">RECENT SIMULATIONS</div>
+        <table class="tbl">
+          <thead><tr><th>IDEA</th><th>INDUSTRY</th><th>VERDICT</th><th>SURVIVAL</th><th>DATE</th></tr></thead>
+          <tbody id="recent-body"></tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-h">SAVED SCENARIOS</div>
+        <div id="scenarios-wrap">
+          <div style="font-family:var(--mono);font-size:10.5px;color:var(--muted-2);">No scenarios saved. Use the Compare tab in the engine to save scenarios.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-h">PROJECTS CREATED</div>
+        <div style="font-family:var(--mono);font-size:10.5px;color:var(--muted-2);">Projects feature coming soon — track multiple business ideas across simulations.</div>
+      </div>
+    </div>
+
+    <!-- ════════════ DEVELOPER ════════════ -->
+    <div class="sec" id="tab-developer">
+      <div class="sec-h">Developer</div>
+      <div class="sec-sub">// API KEYS & INTEGRATIONS</div>
+
+      <div class="card">
+        <div class="card-h">API KEY</div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--muted-2);line-height:1.75;margin-bottom:1rem;">Your API key grants full programmatic access to your account. Keep it secret — do not expose it in client-side code or public repositories.</div>
+        <div class="api-box">
+          <div class="api-val" id="api-display">iex_••••••••••••••••••••••••••••••••••••••••</div>
+          <button class="btn-sm" id="api-reveal-btn" onclick="toggleApiKey()">Reveal</button>
+          <button class="btn-sm" onclick="copyApiKey()">Copy</button>
+        </div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--muted-2);margin-bottom:1rem;">
+          Created: <span id="api-created">—</span> &nbsp;·&nbsp; Last used: Never
+        </div>
+        <div class="msg ok" id="api-msg"></div>
+        <div class="btn-row">
+          <button class="btn-ghost" onclick="generateApiKey()" style="font-size:10px;">↺ Generate Key</button>
+          <button class="btn-danger" onclick="revokeApiKey()" style="font-size:9px;">Revoke</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-h">API USAGE</div>
+        <div class="pb-wrap">
+          <div class="pb-labels"><span>Requests this month</span><span style="color:var(--muted-2);">0 / 1,000</span></div>
+          <div class="pb"><div class="pb-fill" style="width:0%"></div></div>
+        </div>
+        <div style="font-family:var(--mono);font-size:9.5px;color:var(--muted-2);margin-top:.5rem;">
+          API access is available on the Professional plan. &nbsp;<button onclick="showTab('subscription')" style="background:none;border:none;color:var(--cyan);font-family:var(--mono);font-size:9.5px;cursor:pointer;text-decoration:underline;">Upgrade →</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-h">DOCUMENTATION</div>
+        <div style="font-family:var(--mono);font-size:10.5px;color:var(--muted-2);line-height:1.75;margin-bottom:1rem;">
+          Full REST API documentation, SDKs, and integration guides are in development. Join the waitlist to be notified at launch.
+        </div>
+        <button class="btn-ghost" style="font-size:10px;" onclick="showToast('Added to API waitlist ✓')">Join API Waitlist</button>
+      </div>
+    </div>
+
+    <!-- ════════════ DANGER ════════════ -->
+    <div class="sec" id="tab-danger">
+      <div class="sec-h">Danger Zone</div>
+      <div class="sec-sub">// EXPORT, CLEAR DATA, DELETE ACCOUNT</div>
+
+      <div class="danger-card">
+        <div class="danger-h">⚠ IRREVERSIBLE ACTIONS — READ CAREFULLY BEFORE PROCEEDING</div>
+
+        <div class="danger-item">
+          <div>
+            <div class="danger-item-title">Export All Data</div>
+            <div class="danger-item-sub">Download your profile, simulation history, scenarios, and preferences as a JSON file.</div>
+          </div>
+          <button class="btn-ghost" onclick="exportData()" style="white-space:nowrap;font-size:9.5px;">↓ Export JSON</button>
+        </div>
+
+        <div class="danger-item">
+          <div>
+            <div class="danger-item-title">Clear Simulation History</div>
+            <div class="danger-item-sub">Permanently delete all saved simulation runs. Cannot be undone.</div>
+          </div>
+          <button class="btn-danger" onclick="clearHistory()" style="white-space:nowrap;">Clear History</button>
+        </div>
+
+        <div class="danger-item">
+          <div>
+            <div class="danger-item-title">Reset All Preferences</div>
+            <div class="danger-item-sub">Restore all settings to defaults. Your account and history are not affected.</div>
+          </div>
+          <button class="btn-danger" onclick="resetPrefs()" style="white-space:nowrap;">Reset</button>
+        </div>
+
+        <div class="danger-item">
+          <div>
+            <div class="danger-item-title">Delete Account</div>
+            <div class="danger-item-sub">Permanently delete your account and all data. This is irreversible.</div>
+          </div>
+          <button class="btn-danger" onclick="openDeleteModal()" style="white-space:nowrap;font-weight:700;">Delete Account</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ── DELETE CONFIRM OVERLAY ── -->
+<div class="overlay" id="delete-overlay">
+  <div class="modal-box">
+    <div style="font-size:38px;margin-bottom:.75rem;">⚠️</div>
+    <div style="font-family:var(--head);font-size:18px;font-weight:800;color:var(--red);margin-bottom:.5rem;">Delete Account?</div>
+    <div style="font-size:12.5px;color:var(--muted);line-height:1.65;margin-bottom:1.25rem;">This will permanently delete your account, all simulations, history, and preferences. This action cannot be undone.</div>
+    <div class="fg" style="margin-bottom:1.1rem;text-align:left;">
+      <label class="fl">TYPE YOUR EMAIL TO CONFIRM</label>
+      <input class="fi err" type="email" id="del-confirm-email" placeholder="your@email.com">
+    </div>
+    <div style="display:flex;gap:.65rem;justify-content:center;">
+      <button class="btn-ghost" onclick="closeDeleteModal()">Cancel</button>
+      <button class="btn-danger" onclick="deleteAccount()" style="font-weight:700;padding:.62rem 1.25rem;">Delete Forever</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── State ─────────────────────────────────────────────────────────────────────
+let U = null;
+let _apiKey = null;
+let _apiRevealed = false;
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+(function init() {
+  try { U = JSON.parse(localStorage.getItem('infinicus_user') || 'null'); } catch(e) {}
+  if (!U) { window.location.href = './landing.html'; return; }
+  populateSidebar();
+  loadProfile();
+  loadPreferences();
+  loadApiKey();
+  renderStats();
+  renderLoginHistory();
+  updateSubscription();
+})();
+
+// ── Navigation ────────────────────────────────────────────────────────────────
+function showTab(id) {
+  document.querySelectorAll('.sec').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(b => b.classList.remove('active'));
+  const sec = document.getElementById('tab-' + id);
+  if (sec) sec.classList.add('active');
+  const btn = document.querySelector(`.sb-item[data-tab="${id}"]`);
+  if (btn) btn.classList.add('active');
+  window.scrollTo(0, 0);
+  if (id === 'stats') renderStats();
+}
+
+// ── Sidebar ───────────────────────────────────────────────────────────────────
+function populateSidebar() {
+  const p = prefs();
+  const name = p.name || U.email.split('@')[0];
+  const initials = name.split(' ').map(w => (w[0]||'').toUpperCase()).slice(0, 2).join('') || 'U';
+  const plan = U.plan || 'free';
+
+  set('sb-name', name);
+  set('sb-email', U.email);
+
+  const planEl = $('sb-plan');
+  if (planEl) { planEl.textContent = plan.toUpperCase(); planEl.className = 'plan-chip ' + plan; }
+
+  setAvatar(['sb-avatar', 'profile-avatar'], initials, p.photo);
+  if (p.photo) $('rm-photo-btn').style.display = '';
+
+  // Account info panel
+  set('ai-created', U.createdAt ? new Date(U.createdAt).toLocaleDateString('en-US', {year:'numeric',month:'long',day:'numeric'}) : '—');
+  set('ai-id', 'usr_' + ((U.createdAt||Date.now()).toString(36)));
+  const planBadge = $('ai-plan'); if (planBadge) planBadge.textContent = plan.toUpperCase();
+  const twofaBadge = $('ai-2fa'); if (twofaBadge && p.twofa) { twofaBadge.textContent='ENABLED'; twofaBadge.className='badge v'; }
+}
+
+function setAvatar(ids, initials, photo) {
+  ids.forEach(id => {
+    const el = $(id); if (!el) return;
+    if (photo) { el.innerHTML = `<img src="${photo}" alt="avatar">`; }
+    else { el.textContent = initials; }
+  });
+}
+
+// ── Profile ───────────────────────────────────────────────────────────────────
+function loadProfile() {
+  const p = prefs();
+  val('f-name',     p.name     || '');
+  val('f-username', p.username || U.email.split('@')[0]);
+  val('f-email',    U.email);
+  val('f-phone',    p.phone    || '');
+  val('f-country',  p.country  || '');
+  val('f-city',     p.city     || '');
+  val('f-bio',      p.bio      || '');
+  hideMsg('profile');
+}
+
+function saveProfile() {
+  const name = (get('f-name') || '').trim();
+  if (!name) { showMsg('profile', 'err', 'Please enter your name.'); return; }
+  const p = prefs();
+  p.name     = name;
+  p.username = (get('f-username') || '').replace('@', '');
+  p.phone    = get('f-phone');
+  p.country  = get('f-country');
+  p.city     = get('f-city');
+  p.bio      = get('f-bio');
+  savePrefs(p);
+  populateSidebar();
+  showMsg('profile', 'ok');
+  showToast('Profile saved ✓');
+}
+
+function handlePhotoUpload(e) {
+  const file = e.target.files[0]; if (!file) return;
+  if (file.size > 2 * 1024 * 1024) { showToast('Photo must be under 2 MB'); return; }
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const data = ev.target.result;
+    const p = prefs(); p.photo = data; savePrefs(p);
+    setAvatar(['sb-avatar', 'profile-avatar'], '', data);
+    $('rm-photo-btn').style.display = '';
+    showToast('Photo updated ✓');
+  };
+  reader.readAsDataURL(file);
+}
+
+function removePhoto() {
+  const p = prefs(); delete p.photo; savePrefs(p);
+  $('rm-photo-btn').style.display = 'none';
+  populateSidebar();
+  showToast('Photo removed.');
+}
+
+// ── Security ──────────────────────────────────────────────────────────────────
+async function changePassword() {
+  const cur = get('s-cur'), nw = get('s-new'), conf = get('s-conf');
+  hideMsg('pass');
+  if (!cur) { showMsg('pass', 'err', 'Enter your current password.'); return; }
+  if (nw.length < 8) { showMsg('pass', 'err', 'New password must be at least 8 characters.'); return; }
+  if (nw !== conf) { showMsg('pass', 'err', 'Passwords do not match.'); return; }
+  try {
+    const res = await fetch('/api/auth/change-password', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ email: U.email, currentPassword: cur, newPassword: nw })
+    });
+    const data = await res.json();
+    if (!res.ok || !data.ok) { showMsg('pass', 'err', data.error || 'Could not change password.'); return; }
+    showMsg('pass', 'ok');
+    ['s-cur','s-new','s-conf'].forEach(id => val(id, ''));
+    $('ps-fill').style.width = '0%';
+    set('ps-lbl', '—');
+    showToast('Password updated ✓');
+  } catch(e) {
+    showMsg('pass', 'err', 'Network error. Please try again.');
+  }
+}
+
+function checkStrength(v) {
+  const fill = $('ps-fill'), lbl = $('ps-lbl'); if (!fill) return;
+  if (!v) { fill.style.width = '0%'; set('ps-lbl', '—'); return; }
+  let s = 0;
+  if (v.length >= 8) s++;
+  if (v.length >= 12) s++;
+  if (/[A-Z]/.test(v)) s++;
+  if (/[0-9]/.test(v)) s++;
+  if (/[^A-Za-z0-9]/.test(v)) s++;
+  const labs = ['','Weak','Fair','Good','Strong','Very Strong'];
+  const cols = ['','#f43f5e','#f59e0b','#f59e0b','#10b981','#00e676'];
+  fill.style.width = (s * 20) + '%';
+  fill.style.background = cols[s] || '#f43f5e';
+  set('ps-lbl', labs[s] || '');
+  if (lbl) lbl.style.color = cols[s] || 'var(--muted-2)';
+}
+
+function on2FAToggle(cb) {
+  $('twofa-panel').style.display = cb.checked ? 'block' : 'none';
+}
+
+function verify2FA() {
+  const code = (get('twofa-code') || '').replace(/\s/g, '');
+  if (code.length !== 6 || !/^\d+$/.test(code)) { showToast('Enter a valid 6-digit code.'); return; }
+  const p = prefs(); p.twofa = true; savePrefs(p);
+  $('ai-2fa').textContent = 'ENABLED'; $('ai-2fa').className = 'badge v';
+  showToast('2FA enabled ✓');
+}
+
+function downloadBackupCodes() {
+  const codes = ['A3F9-7K2M','X8R1-9P4N','B2J6-4L7T','Q5W3-8M1V','N7H2-6C9R','Y4E8-1D5S'];
+  const blob = new Blob([`INFINICUS ENGINE v3 — 2FA Backup Codes\nGenerated: ${new Date().toISOString()}\n\n${codes.join('\n')}\n\nStore these somewhere safe. Each code can be used once.`], {type:'text/plain'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'infinicus-backup-codes.txt'; a.click();
+}
+
+function revokeSession(btn) {
+  const row = btn.closest('.dev-row'); row.style.opacity = '.4';
+  btn.textContent = 'Revoked'; btn.disabled = true;
+  showToast('Session revoked.');
+}
+function revokeAllSessions() {
+  document.querySelectorAll('#sessions-list .dev-row').forEach((row, i) => {
+    if (i > 0) { row.style.opacity = '.4'; const b = row.querySelector('button'); if (b) { b.textContent = 'Revoked'; b.disabled = true; } }
+  });
+  showToast('All other sessions revoked.');
+}
+
+function renderLoginHistory() {
+  const rows = [
+    {t:'Just now',       d:'Chrome · Windows', s:true},
+    {t:'2 hours ago',    d:'Mobile Browser',   s:true},
+    {t:'Yesterday',      d:'Chrome · Windows', s:true},
+    {t:'3 days ago',     d:'Firefox · Mac',    s:true},
+    {t:'Last week',      d:'Safari · iPhone',  s:true},
+  ];
+  $('login-hist').innerHTML = rows.map(r =>
+    `<tr><td>${r.t}</td><td>${r.d}</td><td>Your location</td><td><span class="badge ${r.s?'v':'w'}">${r.s?'✓ SUCCESS':'✗ FAILED'}</span></td></tr>`
+  ).join('');
+}
+
+// ── Preferences ───────────────────────────────────────────────────────────────
+function loadPreferences() {
+  const p = prefs();
+  check('n-sim',     p.notifSim     !== false);
+  check('n-digest',  p.notifDigest  || false);
+  check('n-product', p.notifProduct !== false);
+  check('n-mkt',     p.notifMkt     || false);
+  check('p-analytics',p.privAnalytics !== false);
+  check('p-public',  p.privPublic   || false);
+  check('p-ai',      p.privAI       !== false);
+  val('pref-lang',     p.language  || 'en');
+  val('pref-theme',    p.theme     || 'dark');
+  val('pref-currency', p.currency  || 'USD');
+  val('pref-date',     p.dateFormat|| 'dmy');
+}
+
+function savePreferences() {
+  const p = prefs();
+  p.notifSim      = checked('n-sim');
+  p.notifDigest   = checked('n-digest');
+  p.notifProduct  = checked('n-product');
+  p.notifMkt      = checked('n-mkt');
+  p.privAnalytics = checked('p-analytics');
+  p.privPublic    = checked('p-public');
+  p.privAI        = checked('p-ai');
+  p.language      = get('pref-lang');
+  p.theme         = get('pref-theme');
+  p.currency      = get('pref-currency');
+  p.dateFormat    = get('pref-date');
+  savePrefs(p);
+  showMsg('pref', 'ok');
+  showToast('Preferences saved ✓');
+}
+
+// ── Subscription ──────────────────────────────────────────────────────────────
+function updateSubscription() {
+  const plan = U.plan || 'free';
+  const icons = {free:'🌱',starter:'⚡',growth:'🚀',professional:'💎'};
+  const names = {free:'FREE PLAN',starter:'STARTER',growth:'GROWTH',professional:'PROFESSIONAL'};
+  const descs = {
+    free:         '1 simulation · Basic dashboard · Verdict only',
+    starter:      'Unlimited simulations · Full dashboard · Report & 60-day plan',
+    growth:       'Everything in Starter + Sensitivity analysis & Scenario comparison',
+    professional: 'Everything in Growth + AI analysis · API access · White-label export',
+  };
+  set('plan-icon', icons[plan]||'🌱');
+  set('plan-name', names[plan]||'FREE PLAN');
+  set('plan-desc', descs[plan]||'');
+
+  const simCount = U.simCount || 0;
+  const isPaid   = plan !== 'free';
+  const simLimit = isPaid ? 9999 : 1;
+  set('u-sim-lbl', isPaid ? `${simCount} / ∞` : `${simCount} / 1`);
+  $('u-sim-bar').style.width = (isPaid ? 0 : Math.min(100, simCount * 100)) + '%';
+
+  const aiUsed = parseInt(localStorage.getItem('infinicus_ai_count')||'0');
+  set('u-ai-lbl', `${aiUsed} / 10`);
+  $('u-ai-bar').style.width = Math.min(100, aiUsed * 10) + '%';
+
+  let hist = []; try { hist = JSON.parse(localStorage.getItem('infinicus_history')||'[]'); } catch(e) {}
+  set('u-hist-lbl', `${hist.length} / 20`);
+  $('u-hist-bar').style.width = Math.min(100, hist.length / 20 * 100) + '%';
+}
+
+// ── Stats ─────────────────────────────────────────────────────────────────────
+function renderStats() {
+  let hist = [], scenarios = [];
+  try { hist      = JSON.parse(localStorage.getItem('infinicus_history') || '[]'); } catch(e) {}
+  try { scenarios = JSON.parse(localStorage.getItem('infinicus_scenarios') || '[]'); } catch(e) {}
+
+  const goCount = hist.filter(h => h.verdict === 'go').length;
+  const avgSurv = hist.length ? Math.round(hist.reduce((s, h) => s + h.surv, 0) / hist.length) : null;
+  const indCount = {};
+  hist.forEach(h => { indCount[h.industry] = (indCount[h.industry]||0) + 1; });
+  const topInd = Object.entries(indCount).sort((a, b) => b[1]-a[1])[0];
+
+  set('st-total',   U.simCount || 0);
+  set('st-saved',   hist.length);
+  set('st-go',      goCount);
+  set('st-surv',    avgSurv !== null ? avgSurv + '%' : '—');
+  set('st-top-ind', topInd ? topInd[0].toUpperCase() : '—');
+  set('st-scenarios', scenarios.length);
+
+  const body = $('recent-body');
+  if (body) {
+    body.innerHTML = hist.length === 0
+      ? `<tr><td colspan="5" style="text-align:center;color:var(--muted-2);padding:1.5rem;font-family:var(--mono);font-size:10px;">No simulations yet. <a href="./index.html" style="color:var(--cyan);">Run your first one →</a></td></tr>`
+      : hist.slice(0, 10).map(h => {
+          const vc = h.verdict==='go'?'var(--emerald)':h.verdict==='modify'?'var(--amber)':'var(--red)';
+          const sc = h.surv>=55?'var(--emerald)':h.surv>=35?'var(--amber)':'var(--red)';
+          return `<tr>
+            <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${h.idea}</td>
+            <td>${h.industry}</td>
+            <td style="color:${vc};font-weight:700;">${h.verdict.toUpperCase()}</td>
+            <td style="color:${sc}">${h.surv}%</td>
+            <td>${h.date}</td>
+          </tr>`;
+        }).join('');
+  }
+
+  const sw = $('scenarios-wrap');
+  if (sw) {
+    sw.innerHTML = scenarios.length === 0
+      ? `<div style="font-family:var(--mono);font-size:10.5px;color:var(--muted-2);">No scenarios saved. Use the Compare tab in the engine to save scenarios.</div>`
+      : scenarios.map((sc, i) => `
+          <div style="display:flex;align-items:center;padding:.6rem 0;border-bottom:1px solid rgba(255,255,255,.05);">
+            <div style="flex:1;font-family:var(--mono);font-size:10.5px;">${sc.idea || 'Scenario '+(i+1)}</div>
+            <div style="font-family:var(--mono);font-size:9.5px;color:var(--muted-2);margin-left:1rem;">${sc.industry || ''}</div>
+          </div>`).join('');
+  }
+}
+
+// ── Developer ─────────────────────────────────────────────────────────────────
+function loadApiKey() {
+  const p = prefs();
+  _apiKey = p.apiKey || null;
+  if (p.apiKeyCreated) set('api-created', new Date(p.apiKeyCreated).toLocaleDateString());
+}
+
+function toggleApiKey() {
+  if (!_apiKey) { showToast('Generate a key first.'); return; }
+  _apiRevealed = !_apiRevealed;
+  $('api-display').textContent = _apiRevealed ? _apiKey : 'iex_••••••••••••••••••••••••••••••••••••••••';
+  $('api-reveal-btn').textContent = _apiRevealed ? 'Hide' : 'Reveal';
+}
+
+function copyApiKey() {
+  if (!_apiKey) { showToast('Generate a key first.'); return; }
+  navigator.clipboard.writeText(_apiKey).then(() => showToast('API key copied ✓')).catch(() => {});
+}
+
+function generateApiKey() {
+  if (_apiKey && !confirm('Replace the existing API key? The old key will stop working immediately.')) return;
+  const bytes = new Uint8Array(30);
+  crypto.getRandomValues(bytes);
+  _apiKey = 'iex_' + Array.from(bytes, b => b.toString(16).padStart(2,'0')).join('');
+  _apiRevealed = true;
+  const p = prefs(); p.apiKey = _apiKey; p.apiKeyCreated = Date.now(); savePrefs(p);
+  $('api-display').textContent = _apiKey;
+  $('api-reveal-btn').textContent = 'Hide';
+  set('api-created', 'just now');
+  showToast('API key generated ✓');
+}
+
+function revokeApiKey() {
+  if (!_apiKey) { showToast('No key to revoke.'); return; }
+  if (!confirm('Revoke this API key? Any integrations using it will stop working.')) return;
+  _apiKey = null; _apiRevealed = false;
+  const p = prefs(); delete p.apiKey; delete p.apiKeyCreated; savePrefs(p);
+  $('api-display').textContent = 'iex_••••••••••••••••••••••••••••••••••••••••';
+  $('api-reveal-btn').textContent = 'Reveal';
+  set('api-created', '—');
+  showToast('API key revoked.');
+}
+
+// ── Danger zone ───────────────────────────────────────────────────────────────
+function exportData() {
+  let hist = [], scen = [];
+  try { hist = JSON.parse(localStorage.getItem('infinicus_history')||'[]'); } catch(e) {}
+  try { scen = JSON.parse(localStorage.getItem('infinicus_scenarios')||'[]'); } catch(e) {}
+  const p = prefs();
+  const data = {
+    exportedAt: new Date().toISOString(),
+    user: { email: U.email, plan: U.plan, createdAt: U.createdAt },
+    profile: { name: p.name, username: p.username, phone: p.phone, country: p.country, city: p.city, bio: p.bio },
+    simulationHistory: hist.map(h => ({ id:h.id, date:h.date, idea:h.idea, industry:h.industry, verdict:h.verdict, revenue:h.rev, profit:h.profit, survivalRate:h.surv })),
+    savedScenarios: scen,
+    preferences: { language: p.language, currency: p.currency, theme: p.theme },
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = `infinicus-export-${Date.now()}.json`; a.click();
+  showToast('Data exported ✓');
+}
+
+function clearHistory() {
+  if (!confirm('Delete all simulation history? This cannot be undone.')) return;
+  try { localStorage.removeItem('infinicus_history'); } catch(e) {}
+  renderStats();
+  showToast('History cleared.');
+}
+
+function resetPrefs() {
+  if (!confirm('Reset all preferences to defaults?')) return;
+  try { localStorage.removeItem('infinicus_prefs'); } catch(e) {}
+  loadPreferences();
+  showToast('Preferences reset to defaults.');
+}
+
+function openDeleteModal()  { $('delete-overlay').classList.add('open'); }
+function closeDeleteModal() { $('delete-overlay').classList.remove('open'); }
+
+function deleteAccount() {
+  const typed = (get('del-confirm-email') || '').trim().toLowerCase();
+  if (typed !== U.email.toLowerCase()) { showToast('Email does not match.'); return; }
+  ['infinicus_user','infinicus_history','infinicus_scenarios','infinicus_prefs',
+   'infinicus_v3','infinicus_tc_accepted','infinicus_ai_count'].forEach(k => {
+    try { localStorage.removeItem(k); } catch(e) {}
+  });
+  showToast('Account deleted. Redirecting…');
+  setTimeout(() => { window.location.href = './landing.html'; }, 1500);
+}
+
+// ── Sign out ──────────────────────────────────────────────────────────────────
+function signOut() {
+  try { localStorage.removeItem('infinicus_user'); } catch(e) {}
+  window.location.href = './landing.html';
+}
+
+// ── Prefs storage ─────────────────────────────────────────────────────────────
+function prefs() { try { return JSON.parse(localStorage.getItem('infinicus_prefs')||'{}'); } catch(e) { return {}; } }
+function savePrefs(p) { try { localStorage.setItem('infinicus_prefs', JSON.stringify(p)); } catch(e) {} }
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function $(id)        { return document.getElementById(id); }
+function get(id)      { return ($(id)||{}).value || ''; }
+function val(id, v)   { const el=$(id); if(el) el.value = v; }
+function set(id, v)   { const el=$(id); if(el) el.textContent = v; }
+function check(id, v) { const el=$(id); if(el) el.checked = !!v; }
+function checked(id)  { return !!($(id)||{}).checked; }
+
+function showMsg(prefix, type, msg) {
+  const ok = $(prefix+'-ok'), err = $(prefix+'-err');
+  if(ok)  ok.style.display  = type==='ok'  ? 'block' : 'none';
+  if(err) { err.style.display = type==='err' ? 'block' : 'none'; if(msg) err.textContent=msg; }
+}
+function hideMsg(p) { showMsg(p, ''); }
+
+function showToast(msg, dur=2800) {
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(window._tt);
+  window._tt = setTimeout(() => t.classList.remove('show'), dur);
+}
+</script>
+
+</body>
+</html>
