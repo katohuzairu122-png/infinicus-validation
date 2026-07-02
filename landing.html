@@ -300,6 +300,7 @@ footer{
     <a class="nl" href="#features">Features</a>
     <a class="nl" href="#pricing">Pricing</a>
     <a class="nl" href="#faq">FAQ</a>
+    <a class="nl" href="index.html" style="text-decoration:none;">Try Engine →</a>
     <button class="nl" onclick="openAuth('signin')" style="cursor:pointer;">Sign In</button>
     <button class="nl cta" onclick="openAuth('signup')" style="cursor:pointer;">Get Started &rarr;</button>
   </div>
@@ -318,7 +319,7 @@ footer{
   </p>
   <div class="hero-cta">
     <button class="btn-primary" onclick="openAuth('signup')" style="cursor:pointer;">Create Free Account &rarr;</button>
-    <a class="btn-secondary" href="#how-it-works">See How It Works</a>
+    <a class="btn-secondary" href="index.html">Try Engine Free →</a>
   </div>
 </div>
 
@@ -707,8 +708,11 @@ renderPriceGrid();
       </div>
       <button class="auth-submit" id="su-btn" onclick="doSignUp()">Create Account →</button>
       <div class="auth-err" id="su-err"></div>
-      <div class="auth-ok"  id="su-ok">✓ Account created! Taking you to the engine…</div>
-      <p class="auth-fine">Free account · No credit card required · Data stays in your browser</p>
+      <div class="auth-ok" id="su-ok" style="text-align:center;">
+        ✓ Account created! Redirecting…<br>
+        <a href="index.html" style="color:var(--cyan);font-family:var(--mono);font-size:11px;display:inline-block;margin-top:.6rem;text-decoration:none;border:1px solid rgba(0,224,96,.4);border-radius:7px;padding:.5rem 1.2rem;background:rgba(0,224,96,.07);">Open Engine →</a>
+      </div>
+      <p class="auth-fine">Free account · No credit card required · <a href="index.html" style="color:var(--muted,#8893ad);text-decoration:none;">Try without account →</a></p>
     </div>
 
     <!-- Sign In -->
@@ -723,11 +727,12 @@ renderPriceGrid();
       </div>
       <button class="auth-submit" id="si-btn" onclick="doSignIn()">Sign In →</button>
       <div class="auth-err" id="si-err"></div>
-      <div class="auth-ok" id="si-ok" style="display:none;">
-        ✓ Signed in!
-        <a id="si-engine-link" href="./index.html" style="color:var(--cyan);font-family:var(--mono);font-size:10px;display:block;margin-top:.5rem;text-decoration:none;border:1px solid rgba(0,224,96,.3);border-radius:6px;padding:.4rem .7rem;text-align:center;">Open Engine →</a>
+      <div class="auth-ok" id="si-ok" style="display:none;text-align:center;padding:.5rem 0;">
+        ✓ Signed in! Redirecting…<br>
+        <a id="si-engine-link" href="index.html" style="color:var(--cyan);font-family:var(--mono);font-size:11px;display:inline-block;margin-top:.6rem;text-decoration:none;border:1px solid rgba(0,224,96,.4);border-radius:7px;padding:.5rem 1.2rem;background:rgba(0,224,96,.07);">Open Engine →</a>
       </div>
       <p class="auth-fine">Don't have an account? <button onclick="switchAuthTab('signup')" style="background:none;border:none;color:var(--cyan);font-family:var(--mono);font-size:9px;cursor:pointer;padding:0;text-decoration:underline;">Create one free</button></p>
+      <p class="auth-fine" style="margin-top:.3rem;"><a href="index.html" style="color:var(--muted,#8893ad);font-size:9px;text-decoration:none;">Skip — try engine without account →</a></p>
     </div>
   </div>
 </div>
