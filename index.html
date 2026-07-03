@@ -998,35 +998,32 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
   </div>
 </div>
 
-<!-- ══ PAYMENT MODAL ══ -->
-<div class="modal-overlay" id="pay-modal" style="display:none" role="dialog" aria-modal="true" aria-labelledby="pay-modal-h">
+<!-- ══ WAITLIST MODAL ══ -->
+<div class="modal-overlay" id="waitlist-modal" style="display:none" role="dialog" aria-modal="true" aria-labelledby="waitlist-modal-h">
   <div class="modal-box" style="max-width:420px">
-    <button class="modal-close" onclick="closePayModal()" aria-label="Close">×</button>
-    <div id="pay-tier-badge" class="pay-tier-badge starter">STARTER — $19 / month</div>
-    <div class="modal-h" id="pay-modal-h">Upgrade to Starter</div>
-    <div class="pay-secure">🔒 Secure checkout · powered by Stripe</div>
-    <div class="modal-field">
-      <label for="pay-card">CARD NUMBER</label>
-      <input id="pay-card" type="text" placeholder="4242 4242 4242 4242" maxlength="19" oninput="fmtCard(this)" autocomplete="cc-number">
-    </div>
-    <div class="pay-row">
+    <button class="modal-close" onclick="closeWaitlistModal()" aria-label="Close">×</button>
+    <div id="waitlist-tier-badge" class="pay-tier-badge starter">STARTER PLAN</div>
+    <div class="modal-h" id="waitlist-modal-h">Join the Waitlist</div>
+    <div class="modal-sub" style="margin-bottom:1.25rem">Paid plans are launching soon. Join the waitlist for early access and a <strong style="color:var(--cyan)">20% founding member discount</strong>.</div>
+    <div id="waitlist-form">
       <div class="modal-field">
-        <label for="pay-exp">EXPIRY</label>
-        <input id="pay-exp" type="text" placeholder="MM / YY" maxlength="7" autocomplete="cc-exp">
+        <label for="waitlist-name">YOUR NAME</label>
+        <input id="waitlist-name" type="text" placeholder="Jane Smith" autocomplete="name">
       </div>
       <div class="modal-field">
-        <label for="pay-cvc">CVC</label>
-        <input id="pay-cvc" type="text" placeholder="•••" maxlength="3" autocomplete="cc-csc">
+        <label for="waitlist-email">EMAIL ADDRESS</label>
+        <input id="waitlist-email" type="email" placeholder="jane@example.com" autocomplete="email">
       </div>
+      <div class="modal-err" id="waitlist-err"></div>
+      <button class="btn-launch" style="width:100%;margin-top:.25rem" onclick="submitWaitlist()">Join Waitlist →</button>
+      <button class="btn-skip-pay" onclick="closeWaitlistModal()">Maybe later</button>
     </div>
-    <div class="modal-field">
-      <label for="pay-name">NAME ON CARD</label>
-      <input id="pay-name" type="text" placeholder="Jane Smith" autocomplete="cc-name">
+    <div id="waitlist-success" style="display:none;text-align:center;padding:1rem 0">
+      <div style="font-size:36px;margin-bottom:.6rem">🎉</div>
+      <div style="font-family:var(--head);font-size:20px;font-weight:800;color:var(--cyan);margin-bottom:.5rem">You're on the list!</div>
+      <div style="font-family:var(--mono);font-size:10.5px;color:var(--muted);line-height:1.7">We'll email you the moment paid plans go live.<br>Founding members get <strong style="color:var(--emerald)">20% off forever</strong>.</div>
+      <button class="btn-skip-pay" style="margin-top:1rem" onclick="closeWaitlistModal()">Close</button>
     </div>
-    <div class="pay-demo-note">⚠ Demo mode — no real charges are processed</div>
-    <div class="modal-err" id="pay-err"></div>
-    <button class="btn-launch" id="pay-submit-btn" style="width:100%;margin-top:.25rem" onclick="processPay()">Subscribe Now →</button>
-    <button class="btn-skip-pay" onclick="selectPlan('free')">Continue with free tier instead</button>
   </div>
 </div>
 
@@ -3207,7 +3204,7 @@ function renderPlanGrid() {
         ${feats.map(f=>f.startsWith('×')?`<li class="no">× ${f.slice(1)}</li>`:`<li class="yes">✓ ${f}</li>`).join('')}
       </ul>
       <button class="btn-plan${featured?' featured':''}" onclick="selectPlan('${key}')">
-        ${isCurrent?'Current plan':key==='free'?'Continue Free':'Upgrade →'}
+        ${isCurrent?'Current plan':key==='free'?'Continue Free':'Join Waitlist →'}
       </button>
     </div>`;
   }).join(''));
@@ -3229,42 +3226,47 @@ function selectPlan(tier) {
     if(_pendingSimAfterReg){_pendingSimAfterReg=false;startSim();}
     return;
   }
-  closePlanModal(); openPayModal(tier);
+  closePlanModal(); openWaitlistModal(tier);
 }
 
-function openPayModal(tier) {
-  const p=PLANS[tier];
-  const price=_billingAnnual?p.annual:p.monthly;
-  $('pay-tier-badge').textContent=`${p.label.toUpperCase()} — $${price}/${_billingAnnual?'mo (annual)':'month'}`;
-  $('pay-tier-badge').className='pay-tier-badge '+tier;
-  $('pay-modal-h').textContent=`Upgrade to ${p.label}`;
-  $('pay-modal').dataset.tier=tier;
-  $('pay-modal').style.display='flex';
-  $('pay-card').value=''; $('pay-exp').value=''; $('pay-cvc').value=''; $('pay-name').value='';
-  $('pay-err').style.display='none';
+function openWaitlistModal(tier) {
+  const p=PLANS[tier]||{label:tier};
+  $('waitlist-tier-badge').textContent=p.label.toUpperCase()+' PLAN';
+  $('waitlist-tier-badge').className='pay-tier-badge '+tier;
+  $('waitlist-modal-h').textContent='Join the Waitlist';
+  $('waitlist-modal').dataset.tier=tier;
+  // Pre-fill from logged-in user
+  if(U&&U.email){ $('waitlist-email').value=U.email; }
+  else { $('waitlist-email').value=''; }
+  if(U&&U.name){ $('waitlist-name').value=U.name; }
+  else { $('waitlist-name').value=''; }
+  // Show success state if already joined
+  let wl=[];
+  try{wl=JSON.parse(localStorage.getItem('infinicus_waitlist')||'[]');}catch(e){}
+  const already=U&&U.email&&wl.some(e=>e.email===U.email);
+  $('waitlist-form').style.display=already?'none':'block';
+  $('waitlist-success').style.display=already?'block':'none';
+  $('waitlist-err').style.display='none';
+  $('waitlist-modal').style.display='flex';
 }
-function closePayModal(){ $('pay-modal').style.display='none'; }
+function closeWaitlistModal(){ $('waitlist-modal').style.display='none'; }
 
-function processPay() {
-  const card=$('pay-card').value.replace(/\s/g,'');
-  const exp=$('pay-exp').value;
-  const cvc=$('pay-cvc').value;
-  const name=$('pay-name').value.trim();
-  const errEl=$('pay-err');
-  if(card.length<15||!/^\d+$/.test(card)){errEl.textContent='Enter a valid card number.';errEl.style.display='block';return;}
-  if(!exp.includes('/')){errEl.textContent='Enter expiry as MM / YY.';errEl.style.display='block';return;}
-  if(cvc.length<3){errEl.textContent='Enter a valid CVC.';errEl.style.display='block';return;}
-  if(!name){errEl.textContent='Enter the name on the card.';errEl.style.display='block';return;}
-  const tier=$('pay-modal').dataset.tier||'starter';
-  const btn=$('pay-submit-btn');
-  btn.textContent='Processing…'; btn.disabled=true;
-  setTimeout(()=>{
-    if(!U){U={email:'',simCount:0,createdAt:Date.now()};}
-    U.plan=tier; saveUser(); renderUserBadge(); closePayModal();
-    btn.textContent='Subscribe Now →'; btn.disabled=false;
-    showToast(`Welcome to ${PLANS[tier]?.label||tier}! 🎉`);
-    if(_pendingSimAfterReg){_pendingSimAfterReg=false;startSim();}
-  },1400);
+function submitWaitlist() {
+  const name=$('waitlist-name').value.trim();
+  const email=$('waitlist-email').value.trim();
+  const errEl=$('waitlist-err');
+  if(!email||!email.includes('@')){errEl.textContent='Please enter a valid email address.';errEl.style.display='block';return;}
+  errEl.style.display='none';
+  let wl=[];
+  try{wl=JSON.parse(localStorage.getItem('infinicus_waitlist')||'[]');}catch(e){}
+  const tier=$('waitlist-modal').dataset.tier||'starter';
+  const idx=wl.findIndex(e=>e.email===email);
+  const entry={email,name,tier,ts:Date.now()};
+  if(idx>=0){wl[idx]=entry;}else{wl.push(entry);}
+  try{localStorage.setItem('infinicus_waitlist',JSON.stringify(wl));}catch(e){}
+  $('waitlist-form').style.display='none';
+  $('waitlist-success').style.display='block';
+  showToast('You\'re on the waitlist! 🎉');
 }
 
 // ─── SIMULATION HISTORY ──────────────────────────────────────────────────────
