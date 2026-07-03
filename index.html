@@ -3257,16 +3257,24 @@ function submitWaitlist() {
   const errEl=$('waitlist-err');
   if(!email||!email.includes('@')){errEl.textContent='Please enter a valid email address.';errEl.style.display='block';return;}
   errEl.style.display='none';
+  const tier=$('waitlist-modal').dataset.tier||'starter';
+  // Save locally
   let wl=[];
   try{wl=JSON.parse(localStorage.getItem('infinicus_waitlist')||'[]');}catch(e){}
-  const tier=$('waitlist-modal').dataset.tier||'starter';
   const idx=wl.findIndex(e=>e.email===email);
   const entry={email,name,tier,ts:Date.now()};
   if(idx>=0){wl[idx]=entry;}else{wl.push(entry);}
   try{localStorage.setItem('infinicus_waitlist',JSON.stringify(wl));}catch(e){}
+  // Show success immediately — don't wait for network
   $('waitlist-form').style.display='none';
   $('waitlist-success').style.display='block';
   showToast('You\'re on the waitlist! 🎉');
+  // Fire-and-forget: notify owner via server
+  fetch('/api/waitlist',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({name,email,tier})
+  }).catch(()=>{});
 }
 
 // ─── SIMULATION HISTORY ──────────────────────────────────────────────────────
