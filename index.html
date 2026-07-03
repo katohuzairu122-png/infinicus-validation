@@ -56,6 +56,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.85
 .logo{font-family:var(--head);font-size:18px;font-weight:800;letter-spacing:-.01em;display:flex;align-items:center;gap:9px;white-space:nowrap;}
 .logo .mark{width:28px;height:28px;border-radius:8px;overflow:hidden;background:var(--navy-700);display:grid;place-items:center;box-shadow:0 0 14px rgba(0,224,96,.35);flex-shrink:0;}
 .logo .mark img{width:26px;height:26px;display:block;}
+.logo .mark svg{display:block;flex-shrink:0;}
 .logo .c{color:var(--cyan);}
 .logo-ver{font-family:var(--mono);font-size:9px;color:var(--muted-2);font-weight:300;align-self:flex-end;margin-bottom:2px;margin-left:4px;}
 .nav{display:flex;gap:3px;flex:1;min-width:0;overflow-x:auto;scrollbar-width:none;}
@@ -471,6 +472,10 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
   section.section{padding:1.25rem;}
   .sim-badge{display:none;}
 }
+@media(max-width:600px){
+  .sim-badge{display:none;}
+  #pwa-install-btn{display:none!important;}
+}
 @media(max-width:420px){
   .wk-grid{grid-template-columns:1fr;}
   .day-heatmap{grid-template-columns:repeat(5,1fr);}
@@ -479,6 +484,8 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
   .logo{font-size:15px;}
   .logo-ver{display:none;}
   header{padding:.65rem 1rem;}
+  .cur-select{display:none;}
+  .hdr-right{gap:6px;}
 }
 </style>
 </head>
@@ -1262,7 +1269,7 @@ function simulate(params) {
 
     const churned = Math.floor(customers*prof.churn/30); // monthly churn ÷ 30 days in a month
     customers = Math.max(0,customers+acq-churned);
-    const rev    = customers*(params.price*prof.visitsPerMonth/SIM_DAYS)*rnd(.75,1.25)*shock*seasonMult;
+    const rev    = customers*(params.price*prof.visitsPerMonth/30)*rnd(.75,1.25)*shock*seasonMult;
     // Fixed costs: industry baseline per team member (realistic daily ops cost)
     // + a small capital-scaled overhead (5% of original weight) for equipment/insurance at scale
     const fixed  = prof.fixBase*params.team + params.capital*prof.fixR*0.05/SIM_DAYS;
@@ -1296,7 +1303,7 @@ function monteCarlo(params) {
       const wordOfMouth=Math.round(customers*0.003);
       const acq=paidAcq+footTraffic+wordOfMouth;
       customers=Math.max(0,customers+acq-Math.floor(customers*p.churn/30));
-      const rev=customers*(params.price*baseProf.visitsPerMonth/SIM_DAYS)*rnd(.6,1.4);
+      const rev=customers*(params.price*baseProf.visitsPerMonth/30)*rnd(.6,1.4);
       // Same cost model as simulate(): industry baseline + scaled capital overhead
       cash+=rev-(baseProf.fixBase*params.team+params.capital*p.fixR*0.05/SIM_DAYS+rev*p.varR+dailyMkt);
     }
@@ -3249,7 +3256,10 @@ function renderHistory() {
         </div>
       </div>
       <div class="hist-date">${h.date}<br>${h.time}<br><span style="font-size:8px;color:${h.currency==='USD'?'var(--muted-2)':'var(--cyan)'}">${h.currency}</span></div>
-      <button onclick="restoreFromHistory(${h.id})" style="flex-shrink:0;padding:6px 12px;background:rgba(0,224,96,.08);border:1px solid rgba(0,224,96,.25);border-radius:7px;color:var(--cyan);font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;cursor:pointer;white-space:nowrap;transition:background .15s;" onmouseenter="this.style.background='rgba(0,224,96,.15)'" onmouseleave="this.style.background='rgba(0,224,96,.08)'">▶ RESTORE</button>
+      <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">
+        <button onclick="restoreFromHistory(${h.id})" style="padding:6px 12px;background:rgba(0,224,96,.08);border:1px solid rgba(0,224,96,.25);border-radius:7px;color:var(--cyan);font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;cursor:pointer;white-space:nowrap;transition:background .15s;" onmouseenter="this.style.background='rgba(0,224,96,.15)'" onmouseleave="this.style.background='rgba(0,224,96,.08)'">▶ RESTORE</button>
+        <button onclick="rerunFromHistory(${h.id})" style="padding:6px 12px;background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.25);border-radius:7px;color:var(--purple);font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;cursor:pointer;white-space:nowrap;transition:background .15s;" onmouseenter="this.style.background='rgba(139,92,246,.14)'" onmouseleave="this.style.background='rgba(139,92,246,.06)'">⟳ RE-RUN</button>
+      </div>
     </div>`;
   }).join('');
 }
@@ -3295,6 +3305,16 @@ function restoreFromHistory(id) {
   renderAll();
   nav('dashboard');
   showToast('Simulation restored ✓');
+}
+
+function rerunFromHistory(id) {
+  let hist=[];
+  try{hist=JSON.parse(localStorage.getItem('infinicus_history')||'[]');}catch(e){}
+  const entry=hist.find(h=>h.id===id);
+  if(!entry){showToast('History entry not found.');return;}
+  if(entry.params) populateFormFromParams(entry.params);
+  nav('input');
+  showToast('Params loaded — tweak and re-run ✓');
 }
 
 function clearHistory() {
