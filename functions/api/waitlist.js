@@ -39,6 +39,7 @@ export async function onRequestPost(context) {
     return new Response(JSON.stringify({ ok: true, note: 'RESEND_API_KEY not configured — logged locally only' }), { status: 200, headers: CORS });
   }
 
+  let resendStatus = 0, resendBody = '';
   try {
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -88,13 +89,11 @@ export async function onRequestPost(context) {
       }),
     });
 
-    if (!res.ok) {
-      const err = await res.text().catch(() => '');
-      console.error('Resend error:', res.status, err);
-    }
+    resendStatus = res.status;
+    resendBody = await res.text().catch(() => '');
   } catch (e) {
-    console.error('Waitlist email failed:', e);
+    resendBody = String(e);
   }
 
-  return new Response(JSON.stringify({ ok: true }), { status: 200, headers: CORS });
+  return new Response(JSON.stringify({ ok: true, _debug: { resendStatus, resendBody } }), { status: 200, headers: CORS });
 }
