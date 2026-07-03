@@ -557,7 +557,7 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
       <button onclick="document.getElementById('alt-applied-banner').style.display='none'" style="background:none;border:none;color:var(--muted-2);cursor:pointer;font-size:15px;flex-shrink:0;line-height:1;">✕</button>
     </div>
   </div>
-  <button class="btn-demo" onclick="instantDemo()">▶ TRY INSTANT DEMO — REGISTER FREE IN SECONDS</button>
+  <button class="btn-demo" id="demo-btn" onclick="instantDemo()">▶ TRY INSTANT DEMO — REGISTER FREE IN SECONDS</button>
   <div class="pills">
     <button class="pill" onclick="qf('food')">🍔 Food Truck</button>
     <button class="pill" onclick="qf('drop')">📦 Dropshipping</button>
@@ -1257,10 +1257,10 @@ function simulate(params) {
     const paidAcq  = Math.max(0,Math.floor(rNorm(dailyMkt/prof.acqCost,1.5)*shock));
     // Organic acquisition: foot traffic + word-of-mouth referrals from existing base
     const footTraffic = Math.max(0,Math.round(rNorm(organicBase,1.0)*seasonMult*shock));
-    const wordOfMouth  = Math.round(customers*0.018); // 1.8% daily referral rate (round, not floor — activates at 28 customers not 56)
+    const wordOfMouth  = Math.round(customers*0.003); // 0.3% daily referral rate (≈9% monthly viral factor — realistic WOM)
     const acq = paidAcq + footTraffic + wordOfMouth;
 
-    const churned = Math.floor(customers*prof.churn/SIM_DAYS);
+    const churned = Math.floor(customers*prof.churn/30); // monthly churn ÷ 30 days in a month
     customers = Math.max(0,customers+acq-churned);
     const rev    = customers*(params.price*prof.visitsPerMonth/SIM_DAYS)*rnd(.75,1.25)*shock*seasonMult;
     // Fixed costs: industry baseline per team member (realistic daily ops cost)
@@ -1293,9 +1293,9 @@ function monteCarlo(params) {
     for (let d=1;d<=SIM_DAYS;d++) {
       const paidAcq=Math.max(0,Math.floor(rNorm(dailyMkt/p.acqCost,1.2)));
       const footTraffic=Math.max(0,Math.round(rNorm(organicBase,1.0)));
-      const wordOfMouth=Math.round(customers*0.018);
+      const wordOfMouth=Math.round(customers*0.003);
       const acq=paidAcq+footTraffic+wordOfMouth;
-      customers=Math.max(0,customers+acq-Math.floor(customers*p.churn/SIM_DAYS));
+      customers=Math.max(0,customers+acq-Math.floor(customers*p.churn/30));
       const rev=customers*(params.price*baseProf.visitsPerMonth/SIM_DAYS)*rnd(.6,1.4);
       // Same cost model as simulate(): industry baseline + scaled capital overhead
       cash+=rev-(baseProf.fixBase*params.team+params.capital*p.fixR*0.05/SIM_DAYS+rev*p.varR+dailyMkt);
@@ -1357,9 +1357,9 @@ let _pendingSimAfterReg = false;
 
 function startSim() {
   if (!U) {
-    // Auto-assign free plan so mobile users can run sims without mandatory registration
-    U={email:'',plan:'free',simCount:0,createdAt:Date.now()};
-    saveUser(); renderUserBadge();
+    // No session — send back to landing to register
+    window.location.replace('./landing.html');
+    return;
   }
   if (U.plan==='none') {
     _pendingSimAfterReg=true;
@@ -2929,12 +2929,15 @@ function renderUserBadge() {
   const wrap=$('user-badge-wrap');
   const signinBtn=$('signin-btn');
   if(!badge) return;
+  const demoBtn=$('demo-btn');
   if(!U){
     if(wrap) wrap.style.display='none';
     if(signinBtn) signinBtn.style.display='flex';
+    if(demoBtn) demoBtn.style.display='block';
     return;
   }
   if(signinBtn) signinBtn.style.display='none';
+  if(demoBtn) demoBtn.style.display='none'; // hide for logged-in users
   const plan=U.plan||'free';
   badge.className='user-badge '+(plan==='none'?'free':plan);
   if(wrap) wrap.style.display='block';
