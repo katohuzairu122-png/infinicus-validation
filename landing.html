@@ -414,13 +414,15 @@ footer{position:relative;z-index:1;border-top:1px solid var(--line);padding:3rem
   .footer-inner{grid-template-columns:1fr;}
 }
 </style>
-<!-- Google tag (gtag.js) -->
+<!-- Google tag (gtag.js) — consent-gated -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=AW-18295551736"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
+  gtag('consent','default',{ad_storage:'denied',analytics_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',wait_for_update:500});
   gtag('js', new Date());
   gtag('config', 'AW-18295551736');
+  (function(){var c=localStorage.getItem('inf_cookie_consent');if(c==='granted'){gtag('consent','update',{ad_storage:'granted',analytics_storage:'granted',ad_user_data:'granted',ad_personalization:'granted'});}})();
 </script>
 </head>
 <body>
@@ -1511,6 +1513,19 @@ function showToast(msg, dur=2800) {
   clearTimeout(window._tt);
   window._tt = setTimeout(() => t.classList.remove('show'), dur);
 }
+</script>
+
+<!-- ══ COOKIE CONSENT BANNER ══ -->
+<div id="cookie-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:rgba(10,16,32,.97);border-top:1px solid rgba(255,255,255,.1);backdrop-filter:blur(16px);padding:.85rem 1.5rem;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;font-family:monospace;font-size:10.5px;color:#8893ad;">
+  <span style="flex:1;min-width:220px;line-height:1.6;">We use cookies to measure ad performance. No personal data is sold. <a href="/legal.html" style="color:#00e060;text-decoration:none;">Privacy Policy</a></span>
+  <div style="display:flex;gap:.6rem;flex-shrink:0;">
+    <button onclick="setCookieConsent('denied')" style="font-family:monospace;font-size:10px;padding:5px 14px;border-radius:6px;border:1px solid rgba(255,255,255,.15);background:none;color:#8893ad;cursor:pointer;">Decline</button>
+    <button onclick="setCookieConsent('granted')" style="font-family:monospace;font-size:10px;padding:5px 14px;border-radius:6px;border:none;background:#00e060;color:#060a14;cursor:pointer;font-weight:700;">Accept</button>
+  </div>
+</div>
+<script>
+(function(){var c=localStorage.getItem('inf_cookie_consent');if(!c){var b=document.getElementById('cookie-banner');if(b)b.style.display='flex';}})();
+function setCookieConsent(choice){localStorage.setItem('inf_cookie_consent',choice);if(choice==='granted'&&typeof gtag==='function'){gtag('consent','update',{ad_storage:'granted',analytics_storage:'granted',ad_user_data:'granted',ad_personalization:'granted'});}var b=document.getElementById('cookie-banner');if(b)b.style.display='none';}
 </script>
 </body>
 </html>

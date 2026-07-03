@@ -488,13 +488,28 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
   .hdr-right{gap:6px;}
 }
 </style>
-<!-- Google tag (gtag.js) -->
+<!-- Google tag (gtag.js) — consent-gated -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=AW-18295551736"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
+  // Default: deny ad/analytics cookies until user consents
+  gtag('consent','default',{
+    ad_storage:'denied',
+    analytics_storage:'denied',
+    ad_user_data:'denied',
+    ad_personalization:'denied',
+    wait_for_update:500
+  });
   gtag('js', new Date());
   gtag('config', 'AW-18295551736');
+  // Grant consent if already accepted in a previous session
+  (function(){
+    var c=localStorage.getItem('inf_cookie_consent');
+    if(c==='granted'){
+      gtag('consent','update',{ad_storage:'granted',analytics_storage:'granted',ad_user_data:'granted',ad_personalization:'granted'});
+    }
+  })();
 </script>
 </head>
 <body>
@@ -3667,6 +3682,32 @@ if ('serviceWorker' in navigator) {
   });
 }
 
+</script>
+
+<!-- ══ COOKIE CONSENT BANNER ══ -->
+<div id="cookie-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:rgba(10,16,32,.97);border-top:1px solid rgba(255,255,255,.1);backdrop-filter:blur(16px);padding:.85rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;font-family:var(--mono);font-size:10.5px;color:var(--muted);">
+  <span style="flex:1;min-width:220px;line-height:1.6;">We use cookies to measure ad performance. No personal data is sold. <a href="/legal.html" style="color:var(--cyan);text-decoration:none;">Privacy Policy</a></span>
+  <div style="display:flex;gap:.6rem;flex-shrink:0;">
+    <button onclick="setCookieConsent('denied')" style="font-family:var(--mono);font-size:10px;padding:5px 14px;border-radius:6px;border:1px solid rgba(255,255,255,.15);background:none;color:var(--muted);cursor:pointer;letter-spacing:.05em;">Decline</button>
+    <button onclick="setCookieConsent('granted')" style="font-family:var(--mono);font-size:10px;padding:5px 14px;border-radius:6px;border:none;background:var(--cyan);color:#060a14;cursor:pointer;font-weight:700;letter-spacing:.05em;">Accept</button>
+  </div>
+</div>
+<script>
+(function(){
+  var stored=localStorage.getItem('inf_cookie_consent');
+  if(!stored){
+    var b=document.getElementById('cookie-banner');
+    if(b) b.style.display='flex';
+  }
+})();
+function setCookieConsent(choice){
+  localStorage.setItem('inf_cookie_consent',choice);
+  if(choice==='granted'){
+    gtag('consent','update',{ad_storage:'granted',analytics_storage:'granted',ad_user_data:'granted',ad_personalization:'granted'});
+  }
+  var b=document.getElementById('cookie-banner');
+  if(b) b.style.display='none';
+}
 </script>
 </body>
 </html>
