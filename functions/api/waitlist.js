@@ -3,7 +3,7 @@
 // Env var required: RESEND_API_KEY (set in Cloudflare Pages → Settings → Environment variables)
 
 const OWNER_EMAIL = 'katohuzairu122@gmail.com';
-const FROM_ADDRESS = 'INFINICUS ENGINE <noreply@send.infini-cus.com>';
+const FROM_ADDRESS = 'INFINICUS ENGINE <noreply@infini-cus.com>';
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
