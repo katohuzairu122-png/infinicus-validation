@@ -486,7 +486,26 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
   header{padding:.65rem 1rem;}
   .cur-select{display:none;}
   .hdr-right{gap:6px;}
+  .tut-trigger span{display:none;}
 }
+
+/* ══ TUTORIAL SYSTEM ══ */
+#tut-ov{position:fixed;inset:0;z-index:8000;background:rgba(6,10,20,.5);display:none;pointer-events:all;}
+#tut-spot{display:none;z-index:8001;transition:all .35s cubic-bezier(.4,0,.2,1);}
+#tut-bx{position:fixed;z-index:8002;background:var(--navy-700);border:1px solid rgba(0,224,96,.22);border-radius:14px;padding:1.3rem 1.4rem;box-shadow:0 20px 60px rgba(0,0,0,.7),0 0 0 1px rgba(0,224,96,.08);display:none;pointer-events:all;}
+.tut-ico{font-size:24px;margin-bottom:.4rem;}
+.tut-lbl{font-family:var(--mono);font-size:9px;color:var(--cyan);letter-spacing:.14em;margin-bottom:.3rem;}
+.tut-ttl{font-family:var(--head);font-size:15.5px;font-weight:800;color:var(--text);margin-bottom:.45rem;letter-spacing:-.01em;}
+.tut-bdy{font-family:var(--sans);font-size:12.5px;color:var(--muted);line-height:1.65;margin-bottom:.9rem;}
+.tut-nav{display:flex;align-items:center;gap:.5rem;}
+#tut-dots{display:flex;gap:5px;flex:1;justify-content:center;}
+.tut-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.12);transition:all .2s;flex-shrink:0;}
+.tut-dot.on{background:var(--cyan);transform:scale(1.4);}
+.tut-skip{font-family:var(--mono);font-size:9px;color:var(--muted-2);background:none;border:none;cursor:pointer;letter-spacing:.05em;padding:2px 0;flex-shrink:0;}
+.tut-bk{font-family:var(--mono);font-size:10px;color:var(--muted);background:var(--glass);border:1px solid var(--line);border-radius:7px;padding:5px 11px;cursor:pointer;letter-spacing:.04em;flex-shrink:0;}
+.tut-nxt{font-family:var(--mono);font-size:10px;color:#04121a;background:var(--cyan);border:none;border-radius:7px;padding:5px 14px;cursor:pointer;font-weight:700;letter-spacing:.04em;flex-shrink:0;}
+.tut-trigger{background:rgba(0,224,96,.07);border:1px solid rgba(0,224,96,.2);border-radius:7px;padding:5px 9px;font-family:var(--mono);font-size:9.5px;color:var(--cyan);cursor:pointer;letter-spacing:.06em;white-space:nowrap;display:flex;align-items:center;gap:5px;}
+.tut-trigger:hover{background:rgba(0,224,96,.13);}
 </style>
 <!-- Google tag (gtag.js) — consent-gated -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=AW-18295551736"></script>
@@ -567,6 +586,7 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
       <option value="ZAR">R ZAR</option>
     </select>
     <button id="pwa-install-btn" onclick="triggerInstall()" title="Install app" style="display:none;align-items:center;gap:5px;background:rgba(0,224,118,.08);border:1px solid rgba(0,224,118,.25);border-radius:7px;padding:5px 10px;color:var(--emerald);font-family:var(--mono);font-size:9.5px;cursor:pointer;letter-spacing:.05em;">⬇ INSTALL</button>
+    <button class="tut-trigger" onclick="startTutorial()" title="How to use the engine">? <span>HOW IT WORKS</span></button>
     <span class="sim-badge idle" id="sim-badge">● IDLE</span>
   </div>
 </header>
@@ -3682,6 +3702,94 @@ if ('serviceWorker' in navigator) {
   });
 }
 
+</script>
+
+<!-- ══ TUTORIAL SYSTEM ══ -->
+<div id="tut-ov" onclick="TUT.end()"></div>
+<div id="tut-spot"></div>
+<div id="tut-bx">
+  <div class="tut-ico" id="tut-ico">🚀</div>
+  <div class="tut-lbl" id="tut-lbl">STEP 1 OF 12</div>
+  <div class="tut-ttl" id="tut-ttl">Welcome</div>
+  <div class="tut-bdy" id="tut-bdy"></div>
+  <div class="tut-nav">
+    <button class="tut-skip" onclick="TUT.end()">Skip</button>
+    <div id="tut-dots"></div>
+    <button class="tut-bk" id="tut-bk" onclick="TUT.back()">← Back</button>
+    <button class="tut-nxt" id="tut-nxt" onclick="TUT.next()">Next →</button>
+  </div>
+</div>
+<script>
+const TUT={
+  i:0,on:false,
+  STEPS:[
+    {ico:'🚀',ttl:'Welcome to INFINICUS ENGINE',bdy:'Test any business idea before spending a cent. This 60-second guide shows you exactly how the engine works.',el:null,pos:'center'},
+    {ico:'⚡',ttl:'Quick-Start Templates',bdy:"Pick any industry preset to instantly fill the form with realistic numbers — or fill it in yourself.",el:'.pills',pos:'below'},
+    {ico:'💡',ttl:'Describe Your Business',bdy:'Write what you sell, how you sell it, and who buys it. The AI analysis uses this text to generate venture insights.',el:'#i-idea',pos:'below'},
+    {ico:'💰',ttl:'Starting Capital',bdy:'How much money are you launching with? The engine tracks your cash balance day by day across 90 virtual days.',el:'#i-cap',pos:'below'},
+    {ico:'📍',ttl:'Your Location',bdy:'City and country affects foot traffic density, local market size, and customer acquisition rates in the model.',el:'#i-loc',pos:'below'},
+    {ico:'🏭',ttl:'Industry Vertical',bdy:'Sets realistic conversion rates, seasonal patterns, and cost structures specific to your type of business.',el:'#i-ind',pos:'below'},
+    {ico:'💵',ttl:'Price Per Sale',bdy:'What you charge per customer. Revenue = Price × simulated daily customers. The engine finds your break-even point.',el:'#i-price',pos:'above'},
+    {ico:'▶',ttl:'Start The Simulation',bdy:'Runs 90 virtual business days using Monte Carlo risk modeling and agent-based customer behavior. Takes ~5 seconds.',el:'#launch-btn',pos:'above'},
+    {ico:'📊',ttl:'Results Dashboard',bdy:'Revenue, daily customers, burn rate, profitable days, and cash flow charts all appear here after the run.',el:'[data-section="dashboard"]',pos:'below'},
+    {ico:'🎯',ttl:'GO / MODIFY / STOP Verdict',bdy:'The engine gives you a clear verdict — plus capital alternatives and a survival probability score.',el:'[data-section="verdict"]',pos:'below'},
+    {ico:'🤖',ttl:'AI Report & PDF Export',bdy:'Full AI venture analysis: market fit score, risk profile, and strategic recommendations. Export as PDF.',el:'[data-section="report"]',pos:'below'},
+    {ico:'✅',ttl:"You're Ready to Simulate",bdy:"Pick a template or fill in your own details, then hit START SIMULATION. Most runs finish in under 10 seconds.",el:null,pos:'center'}
+  ],
+  start(){
+    this.i=0;this.on=true;
+    if(typeof nav==='function')nav('input');
+    document.getElementById('tut-ov').style.display='block';
+    this.draw();
+  },
+  draw(){
+    const s=this.STEPS[this.i],n=this.STEPS.length;
+    document.getElementById('tut-ico').textContent=s.ico;
+    document.getElementById('tut-lbl').textContent='STEP '+(this.i+1)+' OF '+n;
+    document.getElementById('tut-ttl').textContent=s.ttl;
+    document.getElementById('tut-bdy').textContent=s.bdy;
+    document.getElementById('tut-nxt').textContent=this.i===n-1?"Let's go →":'Next →';
+    document.getElementById('tut-bk').style.visibility=this.i===0?'hidden':'visible';
+    const dc=document.getElementById('tut-dots');
+    dc.innerHTML='';
+    for(let j=0;j<n;j++){const d=document.createElement('span');d.className='tut-dot'+(j===this.i?' on':'');dc.appendChild(d);}
+    const sp=document.getElementById('tut-spot');
+    const bx=document.getElementById('tut-bx');
+    if(!s.el||s.pos==='center'){
+      sp.style.display='none';
+      bx.style.cssText='display:block;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:min(320px,calc(100vw - 24px));bottom:auto;right:auto;';
+      return;
+    }
+    const el=document.querySelector(s.el);
+    if(!el){this.next();return;}
+    el.scrollIntoView({behavior:'smooth',block:'center'});
+    setTimeout(()=>{
+      const r=el.getBoundingClientRect(),pad=10,mg=14;
+      sp.style.cssText='display:block;position:fixed;left:'+(r.left-pad)+'px;top:'+(r.top-pad)+'px;width:'+(r.width+pad*2)+'px;height:'+(r.height+pad*2)+'px;border-radius:12px;box-shadow:0 0 0 4000px rgba(6,10,20,.84),0 0 0 2px rgba(0,224,96,.6),0 0 30px rgba(0,224,96,.25);pointer-events:none;z-index:8001;transition:all .35s ease;';
+      const bw=Math.min(310,window.innerWidth-24);
+      let top,left;
+      if(s.pos==='below'){top=r.bottom+pad+mg;if(top+200>window.innerHeight)top=r.top-pad-mg-200;left=Math.max(12,Math.min(r.left,window.innerWidth-bw-12));}
+      else{top=r.top-pad-mg-200;if(top<70)top=r.bottom+pad+mg;left=Math.max(12,Math.min(r.left,window.innerWidth-bw-12));}
+      top=Math.max(70,Math.min(top,window.innerHeight-210));
+      left=Math.max(12,Math.min(left,window.innerWidth-bw-12));
+      bx.style.cssText='display:block;position:fixed;top:'+top+'px;left:'+left+'px;width:'+bw+'px;transform:none;bottom:auto;right:auto;';
+    },380);
+  },
+  next(){if(this.i>=this.STEPS.length-1){this.end();return;}this.i++;this.draw();},
+  back(){if(this.i<=0)return;this.i--;this.draw();},
+  end(){
+    this.on=false;
+    ['tut-ov','tut-spot','tut-bx'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='none';});
+    try{localStorage.setItem('inf_tut_done','1');}catch(e){}
+  }
+};
+function startTutorial(){TUT.start();}
+// Auto-launch for first-time visitors
+(function(){
+  try{if(!localStorage.getItem('inf_tut_done')&&!localStorage.getItem('inf_tut_skip')){
+    setTimeout(()=>TUT.start(),1200);
+  }}catch(e){}
+})();
 </script>
 
 <!-- ══ COOKIE CONSENT BANNER ══ -->
