@@ -3094,8 +3094,37 @@ function computeVerdict() {
   const avg=Object.values(sc).reduce((s,v)=>s+v,0)/4;
   const last=S.days[S.days.length-1];
   const profDaysRatio=S.days.filter(x=>x.profit>0).length/S.days.length;
+
+  // ── Capital adequacy gate ──────────────────────────────────────────────────
+  // The simulation can show positive day-90 cash even on $27 capital because
+  // organic foot-traffic accumulates customers before cash runs out and the
+  // model doesn't halt operations on negative cash.  In reality, a founder
+  // with $27 can't buy ingredients, pay a deposit, or cover Day-1 costs.
+  // We correct this with an explicit runway check.
+  //
+  // dailyBurn = fixed daily overhead + daily marketing allocation
+  // minCap30  = 30 days of pure burn  (minimum viable runway)
+  // capRatio  = how many multiples of that runway the founder has
+  //
+  //   capRatio < 0.15  →  < 4.5 days of runway  →  STOP (undercapitalised)
+  //   capRatio < 0.50  →  < 15 days of runway   →  cap at MODIFY even if model says GO
+  //   capRatio ≥ 0.50  →  enough runway          →  normal verdict logic applies
+  const prof2       = PROFILES[S.params.industry];
+  const em2         = ENGINE_MODES[S.params.engMode || 'balanced'];
+  const loc2        = detectLocation(S.params.loc);
+  const fxMult2     = em2.costMult * loc2.costMult;
+  const dailyFixed2 = prof2.fixBase * (S.params.team || 1) * fxMult2;
+  const dailyMkt2   = (S.params.mktBud || 0) / SIM_DAYS * em2.mktMult;
+  const dailyBurn2  = dailyFixed2 + dailyMkt2;
+  const minCap30    = dailyBurn2 * 30;
+  const capRatio    = S.params.capital / Math.max(1, minCap30);
+  S.capRatio = capRatio; // expose for verdict display
+  if (capRatio < 0.15) return 'stop';
+
   // GO requires: healthy score + positive cash + strong MC survival + at least 30% days profitable
-  if (avg>=65&&last.cash>0&&S.mc.survivalRate>.55&&profDaysRatio>=0.30) return 'go';
+  if (avg>=65&&last.cash>0&&S.mc.survivalRate>.55&&profDaysRatio>=0.30) {
+    return capRatio >= 0.50 ? 'go' : 'modify';
+  }
   // MODIFY: some positives but not all thresholds met
   if ((avg>=40||last.cash>0)&&profDaysRatio>=0.15) return 'modify';
   return 'stop';
@@ -4057,19 +4086,41 @@ function renderVerdict() {
   const profDays=d.filter(x=>x.profit>0).length;
   const vLabel={go:'GO',modify:'MODIFY',stop:'STOP'};
   const avgScore=Math.round(Object.values(sc).reduce((s,x)=>s+x,0)/4);
+  // Capital adequacy warning banner (shown when capital is too thin)
+  const capR = S.capRatio ?? 1;
+  const capWarningBanner = capR < 0.15
+    ? `<div style="background:rgba(244,63,94,.1);border:1px solid rgba(244,63,94,.4);border-radius:8px;padding:.85rem 1rem;margin-bottom:.85rem;font-family:var(--mono);font-size:10.5px;line-height:1.7;color:var(--red)">
+        ⚠️ <strong>UNDERCAPITALISED</strong> — Your starting capital covers only <strong>${(capR*30).toFixed(1)} days</strong> of fixed overhead.
+        The model's day-90 cash figure is misleading here: organic customers accumulate before real money runs out, which masks the fact that
+        you can't buy inventory, pay rent, or operate on Day 1 with this amount.
+        <br><span style="color:var(--muted-2)">Target: at least 30 days of runway before launch. Use the Break-Even Calculator below to find the capital you actually need.</span>
+      </div>`
+    : capR < 0.50
+    ? `<div style="background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.3);border-radius:8px;padding:.75rem 1rem;margin-bottom:.75rem;font-family:var(--mono);font-size:10.5px;line-height:1.7;color:var(--amber)">
+        ⚠️ <strong>LOW RUNWAY</strong> — Capital covers only <strong>${(capR*30).toFixed(0)} days</strong> of burn.
+        The model shows potential but you're at risk of running out before revenue ramps.
+        Consider raising more before launch, or aggressively cutting pre-revenue costs.
+      </div>`
+    : '';
+
   const vDesc={
     go:`<strong>🎉 Great news — your business idea passed the simulation!</strong><br><br>
         This means: over 90 simulated days, your business earned money, kept cash in the bank, and survived in <strong>${Math.round(S.mc.survivalRate*100)}%</strong> of 500 different "what if" scenarios the engine tested.<br><br>
         <em>Think of it like a stress test:</em> the simulator threw random events at your business — good and bad — and your idea held up. That's a positive signal worth acting on.<br><br>
         ✅ <strong>What to do next:</strong> Don't treat this as a guarantee — treat it as a green light to take the next small real-world step. Validate your price with real customers, keep your costs lean, and track your numbers from day one.`,
-    modify:`<strong>⚠️ Your business idea has potential, but needs some adjustments.</strong><br><br>
+    modify:`${capWarningBanner}<strong>⚠️ Your business idea has potential, but needs some adjustments.</strong><br><br>
         This means: the simulation found that in some scenarios your business runs low on cash, or your profit per sale isn't covering your costs consistently. Cash ended <strong>${last.cash>=0?'positive (good)':'negative (a warning sign)'}</strong> and your idea survived <strong>${Math.round(S.mc.survivalRate*100)}%</strong> of stress tests.<br><br>
         <em>This is not a rejection</em> — it's the engine pointing at what to fix. Most successful businesses needed adjustments before they worked.<br><br>
         🔧 <strong>What to do next:</strong> Read the full report below. Focus on the red scores. Try raising your price, reducing startup costs, or starting with a smaller team. Then re-run the simulation and see if the verdict changes.`,
-    stop:`<strong>🛑 The simulation is flagging serious risk with the current numbers.</strong><br><br>
+    stop:`${capWarningBanner}${capR < 0.15
+      ? `<strong>🛑 STOP — Capital is too small to launch this business.</strong><br><br>
+        You entered <strong>${fmt(S.params.capital)}</strong> in starting capital. The simulation estimates you need at least <strong>${fmt((S.params.capital/capR)*0.50)}</strong> (50% of 30-day burn) before the engine will consider this viable.<br><br>
+        The model's day-90 projections can look positive at this capital level — but that's a model artefact: organic customers accumulate before real cash runs out, masking the fact that you can't stock inventory, pay a deposit, or operate at all with this amount.<br><br>
+        🔁 <strong>What to do next:</strong> Use the Break-Even Reverse Calculator above to find the minimum viable capital for your specific inputs. Then explore the lower-cost alternative businesses shown below — several are designed to work with limited startup funds.`
+      : `<strong>🛑 The simulation is flagging serious risk with the current numbers.</strong><br><br>
         This means: in <strong>${Math.round((1-S.mc.survivalRate)*100)}%</strong> of 500 different scenarios tested, your business ran out of money before 90 days. That's a strong warning that something in the foundation — your price, costs, or market size — needs rethinking.<br><br>
         <em>This does NOT mean your idea is bad.</em> It means the numbers as entered don't work yet. Many great businesses got a STOP on early versions.<br><br>
-        🔁 <strong>What to do next:</strong> Don't give up — iterate. Try increasing your selling price, cutting startup capital needs, or targeting a smaller, easier-to-reach customer group. Run the simulation again. Each run teaches you something.`
+        🔁 <strong>What to do next:</strong> Don't give up — iterate. Try increasing your selling price, cutting startup capital needs, or targeting a smaller, easier-to-reach customer group. Run the simulation again. Each run teaches you something.`}`
   };
 
   $h('verdict-panel',`
