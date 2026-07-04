@@ -1,7 +1,7 @@
 // sw.js — INFINICUS Engine v3 Service Worker
 // Bump CACHE_VERSION when deploying significant updates to force re-cache
-// Deployed: 2026-07-03 rev5
-const CACHE_VERSION = 'v9';
+// Deployed: 2026-07-04 rev6
+const CACHE_VERSION = 'v10';
 const CACHE = 'infinicus-' + CACHE_VERSION;
 
 // Core shell assets — cached on install

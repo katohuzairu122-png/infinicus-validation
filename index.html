@@ -489,6 +489,35 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
   .tut-trigger span{display:none;}
 }
 
+/* ══ ENGINE MODES ══ */
+.engine-modes{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:1.25rem;}
+@media(min-width:640px){.engine-modes{grid-template-columns:repeat(4,1fr);}}
+.eng-mode{background:var(--glass);border:1px solid var(--line);border-radius:10px;padding:.65rem .8rem;cursor:pointer;text-align:left;transition:all .2s;font-family:inherit;}
+.eng-mode:hover{border-color:var(--line-2);background:var(--glass-2);}
+.eng-mode.selected{border-color:var(--cyan);background:rgba(0,224,96,.07);box-shadow:0 0 0 1px rgba(0,224,96,.15);}
+.eng-mode-badge{display:inline-block;font-family:var(--mono);font-size:8px;padding:2px 6px;border-radius:4px;margin-bottom:.3rem;letter-spacing:.06em;font-weight:700;}
+.emb-b{background:rgba(0,224,96,.1);color:var(--cyan);}
+.emb-l{background:rgba(16,185,129,.1);color:var(--emerald);}
+.emb-a{background:rgba(244,63,94,.1);color:var(--red);}
+.emb-i{background:rgba(139,92,246,.1);color:var(--purple);}
+.eng-mode-name{font-family:var(--mono);font-size:9.5px;font-weight:700;color:var(--text);letter-spacing:.05em;margin-bottom:.2rem;}
+.eng-mode.selected .eng-mode-name{color:var(--cyan);}
+.eng-mode-desc{font-family:var(--mono);font-size:8px;color:var(--muted-2);line-height:1.4;}
+
+/* ══ RISK REGISTER ══ */
+.risk-reg{margin-top:1.5rem;}
+.risk-reg-hdr{font-family:var(--mono);font-size:9px;color:var(--muted-2);letter-spacing:.1em;margin-bottom:.75rem;}
+.risk-reg-grid{display:grid;gap:.6rem;}
+.rr-item{background:var(--glass);border:1px solid var(--line);border-radius:10px;padding:.85rem 1rem;}
+.rr-item-hdr{display:flex;align-items:center;gap:.6rem;margin-bottom:.35rem;}
+.rr-sev{font-family:var(--mono);font-size:8px;font-weight:700;padding:2px 7px;border-radius:4px;letter-spacing:.08em;flex-shrink:0;}
+.rrs-h{background:rgba(244,63,94,.15);color:var(--red);}
+.rrs-m{background:rgba(245,158,11,.15);color:var(--amber);}
+.rrs-l{background:rgba(16,185,129,.15);color:var(--emerald);}
+.rr-name{font-family:var(--mono);font-size:10.5px;font-weight:600;color:var(--text);}
+.rr-impact{font-family:var(--mono);font-size:9px;color:var(--muted);margin-bottom:.25rem;}
+.rr-mit{font-family:var(--mono);font-size:9px;color:var(--cyan);line-height:1.5;}
+
 /* ══ TUTORIAL SYSTEM ══ */
 #tut-ov{position:fixed;inset:0;z-index:8000;background:rgba(6,10,20,.5);display:none;pointer-events:all;}
 #tut-spot{display:none;z-index:8001;transition:all .35s cubic-bezier(.4,0,.2,1);}
@@ -608,6 +637,34 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
     </div>
   </div>
   <button class="btn-demo" id="demo-btn" onclick="instantDemo()">▶ TRY INSTANT DEMO — REGISTER FREE IN SECONDS</button>
+
+  <!-- ENGINE MODES -->
+  <div style="margin-bottom:.9rem;">
+    <div style="font-family:var(--mono);font-size:9px;color:var(--muted-2);letter-spacing:.1em;margin-bottom:.6rem;">SIMULATION MODE — select how the engine weights growth vs. survival</div>
+    <div class="engine-modes">
+      <button class="eng-mode selected" id="em-balanced" onclick="selectEngMode('balanced')">
+        <div class="eng-mode-badge emb-b">BALANCED</div>
+        <div class="eng-mode-name">Balanced</div>
+        <div class="eng-mode-desc">Realistic blend of growth and caution. Best default for most ideas.</div>
+      </button>
+      <button class="eng-mode" id="em-lean" onclick="selectEngMode('lean')">
+        <div class="eng-mode-badge emb-l">LEAN</div>
+        <div class="eng-mode-name">Lean Survival</div>
+        <div class="eng-mode-desc">Minimal spend, slower growth. Tests if the idea works on a tight budget.</div>
+      </button>
+      <button class="eng-mode" id="em-aggressive" onclick="selectEngMode('aggressive')">
+        <div class="eng-mode-badge emb-a">AGGRESSIVE</div>
+        <div class="eng-mode-name">Aggressive Scale</div>
+        <div class="eng-mode-desc">High marketing, faster customer acquisition. Higher reward and risk.</div>
+      </button>
+      <button class="eng-mode" id="em-investor" onclick="selectEngMode('investor')">
+        <div class="eng-mode-badge emb-i">INVESTOR</div>
+        <div class="eng-mode-name">Investor View</div>
+        <div class="eng-mode-desc">Optimistic projections with growth multiplier. How a pitch deck looks.</div>
+      </button>
+    </div>
+  </div>
+
   <div class="pills">
     <button class="pill" onclick="qf('food')">🍔 Food Truck</button>
     <button class="pill" onclick="qf('drop')">📦 Dropshipping</button>
@@ -669,6 +726,24 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
     <div class="fg">
       <label>Team Size at Launch</label>
       <input id="i-team" type="number" min="1" placeholder="e.g. 1">
+    </div>
+    <div class="fg">
+      <label>Founder Experience Level</label>
+      <select id="i-exp">
+        <option value="first">First-time founder</option>
+        <option value="some" selected>Some experience (1–2 ventures)</option>
+        <option value="serial">Serial entrepreneur (3+)</option>
+        <option value="expert">Domain expert (10+ yrs industry)</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label>Market Competition</label>
+      <select id="i-comp">
+        <option value="low">Low — few direct competitors</option>
+        <option value="medium" selected>Medium — established players exist</option>
+        <option value="high">High — crowded, price-sensitive market</option>
+        <option value="red">Red Ocean — dominated by giants</option>
+      </select>
     </div>
   </div>
   <div class="sim-controls">
@@ -818,6 +893,8 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
   <div id="verdict-capital-advice"></div>
   <div id="resim-panel"></div>
   <div class="g2" id="verdict-detail"></div>
+  <!-- RISK REGISTER — injected by renderRiskRegister() -->
+  <div id="risk-register-wrap"></div>
 </section>
 
 <!-- ══ REPORT & PLAN ══ -->
@@ -1074,7 +1151,7 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
 
 <script>
 // ─── STATE ───────────────────────────────────────────────────────────────────
-const S = { running:false, done:false, days:[], events:[], mc:null, scores:null, params:{}, timer:null, aiData:null };
+const S = { running:false, done:false, days:[], events:[], mc:null, scores:null, params:{}, timer:null, aiData:null, engMode:'balanced' };
 
 // ─── CURRENCIES ──────────────────────────────────────────────────────────────
 const CUR = {
@@ -1280,6 +1357,23 @@ function pickEvents() {
   }).sort((a,b)=>a.day-b.day);
 }
 
+// ─── ENGINE MODES ────────────────────────────────────────────────────────────
+const ENGINE_MODES = {
+  balanced:   { mktMult:1.0, costMult:1.0, growthBoost:1.0,  acqMult:1.0,  label:'Balanced'        },
+  lean:       { mktMult:0.5, costMult:0.75,growthBoost:0.7,  acqMult:0.65, label:'Lean Survival'    },
+  aggressive: { mktMult:2.0, costMult:1.2, growthBoost:1.5,  acqMult:1.8,  label:'Aggressive Scale' },
+  investor:   { mktMult:1.8, costMult:1.1, growthBoost:2.0,  acqMult:2.2,  label:'Investor View'    },
+};
+const EXP_MULT = { first:0.80, some:1.0, serial:1.20, expert:1.35 };
+const COMP_MULT = { low:1.25, medium:1.0, high:0.75, red:0.55 };
+
+function selectEngMode(mode) {
+  S.engMode = mode;
+  document.querySelectorAll('.eng-mode').forEach(b=>b.classList.remove('selected'));
+  const el = document.getElementById('em-'+mode);
+  if (el) el.classList.add('selected');
+}
+
 // ─── SIMULATION ──────────────────────────────────────────────────────────────
 function simulate(params) {
   const prof = PROFILES[params.industry];
@@ -1287,33 +1381,36 @@ function simulate(params) {
   const evMap = {};
   events.forEach(e=>{ evMap[e.day]=(evMap[e.day]||1)*(1+e.impact); });
 
+  // ── Engine mode + experience + competition multipliers ──
+  const em   = ENGINE_MODES[params.engMode||'balanced'];
+  const expM = EXP_MULT[params.exp||'some'];
+  const compM= COMP_MULT[params.comp||'medium'];
+  const totalAcqMult = em.acqMult * expM * compM;
+  const totalCostMult= em.costMult;
+
   const days = [];
   let cash = params.capital, customers = 0;
-  const dailyMkt = params.mktBud/SIM_DAYS;
+  const dailyMkt = (params.mktBud/SIM_DAYS) * em.mktMult;
 
   // Organic reach: industry foot-traffic × team size reach
-  // Physical businesses (food, retail, events) get high baseline walk-ins
-  // Digital businesses (SaaS, fintech) rely almost entirely on paid/SEO
-  const organicBase = Math.max(0.5, Math.log(params.team+1) * 1.2) * prof.organicMult;
+  const organicBase = Math.max(0.5, Math.log(params.team+1) * 1.2) * prof.organicMult * totalAcqMult;
 
   for (let d=1;d<=SIM_DAYS;d++) {
     const shock = evMap[d]||1;
     const seasonMult = prof.season?prof.season[(d-1)%prof.season.length]:1;
 
     // Paid acquisition (marketing budget driven)
-    const paidAcq  = Math.max(0,Math.floor(rNorm(dailyMkt/prof.acqCost,1.5)*shock));
+    const paidAcq  = Math.max(0,Math.floor(rNorm(dailyMkt/prof.acqCost,1.5)*shock*totalAcqMult));
     // Organic acquisition: foot traffic + word-of-mouth referrals from existing base
     const footTraffic = Math.max(0,Math.round(rNorm(organicBase,1.0)*seasonMult*shock));
-    const wordOfMouth  = Math.round(customers*0.003); // 0.3% daily referral rate (≈9% monthly viral factor — realistic WOM)
+    const wordOfMouth  = Math.round(customers*0.003*em.growthBoost);
     const acq = paidAcq + footTraffic + wordOfMouth;
 
-    const churned = Math.floor(customers*prof.churn/30); // monthly churn ÷ 30 days in a month
+    const churned = Math.floor(customers*prof.churn/30);
     customers = Math.max(0,customers+acq-churned);
     const rev    = customers*(params.price*prof.visitsPerMonth/30)*rnd(.75,1.25)*shock*seasonMult;
-    // Fixed costs: industry baseline per team member (realistic daily ops cost)
-    // + a small capital-scaled overhead (5% of original weight) for equipment/insurance at scale
-    const fixed  = prof.fixBase*params.team + params.capital*prof.fixR*0.05/SIM_DAYS;
-    const varC   = rev*prof.varR;
+    const fixed  = (prof.fixBase*params.team + params.capital*prof.fixR*0.05/SIM_DAYS) * totalCostMult;
+    const varC   = rev*prof.varR*totalCostMult;
     const totalCost = fixed+varC+dailyMkt;
     const profit = rev-totalCost;
     cash += profit;
@@ -1325,8 +1422,13 @@ function simulate(params) {
 // ─── MONTE CARLO (500 runs) ──────────────────────────────────────────────────
 function monteCarlo(params) {
   const baseProf = PROFILES[params.industry];
+  const em   = ENGINE_MODES[params.engMode||'balanced'];
+  const expM = EXP_MULT[params.exp||'some'];
+  const compM= COMP_MULT[params.comp||'medium'];
+  const totalAcqMult = em.acqMult * expM * compM;
+  const totalCostMult= em.costMult;
   const finals = [];
-  const organicBase=Math.max(0.5,Math.log(params.team+1)*1.2)*baseProf.organicMult;
+  const organicBase=Math.max(0.5,Math.log(params.team+1)*1.2)*baseProf.organicMult*totalAcqMult;
   for (let r=0;r<500;r++) {
     const p = {
       fixR:   Math.max(.03, rNorm(baseProf.fixR,   baseProf.fixR*.25)),
@@ -1336,16 +1438,16 @@ function monteCarlo(params) {
       mktMult:baseProf.mktMult
     };
     let cash=params.capital, customers=0;
-    const dailyMkt=params.mktBud/SIM_DAYS;
+    const dailyMkt=(params.mktBud/SIM_DAYS)*em.mktMult;
     for (let d=1;d<=SIM_DAYS;d++) {
-      const paidAcq=Math.max(0,Math.floor(rNorm(dailyMkt/p.acqCost,1.2)));
+      const paidAcq=Math.max(0,Math.floor(rNorm(dailyMkt/p.acqCost,1.2)*totalAcqMult));
       const footTraffic=Math.max(0,Math.round(rNorm(organicBase,1.0)));
-      const wordOfMouth=Math.round(customers*0.003);
+      const wordOfMouth=Math.round(customers*0.003*em.growthBoost);
       const acq=paidAcq+footTraffic+wordOfMouth;
       customers=Math.max(0,customers+acq-Math.floor(customers*p.churn/30));
       const rev=customers*(params.price*baseProf.visitsPerMonth/30)*rnd(.6,1.4);
-      // Same cost model as simulate(): industry baseline + scaled capital overhead
-      cash+=rev-(baseProf.fixBase*params.team+params.capital*p.fixR*0.05/SIM_DAYS+rev*p.varR+dailyMkt);
+      const fixedCost=(baseProf.fixBase*params.team+params.capital*p.fixR*0.05/SIM_DAYS)*totalCostMult;
+      cash+=rev-(fixedCost+rev*p.varR*totalCostMult+dailyMkt);
     }
     finals.push(cash);
   }
@@ -1423,12 +1525,15 @@ function startSim() {
   const industry=$('i-ind').value;
   const loc    =$('i-loc').value.trim();
   const mkt    =$('i-mkt').value.trim();
+  const exp    =$('i-exp')?.value||'some';
+  const comp   =$('i-comp')?.value||'medium';
+  const engMode=S.engMode||'balanced';
   const errBox =$('err-box');
   errBox.style.display='none';
   if (!idea)    {errBox.textContent='Please describe your business idea.';errBox.style.display='block';return;}
   if (capital<=0){errBox.textContent='Enter a startup capital greater than 0.';errBox.style.display='block';return;}
   if (price<=0) {errBox.textContent='Enter a price point greater than 0.';errBox.style.display='block';return;}
-  S.params={idea,capital,price,mktBud,team,industry,loc,mkt};
+  S.params={idea,capital,price,mktBud,team,industry,loc,mkt,exp,comp,engMode};
   trackEvent('sim_start',{industry,cur:curCode});
   S.running=true;S.done=false;S.scores=null;S.aiData=null;
   setBadge('running');
@@ -1582,11 +1687,17 @@ function renderDashboard() {
 
   // Perf bars
   const profMargin=totalRev>0?((totalRev-totalCost)/totalRev*100):0;
+  // Cash Flow Stability: % of days where cash was increasing (positive profit)
+  const cashStabilityPct = (profDays/SIM_DAYS)*100;
+  const cashStabilityScore = Math.round(
+    (S.mc.survivalRate*.4 + (profDays/SIM_DAYS)*.4 + (last.cash>0?.2:0))*100
+  );
   const bars=[
     ['Profit Margin',  Math.max(0,profMargin), profMargin>0?'var(--emerald)':'var(--red)',   profMargin.toFixed(1)+'%'],
     ['Profitable Days',profDays/SIM_DAYS*100,    'var(--cyan)',                                profDays+'/'+SIM_DAYS],
     ['MC Survival',    S.mc.survivalRate*100,   S.mc.survivalRate>.6?'var(--emerald)':'var(--amber)', Math.round(S.mc.survivalRate*100)+'%'],
     ['Customer Growth',Math.min(last.customers,100), 'var(--purple)',                        last.customers+' customers'],
+    ['Cash Flow Stability',cashStabilityScore, cashStabilityScore>60?'var(--emerald)':cashStabilityScore>35?'var(--amber)':'var(--red)', cashStabilityScore+'/100'],
   ];
   $h('perf-bars',bars.map(([lbl,val,col,disp])=>`
     <div class="prog-row">
@@ -1627,16 +1738,20 @@ function renderEconomy() {
     <div class="card"><div class="card-lbl">NET PROFIT</div><div class="card-val" style="color:${netProfit>=0?'var(--emerald)':'var(--red)'}">${fmt(netProfit)}</div><div class="card-sub">Margin: ${totalRev>0?(netProfit/totalRev*100).toFixed(1):'0'}%</div></div>
     <div class="card"><div class="card-lbl">BREAK-EVEN</div><div class="card-val a">${beDay?'Day '+beDay.d:'Not reached'}</div><div class="card-sub">${beDay?'Cash crossed starting capital':'Needs more runway'}</div></div>`);
 
-  // Bar chart
+  // Bar chart with break-even annotation
   const maxRev=Math.max(...d.map(x=>x.rev),1);
   const maxCost=Math.max(...d.map(x=>x.cost),1);
   const maxH=Math.max(maxRev,maxCost);
-  $h('econ-chart',d.map(day=>`
-    <div style="display:flex;flex-direction:column;align-items:center;gap:1px;flex:1;">
-      <div style="width:100%;background:rgba(0,224,96,.35);border-radius:2px 2px 0 0;height:${(day.rev/maxH*110).toFixed(1)}px;min-height:${day.rev>0?2:0}px;"></div>
-      <div style="width:100%;background:rgba(244,63,94,.35);border-radius:2px 2px 0 0;height:${(day.cost/maxH*110).toFixed(1)}px;min-height:2px;"></div>
-    </div>`).join(''));
-  $h('econ-axis',`<span>Day 1</span><span>Day 45</span><span>Day 90</span>`);
+  const beDayNum=beDay?beDay.d:null;
+  $h('econ-chart',`<div style="position:relative;display:flex;align-items:flex-end;width:100%;min-height:120px;">`+d.map(day=>{
+    const isBE=beDayNum&&day.d===beDayNum;
+    return `<div style="display:flex;flex-direction:column;align-items:center;gap:1px;flex:1;position:relative;${isBE?'z-index:2;':''}" title="Day ${day.d}${isBE?' ✓ BREAK-EVEN':''}: Rev ${fmt(day.rev)} / Cost ${fmt(day.cost)}">
+      ${isBE?`<div style="position:absolute;bottom:100%;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:7px;color:var(--cyan);white-space:nowrap;margin-bottom:2px;">↑ B/E</div>`:''}
+      <div style="width:100%;background:${isBE?'rgba(0,224,96,.85)':'rgba(0,224,96,.35)'};border-radius:2px 2px 0 0;height:${(day.rev/maxH*110).toFixed(1)}px;min-height:${day.rev>0?2:0}px;"></div>
+      <div style="width:100%;background:${isBE?'rgba(0,224,255,.7)':'rgba(244,63,94,.35)'};border-radius:2px 2px 0 0;height:${(day.cost/maxH*110).toFixed(1)}px;min-height:2px;"></div>
+    </div>`;
+  }).join('')+`</div>`);
+  $h('econ-axis',`<span>Day 1</span>${beDayNum?`<span style="color:var(--cyan);font-weight:700;">⬆ Break-even Day ${beDayNum}</span>`:'<span>Day 45</span>'}<span>Day 90</span>`);
 
   // Cost breakdown bars
   const costs=[
@@ -2418,6 +2533,121 @@ function renderCapitalAdvice() {
   </div>`;
 }
 
+// ─── RISK REGISTER ───────────────────────────────────────────────────────────
+function renderRiskRegister() {
+  const wrap = document.getElementById('risk-register-wrap');
+  if (!wrap || !S.days) return;
+  const d=S.days, p=S.params, mc=S.mc;
+  const last=d[d.length-1];
+  const totalRev=d.reduce((s,x)=>s+x.rev,0);
+  const totalCost=d.reduce((s,x)=>s+x.cost,0);
+  const profDays=d.filter(x=>x.profit>0).length;
+  const prof=PROFILES[p.industry];
+  const em=ENGINE_MODES[p.engMode||'balanced'];
+
+  const risks=[];
+
+  // 1. Cash runway
+  if (last.cash < p.capital*0.2) {
+    risks.push({sev:'HIGH',name:'Cash Runway Risk',
+      impact:`Cash dropped to ${fmt(last.cash)} — only ${Math.round(last.cash/p.capital*100)}% of starting capital remains.`,
+      mit:'Cut variable costs or increase price. Explore bridge financing before reaching zero.'});
+  } else if (last.cash < p.capital*0.5) {
+    risks.push({sev:'MED',name:'Moderate Cash Burn',
+      impact:`Cash at ${fmt(last.cash)} — burned 50%+ of starting capital over 90 days.`,
+      mit:'Review fixed costs and marketing ROI. Consider reducing team size at launch.'});
+  }
+
+  // 2. Survival rate
+  if (mc.survivalRate < 0.4) {
+    risks.push({sev:'HIGH',name:'Low Survival Probability',
+      impact:`Only ${Math.round(mc.survivalRate*100)}% of 500 stress tests survived — high failure rate.`,
+      mit:'Re-validate price and cost model. The market may not support this unit economics.'});
+  } else if (mc.survivalRate < 0.65) {
+    risks.push({sev:'MED',name:'Uncertain Survival Odds',
+      impact:`${Math.round(mc.survivalRate*100)}% survival rate is marginal — significant downside scenarios exist.`,
+      mit:'Build a 3-month emergency reserve before launch. Keep fixed costs minimal.'});
+  }
+
+  // 3. Profitability
+  const profPct=profDays/d.length;
+  if (profPct < 0.3) {
+    risks.push({sev:'HIGH',name:'Chronic Unprofitability',
+      impact:`Only ${profDays}/90 days were profitable — the cost structure consistently exceeds revenue.`,
+      mit:'Increase price or reduce variable costs. Validate that customers will pay more.'});
+  } else if (profPct < 0.5) {
+    risks.push({sev:'MED',name:'Inconsistent Profitability',
+      impact:`${profDays}/90 profitable days — revenue and costs are too close for comfort.`,
+      mit:'Focus on higher-margin customers. Automate to cut variable cost ratio.'});
+  }
+
+  // 4. Competition risk
+  const comp=p.comp||'medium';
+  if (comp==='red') {
+    risks.push({sev:'HIGH',name:'Red Ocean Competition',
+      impact:'Market is dominated by well-funded giants with pricing power and established distribution.',
+      mit:'Find a niche no one serves well, or find a B2B2C angle where you serve businesses, not consumers directly.'});
+  } else if (comp==='high') {
+    risks.push({sev:'MED',name:'High Competition Pressure',
+      impact:'Multiple established competitors exist — customer acquisition will be expensive and slow.',
+      mit:'Differentiate on speed, service quality, or hyper-local focus. Avoid competing on price alone.'});
+  }
+
+  // 5. Experience risk
+  const exp=p.exp||'some';
+  if (exp==='first') {
+    risks.push({sev:'MED',name:'First-Time Founder Risk',
+      impact:'No prior venture experience — operational mistakes and slow pivots are more likely.',
+      mit:'Find a mentor or co-founder with domain experience. Move slowly on hiring and big commitments.'});
+  }
+
+  // 6. Engine mode warning
+  if (p.engMode==='investor') {
+    risks.push({sev:'LOW',name:'Investor Mode Optimism Bias',
+      impact:'Investor mode uses growth multipliers — real-world results will likely be lower.',
+      mit:'Re-run in Balanced mode to see conservative estimates before making financial commitments.'});
+  }
+  if (p.engMode==='aggressive') {
+    risks.push({sev:'MED',name:'Aggressive Scale Capital Risk',
+      impact:'High marketing spend accelerates burn rate — if CAC doesn\'t convert, cash dries up fast.',
+      mit:'Set weekly spending caps and pause if conversion rate drops below target.'});
+  }
+
+  // 7. Marketing efficiency
+  const beDay=d.find(x=>x.cash>p.capital);
+  if (!beDay) {
+    risks.push({sev:'HIGH',name:'No Break-Even Reached',
+      impact:'The business never recovered its starting capital across the 90-day simulation.',
+      mit:'Either extend runway (raise more capital) or significantly reduce fixed costs to reach break-even faster.'});
+  }
+
+  if (risks.length===0) {
+    risks.push({sev:'LOW',name:'No Critical Risks Detected',
+      impact:'All key simulation indicators are within healthy ranges.',
+      mit:'Monitor cash flow weekly and re-run quarterly to track changes.'});
+  }
+
+  const sevOrder={'HIGH':0,'MED':1,'LOW':2};
+  risks.sort((a,b)=>sevOrder[a.sev]-sevOrder[b.sev]);
+
+  const sevClass={'HIGH':'rrs-h','MED':'rrs-m','LOW':'rrs-l'};
+  wrap.innerHTML=`
+    <div class="risk-reg">
+      <div class="risk-reg-hdr">⚠ RISK REGISTER — ${risks.length} ITEM${risks.length!==1?'S':''} IDENTIFIED</div>
+      <div class="risk-reg-grid">
+        ${risks.map(r=>`
+          <div class="rr-item">
+            <div class="rr-item-hdr">
+              <span class="rr-sev ${sevClass[r.sev]}">${r.sev}</span>
+              <span class="rr-name">${r.name}</span>
+            </div>
+            <div class="rr-impact">${r.impact}</div>
+            <div class="rr-mit">→ ${r.mit}</div>
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
+
 // ─── VERDICT ─────────────────────────────────────────────────────────────────
 function renderVerdict() {
   const v=computeVerdict();
@@ -2504,6 +2734,9 @@ function renderVerdict() {
         <div style="font-family:var(--mono);font-size:9px;color:var(--muted-2)">Active paying customers you had by day 90. More = better growth signal.</div>
       </div>
     </div>`);
+
+  // Risk Register (synchronous — data-driven from simulation)
+  renderRiskRegister();
 
   // Async AI enrichment
   const metrics={
