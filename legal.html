@@ -75,6 +75,9 @@ footer a:hover{color:var(--cyan);}
   gtag('config', 'AW-18295551736');
   (function(){var c=localStorage.getItem('inf_cookie_consent');if(c==='granted'){gtag('consent','update',{ad_storage:'granted',analytics_storage:'granted',ad_user_data:'granted',ad_personalization:'granted'});}})();
 </script>
+<!-- Sentry Error Monitoring -->
+<script src="https://browser.sentry-cdn.com/7.109.0/bundle.min.js" crossorigin="anonymous"></script>
+<script>if(window.Sentry){Sentry.init({dsn:'YOUR_SENTRY_DSN',release:'infinicus@3.0.0',environment:location.hostname==='localhost'?'development':'production',tracesSampleRate:0.1,beforeSend:function(e){return location.hostname==='localhost'?null:e;}});}</script>
 </head>
 <body>
 

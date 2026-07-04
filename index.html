@@ -619,6 +619,17 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
     }
   })();
 </script>
+<!-- Sentry Error Monitoring — replace YOUR_SENTRY_DSN with your DSN from sentry.io -->
+<script src="https://browser.sentry-cdn.com/7.109.0/bundle.min.js" crossorigin="anonymous"></script>
+<script>
+  if(window.Sentry){Sentry.init({
+    dsn:'YOUR_SENTRY_DSN',
+    release:'infinicus@3.0.0',
+    environment:location.hostname==='localhost'?'development':'production',
+    tracesSampleRate:0.1,
+    beforeSend:function(e){return location.hostname==='localhost'?null:e;}
+  });}
+</script>
 </head>
 <body>
 
@@ -764,7 +775,8 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
     </div>
     <div class="fg">
       <label>City / Country</label>
-      <input id="i-loc" placeholder="e.g. Nairobi, Kenya">
+      <input id="i-loc" placeholder="e.g. Nairobi, Kenya" oninput="updateLocIndicator(this.value)">
+      <div id="loc-indicator" style="font-family:var(--mono);font-size:10px;color:var(--muted-2);margin-top:4px;height:14px;"></div>
     </div>
     <div class="fg">
       <label>Target Customers</label>
@@ -789,12 +801,30 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
       </select>
     </div>
     <div class="fg">
-      <label id="price-label">Price Per Sale (<span class="cur-code">USD</span>)</label>
+      <label id="price-label">Primary Price Per Sale (<span class="cur-code">USD</span>)</label>
       <input id="i-price" type="number" min="0" placeholder="e.g. 25">
     </div>
     <div class="fg">
       <label>Monthly Marketing Budget (<span class="cur-code">USD</span>)</label>
       <input id="i-mktbud" type="number" min="0" placeholder="e.g. 500">
+    </div>
+    <!-- ── ADDITIONAL REVENUE STREAMS ── -->
+    <div class="fg full" style="margin-top:4px;">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;" onclick="toggleRevStreams()">
+        <span id="rev-toggle-icon" style="font-size:11px;color:var(--emerald);">▶</span>
+        <span style="font-size:11px;font-family:var(--mono);color:var(--muted-2);letter-spacing:.05em;">ADD REVENUE STREAMS (optional — up to 2 more)</span>
+      </label>
+      <div id="rev-streams-panel" style="display:none;margin-top:8px;">
+        <div class="g2" style="gap:8px;margin-bottom:6px;">
+          <div class="fg"><label style="font-size:10px;">Stream 2 Price (<span class="cur-code">USD</span>)</label><input id="i-price2" type="number" min="0" placeholder="e.g. 50"></div>
+          <div class="fg"><label style="font-size:10px;">Stream 2 Monthly Sales Volume</label><input id="i-vol2" type="number" min="0" placeholder="e.g. 30"></div>
+        </div>
+        <div class="g2" style="gap:8px;">
+          <div class="fg"><label style="font-size:10px;">Stream 3 Price (<span class="cur-code">USD</span>)</label><input id="i-price3" type="number" min="0" placeholder="e.g. 200"></div>
+          <div class="fg"><label style="font-size:10px;">Stream 3 Monthly Sales Volume</label><input id="i-vol3" type="number" min="0" placeholder="e.g. 5"></div>
+        </div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--muted-2);margin-top:6px;">Each stream adds fixed monthly revenue on top of the primary simulation model.</div>
+      </div>
     </div>
     <div class="fg">
       <label>Team Size at Launch</label>
@@ -819,6 +849,29 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
       </select>
     </div>
   </div>
+  <!-- ── BREAK-EVEN REVERSE CALCULATOR ── -->
+  <div style="border:1px solid rgba(255,255,255,0.08);border-radius:10px;margin-bottom:1rem;overflow:hidden;">
+    <button onclick="toggleBeCalc()" style="width:100%;background:rgba(255,255,255,0.03);border:none;padding:12px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;color:var(--fg);font-family:var(--mono);font-size:11px;letter-spacing:.08em;">
+      <span id="be-calc-icon" style="color:var(--emerald);">▶</span>
+      BREAK-EVEN REVERSE CALCULATOR
+      <span style="margin-left:auto;color:var(--muted-2);font-size:10px;">Enter target days → get min price + daily customers needed</span>
+    </button>
+    <div id="be-calc-panel" style="display:none;padding:14px 16px;border-top:1px solid rgba(255,255,255,0.06);">
+      <div class="g2" style="gap:10px;margin-bottom:10px;">
+        <div class="fg">
+          <label style="font-size:10px;">Target Break-Even Day</label>
+          <input id="be-target-day" type="number" min="1" max="90" placeholder="e.g. 30" style="font-size:13px;">
+        </div>
+        <div class="fg">
+          <label style="font-size:10px;">Daily Customer Target (optional)</label>
+          <input id="be-daily-cust" type="number" min="1" placeholder="e.g. 20" style="font-size:13px;">
+        </div>
+      </div>
+      <button onclick="runBeCalc()" style="background:rgba(0,230,118,.12);border:1px solid rgba(0,230,118,.3);color:var(--emerald);font-family:var(--mono);font-size:11px;padding:8px 18px;border-radius:6px;cursor:pointer;letter-spacing:.06em;">⚡ CALCULATE</button>
+      <div id="be-calc-result" style="margin-top:12px;font-family:var(--mono);font-size:11px;"></div>
+    </div>
+  </div>
+
   <div class="sim-controls">
     <button class="btn-launch" id="launch-btn" onclick="startSim()">▶ START SIMULATION</button>
     <button class="btn-stop"   id="stop-btn"   onclick="stopSim()" disabled>⏸ STOP</button>
@@ -958,8 +1011,10 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
   <div class="pg-sub">// FINAL ASSESSMENT</div>
   <div class="action-row">
     <button class="btn-action" onclick="shareLink()">⎋ SHARE LINK</button>
+    <button class="btn-action" onclick="downloadVerdictCard()">🖼 SHARE CARD</button>
     <button class="btn-action" onclick="nav('report')">↗ VIEW FULL REPORT</button>
   </div>
+  <canvas id="verdict-canvas" width="1200" height="630" style="display:none;"></canvas>
   <div id="verdict-panel">
     <div class="empty-state"><p>Run a simulation to receive a verdict.</p></div>
   </div>
@@ -1755,6 +1810,68 @@ const INDUSTRY_HISTORY = {
 };
 
 // ─── ENGINE MODES ────────────────────────────────────────────────────────────
+// ─── LOCATION COST INDEX ─────────────────────────────────────────────────────
+// costMult: multiplier on fixed costs (rent, salaries, overhead)
+// cacMult:  multiplier on customer acquisition cost
+const LOCATION_COSTS = [
+  // Ultra high cost cities
+  { keys:['new york','nyc','manhattan','brooklyn'],                       costMult:1.85, cacMult:1.60, label:'New York' },
+  { keys:['san francisco','sf','bay area','silicon valley','palo alto'],  costMult:1.95, cacMult:1.65, label:'San Francisco' },
+  { keys:['zurich','geneva','switzerland'],                               costMult:2.00, cacMult:1.70, label:'Switzerland' },
+  { keys:['hong kong'],                                                   costMult:1.80, cacMult:1.55, label:'Hong Kong' },
+  { keys:['oslo','norway'],                                               costMult:1.90, cacMult:1.60, label:'Norway' },
+  { keys:['singapore'],                                                   costMult:1.75, cacMult:1.50, label:'Singapore' },
+  { keys:['tokyo','japan'],                                               costMult:1.65, cacMult:1.45, label:'Japan' },
+  { keys:['sydney','melbourne','brisbane','australia'],                   costMult:1.60, cacMult:1.40, label:'Australia' },
+  { keys:['dubai','uae','abu dhabi'],                                     costMult:1.60, cacMult:1.40, label:'UAE' },
+  { keys:['london','uk','england','scotland','wales'],                    costMult:1.70, cacMult:1.45, label:'UK' },
+  // High cost
+  { keys:['los angeles','la','chicago','boston','seattle','miami','houston','dallas','atlanta','usa','united states'], costMult:1.55, cacMult:1.35, label:'USA' },
+  { keys:['stockholm','sweden'],                                          costMult:1.50, cacMult:1.30, label:'Sweden' },
+  { keys:['paris','france'],                                              costMult:1.45, cacMult:1.30, label:'France' },
+  { keys:['toronto','vancouver','calgary','canada'],                      costMult:1.40, cacMult:1.25, label:'Canada' },
+  { keys:['amsterdam','netherlands','holland'],                           costMult:1.40, cacMult:1.25, label:'Netherlands' },
+  { keys:['berlin','munich','frankfurt','hamburg','germany'],             costMult:1.30, cacMult:1.20, label:'Germany' },
+  { keys:['dublin','ireland'],                                            costMult:1.35, cacMult:1.22, label:'Ireland' },
+  { keys:['new zealand','auckland','wellington'],                         costMult:1.45, cacMult:1.28, label:'New Zealand' },
+  // Mid cost
+  { keys:['johannesburg','cape town','pretoria','south africa'],          costMult:0.90, cacMult:0.95, label:'South Africa' },
+  { keys:['istanbul','ankara','turkey'],                                  costMult:0.65, cacMult:0.70, label:'Turkey' },
+  { keys:['kuala lumpur','kl','malaysia'],                                costMult:0.65, cacMult:0.70, label:'Malaysia' },
+  { keys:['cairo','egypt'],                                               costMult:0.65, cacMult:0.70, label:'Egypt' },
+  { keys:['bangkok','chiang mai','thailand'],                             costMult:0.60, cacMult:0.65, label:'Thailand' },
+  { keys:['são paulo','sao paulo','rio de janeiro','brasilia','brazil'],  costMult:0.80, cacMult:0.85, label:'Brazil' },
+  { keys:['mexico city','cdmx','guadalajara','monterrey','mexico'],       costMult:0.70, cacMult:0.75, label:'Mexico' },
+  { keys:['jakarta','surabaya','indonesia'],                              costMult:0.55, cacMult:0.60, label:'Indonesia' },
+  { keys:['manila','cebu','philippines'],                                 costMult:0.45, cacMult:0.50, label:'Philippines' },
+  { keys:['ho chi minh','hanoi','vietnam'],                               costMult:0.42, cacMult:0.48, label:'Vietnam' },
+  // Low cost — Africa & South Asia
+  { keys:['mumbai','delhi','bangalore','hyderabad','pune','chennai','india'], costMult:0.60, cacMult:0.65, label:'India' },
+  { keys:['karachi','lahore','islamabad','pakistan'],                     costMult:0.38, cacMult:0.43, label:'Pakistan' },
+  { keys:['dhaka','chittagong','bangladesh'],                             costMult:0.35, cacMult:0.40, label:'Bangladesh' },
+  { keys:['nairobi','mombasa','kenya'],                                   costMult:0.45, cacMult:0.50, label:'Kenya' },
+  { keys:['lagos','abuja','port harcourt','nigeria'],                     costMult:0.40, cacMult:0.45, label:'Nigeria' },
+  { keys:['accra','kumasi','ghana'],                                      costMult:0.42, cacMult:0.48, label:'Ghana' },
+  { keys:['kampala','uganda'],                                            costMult:0.38, cacMult:0.43, label:'Uganda' },
+  { keys:['dar es salaam','dodoma','tanzania'],                           costMult:0.38, cacMult:0.43, label:'Tanzania' },
+  { keys:['kigali','rwanda'],                                             costMult:0.40, cacMult:0.45, label:'Rwanda' },
+  { keys:['addis ababa','ethiopia'],                                      costMult:0.36, cacMult:0.42, label:'Ethiopia' },
+  { keys:['dakar','senegal'],                                             costMult:0.42, cacMult:0.47, label:'Senegal' },
+  { keys:['lusaka','zambia'],                                             costMult:0.38, cacMult:0.43, label:'Zambia' },
+  { keys:['harare','zimbabwe'],                                           costMult:0.35, cacMult:0.40, label:'Zimbabwe' },
+];
+
+function detectLocation(locStr) {
+  if (!locStr) return { costMult:1.0, cacMult:1.0, label:null };
+  const s = locStr.toLowerCase();
+  for (const entry of LOCATION_COSTS) {
+    if (entry.keys.some(k => s.includes(k))) {
+      return { costMult: entry.costMult, cacMult: entry.cacMult, label: entry.label };
+    }
+  }
+  return { costMult:1.0, cacMult:1.0, label:null };
+}
+
 const ENGINE_MODES = {
   balanced:   { mktMult:1.0, costMult:1.0, growthBoost:1.0,  acqMult:1.0,  label:'Balanced'        },
   lean:       { mktMult:0.5, costMult:0.75,growthBoost:0.7,  acqMult:0.65, label:'Lean Survival'    },
@@ -1771,6 +1888,112 @@ function selectEngMode(mode) {
   if (el) el.classList.add('selected');
 }
 
+function toggleRevStreams() {
+  const panel = document.getElementById('rev-streams-panel');
+  const icon  = document.getElementById('rev-toggle-icon');
+  if (!panel) return;
+  const open = panel.style.display !== 'none';
+  panel.style.display = open ? 'none' : 'block';
+  if (icon) icon.textContent = open ? '▶' : '▼';
+}
+
+function toggleBeCalc() {
+  const panel = document.getElementById('be-calc-panel');
+  const icon  = document.getElementById('be-calc-icon');
+  if (!panel) return;
+  const open = panel.style.display !== 'none';
+  panel.style.display = open ? 'none' : 'block';
+  if (icon) icon.textContent = open ? '▶' : '▼';
+}
+
+function runBeCalc() {
+  const result = document.getElementById('be-calc-result');
+  if (!result) return;
+
+  const targetDay = parseInt(document.getElementById('be-target-day')?.value) || 0;
+  const custInput = parseInt(document.getElementById('be-daily-cust')?.value) || 0;
+  const rate = CUR[curCode]?.r || 1;
+
+  if (targetDay <= 0 || targetDay > 90) {
+    result.innerHTML = '<span style="color:var(--red)">Enter a target day between 1 and 90.</span>';
+    return;
+  }
+
+  // Read current form values for costs
+  const capital = (parseFloat($('i-cap')?.value) || 0) / rate;
+  const mktBud  = (parseFloat($('i-mktbud')?.value) || 300) / rate;
+  const team    = parseInt($('i-team')?.value) || 1;
+  const ind     = $('i-ind')?.value || 'service';
+  const prof    = PROFILES[ind];
+  const em      = ENGINE_MODES[S.engMode || 'balanced'];
+  const loc     = detectLocation($('i-loc')?.value || '');
+
+  if (capital <= 0) { result.innerHTML = '<span style="color:var(--amber)">Enter startup capital first.</span>'; return; }
+
+  // Daily fixed cost
+  const dailyMkt   = (mktBud / SIM_DAYS) * em.mktMult;
+  const dailyFixed = (prof.fixBase * team + capital * prof.fixR * 0.05 / SIM_DAYS) * em.costMult * loc.costMult;
+  const totalDailyCost = dailyFixed + dailyMkt; // variable cost depends on revenue
+
+  // Target: cash at end of day targetDay = capital (break-even = recovered capital)
+  // Simplified: total_revenue - total_cost = 0 over targetDay days
+  // rev_day = custPerDay * price * visitsPerMonth/30 * varFactor
+  // varFactor ≈ (1 - varR) to account for variable cost portion
+  // total_rev * (1 - varR) = total_fixed_cost
+  // total_rev = total_fixed_cost / (1 - varR)
+  // custPerDay * price * visits/30 * targetDay = total_fixed_cost / (1-varR)
+
+  const totalFixedCost = (dailyFixed + dailyMkt) * targetDay;
+  const netRevenueNeeded = totalFixedCost / (1 - prof.varR * em.costMult * loc.costMult);
+
+  const visits = prof.visitsPerMonth / 30;
+
+  let minPrice, dailyCustNeeded;
+  if (custInput > 0) {
+    // Customer count fixed — solve for price
+    minPrice = netRevenueNeeded / (custInput * visits * targetDay);
+    dailyCustNeeded = custInput;
+  } else {
+    // Assume industry-avg CAC-driven customers: dailyMkt / (prof.acqCost * loc.cacMult)
+    const estDailyCust = Math.max(1, Math.round(dailyMkt / (prof.acqCost * loc.cacMult)));
+    dailyCustNeeded = estDailyCust;
+    minPrice = netRevenueNeeded / (estDailyCust * visits * targetDay);
+  }
+
+  const minPriceDisplay = (minPrice * rate).toFixed(2);
+  const curSym = curCode;
+
+  result.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px;">
+      <div style="background:rgba(0,230,118,.08);border:1px solid rgba(0,230,118,.2);border-radius:8px;padding:10px;">
+        <div style="color:var(--muted-2);font-size:9px;margin-bottom:4px;">MIN PRICE PER SALE</div>
+        <div style="color:var(--emerald);font-size:18px;font-weight:700;">${curSym} ${minPriceDisplay}</div>
+      </div>
+      <div style="background:rgba(0,230,118,.08);border:1px solid rgba(0,230,118,.2);border-radius:8px;padding:10px;">
+        <div style="color:var(--muted-2);font-size:9px;margin-bottom:4px;">DAILY CUSTOMERS NEEDED</div>
+        <div style="color:var(--emerald);font-size:18px;font-weight:700;">${dailyCustNeeded}</div>
+      </div>
+    </div>
+    <div style="color:var(--muted-2);font-size:9px;margin-top:8px;">
+      To break even by Day ${targetDay}: charge at least <strong style="color:var(--fg)">${curSym} ${minPriceDisplay}</strong> and acquire <strong style="color:var(--fg)">${dailyCustNeeded}</strong> customers/day.
+      Total fixed cost over ${targetDay} days: ${curSym} ${(totalFixedCost*rate).toLocaleString(undefined,{maximumFractionDigits:0})}.
+      ${minPrice * rate > (parseFloat($('i-price')?.value)||0) ? '<br><span style="color:var(--amber)">⚠ Your current price is below this minimum — increase it or extend your break-even target.</span>' : '<br><span style="color:var(--emerald)">✓ Your current price meets this minimum.</span>'}
+    </div>`;
+}
+
+function updateLocIndicator(val) {
+  const el = document.getElementById('loc-indicator');
+  if (!el) return;
+  const d = detectLocation(val);
+  if (!d.label) { el.textContent = ''; return; }
+  const costPct = Math.round((d.costMult - 1) * 100);
+  const sign = costPct >= 0 ? '+' : '';
+  const cacPct = Math.round((d.cacMult - 1) * 100);
+  const cacSign = cacPct >= 0 ? '+' : '';
+  el.style.color = d.costMult > 1 ? 'var(--amber)' : 'var(--emerald)';
+  el.textContent = `📍 ${d.label} · Fixed costs ${sign}${costPct}% · CAC ${cacSign}${cacPct}%`;
+}
+
 // ─── SIMULATION ──────────────────────────────────────────────────────────────
 function simulate(params) {
   const prof = PROFILES[params.industry];
@@ -1778,12 +2001,14 @@ function simulate(params) {
   const evMap = {};
   events.forEach(e=>{ evMap[e.day]=(evMap[e.day]||1)*(1+e.impact); });
 
-  // ── Engine mode + experience + competition multipliers ──
+  // ── Engine mode + experience + competition + location multipliers ──
   const em   = ENGINE_MODES[params.engMode||'balanced'];
   const expM = EXP_MULT[params.exp||'some'];
   const compM= COMP_MULT[params.comp||'medium'];
+  const loc  = detectLocation(params.loc);
   const totalAcqMult = em.acqMult * expM * compM;
-  const totalCostMult= em.costMult;
+  const totalCostMult= em.costMult * loc.costMult;
+  const locAcqCost   = prof.acqCost * loc.cacMult;
 
   const days = [];
   let cash = params.capital, customers = 0;
@@ -1797,7 +2022,7 @@ function simulate(params) {
     const seasonMult = prof.season?prof.season[(d-1)%prof.season.length]:1;
 
     // Paid acquisition (marketing budget driven)
-    const paidAcq  = Math.max(0,Math.floor(rNorm(dailyMkt/prof.acqCost,1.5)*shock*totalAcqMult));
+    const paidAcq  = Math.max(0,Math.floor(rNorm(dailyMkt/locAcqCost,1.5)*shock*totalAcqMult));
     // Organic acquisition: foot traffic + word-of-mouth referrals from existing base
     const footTraffic = Math.max(0,Math.round(rNorm(organicBase,1.0)*seasonMult*shock));
     const wordOfMouth  = Math.round(customers*0.003*em.growthBoost);
@@ -1805,7 +2030,8 @@ function simulate(params) {
 
     const churned = Math.floor(customers*prof.churn/30);
     customers = Math.max(0,customers+acq-churned);
-    const rev    = customers*(params.price*prof.visitsPerMonth/30)*rnd(.75,1.25)*shock*seasonMult;
+    const primRev = customers*(params.price*prof.visitsPerMonth/30)*rnd(.75,1.25)*shock*seasonMult;
+    const rev     = primRev + (params.extraDailyRev||0);
     const fixed  = (prof.fixBase*params.team + params.capital*prof.fixR*0.05/SIM_DAYS) * totalCostMult;
     const varC   = rev*prof.varR*totalCostMult;
     const totalCost = fixed+varC+dailyMkt;
@@ -1822,15 +2048,16 @@ function monteCarlo(params) {
   const em   = ENGINE_MODES[params.engMode||'balanced'];
   const expM = EXP_MULT[params.exp||'some'];
   const compM= COMP_MULT[params.comp||'medium'];
+  const loc  = detectLocation(params.loc);
   const totalAcqMult = em.acqMult * expM * compM;
-  const totalCostMult= em.costMult;
+  const totalCostMult= em.costMult * loc.costMult;
   const finals = [];
   const organicBase=Math.max(0.5,Math.log(params.team+1)*1.2)*baseProf.organicMult*totalAcqMult;
   for (let r=0;r<500;r++) {
     const p = {
       fixR:   Math.max(.03, rNorm(baseProf.fixR,   baseProf.fixR*.25)),
       varR:   Math.max(.01, rNorm(baseProf.varR,   baseProf.varR*.2)),
-      acqCost:Math.max(1,   rNorm(baseProf.acqCost,baseProf.acqCost*.3)),
+      acqCost:Math.max(1,   rNorm(baseProf.acqCost*loc.cacMult, baseProf.acqCost*loc.cacMult*.3)),
       churn:  Math.max(.005,rNorm(baseProf.churn,  baseProf.churn*.25)),
       mktMult:baseProf.mktMult
     };
@@ -1865,8 +2092,10 @@ function simulateLong(params, totalDays) {
   const em   = ENGINE_MODES[params.engMode||'balanced'];
   const expM = EXP_MULT[params.exp||'some'];
   const compM= COMP_MULT[params.comp||'medium'];
+  const loc  = detectLocation(params.loc);
   const totalAcqMult = em.acqMult * expM * compM;
-  const totalCostMult= em.costMult;
+  const totalCostMult= em.costMult * loc.costMult;
+  const locAcqCost   = prof.acqCost * loc.cacMult;
 
   const days = [];
   let cash = params.capital, customers = 0;
@@ -1875,13 +2104,13 @@ function simulateLong(params, totalDays) {
 
   for (let d=1; d<=totalDays; d++) {
     const seasonMult = prof.season ? prof.season[(d-1) % prof.season.length] : 1;
-    const paidAcq = Math.max(0, Math.floor(rNorm(dailyMkt/prof.acqCost, 1.5) * totalAcqMult));
+    const paidAcq = Math.max(0, Math.floor(rNorm(dailyMkt/locAcqCost, 1.5) * totalAcqMult));
     const footTraffic = Math.max(0, Math.round(rNorm(organicBase, 1.0) * seasonMult));
     const wordOfMouth = Math.round(customers * 0.003 * em.growthBoost);
     const acq = paidAcq + footTraffic + wordOfMouth;
     const churned = Math.floor(customers * prof.churn / 30);
     customers = Math.max(0, customers + acq - churned);
-    const rev  = customers * (params.price * prof.visitsPerMonth / 30) * rnd(.75, 1.25) * seasonMult;
+    const rev  = customers * (params.price * prof.visitsPerMonth / 30) * rnd(.75, 1.25) * seasonMult + (params.extraDailyRev||0);
     const fixed = (prof.fixBase * params.team + params.capital * prof.fixR * 0.05 / totalDays) * totalCostMult;
     const varC  = rev * prof.varR * totalCostMult;
     const totalCost = fixed + varC + dailyMkt;
@@ -1896,15 +2125,16 @@ function monteCarloLong(params, totalDays) {
   const em   = ENGINE_MODES[params.engMode||'balanced'];
   const expM = EXP_MULT[params.exp||'some'];
   const compM= COMP_MULT[params.comp||'medium'];
+  const loc  = detectLocation(params.loc);
   const totalAcqMult = em.acqMult * expM * compM;
-  const totalCostMult= em.costMult;
+  const totalCostMult= em.costMult * loc.costMult;
   const organicBase = Math.max(0.5,Math.log(params.team+1)*1.2)*baseProf.organicMult*totalAcqMult;
   const finals = [];
   for (let r=0; r<300; r++) {
     const p = {
       fixR:    Math.max(.03, rNorm(baseProf.fixR,   baseProf.fixR*.25)),
       varR:    Math.max(.01, rNorm(baseProf.varR,   baseProf.varR*.2)),
-      acqCost: Math.max(1,   rNorm(baseProf.acqCost,baseProf.acqCost*.3)),
+      acqCost: Math.max(1,   rNorm(baseProf.acqCost*loc.cacMult, baseProf.acqCost*loc.cacMult*.3)),
       churn:   Math.max(.005,rNorm(baseProf.churn,  baseProf.churn*.25)),
     };
     let cash=params.capital, customers=0;
@@ -2114,12 +2344,19 @@ function startSim() {
   const exp    =$('i-exp')?.value||'some';
   const comp   =$('i-comp')?.value||'medium';
   const engMode=S.engMode||'balanced';
+  // Extra revenue streams (optional)
+  const price2 =(parseFloat($('i-price2')?.value)||0)/rate;
+  const vol2   = parseInt($('i-vol2')?.value)||0;
+  const price3 =(parseFloat($('i-price3')?.value)||0)/rate;
+  const vol3   = parseInt($('i-vol3')?.value)||0;
+  // Extra daily revenue from fixed-volume streams (monthly vol ÷ 30 days)
+  const extraDailyRev = (price2*vol2 + price3*vol3) / 30;
   const errBox =$('err-box');
   errBox.style.display='none';
   if (!idea)    {errBox.textContent='Please describe your business idea.';errBox.style.display='block';return;}
   if (capital<=0){errBox.textContent='Enter a startup capital greater than 0.';errBox.style.display='block';return;}
   if (price<=0) {errBox.textContent='Enter a price point greater than 0.';errBox.style.display='block';return;}
-  S.params={idea,capital,price,mktBud,team,industry,loc,mkt,exp,comp,engMode};
+  S.params={idea,capital,price,mktBud,team,industry,loc,mkt,exp,comp,engMode,extraDailyRev:extraDailyRev||0};
   trackEvent('sim_start',{industry,cur:curCode});
   S.running=true;S.done=false;S.scores=null;S.aiData=null;
   setBadge('running');
@@ -2909,13 +3146,409 @@ function shareLink() {
   navigator.clipboard.writeText(url).then(()=>showToast('Share link copied — results included!')).catch(()=>showToast('Could not copy link.'));
 }
 
+function downloadVerdictCard() {
+  if (!S.done) { showToast('Run a simulation first.'); return; }
+  const canvas = document.getElementById('verdict-canvas');
+  if (!canvas) { showToast('Canvas not found.'); return; }
+  const ctx = canvas.getContext('2d');
+  const W = 1200, H = 630;
+
+  const verdict = computeVerdict();
+  const vColor  = verdict==='go' ? '#10b981' : verdict==='modify' ? '#f59e0b' : '#ef4444';
+  const vLabel  = verdict==='go' ? 'GO' : verdict==='modify' ? 'MODIFY' : 'STOP';
+  const last    = S.days[S.days.length - 1];
+  const rate    = CUR[curCode]?.r || 1;
+  const totRev  = S.days.reduce((s,d)=>s+d.rev, 0);
+  const totProf = S.days.reduce((s,d)=>s+d.profit, 0);
+  const surv    = Math.round(S.mc.survivalRate * 100);
+  const fmtK    = v => { const a=Math.abs(v*rate); return (v<0?'-':'')+(a>=1e6?(a/1e6).toFixed(1)+'M':a>=1e3?(a/1e3).toFixed(0)+'K':a.toFixed(0)); };
+
+  // Background
+  ctx.fillStyle = '#07080a';
+  ctx.fillRect(0, 0, W, H);
+
+  // Subtle grid
+  ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+  ctx.lineWidth = 1;
+  for (let x=0;x<W;x+=60){ ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke(); }
+  for (let y=0;y<H;y+=60){ ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke(); }
+
+  // Top bar
+  ctx.fillStyle = vColor + '22';
+  ctx.fillRect(0, 0, W, 6);
+  ctx.fillStyle = vColor;
+  ctx.fillRect(0, 0, W, 4);
+
+  // Branding — top left
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 28px monospace';
+  ctx.fillText('INFINICUS', 48, 72);
+  ctx.fillStyle = '#00e676';
+  ctx.font = '13px monospace';
+  ctx.fillText('ENGINE v3  ·  Monte Carlo Business Simulator', 48, 96);
+
+  // Date — top right
+  ctx.fillStyle = 'rgba(255,255,255,0.35)';
+  ctx.font = '12px monospace';
+  const dateStr = new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}).toUpperCase();
+  ctx.textAlign = 'right';
+  ctx.fillText(dateStr, W - 48, 72);
+  ctx.textAlign = 'left';
+
+  // Big verdict badge
+  ctx.fillStyle = vColor + '18';
+  ctx.beginPath();
+  ctx.roundRect(W/2 - 160, 150, 320, 140, 16);
+  ctx.fill();
+  ctx.strokeStyle = vColor + '80';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.roundRect(W/2 - 160, 150, 320, 140, 16);
+  ctx.stroke();
+
+  ctx.fillStyle = vColor;
+  ctx.font = 'bold 88px monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText(vLabel, W/2, 255);
+  ctx.textAlign = 'left';
+
+  // Survival rate
+  ctx.fillStyle = 'rgba(255,255,255,0.55)';
+  ctx.font = '14px monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('SURVIVAL RATE: ' + surv + '%', W/2, 328);
+  ctx.textAlign = 'left';
+
+  // Idea text
+  const idea = (S.params.idea||'').substring(0, 80) + ((S.params.idea||'').length>80?'…':'');
+  ctx.fillStyle = 'rgba(255,255,255,0.75)';
+  ctx.font = '18px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(idea, W/2, 370);
+  ctx.textAlign = 'left';
+
+  // Metrics strip
+  const metrics = [
+    { label:'90-DAY REVENUE',  val: fmtK(totRev) + ' ' + curCode },
+    { label:'NET PROFIT',      val: fmtK(totProf) + ' ' + curCode },
+    { label:'END CASH',        val: fmtK(last.cash) + ' ' + curCode },
+    { label:'BREAK-EVEN',      val: (S.days.find(d=>d.cash>S.params.capital) || {d:'N/A'}).d === 'N/A' ? 'Not reached' : 'Day '+(S.days.findIndex(d=>d.profit>0)+1) },
+  ];
+  const mW = (W - 96) / 4;
+  metrics.forEach((m, i) => {
+    const x = 48 + i * mW;
+    ctx.fillStyle = 'rgba(255,255,255,0.06)';
+    ctx.beginPath(); ctx.roundRect(x, 420, mW - 12, 110, 10); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.roundRect(x, 420, mW - 12, 110, 10); ctx.stroke();
+
+    ctx.fillStyle = 'rgba(255,255,255,0.45)';
+    ctx.font = '11px monospace';
+    ctx.fillText(m.label, x + 16, 450);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 22px monospace';
+    ctx.fillText(m.val, x + 16, 482);
+
+    // Mini bar
+    ctx.fillStyle = vColor + '33';
+    ctx.fillRect(x + 16, 500, mW - 44, 6);
+    ctx.fillStyle = vColor;
+    ctx.fillRect(x + 16, 500, Math.min(mW - 44, (mW - 44) * Math.random()), 6);
+  });
+
+  // Footer
+  ctx.fillStyle = 'rgba(255,255,255,0.2)';
+  ctx.font = '11px monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('infini-cus.com  ·  Powered by Monte Carlo Simulation', W/2, H - 24);
+  ctx.textAlign = 'left';
+
+  // Download
+  const link = document.createElement('a');
+  link.download = 'infinicus-verdict-' + vLabel.toLowerCase() + '.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+  showToast('🖼 Verdict card downloaded!');
+}
+
 function exportPDF() {
-  if(!S.done){showToast('Run a simulation first.');return;}
-  // Make sure the report section is active so @media print shows it
-  if(!$('sec-report').classList.contains('active')) nav('report');
-  showToast('⎙ Opening print dialog…');
-  // Small delay to let the section render
-  setTimeout(()=>window.print(), 200);
+  if (!S.done) { showToast('Run a simulation first.'); return; }
+  const p = S.params;
+  const last = S.days[S.days.length-1];
+  const rate = CUR[curCode]?.r || 1;
+  const fmt2 = v => (v*rate).toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:0});
+  const verdict = computeVerdict();
+  const vColor  = verdict==='go' ? '#10b981' : verdict==='modify' ? '#f59e0b' : '#ef4444';
+  const vLabel  = verdict.toUpperCase();
+  const surv    = Math.round(S.mc.survivalRate*100);
+  const totRev  = S.days.reduce((s,d)=>s+d.rev,0);
+  const totCost = S.days.reduce((s,d)=>s+d.cost,0);
+  const totProfit= totRev - totCost;
+  const profDays = S.days.filter(d=>d.profit>0).length;
+  const beDay    = S.days.findIndex(d=>d.profit>0) + 1;
+  const scores   = calcScores();
+  const sc = s => Math.round(scores[s]||0);
+  const riskItems = (function(){
+    const items=[];
+    if(last.cash<0) items.push('End cash is negative — business will not survive without additional funding.');
+    if(S.mc.survivalRate<0.4) items.push('Survival rate below 40% — high probability of failure across Monte Carlo scenarios.');
+    if(profDays/S.days.length<0.3) items.push('Fewer than 30% of days are profitable — revenue model needs significant strengthening.');
+    if(p.comp==='red') items.push('Red Ocean competition detected — extremely difficult to gain meaningful market share.');
+    if(p.exp==='first') items.push('First-time founder — execution risk is elevated. Consider advisory board or co-founder.');
+    if(p.engMode==='aggressive') items.push('Aggressive Scale mode — costs are front-loaded; requires strong cash reserves to sustain.');
+    return items;
+  })();
+
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
+<title>INFINICUS Business Plan — ${p.idea.substring(0,40)}</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=JetBrains+Mono:wght@400;700&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Inter',sans-serif;color:#0f172a;background:#fff;font-size:11pt;line-height:1.6;}
+  .page{width:210mm;min-height:297mm;margin:0 auto;padding:20mm 22mm;page-break-after:always;}
+  .cover{background:#07080a;color:#fff;display:flex;flex-direction:column;justify-content:center;padding:28mm 22mm;}
+  h1{font-family:'JetBrains Mono',monospace;font-size:13pt;letter-spacing:.15em;color:#888;margin-bottom:8mm;}
+  h2{font-size:22pt;font-weight:900;margin-bottom:4mm;}
+  h3{font-size:13pt;font-weight:700;margin-bottom:3mm;margin-top:6mm;color:#1e293b;border-bottom:2px solid #e2e8f0;padding-bottom:2mm;}
+  .verdict-badge{display:inline-block;background:${vColor}22;border:2px solid ${vColor};color:${vColor};font-family:'JetBrains Mono',monospace;font-size:28pt;font-weight:900;padding:6mm 14mm;border-radius:8px;margin:6mm 0;}
+  .kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4mm;margin:4mm 0;}
+  .kpi{background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:4mm;text-align:center;}
+  .kpi-val{font-size:16pt;font-weight:900;color:#0f172a;}
+  .kpi-lbl{font-size:8pt;color:#64748b;font-family:'JetBrains Mono',monospace;letter-spacing:.05em;margin-top:1mm;}
+  .score-bar{height:8px;background:#e2e8f0;border-radius:4px;margin:2mm 0;}
+  .score-fill{height:100%;border-radius:4px;background:${vColor};}
+  .risk-item{background:#fef2f2;border-left:3px solid #ef4444;padding:3mm 4mm;margin:2mm 0;border-radius:0 4px 4px 0;font-size:9.5pt;}
+  .action-item{background:#f0fdf4;border-left:3px solid #10b981;padding:3mm 4mm;margin:2mm 0;border-radius:0 4px 4px 0;}
+  table{width:100%;border-collapse:collapse;margin:3mm 0;font-size:9.5pt;}
+  th{background:#f1f5f9;padding:2.5mm 3mm;text-align:left;font-weight:600;color:#475569;}
+  td{padding:2mm 3mm;border-bottom:1px solid #e2e8f0;}
+  .footer{position:fixed;bottom:10mm;left:0;right:0;text-align:center;font-size:8pt;color:#94a3b8;font-family:'JetBrains Mono',monospace;}
+  @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}.page{page-break-after:always;}}
+  .page-num{float:right;color:#94a3b8;font-size:8pt;font-family:'JetBrains Mono',monospace;}
+  .tag{display:inline-block;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:3px;padding:0 2mm;font-size:8pt;color:#475569;margin:0.5mm;}
+  p{margin-bottom:2mm;}
+</style>
+</head><body>
+
+<!-- PAGE 1: COVER -->
+<div class="page cover">
+  <div style="color:#00e676;font-family:'JetBrains Mono',monospace;font-size:10pt;letter-spacing:.2em;margin-bottom:8mm;">INFINICUS ENGINE v3</div>
+  <h2 style="font-size:30pt;font-weight:900;color:#fff;line-height:1.15;margin-bottom:6mm;">${p.idea}</h2>
+  <div style="color:#94a3b8;font-size:10pt;margin-bottom:10mm;">📍 ${p.loc||'Global'} &nbsp;·&nbsp; ${(p.industry||'general').toUpperCase()} &nbsp;·&nbsp; Generated ${new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'})}</div>
+  <div>
+    <div style="color:#94a3b8;font-size:9pt;font-family:'JetBrains Mono',monospace;letter-spacing:.1em;margin-bottom:3mm;">SIMULATION VERDICT</div>
+    <div class="verdict-badge">${vLabel}</div>
+  </div>
+  <div style="margin-top:10mm;display:grid;grid-template-columns:repeat(3,1fr);gap:4mm;">
+    <div style="border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:4mm;"><div style="color:#94a3b8;font-size:8pt;font-family:monospace;">SURVIVAL RATE</div><div style="color:#fff;font-size:20pt;font-weight:900;">${surv}%</div></div>
+    <div style="border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:4mm;"><div style="color:#94a3b8;font-size:8pt;font-family:monospace;">90-DAY REVENUE</div><div style="color:#fff;font-size:20pt;font-weight:900;">${curCode} ${fmt2(totRev)}</div></div>
+    <div style="border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:4mm;"><div style="color:#94a3b8;font-size:8pt;font-family:monospace;">NET PROFIT</div><div style="color:${totProfit>0?'#10b981':'#ef4444'};font-size:20pt;font-weight:900;">${curCode} ${fmt2(totProfit)}</div></div>
+  </div>
+  <div style="margin-top:auto;padding-top:12mm;color:#475569;font-size:8pt;font-family:'JetBrains Mono',monospace;">CONFIDENTIAL — GENERATED BY INFINICUS · infini-cus.com</div>
+</div>
+
+<!-- PAGE 2: EXECUTIVE SUMMARY -->
+<div class="page">
+  <div class="page-num">Page 2 / 10</div>
+  <h1>SECTION 01</h1>
+  <h2>Executive Summary</h2>
+  <h3>Business Concept</h3>
+  <p>${p.idea}</p>
+  <p>This business plan was generated from a Monte Carlo simulation using the INFINICUS Engine v3 with 500 stochastic runs, applying industry-calibrated cost structures, demand elasticity curves, and real-world volatility bands across a 90-day launch window.</p>
+  <h3>Simulation Parameters</h3>
+  <table><tr><th>Parameter</th><th>Value</th></tr>
+    <tr><td>Starting Capital</td><td>${curCode} ${fmt2(p.capital)}</td></tr>
+    <tr><td>Price Per Sale</td><td>${curCode} ${fmt2(p.price)}</td></tr>
+    <tr><td>Monthly Marketing Budget</td><td>${curCode} ${fmt2(p.mktBud)}</td></tr>
+    <tr><td>Team Size</td><td>${p.team} person${p.team>1?'s':''}</td></tr>
+    <tr><td>Location</td><td>${p.loc||'Not specified'}</td></tr>
+    <tr><td>Industry</td><td>${(p.industry||'general').toUpperCase()}</td></tr>
+    <tr><td>Engine Mode</td><td>${(p.engMode||'balanced').charAt(0).toUpperCase()+(p.engMode||'balanced').slice(1)}</td></tr>
+    <tr><td>Founder Experience</td><td>${{first:'First-time founder',some:'Some experience (1–2 ventures)',serial:'Serial entrepreneur (3+)',expert:'Domain expert (10+ yrs)'}[p.exp||'some']}</td></tr>
+    <tr><td>Market Competition</td><td>${{low:'Low',medium:'Medium',high:'High',red:'Red Ocean'}[p.comp||'medium']}</td></tr>
+  </table>
+  <h3>Verdict Rationale</h3>
+  <p>The simulation returned a <strong style="color:${vColor}">${vLabel}</strong> verdict based on a composite score across four dimensions: Market Fit (${sc('mktFit')}/100), Capital Efficiency (${sc('capEff')}/100), Sustainability (${sc('sustain')}/100), and Growth Potential (${sc('growth')}/100). The Monte Carlo survival rate — the probability the business ends cash-positive after 90 days — is <strong>${surv}%</strong>.</p>
+</div>
+
+<!-- PAGE 3: MARKET ANALYSIS -->
+<div class="page">
+  <div class="page-num">Page 3 / 10</div>
+  <h1>SECTION 02</h1>
+  <h2>Market Analysis</h2>
+  <h3>Target Market</h3>
+  <p>${p.mkt ? 'Primary customer segment: <strong>' + p.mkt + '</strong>.' : 'Target customer segment not specified.'} The simulation applied ${(p.industry||'general').toUpperCase()} industry benchmarks for demand density, seasonality, and price elasticity.</p>
+  <h3>Market Conditions</h3>
+  <table><tr><th>Factor</th><th>Assessment</th><th>Impact on Model</th></tr>
+    <tr><td>Competition Level</td><td>${{low:'Low — few direct competitors',medium:'Medium — established players exist',high:'High — crowded market',red:'Red Ocean — dominated by giants'}[p.comp||'medium']}</td><td>×${({low:1.25,medium:1.0,high:0.75,red:0.55})[p.comp||'medium']} on customer acquisition</td></tr>
+    <tr><td>Location Cost Index</td><td>${p.loc||'Not specified'}</td><td>Affects fixed costs and CAC</td></tr>
+    <tr><td>Seasonality</td><td>Industry-specific seasonal variation applied</td><td>Daily demand fluctuations</td></tr>
+    <tr><td>Organic Growth</td><td>Word-of-mouth modelled at 0.3% daily referral rate</td><td>Compound customer growth</td></tr>
+  </table>
+  <h3>Engine Mode Context</h3>
+  <p>The simulation ran in <strong>${({balanced:'Balanced',lean:'Lean Survival',aggressive:'Aggressive Scale',investor:'Investor View'})[p.engMode||'balanced']}</strong> mode, which applies the following multipliers to the baseline model:</p>
+  <table><tr><th>Multiplier</th><th>Applied Value</th></tr>
+    <tr><td>Marketing Efficiency</td><td>×${({balanced:1.0,lean:0.5,aggressive:2.0,investor:1.8})[p.engMode||'balanced']}</td></tr>
+    <tr><td>Cost Structure</td><td>×${({balanced:1.0,lean:0.75,aggressive:1.2,investor:1.1})[p.engMode||'balanced']}</td></tr>
+    <tr><td>Growth Acceleration</td><td>×${({balanced:1.0,lean:0.7,aggressive:1.5,investor:2.0})[p.engMode||'balanced']}</td></tr>
+    <tr><td>Acquisition Multiplier</td><td>×${({balanced:1.0,lean:0.65,aggressive:1.8,investor:2.2})[p.engMode||'balanced']}</td></tr>
+  </table>
+</div>
+
+<!-- PAGE 4: CUSTOMER PROFILE -->
+<div class="page">
+  <div class="page-num">Page 4 / 10</div>
+  <h1>SECTION 03</h1>
+  <h2>Customer Profile</h2>
+  <h3>Ideal Customer</h3>
+  <p>${p.mkt ? 'Target: ' + p.mkt + '.' : 'Customer profile not specified.'} Based on the ${(p.industry||'general').toUpperCase()} industry model, the simulation projects the following acquisition dynamics:</p>
+  <h3>Customer Acquisition Summary (90 days)</h3>
+  <table><tr><th>Metric</th><th>Simulated Value</th></tr>
+    <tr><td>Total Customers Acquired</td><td>${(last.customers||0).toLocaleString()}</td></tr>
+    <tr><td>Peak Daily Acquisitions</td><td>${Math.max(...S.days.map(d=>d.acq||0)).toLocaleString()}</td></tr>
+    <tr><td>Average Daily Acquisitions</td><td>${(S.days.reduce((s,d)=>s+(d.acq||0),0)/S.days.length).toFixed(1)}</td></tr>
+    <tr><td>Churn (Monthly Rate)</td><td>Industry-calibrated per ${(p.industry||'general')} model</td></tr>
+    <tr><td>Revenue Per Customer (90-day)</td><td>${curCode} ${(last.customers>0?fmt2(totRev/Math.max(1,last.customers)):'0')}</td></tr>
+    <tr><td>Customer Acquisition Cost</td><td>${curCode} ${fmt2(p.mktBud*3/Math.max(1,last.customers))}</td></tr>
+  </table>
+  <h3>Acquisition Mix</h3>
+  <p>The simulation models three acquisition channels: (1) <strong>Paid</strong> — driven by the monthly marketing budget of ${curCode} ${fmt2(p.mktBud)}, applied against industry-specific CAC benchmarks; (2) <strong>Organic / Foot traffic</strong> — location and industry-calibrated walk-in or search discovery; (3) <strong>Word of mouth</strong> — referral compounding at 0.3% of active customer base per day, boosted by engine growth multiplier.</p>
+</div>
+
+<!-- PAGE 5: REVENUE MODEL -->
+<div class="page">
+  <div class="page-num">Page 5 / 10</div>
+  <h1>SECTION 04</h1>
+  <h2>Revenue Model</h2>
+  <h3>Revenue Structure</h3>
+  <p>Price per sale: <strong>${curCode} ${fmt2(p.price)}</strong>. Revenue is modelled as: <em>Active Customers × Visit Frequency × Price × Demand Shock</em>, applying industry visit frequency and random demand perturbations (±25% daily band).</p>
+  <h3>90-Day Financial Summary</h3>
+  <div class="kpi-grid">
+    <div class="kpi"><div class="kpi-val">${curCode} ${fmt2(totRev)}</div><div class="kpi-lbl">TOTAL REVENUE</div></div>
+    <div class="kpi"><div class="kpi-val">${curCode} ${fmt2(totCost)}</div><div class="kpi-lbl">TOTAL COSTS</div></div>
+    <div class="kpi"><div class="kpi-val" style="color:${totProfit>=0?'#10b981':'#ef4444'}">${curCode} ${fmt2(totProfit)}</div><div class="kpi-lbl">NET PROFIT</div></div>
+    <div class="kpi"><div class="kpi-val" style="color:${last.cash>=0?'#10b981':'#ef4444'}">${curCode} ${fmt2(last.cash)}</div><div class="kpi-lbl">END CASH</div></div>
+    <div class="kpi"><div class="kpi-val">${profDays}</div><div class="kpi-lbl">PROFITABLE DAYS</div></div>
+    <div class="kpi"><div class="kpi-val">${beDay > 0 && beDay <= 90 ? 'Day '+beDay : 'Not reached'}</div><div class="kpi-lbl">BREAK-EVEN DAY</div></div>
+  </div>
+  <h3>Monte Carlo Confidence Intervals (End Cash)</h3>
+  <table><tr><th>Percentile</th><th>End Cash</th><th>Interpretation</th></tr>
+    <tr><td>P10 (Pessimistic)</td><td>${curCode} ${fmt2(S.mc.p10||0)}</td><td>Worst 10% of scenarios</td></tr>
+    <tr><td>P25</td><td>${curCode} ${fmt2(S.mc.p25||0)}</td><td>Lower quartile</td></tr>
+    <tr><td>P50 (Median)</td><td>${curCode} ${fmt2(S.mc.p50||0)}</td><td>Most likely outcome</td></tr>
+    <tr><td>P75</td><td>${curCode} ${fmt2(S.mc.p75||0)}</td><td>Upper quartile</td></tr>
+    <tr><td>P90 (Optimistic)</td><td>${curCode} ${fmt2(S.mc.p90||0)}</td><td>Best 10% of scenarios</td></tr>
+  </table>
+</div>
+
+<!-- PAGE 6: OPERATIONS -->
+<div class="page">
+  <div class="page-num">Page 6 / 10</div>
+  <h1>SECTION 05</h1>
+  <h2>Operations Plan</h2>
+  <h3>Team &amp; Structure</h3>
+  <p>Launch team size: <strong>${p.team} person${p.team>1?'s':''}</strong>. The fixed cost model applies a per-head overhead multiplier calibrated to the ${(p.industry||'general').toUpperCase()} industry. Location cost index (${p.loc||'Global'}) further adjusts rent, salaries, and overhead.</p>
+  <h3>Cost Structure</h3>
+  <table><tr><th>Cost Category</th><th>Estimated 90-Day Total</th><th>% of Revenue</th></tr>
+    <tr><td>Fixed Costs (rent, salaries, overhead)</td><td>${curCode} ${fmt2(S.days.reduce((s,d)=>s+(d.fixed||0),0))}</td><td>${totRev>0?Math.round(S.days.reduce((s,d)=>s+(d.fixed||0),0)/totRev*100)+'%':'—'}</td></tr>
+    <tr><td>Variable Costs (COGS, fulfilment)</td><td>${curCode} ${fmt2(S.days.reduce((s,d)=>s+(d.varC||0),0))}</td><td>${totRev>0?Math.round(S.days.reduce((s,d)=>s+(d.varC||0),0)/totRev*100)+'%':'—'}</td></tr>
+    <tr><td>Marketing Spend</td><td>${curCode} ${fmt2(p.mktBud*3)}</td><td>${totRev>0?Math.round(p.mktBud*3/totRev*100)+'%':'—'}</td></tr>
+    <tr><td><strong>Total Costs</strong></td><td><strong>${curCode} ${fmt2(totCost)}</strong></td><td>${totRev>0?Math.round(totCost/totRev*100)+'%':'—'}</td></tr>
+  </table>
+  <h3>Key Operating Assumptions</h3>
+  <p>The model assumes linear team scaling (costs scale with headcount), industry-standard churn rates, and no major capital expenditure beyond the starting capital. Seasonal variation is applied using industry-specific demand curves. Word-of-mouth referrals compound from existing customer base.</p>
+</div>
+
+<!-- PAGE 7: RISK ASSESSMENT -->
+<div class="page">
+  <div class="page-num">Page 7 / 10</div>
+  <h1>SECTION 06</h1>
+  <h2>Risk Assessment</h2>
+  <h3>Score Card</h3>
+  <table><tr><th>Dimension</th><th>Score</th><th>Status</th></tr>
+    ${Object.entries({mktFit:'Market Fit',capEff:'Capital Efficiency',sustain:'Sustainability',growth:'Growth Potential'}).map(([k,lbl])=>`<tr><td>${lbl}</td><td>${sc(k)}/100</td><td>${sc(k)>=70?'✅ Strong':sc(k)>=45?'⚠️ Moderate':'❌ Weak'}</td></tr>`).join('')}
+    <tr><td><strong>Monte Carlo Survival Rate</strong></td><td colspan="2"><strong>${surv}% (${surv>=55?'✅ Above threshold':'❌ Below 55% threshold'})</strong></td></tr>
+  </table>
+  <h3>Identified Risk Factors</h3>
+  ${riskItems.length > 0 ? riskItems.map(r=>`<div class="risk-item">⚠ ${r}</div>`).join('') : '<p style="color:#10b981;">✅ No critical risk factors identified under current parameters.</p>'}
+  <h3>Scenario Sensitivity</h3>
+  <p>The P10–P90 end-cash range of ${curCode} ${fmt2(S.mc.p10||0)} to ${curCode} ${fmt2(S.mc.p90||0)} represents the simulation's uncertainty band. A range wider than 2× starting capital indicates high execution sensitivity — small changes in acquisition rates or costs have outsized impact on outcomes.</p>
+</div>
+
+<!-- PAGE 8: FINANCIAL PROJECTIONS -->
+<div class="page">
+  <div class="page-num">Page 8 / 10</div>
+  <h1>SECTION 07</h1>
+  <h2>Financial Projections</h2>
+  <h3>Weekly Revenue Trajectory (First 12 Weeks)</h3>
+  <table><tr><th>Week</th><th>Revenue</th><th>Profit</th><th>Cash</th><th>Customers</th></tr>
+    ${Array.from({length:Math.min(12,Math.floor(S.days.length/7))},(_,i)=>{
+      const wDays=S.days.slice(i*7,(i+1)*7);
+      const wRev=wDays.reduce((s,d)=>s+d.rev,0);
+      const wProf=wDays.reduce((s,d)=>s+d.profit,0);
+      const wCash=wDays[wDays.length-1]?.cash||0;
+      const wCust=wDays[wDays.length-1]?.customers||0;
+      return `<tr><td>Week ${i+1}</td><td>${curCode} ${fmt2(wRev)}</td><td style="color:${wProf>=0?'#10b981':'#ef4444'}">${curCode} ${fmt2(wProf)}</td><td style="color:${wCash>=0?'#10b981':'#ef4444'}">${curCode} ${fmt2(wCash)}</td><td>${wCust}</td></tr>`;
+    }).join('')}
+  </table>
+  <h3>Extended Projections</h3>
+  ${S.ext ? `
+  <table><tr><th>Period</th><th>Projected Revenue</th><th>P50 Cash</th><th>Survival Rate</th></tr>
+    <tr><td>6 Months (180 days)</td><td>${curCode} ${fmt2(S.ext['6m'].days.reduce((s,d)=>s+d.rev,0))}</td><td>${curCode} ${fmt2(S.ext['6m'].mc.p50||0)}</td><td>${Math.round((S.ext['6m'].mc.survivalRate||0)*100)}%</td></tr>
+    <tr><td>12 Months (365 days)</td><td>${curCode} ${fmt2(S.ext['12m'].days.reduce((s,d)=>s+d.rev,0))}</td><td>${curCode} ${fmt2(S.ext['12m'].mc.p50||0)}</td><td>${Math.round((S.ext['12m'].mc.survivalRate||0)*100)}%</td></tr>
+  </table>` : '<p>Extended projections not available. Simulation data incomplete.</p>'}
+</div>
+
+<!-- PAGE 9: ACTION PLAN -->
+<div class="page">
+  <div class="page-num">Page 9 / 10</div>
+  <h1>SECTION 08</h1>
+  <h2>90-Day Action Plan</h2>
+  <h3>Month 1 (Days 1–30) — Foundation</h3>
+  <div class="action-item">✅ Finalise product/service offering and set price at ${curCode} ${fmt2(p.price)} per sale.</div>
+  <div class="action-item">✅ Allocate ${curCode} ${fmt2(p.mktBud)} monthly marketing budget across paid channels + organic content.</div>
+  <div class="action-item">✅ Hire and onboard ${p.team} team member${p.team>1?'s':''} — assign roles and accountability metrics.</div>
+  <div class="action-item">✅ Launch MVP and begin customer acquisition testing. Target first 10 paying customers.</div>
+  <div class="action-item">✅ Set up cash flow tracking — monitor daily versus break-even target (Day ${beDay > 0 && beDay <= 90 ? beDay : '~'}).</div>
+  <h3>Month 2 (Days 31–60) — Iterate</h3>
+  <div class="action-item">✅ Analyse acquisition cost by channel — double down on lowest CAC channel.</div>
+  <div class="action-item">✅ Review churn data — identify top 3 reasons for customer drop-off and address.</div>
+  <div class="action-item">✅ Run price elasticity test — ±10% price adjustment and measure conversion impact.</div>
+  <div class="action-item">✅ Begin referral/word-of-mouth programme to reduce paid CAC dependency.</div>
+  <h3>Month 3 (Days 61–90) — Optimise</h3>
+  <div class="action-item">✅ Evaluate unit economics: is LTV ≥ 3× CAC? If not, revise pricing or acquisition mix.</div>
+  <div class="action-item">✅ Project cash position to Day 180 — plan next capital event if needed.</div>
+  <div class="action-item">✅ Document what's working and what isn't — prepare investor narrative if fundraising.</div>
+  <div class="action-item">✅ Re-simulate with updated real-world data in INFINICUS for revised projections.</div>
+</div>
+
+<!-- PAGE 10: APPENDIX -->
+<div class="page" style="page-break-after:avoid">
+  <div class="page-num">Page 10 / 10</div>
+  <h1>SECTION 09</h1>
+  <h2>Appendix &amp; Methodology</h2>
+  <h3>Simulation Methodology</h3>
+  <p>INFINICUS Engine v3 runs a 90-day agent-based simulation of daily business operations: customer acquisition (paid + organic + word-of-mouth), revenue generation (price × purchase frequency × demand shock), cost tracking (fixed overhead + variable COGS + marketing), and cash flow accounting. The process is repeated 500 times with randomised parameter variations (Monte Carlo method) to generate probability distributions of outcomes.</p>
+  <h3>Industry Model: ${(p.industry||'general').toUpperCase()}</h3>
+  <p>The simulation applies industry-specific parameters including fixed cost ratios, variable cost ratios, customer acquisition cost benchmarks, churn rates, organic reach multipliers, visit frequency, and seasonal demand patterns derived from industry research.</p>
+  <h3>Limitations</h3>
+  <p>This plan is a probabilistic projection, not a guarantee. Real outcomes depend on execution quality, timing, macroeconomic conditions, and factors outside the model's scope. The simulation should be re-run as real data becomes available. INFINICUS is a decision-support tool; consult qualified financial, legal, and business advisors before committing capital.</p>
+  <h3>Generated By</h3>
+  <p><strong>INFINICUS ENGINE v3</strong> · infini-cus.com · ${new Date().toLocaleDateString('en-GB',{weekday:'long',day:'2-digit',month:'long',year:'numeric'})}</p>
+  <div style="margin-top:8mm;padding:4mm;background:#f8fafc;border-radius:6px;font-size:8pt;color:#64748b;">
+    This document was automatically generated from a Monte Carlo business simulation. It does not constitute financial, legal, or investment advice. Past simulation outcomes do not predict future real-world results. All projections are illustrative only.
+  </div>
+</div>
+
+<script>window.onload=function(){window.print();}</script>
+</body></html>`;
+
+  const win = window.open('', '_blank');
+  if (!win) { showToast('Allow pop-ups to open the business plan PDF.'); return; }
+  win.document.write(html);
+  win.document.close();
+  showToast('⎙ Business plan opening in new tab — use Ctrl+P / ⌘P to save as PDF.');
 }
 
 function fmtCard(el) {
