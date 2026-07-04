@@ -1,0 +1,53 @@
+# wrangler.toml — INFINICUS ENGINE
+# Cloudflare Pages project configuration + KV binding documentation.
+#
+# ⚠️  This file documents required KV namespaces.
+#     You MUST create these namespaces in the Cloudflare dashboard and paste the IDs below.
+#
+# HOW TO CREATE KV NAMESPACES (do this once):
+#   1. Go to dash.cloudflare.com → Workers & Pages → KV
+#   2. Click "Create a namespace"
+#   3. Name it "INFINICUS_USERS"       → copy the Namespace ID shown after creation
+#   4. Name it "INFINICUS_WAITLIST"    → copy the Namespace ID shown after creation
+#   5. Replace the placeholder IDs below
+#   6. Go to your Pages project → Settings → Functions → KV namespace bindings
+#   7. Add binding: variable name = INFINICUS_USERS    → select namespace INFINICUS_USERS
+#   8. Add binding: variable name = INFINICUS_WAITLIST → select namespace INFINICUS_WAITLIST
+#   9. Redeploy (git push) for the bindings to take effect
+
+name = "infinicus-engine"
+compatibility_date = "2024-01-01"
+
+# ── KV Namespace Bindings ─────────────────────────────────────────────────────
+
+[[kv_namespaces]]
+binding = "INFINICUS_USERS"
+id      = "REPLACE_WITH_INFINICUS_USERS_NAMESPACE_ID"
+# preview_id = "REPLACE_WITH_PREVIEW_NAMESPACE_ID_IF_NEEDED"
+
+[[kv_namespaces]]
+binding = "INFINICUS_WAITLIST"
+id      = "REPLACE_WITH_INFINICUS_WAITLIST_NAMESPACE_ID"
+# preview_id = "REPLACE_WITH_PREVIEW_NAMESPACE_ID_IF_NEEDED"
+
+# ── Environment Variables ─────────────────────────────────────────────────────
+# Set these in: Cloudflare Pages → Settings → Environment Variables (NOT here)
+# Never commit real secrets to this file.
+#
+#   RESEND_API_KEY        — from resend.com → API Keys
+#   NURTURE_BATCH_SECRET  — random string, e.g.: openssl rand -hex 32
+#   SENTRY_DSN            — from sentry.io → Project → Client Keys
+#
+# ── Cron Setup (Nurture Emails) ───────────────────────────────────────────────
+# Cloudflare Pages does not support cron triggers natively (that's Workers only).
+# Use a FREE external cron service to call /api/nurture-batch daily:
+#
+#   Option A — cron-job.org (recommended, free):
+#     URL:    https://infini-cus.com/api/nurture-batch
+#     Method: POST
+#     Header: Authorization: Bearer <your NURTURE_BATCH_SECRET>
+#     Schedule: Once per day (e.g. 08:00 UTC)
+#
+#   Option B — GitHub Actions (free with public repo):
+#     Add .github/workflows/nurture.yml with a schedule: cron trigger
+#     Use curl to POST to the endpoint with the bearer token

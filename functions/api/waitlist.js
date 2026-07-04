@@ -33,6 +33,24 @@ export async function onRequestPost(context) {
     return new Response(JSON.stringify({ ok: false, error: 'Invalid email' }), { status: 400, headers: CORS });
   }
 
+  // Persist signup to KV so nurture-batch can send Day 3 + Day 7 emails
+  const kv = env.INFINICUS_WAITLIST;
+  if (kv) {
+    try {
+      const existing = await kv.get(`signup:${email}`);
+      if (!existing) {
+        await kv.put(`signup:${email}`, JSON.stringify({
+          name, email, tier,
+          signedUpAt: Date.now(),
+          day3SentAt: null,
+          day7SentAt: null,
+        }));
+      }
+    } catch (e) {
+      console.error('KV waitlist write failed:', e);
+    }
+  }
+
   // Always return ok — never break the user-facing form
   const apiKey = env.RESEND_API_KEY;
   if (!apiKey) {
