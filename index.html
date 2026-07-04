@@ -489,6 +489,66 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
   .tut-trigger span{display:none;}
 }
 
+/* ══ RESIM CONFIRM BANNER ══ */
+#resim-confirm-banner{display:none;background:rgba(0,224,255,.06);border:1px solid rgba(0,224,255,.3);border-radius:12px;padding:1rem 1.2rem;margin-bottom:1.25rem;}
+.rcb-hdr{font-family:var(--mono);font-size:8.5px;color:var(--cyan);letter-spacing:.12em;margin-bottom:.5rem;}
+.rcb-idea{font-family:var(--mono);font-size:11px;color:var(--text);font-weight:600;margin-bottom:.4rem;line-height:1.5;}
+.rcb-changes{font-family:var(--mono);font-size:9.5px;color:var(--muted-2);line-height:1.7;margin-bottom:.85rem;}
+.rcb-actions{display:flex;gap:.6rem;flex-wrap:wrap;}
+.rcb-run{background:linear-gradient(135deg,rgba(0,224,96,.2),rgba(0,200,100,.1));border:1px solid rgba(0,224,96,.5);border-radius:8px;color:var(--emerald);font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.08em;padding:.6rem 1.2rem;cursor:pointer;}
+.rcb-run:hover{background:linear-gradient(135deg,rgba(0,224,96,.32),rgba(0,200,100,.2));}
+.rcb-adj{background:none;border:1px solid var(--line);border-radius:8px;color:var(--muted-2);font-family:var(--mono);font-size:10px;padding:.6rem 1rem;cursor:pointer;}
+.rcb-adj:hover{border-color:var(--line-2);color:var(--text);}
+.rcb-dismiss{background:none;border:none;color:var(--muted-2);font-family:var(--mono);font-size:9px;cursor:pointer;margin-left:auto;align-self:center;}
+
+/* ══ STOP ALTERNATIVES ══ */
+.alt-section{margin-top:1.75rem;}
+.alt-section-hdr{font-family:var(--mono);font-size:9px;color:var(--muted-2);letter-spacing:.1em;margin-bottom:.85rem;}
+.alt-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1.5rem;}
+@media(max-width:520px){.alt-grid{grid-template-columns:1fr;}}
+.alt-card{background:var(--glass);border:1px solid var(--line);border-radius:12px;padding:.9rem 1rem;display:flex;flex-direction:column;gap:.4rem;}
+.alt-card:hover{border-color:rgba(0,224,96,.3);}
+.alt-name{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--text);}
+.alt-tagline{font-family:var(--mono);font-size:9px;color:var(--cyan);margin-bottom:.1rem;}
+.alt-cap{font-family:var(--mono);font-size:8.5px;color:var(--emerald);padding:2px 7px;background:rgba(16,185,129,.08);border-radius:4px;display:inline-block;width:fit-content;}
+.alt-why{font-family:var(--mono);font-size:9.5px;color:var(--muted-2);line-height:1.55;flex:1;}
+.alt-sim-btn{background:rgba(0,224,96,.07);border:1px solid rgba(0,224,96,.2);border-radius:7px;color:var(--cyan);font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.07em;padding:.45rem .8rem;cursor:pointer;margin-top:.3rem;text-align:left;}
+.alt-sim-btn:hover{background:rgba(0,224,96,.15);border-color:rgba(0,224,96,.4);}
+
+/* ══ COMPETITOR TABLE ══ */
+.comp-wrap{margin-bottom:1.5rem;}
+.comp-table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:9.5px;}
+.comp-table th{text-align:left;padding:.4rem .6rem;border-bottom:1px solid var(--line);color:var(--muted-2);font-weight:600;letter-spacing:.06em;font-size:8.5px;}
+.comp-table td{padding:.5rem .6rem;border-bottom:1px solid rgba(255,255,255,.04);color:var(--muted);vertical-align:top;line-height:1.5;}
+.comp-table tr:hover td{background:rgba(255,255,255,.02);}
+.comp-name{color:var(--text);font-weight:600;}
+.comp-weak{color:var(--amber);}
+.comp-lesson{color:var(--cyan);}
+
+/* ══ HISTORY CASES ══ */
+.hist-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.5rem;}
+@media(max-width:520px){.hist-grid{grid-template-columns:1fr;}}
+.hist-card{border-radius:10px;padding:.85rem .95rem;}
+.hist-win{background:rgba(16,185,129,.05);border:1px solid rgba(16,185,129,.2);}
+.hist-loss{background:rgba(244,63,94,.05);border:1px solid rgba(244,63,94,.2);}
+.hist-badge{font-family:var(--mono);font-size:7.5px;font-weight:700;letter-spacing:.1em;padding:2px 7px;border-radius:4px;display:inline-block;margin-bottom:.4rem;}
+.hist-win .hist-badge{background:rgba(16,185,129,.15);color:var(--emerald);}
+.hist-loss .hist-badge{background:rgba(244,63,94,.12);color:var(--red);}
+.hist-co{font-family:var(--mono);font-size:10.5px;font-weight:700;color:var(--text);margin-bottom:.25rem;}
+.hist-what{font-family:var(--mono);font-size:9px;color:var(--muted-2);line-height:1.5;margin-bottom:.4rem;}
+.hist-lesson{font-family:var(--mono);font-size:9px;line-height:1.5;}
+.hist-win .hist-lesson{color:var(--emerald);}
+.hist-loss .hist-lesson{color:var(--red);}
+
+/* ══ FORECAST SECTION ══ */
+.forecast-toggle{display:flex;gap:.5rem;margin-bottom:1.25rem;}
+.ft-btn{background:var(--glass);border:1px solid var(--line);border-radius:8px;color:var(--muted-2);font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.08em;padding:.55rem 1.2rem;cursor:pointer;}
+.ft-btn.active{background:rgba(0,224,96,.08);border-color:var(--cyan);color:var(--cyan);}
+.ft-btn:hover:not(.active){border-color:var(--line-2);color:var(--text);}
+.fc-bar-wrap{position:relative;display:flex;align-items:flex-end;width:100%;min-height:100px;gap:1px;}
+.fc-bar{flex:1;border-radius:2px 2px 0 0;min-width:2px;transition:opacity .15s;}
+.fc-bar:hover{opacity:.75;}
+
 /* ══ ENGINE MODES ══ */
 .engine-modes{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:1.25rem;}
 @media(min-width:640px){.engine-modes{grid-template-columns:repeat(4,1fr);}}
@@ -574,6 +634,7 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
     <button class="nb"        data-section="dashboard"   onclick="nav('dashboard')">DASH</button>
     <button class="nb"        data-section="history"     onclick="nav('history')">HISTORY</button>
     <button class="nb"        data-section="economy"     onclick="nav('economy')">ECON</button>
+    <button class="nb"        data-section="forecast"    onclick="nav('forecast')">FORECAST</button>
     <button class="nb"        data-section="customers"   onclick="nav('customers')">CUST / LOG</button>
     <button class="nb"        data-section="risk"        onclick="nav('risk')">RISK / MC</button>
     <button class="nb"        data-section="verdict"     onclick="nav('verdict')">VERDICT</button>
@@ -636,6 +697,18 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
       <button onclick="document.getElementById('alt-applied-banner').style.display='none'" style="background:none;border:none;color:var(--muted-2);cursor:pointer;font-size:15px;flex-shrink:0;line-height:1;">✕</button>
     </div>
   </div>
+  <!-- RESIM CONFIRM BANNER — shown when prepareResim() is called -->
+  <div id="resim-confirm-banner">
+    <div class="rcb-hdr">🔄 NEW SCENARIO LOADED — REVIEW &amp; CONFIRM</div>
+    <div class="rcb-idea" id="rcb-idea"></div>
+    <div class="rcb-changes" id="rcb-changes"></div>
+    <div class="rcb-actions">
+      <button class="rcb-run" onclick="confirmAndRun()">▶ CONFIRM &amp; RUN SIMULATION</button>
+      <button class="rcb-adj">✎ Adjust inputs below first</button>
+      <button class="rcb-dismiss" onclick="document.getElementById('resim-confirm-banner').style.display='none'">✕ Dismiss</button>
+    </div>
+  </div>
+
   <button class="btn-demo" id="demo-btn" onclick="instantDemo()">▶ TRY INSTANT DEMO — REGISTER FREE IN SECONDS</button>
 
   <!-- ENGINE MODES -->
@@ -895,6 +968,21 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
   <div class="g2" id="verdict-detail"></div>
   <!-- RISK REGISTER — injected by renderRiskRegister() -->
   <div id="risk-register-wrap"></div>
+  <!-- STOP ALTERNATIVES — injected by renderStopAlternatives(), STOP verdict only -->
+  <div id="stop-alternatives-wrap"></div>
+</section>
+
+<!-- ══ FORECAST ══ -->
+<section class="section" id="sec-forecast">
+  <div class="pg-title" style="font-size:22px;margin-bottom:.1rem;">EXTENDED FORECAST</div>
+  <div class="pg-sub">// 6-MONTH · 12-MONTH PROJECTIONS BASED ON YOUR SIMULATION</div>
+  <div class="forecast-toggle">
+    <button class="ft-btn active" id="ft-6m"  onclick="switchForecast('6m')">6 MONTHS (180 DAYS)</button>
+    <button class="ft-btn"        id="ft-12m" onclick="switchForecast('12m')">12 MONTHS (365 DAYS)</button>
+  </div>
+  <div id="forecast-content">
+    <div class="empty-state"><p>Run a simulation first to see extended projections.</p></div>
+  </div>
 </section>
 
 <!-- ══ REPORT & PLAN ══ -->
@@ -1357,6 +1445,315 @@ function pickEvents() {
   }).sort((a,b)=>a.day-b.day);
 }
 
+// ─── ALTERNATIVE BUSINESSES (STOP verdict — same capital) ────────────────────
+const ALT_BUSINESSES = {
+  food:[
+    {name:'Ghost Kitchen',tagline:'Delivery-only brand, no dine-in overhead',capital:'$2K–$8K',why:'Eliminates restaurant rent — kitchen rental is 60–70% cheaper. Revenue starts immediately via Uber Eats / DoorDash.',idea:'A delivery-only ghost kitchen specialising in [your cuisine], operating from a shared commercial kitchen, targeting busy professionals via food delivery apps.'},
+    {name:'Meal Prep Subscription',tagline:'Customers pay before you cook — zero working capital risk',capital:'$1.5K–$5K',why:'Subscription revenue is predictable. Upfront payments eliminate cash flow gaps and reduce food waste dramatically.',idea:'A weekly healthy meal prep subscription delivering portioned, ready-to-cook meals to health-conscious households, starting at $60/week per plan.'},
+    {name:'Food Market Stall',tagline:'No lease, follow customers daily',capital:'$500–$3K',why:'Zero lease commitment. Real market feedback before committing to a permanent location.',idea:'A specialty food stall at weekend farmers markets and corporate events, selling [product], with flexible location and zero long-term overhead.'},
+    {name:'B2B Corporate Catering',tagline:'Sell in bulk to offices, not one meal at a time',capital:'$1K–$4K',why:'Corporate clients pay on invoice, order in bulk weekly, and churn far less than consumers. Higher LTV, lower CAC.',idea:'A B2B office catering service delivering daily lunch and event catering to businesses within a 15km radius, on weekly contracts.'},
+  ],
+  retail:[
+    {name:'Print-on-Demand Store',tagline:'Zero inventory risk — products made only when ordered',capital:'$500–$2K',why:'No upfront stock cost. Platforms like Printful handle fulfilment. You only pay after a sale.',idea:'A niche print-on-demand brand selling custom apparel and accessories to a specific community (e.g., gaming, fitness), with zero inventory held.'},
+    {name:'Digital Products Shop',tagline:'Create once, sell forever — 90%+ margin',capital:'$500–$1.5K',why:'A single digital product (template, preset, ebook) can sell thousands of times with zero added cost per sale.',idea:'An online shop selling digital products — templates, Lightroom presets, how-to guides — targeted at a specific creator or professional community.'},
+    {name:'Dropshipping Niche Store',tagline:'Sell products you never physically touch',capital:'$1K–$5K',why:'Supplier ships direct to customer. Capital goes to ads and branding, not stock. Risk is minimal.',idea:'A curated dropshipping store targeting a specific niche (eco-home, pet accessories) with supplier fulfilment and a Shopify storefront.'},
+    {name:'Second-Hand / Resale Brand',tagline:'Source low, sell high — no product creation needed',capital:'$300–$2K',why:'Reselling second-hand goods online has near-zero CAC and a proven audience on Depop, eBay, and Facebook Marketplace.',idea:'A curated vintage resale brand sourcing quality second-hand items locally and selling on eBay, Depop, or Facebook Marketplace at 3–5× source price.'},
+  ],
+  saas:[
+    {name:'No-Code SaaS Tool',tagline:'Launch a functioning app without a dev team',capital:'$500–$3K',why:'Tools like Bubble or Glide allow functional SaaS in weeks, not months. Lower dev cost = lower runway needed to validate.',idea:'A no-code SaaS tool solving a specific workflow problem (client reporting, invoice management) for a niche professional audience.'},
+    {name:'Micro-SaaS Chrome Extension',tagline:'Tiny tool, recurring revenue, no server cost',capital:'$300–$2K',why:'Chrome extensions have no hosting cost, minimal maintenance, and are discovered organically via the Chrome Web Store.',idea:'A productivity Chrome extension automating a repetitive task for a specific professional group (LinkedIn outreach, SEO analysis, email templates).'},
+    {name:'SaaS Consulting / Done-For-You',tagline:'Productise your expertise before building software',capital:'$500–$2K',why:'Consulting generates revenue immediately while you validate whether the problem is big enough to build a product around.',idea:'A done-for-you software setup and automation service using existing tools (Zapier, Airtable, Notion), charged as a monthly retainer.'},
+    {name:'API Wrapper / Integration Tool',tagline:'Connect existing tools — charge for the glue',capital:'$1K–$4K',why:'Integration tools are high-value and low-churn. Businesses pay for reliability, not novelty.',idea:'A lightweight integration service connecting two popular tools businesses already use (CRM + email + Slack), sold as a monthly subscription.'},
+  ],
+  service:[
+    {name:'Freelance Agency (Solo First)',tagline:'Start with you — hire only when revenue demands it',capital:'$300–$1.5K',why:'No payroll until you\'ve validated demand. Your skills are the product. Profit margin can exceed 80%.',idea:'A solo freelance service offering [your skill] to businesses in a specific vertical, with intention to hire once monthly revenue hits $5K.'},
+    {name:'Productised Service',tagline:'One deliverable, fixed price, repeatable process',capital:'$500–$1.5K',why:'A productised service (e.g., "5-page website in 5 days, $995") is easier to sell, deliver, and scale than custom work.',idea:'A productised service offering a specific, scoped deliverable at a fixed price — no custom quotes, no scope creep.'},
+    {name:'Subscription Retainer',tagline:'Convert project work into predictable monthly income',capital:'$500–$2K',why:'Retainer clients provide consistent revenue. Selling a monthly hours package removes proposal cycles and irregular income.',idea:'A monthly retainer service offering a fixed number of hours per month for [your service type], targeted at small businesses with an ongoing need.'},
+    {name:'Virtual Assistant / Remote Support',tagline:'Help busy professionals — zero equipment cost',capital:'$200–$1K',why:'High demand among entrepreneurs and executives. Platforms like Upwork drive early clients. Immediate revenue potential.',idea:'A virtual assistant service specialising in [niche: real estate admin, podcast production, executive email management] at a fixed monthly rate.'},
+  ],
+  fitness:[
+    {name:'Online Coaching Program',tagline:'Train clients globally without a physical space',capital:'$500–$2.5K',why:'No gym rent. A single recurring client is worth $100–$500/month. Content created once sells indefinitely.',idea:'An online fitness coaching program offering personalised training plans and weekly check-ins for a specific demographic (e.g., desk workers, over-40s).'},
+    {name:'Outdoor Group Bootcamp',tagline:'Parks are free — minimal equipment, maximum margin',capital:'$500–$2K',why:'Groups of 10–20 paying $25–$40 each per session generate strong hourly revenue with near-zero overhead.',idea:'An outdoor bootcamp running 5 sessions/week in public parks, targeting fitness beginners locally, priced at $30/session or $120/month membership.'},
+    {name:'Digital Fitness Membership',tagline:'Sell workout plans as digital products — 90%+ margin',capital:'$500–$3K',why:'Digital fitness content scales to unlimited customers with no added delivery cost once created.',idea:'A digital membership selling structured fitness programs to a niche audience, delivered via Teachable or a Notion-based subscription at $15–$30/month.'},
+    {name:'Corporate Wellness Contracts',tagline:'Sell to HR, not individuals — higher LTV',capital:'$500–$2K',why:'Corporate wellness contracts are higher-value per sale, lower churn, and often paid in advance by the employer.',idea:'A corporate wellness service offering weekly fitness or mindfulness sessions to office teams, sold as 3-month contracts to HR departments.'},
+  ],
+  agency:[
+    {name:'Productised SEO Package',tagline:'Fixed deliverables, recurring retainer, proven demand',capital:'$500–$2K',why:'SEO has clear measurable outcomes. One anchor client at $800/month covers operating costs.',idea:'A productised SEO service offering local businesses 4 articles, 10 backlinks, and a monthly performance report for a flat $800/month retainer.'},
+    {name:'Social Media Management',tagline:'Manage content for businesses who lack time',capital:'$300–$1.5K',why:'High demand, low tool cost, repeatable process. 3–5 clients at $500/month is a sustainable solo operation.',idea:'A social media management service handling content creation, scheduling, and growth for small businesses in a specific vertical (restaurants, gyms, real estate).'},
+    {name:'Email Marketing Agency',tagline:'Highest-ROI marketing channel — easy value story',capital:'$300–$1.5K',why:'Email delivers $36 for every $1 spent. Flows built once, retained monthly. Simple ROI story to sell.',idea:'An email marketing agency building automated welcome, nurture, and promo flows for e-commerce brands, charged as setup + monthly management retainer.'},
+    {name:'Paid Ads Micro-Agency',tagline:'Run ads for clients on a flat retainer',capital:'$500–$2K',why:'Performance marketing is always in demand. 3–4 small clients at $600/month is achievable with no office.',idea:'A boutique paid ads agency managing Google and Meta campaigns for local service businesses (dentists, gyms, law firms) at a $600/month flat retainer.'},
+  ],
+  health:[
+    {name:'Telehealth Consultation Service',tagline:'Remote consultations — no clinic overhead',capital:'$1K–$5K',why:'Video consultations require no premises. Platforms like Doxy.me handle the tech. Book and bill digitally.',idea:'A remote health consultation service connecting licensed practitioners with patients via video, specialising in one condition or demographic (nutrition, chronic wellness).'},
+    {name:'Health Coaching (Non-Clinical)',tagline:'Wellness guidance without clinical licensing overhead',capital:'$500–$2K',why:'Health coaching operates outside clinical regulation in most markets. High demand for preventive health guidance.',idea:'An online health coaching service offering personalised nutrition and lifestyle plans for adults managing weight, energy, or stress.'},
+    {name:'Medical Billing & Admin Services',tagline:'B2B service for clinics struggling with paperwork',capital:'$500–$2K',why:'Clinics consistently understaff their billing. A remote billing service earns $1.5K–$5K/month per clinic with no medical licence.',idea:'A remote medical billing and insurance claims processing service for small private clinics and solo practitioners, priced at a % of collections recovered.'},
+    {name:'Wellness Content Membership',tagline:'Monetise health expertise via digital subscription',capital:'$300–$2K',why:'A private community or Substack around health content costs almost nothing to run and builds a monetisable audience.',idea:'A paid wellness community covering evidence-based health optimisation for a specific audience (busy parents, over-50s, athletes) at $10–$20/month.'},
+  ],
+  edtech:[
+    {name:'Online Course (One-to-Many)',tagline:'Teach hundreds from a single recorded course',capital:'$500–$2K',why:'A course created once sells indefinitely. Platforms like Teachable handle delivery. Margin exceeds 90% after production.',idea:'An online course teaching [your expertise] to professionals who want to upskill, hosted on Teachable and marketed via SEO and LinkedIn content.'},
+    {name:'1:1 Online Tutoring',tagline:'Premium rates for personalised instruction',capital:'$200–$1K',why:'Individual tutors earn $40–$150/hour with zero overhead. Platforms like Superprof or Wyzant drive early clients.',idea:'A private online tutoring service for [subject] targeting [student type], delivered via Zoom at a premium hourly rate.'},
+    {name:'Corporate Training Workshops',tagline:'Sell skills training to companies, not individuals',capital:'$500–$2K',why:'Companies buy training in bulk for teams of 10–50. A single workshop sale can generate $1K–$10K. HR budgets are pre-allocated.',idea:'A B2B workshop and training service delivering [skill] upskilling to corporate teams, sold to HR and L&D managers as half-day sessions.'},
+    {name:'Niche Educational Newsletter',tagline:'Build an audience cheaply, monetise via subscriptions',capital:'$200–$1K',why:'A niche newsletter with 3,000+ engaged readers generates $1K–$5K/month via sponsorships or paid tiers at near-zero cost.',idea:'A paid or sponsored educational newsletter covering [specific professional topic] weekly, monetised via a $10/month subscription and industry sponsorships.'},
+  ],
+  marketplace:[
+    {name:'Curated Directory / Listing Site',tagline:'Charge suppliers to be listed — simpler than a marketplace',capital:'$1K–$4K',why:'A curated directory earns listing fees from businesses before any buyer even arrives. Smaller chicken-and-egg problem.',idea:'A curated directory of [specific professional type] in a geographic region, charging businesses a monthly listing fee for premium placement and lead generation.'},
+    {name:'Services Marketplace (Micro-Niche)',tagline:'Connect buyers and sellers in one specific category',capital:'$2K–$8K',why:'Micro-niche marketplaces (only wedding photographers, only pet sitters) have lower CAC and clearer marketing than horizontal platforms.',idea:'A marketplace connecting [specific service providers] with local clients, earning 10–15% commission on completed bookings.'},
+    {name:'Aggregator / Comparison Site',tagline:'Drive traffic, earn affiliate commissions — no fulfilment',capital:'$500–$3K',why:'Comparison sites earn affiliate commissions without handling transactions. SEO-driven traffic compounds over time.',idea:'A comparison and review aggregator for [product/service category], monetised via affiliate partnerships earning 5–20% per conversion.'},
+    {name:'B2B Procurement Marketplace',tagline:'Higher transaction values than consumer marketplaces',capital:'$2K–$10K',why:'B2B transactions average 10–100× higher value than B2C. A 3–5% commission on $10K orders is highly profitable.',idea:'A B2B marketplace connecting small manufacturers to business buyers in a specific product category, earning commission on confirmed orders.'},
+  ],
+  events:[
+    {name:'Virtual Events & Webinars',tagline:'No venue cost — unlimited audience size',capital:'$300–$2K',why:'Virtual events eliminate the #1 cost: venue. 100 paid attendees at $30 each = $3K revenue with near-zero overhead.',idea:'A virtual events company hosting paid online workshops, summits, or conferences for a specific professional community, priced per ticket or via sponsorship.'},
+    {name:'Corporate Team-Building',tagline:'Charge businesses — bigger budgets than consumers',capital:'$500–$2K',why:'Corporate clients book months ahead, pay on invoice, and one corporate sale = 30 consumer sales in value.',idea:'A corporate team-building experience company offering themed activities to HR departments for groups of 10–50, billed per-head.'},
+    {name:'Pop-Up Experience / Brand Activation',tagline:'Short-term events, no long-term lease',capital:'$1K–$5K',why:'Pop-ups generate revenue for the days they run without ongoing lease obligations. Brands pay to sponsor curated experiences.',idea:'A pop-up event concept (themed dining, immersive art) running on weekends in high-traffic urban locations, monetised via tickets and brand sponsorships.'},
+    {name:'Event Photography / Videography',tagline:'High-margin creative service — equipment bought once',capital:'$1K–$4K',why:'Event photography is in permanent demand. Equipment cost is one-time; day-rate billing is immediate.',idea:'A specialist event photography service targeting weddings, corporate events, and brand launches, offered as a day-rate package with edited delivery.'},
+  ],
+  fintech:[
+    {name:'Financial Coaching / Education',tagline:'Teach money skills — no financial licence needed',capital:'$500–$2K',why:'Financial literacy coaching operates under different regulation than licensed advice in most markets. High demand, low barrier.',idea:'An online financial coaching practice helping a specific demographic (young professionals, new parents) build budgets, eliminate debt, and start investing.'},
+    {name:'Bookkeeping as a Service',tagline:'Recurring revenue from a permanent business need',capital:'$300–$1.5K',why:'Every business needs bookkeeping. 10 clients at $300/month = $3K MRR with minimal tooling cost.',idea:'A remote bookkeeping service for small businesses and freelancers using QuickBooks or Xero, priced at a flat monthly rate by transaction volume.'},
+    {name:'Tax Preparation Service',tagline:'Seasonal but extremely high-margin per client',capital:'$200–$1.5K',why:'Tax prep earns $300–$1,500 per client in a 3-month window. A solo operator handling 50 clients earns $15K–$75K seasonally.',idea:'A boutique tax preparation service specialising in a specific client type (freelancers, expats, small businesses), offered fully remotely.'},
+    {name:'Expense Management Consulting',tagline:'Help companies cut costs — charge a share of savings',capital:'$300–$1.5K',why:'Cost-reduction consulting is fundable by definition — you save more than you cost. No CAC needed: pitch directly to CFOs.',idea:'A business expense auditing service for SMEs, identifying cost reduction opportunities across SaaS and supplier contracts, charged as % of savings delivered.'},
+  ],
+  realestate:[
+    {name:'Real Estate Photography',tagline:'Serve agents before owning or selling property',capital:'$1K–$4K',why:'Every listed property needs photography. One camera setup enables 5–10 shoots/week at $200–$500 each.',idea:'A real estate photography service for agents and landlords, offering same-day turnaround and drone add-ons for premium listings.'},
+    {name:'Property Management',tagline:'Earn fees managing other people\'s properties',capital:'$500–$2K',why:'No property purchase required. Manage short-term or long-term rentals for 10–20% management fee.',idea:'A residential property management company handling tenant sourcing, maintenance, and rent collection for landlords in a specific local area.'},
+    {name:'Real Estate Lead Generation',tagline:'Sell qualified leads to agents — no licence needed',capital:'$500–$2K',why:'Local property SEO sites and Facebook ad funnels generate buyer/seller leads. Sell each qualified lead at $100–$500 to local agents.',idea:'A real estate lead generation business using paid ads and local SEO to generate buyer and seller enquiries, sold to local agents on a per-lead basis.'},
+    {name:'Short-Term Rental Arbitrage',tagline:'Rent long-term, sublease short-term — without buying',capital:'$2K–$8K',why:'With landlord permission, lease a unit and relist on Airbnb at a premium. Positive arbitrage in tourist/business travel areas.',idea:'A short-term rental arbitrage business leasing 1–2 furnished apartments in a high-demand area and relisting on Airbnb at premium nightly rates.'},
+  ],
+  logistics:[
+    {name:'Last-Mile Delivery Service',tagline:'Local delivery on demand for restaurants and retailers',capital:'$1K–$5K',why:'Local delivery demand is high and underserved in many cities. A single vehicle can generate $200–$500/day in delivery fees.',idea:'A last-mile delivery service for local restaurants, grocers, and retailers within a 10km radius, offered as same-day delivery at a per-order rate.'},
+    {name:'Courier / Document Delivery',tagline:'B2B contract delivery — predictable weekly volume',capital:'$500–$2K',why:'Law firms, clinics, and financial institutions need same-day physical document delivery. B2B contracts provide predictable volume.',idea:'A B2B same-day courier service specialising in document and parcel delivery for law firms and clinics, operated on monthly delivery contracts.'},
+    {name:'Moving & Relocation Service',tagline:'High per-job revenue, immediate cash demand',capital:'$1K–$4K',why:'A single moving job earns $300–$1,500. One truck and two people is enough to start with no ongoing lease.',idea:'A local residential and small office moving service, specialising in fast-turnaround same-city moves, priced per hour with a booking deposit paid upfront.'},
+    {name:'Micro-Fulfilment for E-commerce',tagline:'Help online sellers who outgrew their garage',capital:'$2K–$8K',why:'Small e-commerce brands need physical fulfilment help before they can afford 3PLs. A small storage unit plus pick-pack earns steady fees.',idea:'A micro-fulfilment service for small e-commerce brands, offering affordable storage and pick-pack-ship from a small warehouse or storage unit.'},
+  ],
+};
+
+const INDUSTRY_COMPETITORS = {
+  food:[
+    {name:"McDonald's / Global Chains",type:'Enterprise',pricing:'$5–$12/meal',weakness:'Zero personalisation, impersonal experience',lesson:'Consistency beats quality at scale — but local has a moat if quality is real.'},
+    {name:'Uber Eats / Deliveroo',type:'Platform',pricing:'15–30% commission from restaurants',weakness:'Extracts margin from both sides; restaurants switching to direct ordering',lesson:'Own your customer relationship — platforms will monetise it if you don\'t.'},
+    {name:'Local Independents',type:'SME',pricing:'$10–$25/meal',weakness:'Often lack online presence, delivery infrastructure, or marketing',lesson:'The local market is fragmented — execution and discovery are the real differentiators.'},
+    {name:'HelloFresh / Meal Kits',type:'D2C Subscription',pricing:'$8–$15/serving',weakness:'50%+ churn in year 1, expensive customer acquisition',lesson:'Subscription works but retention is the game — the product must improve over time.'},
+    {name:'Corporate Canteens',type:'B2B Institutional',pricing:'$5–$10/meal on contracts',weakness:'Slow procurement, low creativity, locked into multi-year deals',lesson:'Corporates want reliability over novelty — if you can prove it, long contracts follow.'},
+  ],
+  retail:[
+    {name:'Amazon',type:'Global Marketplace',pricing:'Lowest price competition',weakness:'No brand relationship, no personalisation, discovery buried by ads',lesson:'Niche, brand, and customer relationship are your only defence against Amazon.'},
+    {name:'Shopify D2C Brands',type:'E-commerce Competitor',pricing:'Premium D2C (2–3× wholesale)',weakness:'High CAC ($40–$120 per customer on Meta ads)',lesson:'CAC kills most D2C brands — build organic channels (SEO, community) from day one.'},
+    {name:'Alibaba / AliExpress Sellers',type:'Low-Cost Global',pricing:'Lowest possible — margin on volume',weakness:'No brand, no trust, long shipping, quality risk',lesson:'Speed, trust, and quality are what a customer will pay a premium for.'},
+    {name:'Local Retail Stores',type:'Brick-and-Mortar SME',pricing:'Fixed shelf price',weakness:'Weak online presence, no subscription model, no data',lesson:'Online-first with local feel is a genuine gap — many physical stores are years behind.'},
+    {name:'ASOS / Global Fashion Platforms',type:'Enterprise Platform',pricing:'Mid-market, frequent promotions',weakness:'Overwhelming choice, poor customer service, returns-heavy model',lesson:'Curation and expert taste are defensible — breadth is not your weapon, depth is.'},
+  ],
+  saas:[
+    {name:'Notion / Airtable / Monday',type:'Horizontal Platform',pricing:'$8–$24/user/month',weakness:'Too broad — vertical SaaS wins on workflow depth and industry fit',lesson:'Horizontal tools create opportunity: every niche they underserve is a wedge for vertical SaaS.'},
+    {name:'Salesforce / HubSpot',type:'Enterprise CRM',pricing:'$25–$300+/user/month',weakness:'Over-engineered for SMEs — most use 10% of features at full price',lesson:'SME-focused SaaS that does one thing perfectly and is simple to onboard wins by contrast.'},
+    {name:'Zapier / Make',type:'Integration Platform',pricing:'$19–$69/month task-based',weakness:'Non-technical users struggle; complex flows break silently',lesson:'Simplicity is a product decision — many "power tools" leave the mass market underserved.'},
+    {name:'Open-Source Alternatives',type:'Free / Community',pricing:'Free (requires dev to setup)',weakness:'No support, complex setup, often abandoned',lesson:'SaaS beats open-source by selling the managed, supported, maintained version.'},
+    {name:'Freelancers / Custom Dev',type:'Service Substitute',pricing:'$2K–$30K one-off builds',weakness:'Expensive, slow, no ongoing support',lesson:'Every decaying custom build is a future SaaS customer — reach them before the next build.'},
+  ],
+  service:[
+    {name:'Fiverr / Upwork Freelancers',type:'Marketplace',pricing:'$5–$200/hour global competition',weakness:'Inconsistent quality, no accountability, no ongoing relationship',lesson:'Premium positioning and specialisation escape marketplace commoditisation.'},
+    {name:'Big Consulting (Big 4, McKinsey)',type:'Enterprise',pricing:'$300–$800+/hour',weakness:'Inaccessible to SMEs, slow, junior staff on SME accounts',lesson:'SME-focused service with senior attention is a permanent gap in the consulting market.'},
+    {name:'Local Freelancers / Competitors',type:'SME',pricing:'Variable, often unclear',weakness:'Weak online presence, no systems, inconsistent delivery',lesson:'Systems, clear pricing, and online visibility are enough to dominate a local service market.'},
+    {name:'Automation Tools (Software)',type:'Tech Substitute',pricing:'$20–$200/month',weakness:'Tools still need expertise to configure and operate correctly',lesson:'Software doesn\'t replace advice — pair your expertise with the right tools.'},
+    {name:'In-House Hires',type:'Employee Substitute',pricing:'$3K–$8K/month salary',weakness:'Costly to assemble, hard to dismiss, limited specialist range',lesson:'A specialist contractor at $2K/month often beats hiring and training a $5K/month employee.'},
+  ],
+  fitness:[
+    {name:'Planet Fitness / Gym Chains',type:'Big Box Gym',pricing:'$10–$30/month',weakness:'Impersonal, no coaching, 80% of members never show up',lesson:'Community and accountability are what chains cannot provide — build those, win retention.'},
+    {name:'Peloton / Digital Fitness',type:'D2C Platform',pricing:'$12–$40/month subscription',weakness:'High churn without accountability, no real personalisation',lesson:'Human coaching with digital delivery is the hybrid nobody has solved at scale below enterprise pricing.'},
+    {name:'YouTube / Free Fitness Content',type:'Free Alternative',pricing:'Free',weakness:'No accountability, no personalisation, no community',lesson:'Charge for the outcome (accountability + results), not the information — free competes with free.'},
+    {name:'CrossFit Boxes / Boutique Studios',type:'Premium Local Gym',pricing:'$150–$350/month',weakness:'High rent, hard to scale, location-dependent',lesson:'Boutique works — but digital delivery removes the rent anchor and geographic ceiling.'},
+    {name:'Independent Personal Trainers',type:'Direct Competitor',pricing:'$40–$120/session',weakness:'Capped by hours in the day, no scalable income',lesson:'Group programs and digital products break the hour cap — the solo trainer who figures this out wins.'},
+  ],
+  agency:[
+    {name:'Large Digital Agencies (WPP, etc.)',type:'Enterprise',pricing:'$10K–$100K+/month',weakness:'Too expensive for SMEs, slow, junior staff on smaller accounts',lesson:'There is a permanent gap between "can\'t afford WPP" and "couldn\'t find anyone good" — that\'s your market.'},
+    {name:'Freelance Platforms (Upwork)',type:'Marketplace',pricing:'$25–$150/hour',weakness:'No strategic thinking, purely transactional, client manages everything',lesson:'Strategy plus execution at a fair price is a positioning most freelancers can\'t credibly offer.'},
+    {name:'In-House Marketing Teams',type:'Employee Substitute',pricing:'$4K–$12K/month in salaries',weakness:'Expensive to assemble full skills in-house, slow to adapt to new channels',lesson:'A specialist agency can offer a full team\'s worth of skills at one employee\'s cost.'},
+    {name:'DIY Tools (Canva, Hootsuite)',type:'Tech Substitute',pricing:'$0–$100/month',weakness:'Time-consuming for owners, quality suffers, no strategy',lesson:'Tools lower the barrier but don\'t remove the need for expertise.'},
+    {name:'Local Boutique Competitors',type:'SME Agency',pricing:'$500–$5K/month retainer',weakness:'Often overpromise, underdeliver, weak reporting, no process',lesson:'Clear reporting and predictable deliverables are rarer than you think — easily differentiated.'},
+  ],
+  health:[
+    {name:'NHS / Public Health Systems',type:'Government Provider',pricing:'Free at point of use',weakness:'Long waits, no personalisation, overwhelmed capacity',lesson:'Speed and personalisation are the two things public health cannot offer — private health thrives on both.'},
+    {name:'Private Hospitals & Clinics',type:'Enterprise Provider',pricing:'$100–$500+/consultation',weakness:'Expensive, location-bound, poor digital experience, acute-care focused',lesson:'Prevention and digital delivery are the two most underfunded areas of private health.'},
+    {name:'Telehealth Platforms (Teladoc)',type:'Funded Scale-up',pricing:'$5–$50/consultation',weakness:'Generic, not specialist, high CAC funded by VC',lesson:'A specialist telehealth service for one condition/demographic wins on trust where general platforms lose on relevance.'},
+    {name:'Pharmacies / Chemists',type:'Distribution/Retail',pricing:'Retail margin on OTC products',weakness:'No health advice beyond product sales, no continuity of care',lesson:'Continuity of care is the highest-value thing in health — no single-transaction competitor can replicate a trusted ongoing relationship.'},
+    {name:'Wellness Coaches (Unregulated)',type:'Direct Competitor',pricing:'$50–$200/session',weakness:'Inconsistent quality, no clinical credibility',lesson:'Credentials, transparency, and evidence-based positioning are moats in wellness — most coaches don\'t build them.'},
+  ],
+  edtech:[
+    {name:'Coursera / Udemy / LinkedIn Learning',type:'Global MOOC Platform',pricing:'$15–$50/course or $30/month',weakness:'90%+ non-completion, no accountability, generic curriculum',lesson:'Completion and outcome are what MOOCs don\'t optimise for — accountability-based learning fills that gap.'},
+    {name:'Traditional Universities',type:'Institutional',pricing:'$5K–$50K+/year',weakness:'Slow curriculum, credential inflation, expensive, often irrelevant',lesson:'Faster, cheaper, more practical credentials are winning — but outcomes data is what students actually pay for.'},
+    {name:'YouTube / Free Tutorials',type:'Free Alternative',pricing:'Free',weakness:'No structure, no accountability, no credential',lesson:'Structure, community, and accountability are your value — free competes with free on information alone.'},
+    {name:'Bootcamps (General Assembly, etc.)',type:'Intensive Provider',pricing:'$5K–$20K per cohort',weakness:'Expensive, intense, not suitable for working professionals',lesson:'Self-paced, affordable, outcome-focused learning for working adults is structurally underserved below bootcamp price points.'},
+    {name:'Corporate L&D Teams',type:'Internal Substitute',pricing:'Internal cost — headcount',weakness:'Generic content, slow procurement, political constraints',lesson:'L&D teams buy external training when internal can\'t move fast enough — position as the specialist they lack.'},
+  ],
+  marketplace:[
+    {name:'Amazon / eBay (Horizontal)',type:'Global Giant',pricing:'8–15% seller commission',weakness:'No niche curation, buyers overwhelmed, commoditised sellers',lesson:'Vertical marketplaces with trusted curation outperform horizontal giants in specific categories.'},
+    {name:'Airbnb / Uber (Category Leaders)',type:'VC-Funded Platform',pricing:'3–15% per transaction',weakness:'Trust issues, policy volatility, increasingly extractive to suppliers',lesson:'Platform giants extract more value over time — a marketplace that aligns supplier incentives keeps better quality longer.'},
+    {name:'Facebook Marketplace / Craigslist',type:'Free Classifieds',pricing:'Free',weakness:'No trust infrastructure, no payment protection, disorganised',lesson:'Adding trust, payments, and reviews on top of classifieds is exactly how Airbnb and Etsy started.'},
+    {name:'Industry Incumbents',type:'Established Vertical Marketplace',pricing:'Subscription or commission',weakness:'Aging tech, poor UX, no mobile-first experience, complacent',lesson:'Incumbents in vertical marketplaces lose to UX-first challengers — design and onboarding speed are competitive weapons.'},
+    {name:'Direct B2B Relationships',type:'No-Marketplace Substitute',pricing:'Negotiated directly',weakness:'No discovery, no trust signals, high friction, manual process',lesson:'If buyers and sellers are still finding each other via cold email, the marketplace opportunity is real.'},
+  ],
+  events:[
+    {name:'Eventbrite / Meetup',type:'Global Platform',pricing:'3–5% + $0.79/ticket',weakness:'Commodity listing — no curation, no brand, buried in a sea of events',lesson:'A curated event brand with a specific audience beats a generic platform listing.'},
+    {name:'Large Event Agencies',type:'Enterprise',pricing:'$10K–$500K+/event',weakness:'Not accessible for SME clients, slow, expensive overhead',lesson:'There is a permanent mid-market gap: clients too big for a freelancer, too small for an agency.'},
+    {name:'Venues (Independent)',type:'Direct Competitor / Supplier',pricing:'$300–$5K/day room hire',weakness:'No event management, no catering, no marketing — just space',lesson:'Bundle the space with planning and marketing and you create a product venues cannot compete with.'},
+    {name:'Corporate Internal Events Teams',type:'Employee Substitute',pricing:'Internal cost — headcount',weakness:'Limited creativity, slow procurement, only expert if it\'s frequent',lesson:'Companies outsource events when internal is overwhelmed — that seasonal overflow is your first revenue.'},
+    {name:'Freelance Vendors (Photographers, Caterers)',type:'Adjacent Competitors',pricing:'$500–$3K/event',weakness:'Fragmented, no single point of contact, inconsistent across vendors',lesson:'Event full-service bundles command premium over individual services.'},
+  ],
+  fintech:[
+    {name:'Traditional Banks',type:'Incumbent',pricing:'Low rates but fee-heavy',weakness:'Slow to innovate, poor digital experience for SMEs, over-regulated',lesson:'Banks\' worst customers (SMEs, freelancers, young adults) are fintech\'s best — go where banks don\'t want to be.'},
+    {name:'PayPal / Stripe / Square',type:'Payment Infrastructure',pricing:'2.6–3.5% per transaction',weakness:'No advisory, no planning — just the pipe',lesson:'Payment is the wedge, not the product — winners added credit, banking, and analytics on top.'},
+    {name:'Revolut / Wise / Neobanks',type:'Challenger Bank',pricing:'Free + $6–$14/month premium',weakness:'Heavy VC burn, trust issues in some markets, broad rather than specialist',lesson:'Specialist beats generalist in fintech — one underserved use case is enough to build a real business.'},
+    {name:'Xero / QuickBooks',type:'Accounting SaaS',pricing:'$15–$60/month',weakness:'Still requires accountant interpretation, poor UX for non-financial founders',lesson:'Software gives data but not wisdom — the gap between numbers and business decisions is where advisory thrives.'},
+    {name:'Robinhood / eToro (Investment Apps)',type:'Retail Investment Platform',pricing:'Free trading + premium',weakness:'Gamification led to user harm; many users don\'t understand what they\'re doing',lesson:'Financial education and trust are scarce in a sea of investment apps — they command premium when done credibly.'},
+  ],
+  realestate:[
+    {name:'Rightmove / Zillow / Trulia',type:'Global Property Portal',pricing:'Subscription + listing fees',weakness:'No personalisation, overwhelming inventory, no advisory',lesson:'Portals aggregate supply but don\'t solve the decision — curated advisory for a specific buyer type is the gap.'},
+    {name:'Traditional Estate Agents',type:'Full-Service Agent',pricing:'1.5–3% of sale price',weakness:'High commission, slow process, conflict of interest',lesson:'Transparent, lower-commission agents with strong digital marketing win in the mid-market.'},
+    {name:'PropTech Scale-ups (Opendoor)',type:'VC-Funded Challenger',pricing:'1–1.5% or flat fee',weakness:'iBuyer model burned billions; digital-only lost to relationship-heavy markets',lesson:'Technology improves process but doesn\'t replace trust in property — the right hybrid wins.'},
+    {name:'Landlords / Direct Deals',type:'No-Agent Substitute',pricing:'No commission',weakness:'Hard to discover, no trust infrastructure, legal risk for buyers',lesson:'The persistence of direct deals proves buyers trust each other more than agents — a transparent matchmaker fills the gap.'},
+    {name:'Property Managers',type:'Management Competitor',pricing:'8–12% of monthly rent',weakness:'Often reactive, poor communication, no technology',lesson:'Communication and proactive maintenance are what landlords hate about property managers — fix those and you differentiate easily.'},
+  ],
+  logistics:[
+    {name:'DHL / FedEx / UPS',type:'Global Carrier',pricing:'$5–$50+/parcel',weakness:'Minimum volume requirements, slow last-mile in dense urban areas',lesson:'Last-mile is where global carriers are weakest — local networks built on relationships win on speed.'},
+    {name:'Uber Freight / Flexport',type:'VC-Funded Marketplace',pricing:'5–15% freight brokerage margin',weakness:'Commoditising carrier relationships — price race not margin race',lesson:'Managed logistics with advisory adds margin that pure brokerage platforms cannot sustain.'},
+    {name:'Local Couriers / Van Men',type:'SME Competitor',pricing:'$20–$80/delivery',weakness:'No tracking, no reliability guarantee, no insurance',lesson:'Technology layered on local delivery creates a defensible brand in a commodity market.'},
+    {name:'Amazon Logistics (Amzl)',type:'Captive Carrier',pricing:'Only for Amazon sellers',weakness:'No access for non-Amazon merchants — entire SME retail sector needs an alternative',lesson:'Amazon\'s captive logistics creates a permanent market for independent last-mile carriers serving SMEs.'},
+    {name:'Royal Mail / National Post',type:'National Postal',pricing:'$3–$8/standard parcel',weakness:'Slow, no same-day, damaged parcels, poor customer service',lesson:'Speed and reliability at a reasonable price are consistently undersupplied in postal markets.'},
+  ],
+};
+
+const INDUSTRY_HISTORY = {
+  food:{
+    wins:[
+      {co:'Chipotle (1993 → IPO 2006)',what:'Built fast-casual burrito chain with a "food with integrity" supply chain ethos. IPO at $22/share, hit $800 by 2015.',lesson:'A clear brand philosophy ("better fast food") turned a commodity product into a premium category. Positioning drove the premium, not the product alone.'},
+      {co:'Sweetgreen (2007 → IPO 2021)',what:'Salad chain grew from one D.C. location to a $1B public company. Built loyalty via app ordering and local sourcing story.',lesson:'Health-conscious eating + tech-enabled loyalty is durable. Own the customer relationship digitally before expanding locations.'},
+    ],
+    losses:[
+      {co:'Quiznos (peak 2007 → bankruptcy 2014)',what:'Once had 5,000+ locations. Collapsed because franchise fees made stores unprofitable. Franchisees sued and closed en masse.',lesson:'Unit economics must work at the operator level, not just the franchisor. A model that extracts from operators collapses when operators leave.'},
+      {co:'Sprig (2013 → closed 2017)',what:'On-demand healthy food delivery raised $57M. Closed because cooking + delivering within 20 minutes couldn\'t produce viable unit economics.',lesson:'On-demand delivery economics are brutal. Speed as a core promise makes every cost variable spike simultaneously.'},
+    ],
+  },
+  retail:{
+    wins:[
+      {co:'ASOS (2000 → £4B revenue)',what:'Started selling celebrity TV outfits. Grew to dominate UK online fashion by solving the "I want that outfit" moment with fast fulfilment.',lesson:'Solving a specific emotional trigger and removing all purchase friction is more powerful than building a better catalogue.'},
+      {co:'Gymshark (2012 → $1.3B valuation)',what:'Ben Francis started in a garage screen-printing gym wear. Built audience via fitness influencer gifting before that had a name.',lesson:'Community before commerce. Gymshark built audience identity first — the purchase followed naturally. The brand was the product.'},
+    ],
+    losses:[
+      {co:'Fab.com (raised $310M → sold for $15M in 2015)',what:'Flash-sale design marketplace raised $310M and burned through it expanding warehouses globally. Shifted strategy three times and never found stable unit economics.',lesson:'Expanding before unit economics are proven destroys capital faster than any competitor. Growth multiplies the underlying model — good or bad.'},
+      {co:'Nasty Gal (2006 → bankruptcy 2016)',what:'Grew from an eBay vintage seller to a $300M fashion brand. Rapid scaling and poor inventory decisions collapsed the company.',lesson:'Founder identity cannot substitute for operational infrastructure at scale. The skills to build a brand are different from the skills to run a $100M business.'},
+    ],
+  },
+  saas:{
+    wins:[
+      {co:'Notion (2016 → $10B valuation)',what:'Focused obsessively on a cult following before scaling. No paid marketing for years — viral by design, every user invited others.',lesson:'Product-led growth works when the product is shareable by nature. Build sharing into the product before building a sales team.'},
+      {co:'Calendly (2013 → $3B valuation)',what:'Solved one narrow problem (scheduling) better than anyone. Every meeting invite was a product demo to a potential new user.',lesson:'Virality through usage, not marketing. Design the growth loop into the product\'s core function.'},
+    ],
+    losses:[
+      {co:'Quibb (2013 → closed 2016)',what:'Professional news sharing for tech workers. Raised $1.1M but never found a repeatable growth loop or monetisation path.',lesson:'Niche audiences need tight monetisation strategies. A small, engaged community is only valuable if you know how to extract and return value from it.'},
+      {co:'Pebble (2012 → acquired 2016 for parts)',what:'Pioneer smartwatch raised $10M on Kickstarter. Lost to Apple Watch on distribution, not technology.',lesson:'Distribution moats matter more than feature moats in consumer tech. Platform owners can copy your product and bundle it.'},
+    ],
+  },
+  service:{
+    wins:[
+      {co:'Basecamp / 37Signals (1999 → $100M+ revenue)',what:'Started as a web design agency, then built Basecamp as an internal tool. Released it publicly; became one of the most profitable bootstrapped SaaS businesses.',lesson:'The problem you solve for yourself is often shared by thousands. Internal tools are product validation hiding in plain sight.'},
+      {co:'McKinsey & Company (1926 → present)',what:'Built the premium consulting category by creating frameworks and language that became industry standards. Pricing follows perceived expertise, not deliverables.',lesson:'If you define the framework, you define the market. IP in services is vocabulary, methodology, and case studies — not code.'},
+    ],
+    losses:[
+      {co:'Homejoy (2012 → closed 2015)',what:'On-demand home cleaning raised $38M. Closed after cleaners left the platform to work directly with clients once trust was established.',lesson:'A marketplace must add more value than a direct relationship. If both parties can transact cheaper without you, the platform leaks.'},
+      {co:'Eden (2015 → acquired for parts 2021)',what:'On-demand office services raised $17M. The market was smaller than modelled and enterprise sales cycles didn\'t fit an on-demand product.',lesson:'On-demand sales cycles and enterprise procurement rhythms are incompatible. Know your buyer\'s buying cadence before building a product assuming instant decisions.'},
+    ],
+  },
+  fitness:{
+    wins:[
+      {co:'Peloton (2012 → $50 IPO)',what:'Turned a stationary bike into $2,500 hardware with a Netflix-style live and on-demand class subscription. Created the "connected fitness" category.',lesson:'Hardware + subscription is powerful because the hardware drives recurring revenue and the recurring revenue funds the hardware. Neither works as well alone.'},
+      {co:'CrossFit (2000 → $4B acquisition 2020)',what:'Greg Glassman built CrossFit as a methodology, not a gym chain. Certified coaches, licensed affiliates, charged fees — scaled without owning a single gym.',lesson:'Franchise-without-franchising: certify practitioners, license your brand, let others bear the capital cost of locations.'},
+    ],
+    losses:[
+      {co:'Peloton (2021 → 97% stock decline)',what:'After COVID demand collapsed, Peloton had over-invested in manufacturing and headcount. Lost $1.24B in a single quarter.',lesson:'Pandemic-era demand is not a business model — it is a temporary shock. Scaling fixed costs to match a spike destroys the company when demand normalises.'},
+      {co:'SoulCycle (2006 → major decline post-2020)',what:'Premium indoor cycling at $35/class built on cult instructor personalities. Lost to Peloton digitally and never recovered post-COVID studio foot traffic.',lesson:'Location-dependent premium experiences are fragile to external shocks. A digital extension built before disruption could have been the business.'},
+    ],
+  },
+  agency:{
+    wins:[
+      {co:'Wieden+Kennedy (1982 → $1B+ revenue)',what:'Founded on one client (Nike) and built "Just Do It" into the most recognised campaign in advertising history. Remained independent by refusing acquisition.',lesson:'One anchor client with whom you do transformational work is worth more than 20 average ones. Concentration risk is real — but so is the depth of craft it enables.'},
+      {co:'ThoughtWorks / EPAM (Global Engineering Consultancies)',what:'Built global engineering consulting serving enterprise clients at premium rates via offshore delivery, reducing costs while maintaining onshore client relationships.',lesson:'Geographic arbitrage on delivery cost with onshore relationship management is a durable model — the premium is in the relationship, the margin in the delivery.'},
+    ],
+    losses:[
+      {co:'Traditional Ad Agencies (Lowe\'s, etc., closed 2015–2020)',what:'Older advertising agencies absorbed into holding companies and wound down as clients moved budgets to digital and in-house teams.',lesson:'Traditional agencies that didn\'t transition to digital were replaced by in-house teams and specialist digital shops. Capability evolution is not optional at scale.'},
+      {co:'Vine Specialist Agencies (2016)',what:'When Twitter shut Vine, agencies built specifically around that platform had nowhere to go.',lesson:'Platform dependency is existential risk. An agency built on one channel has one point of failure — diversify before the platform does it for you.'},
+    ],
+  },
+  health:{
+    wins:[
+      {co:'Noom (2008 → $3.7B valuation)',what:'Weight loss app using psychology-based behaviour change. Hybrid human+app model charged $60+/month where competitors charged $10.',lesson:'When your product works, you can charge a premium. The gap between "food tracker" and "program that changes behaviour" justified 6× the price.'},
+      {co:'MDVIP (2000 → 1,100 physicians)',what:'Concierge medicine model. Physicians charge $1,500–$2,200/year for guaranteed access and longer appointments. Physicians earn more seeing fewer patients.',lesson:'The concierge model works when patients are frustrated enough with the standard model to pay to escape it. Unhappy incumbent customers are your first buyers.'},
+    ],
+    losses:[
+      {co:'Theranos (2003 → fraud conviction 2022)',what:'Promised 200+ blood tests from a single finger-prick. The technology didn\'t work. Elizabeth Holmes convicted of fraud.',lesson:'In health, the product must actually work before you sell it. Regulatory and ethical risk in healthcare is existential — not a startup risk to take lightly.'},
+      {co:'Jawbone Health (2007 → liquidated 2017)',what:'Fitness tracker raised $930M and competed with Fitbit and Apple on hardware. Couldn\'t achieve the data flywheel needed to justify the capital structure.',lesson:'Health hardware without a data business is a race to commoditisation. The device is the sensor — the business is what the data enables.'},
+    ],
+  },
+  edtech:{
+    wins:[
+      {co:'Duolingo (2011 → $7.8B valuation)',what:'Gamified language learning app reached 500M+ users via freemium. Converted 5% to paid ($7–$13/month), generating $500M+ ARR.',lesson:'Freemium works when the free product is genuinely better than paid alternatives. The premium is a reward for engagement, not a paywall.'},
+      {co:'MasterClass (2015 → $800M valuation)',what:'Charged $180/year for celebrity-taught courses. Sold aspiration, not skills — and that sold at 10× the market rate.',lesson:'In edtech, you often sell the dream more than the skill. "Learn from Gordon Ramsay" is an identity product — price accordingly.'},
+    ],
+    losses:[
+      {co:'Udacity (2011 → major write-down)',what:'VC-backed bootcamp promised nanodegrees with job guarantees. Never achieved sustainable unit economics. Funding shrank, layoffs continued.',lesson:'Job guarantee programs create a perverse incentive: enrol students who aren\'t ready, fail to place them, bear the guarantee cost. This transferred risk from student to company — and the company couldn\'t bear it.'},
+      {co:'2U/edX (IPO → $800M write-down post-acquisition)',what:'Partnered with elite universities to deliver online degrees. High university revenue share left 2U with unsustainable margins.',lesson:'A model dependent on a powerful supplier with strong negotiating leverage is structurally fragile. The better your suppliers, the more they can extract over time.'},
+    ],
+  },
+  marketplace:{
+    wins:[
+      {co:'Airbnb (2008 → $75B IPO)',what:'Founded during the 2008 financial crisis when founders rented air mattresses to conference attendees. Became the world\'s largest accommodation provider without owning a single property.',lesson:'Asset-light marketplaces unlock latent supply that always existed but lacked a trusted platform. The trust infrastructure is the business.'},
+      {co:'Etsy (2005 → $28B market cap)',what:'Marketplace for handmade and vintage goods. Grew by serving an underserved seller base (crafters and artists) who had no other professional sales channel.',lesson:'Serve the seller first. Etsy grew because sellers brought their buyers. A marketplace that solves for supplier success builds a supply-side acquisition engine.'},
+    ],
+    losses:[
+      {co:'Homejoy (2012 → closed 2015)',what:'Home cleaning marketplace raised $38M and collapsed when cleaners left the platform to work directly with clients.',lesson:'A marketplace must add permanent, uncopyable value to both sides. If parties can transact cheaper without you after the first introduction, you have a high-churn business, not a marketplace.'},
+      {co:'Exec (2012 → acquired for parts 2014)',what:'On-demand personal assistant marketplace pivoted multiple times and collapsed along with Homejoy.',lesson:'Pivoting a marketplace is harder than pivoting a product — both supply and demand must be re-acquired for each new direction. Pivots multiply CAC.'},
+    ],
+  },
+  events:{
+    wins:[
+      {co:'Lollapalooza (1991 → $100M+ annual revenue)',what:'Perry Farrell created a travelling music festival as a farewell tour. Became permanent after demand proved the audience existed. Sold to Live Nation for $30M+.',lesson:'A one-time "let\'s try it" event is the best market validation for a recurring event business. Run the experiment before committing the infrastructure.'},
+      {co:'Summit Series (2008 → $500M+ assets)',what:'Started as a bus trip with 19 entrepreneurs to lobby Congress. Evolved into a member-only luxury community with an entire ski town and annual conference.',lesson:'Communities built around shared identity and real access to influential people create network effects that conferences cannot replicate.'},
+    ],
+    losses:[
+      {co:'Fyre Festival (2017 → fraud conviction)',what:'$12M raised, luxury festival promised on a Bahamas island, delivered nothing. Promoters convicted of wire fraud.',lesson:'Selling an event before it is operationally feasible is fraud, not a startup risk. Events commit to a specific date — there is no pivot after the tickets are sold.'},
+      {co:'Woodstock 50 (2019 → cancelled)',what:'50th anniversary raised $30M+, lost its venue, financial partner, and most headliners. Cancelled weeks before the event.',lesson:'Legacy brand equity does not substitute for operational execution. A famous name attached to a failed production is a reputational liability, not an asset.'},
+    ],
+  },
+  fintech:{
+    wins:[
+      {co:'Stripe (2010 → $50B valuation)',what:'Collison brothers built Stripe because payment integration was the most painful part of building an internet business. 7 lines of code to accept payments online.',lesson:'Developer pain is enterprise opportunity. If developers hate doing something, there is a $B market in making it simple. Simplicity is a product strategy.'},
+      {co:'Chime (2012 → $25B valuation)',what:'Mobile-first bank targeting underbanked Americans with no-fee accounts and early paycheck access. Reached 13M accounts with no physical branches.',lesson:'Go where incumbents won\'t: Chime won by serving the customer that banks actively declined to prioritise. The underserved market is always larger than it looks.'},
+    ],
+    losses:[
+      {co:'LendingClub (2006 → CEO removal 2016)',what:'P2P lending marketplace went public at $9B. CEO resigned after scandal involving mis-sold loans. Share price fell 80%.',lesson:'Regulatory risk in fintech is permanent. A fintech business that grows faster than its compliance capability becomes a liability to investors.'},
+      {co:'Wirecard (1999 → fraud collapse 2020)',what:'German payments giant falsified €1.9B in cash reserves. CEO arrested, company collapsed in days after auditors refused to sign accounts.',lesson:'Accounting fraud ends fintech businesses. The sector is built on trust — once broken, there is no recovery.'},
+    ],
+  },
+  realestate:{
+    wins:[
+      {co:'Zillow (2006 → $10B+ revenue)',what:'Started by publishing the "Zestimate" automated home value estimate that newspapers said was impossible. Became the primary destination for American home search.',lesson:'Give away valuable data to build an audience, then monetise with adjacent services. The Zestimate was a user acquisition machine, not a product.'},
+      {co:'Rightmove (2000 → £5B market cap)',what:'UK property portal launched when only 1% of homes were listed online. Signed estate agents early, became the place buyers went — which meant agents had to be listed.',lesson:'In marketplace businesses, whichever side you capture first defines who wins. Rightmove captured agents before buyers — and buyers followed the supply.'},
+    ],
+    losses:[
+      {co:'Zillow Offers / RedfinNow (iBuyer collapse 2021–2022)',what:'Multiple iBuyer startups purchased homes at peak prices, held inventory when the market turned, and lost hundreds of millions.',lesson:'Asset-heavy real estate models carry binary risk: if the market turns, every property in inventory is a liability. Asset-light intermediary models survive market cycles.'},
+      {co:'Purple Bricks (2012 → sold at a loss 2023)',what:'Hybrid online estate agent raised £250M and expanded globally. The model worked in the UK but failed in the US and Australia where real estate culture was different.',lesson:'Real estate is hyper-local. A model that works in one country\'s regulatory and cultural context does not automatically export.'},
+    ],
+  },
+  logistics:{
+    wins:[
+      {co:'FedEx (1971 → $93B revenue)',what:'Fred Smith proposed overnight delivery in a Yale paper that received a C grade. Built a fleet of planes before having a single corporate customer.',lesson:'Sometimes you have to build the future before you can sell it. The vision of a working system had to exist before customers could understand what they were buying.'},
+      {co:'Flexport (2013 → $8B valuation)',what:'Built a modern freight forwarding platform with real-time shipment visibility. Won by solving the transparency problem that legacy brokers deliberately kept opaque.',lesson:'Opacity is a business model for incumbents and an opportunity for challengers. If customers can\'t see where their shipment is, they\'ll switch to whoever can show them.'},
+    ],
+    losses:[
+      {co:'Shyp (2013 → closed 2018)',what:'On-demand shipping raised $62M. Sent couriers to pack and ship items from people\'s homes. Unit economics: charging $5 for a service that cost $14 to deliver.',lesson:'A service that loses money on every transaction does not improve with scale — it worsens. Unit economics must be solved before growth, not after.'},
+      {co:'Same-Day Delivery Wave (2014–2016 closures)',what:'Multiple same-day delivery startups collapsed as VC dried up. Labour costs and density requirements made profitability structurally impossible outside dense urban cores.',lesson:'Same-day delivery requires population density above a threshold. A model that only works in Manhattan cannot scale to the suburbs, let alone nationally.'},
+    ],
+  },
+};
+
 // ─── ENGINE MODES ────────────────────────────────────────────────────────────
 const ENGINE_MODES = {
   balanced:   { mktMult:1.0, costMult:1.0, growthBoost:1.0,  acqMult:1.0,  label:'Balanced'        },
@@ -1462,6 +1859,194 @@ function monteCarlo(params) {
   };
 }
 
+// ─── EXTENDED SIMULATION (6M / 12M) ──────────────────────────────────────────
+function simulateLong(params, totalDays) {
+  const prof = PROFILES[params.industry];
+  const em   = ENGINE_MODES[params.engMode||'balanced'];
+  const expM = EXP_MULT[params.exp||'some'];
+  const compM= COMP_MULT[params.comp||'medium'];
+  const totalAcqMult = em.acqMult * expM * compM;
+  const totalCostMult= em.costMult;
+
+  const days = [];
+  let cash = params.capital, customers = 0;
+  const dailyMkt = (params.mktBud / totalDays) * em.mktMult;
+  const organicBase = Math.max(0.5, Math.log(params.team+1) * 1.2) * prof.organicMult * totalAcqMult;
+
+  for (let d=1; d<=totalDays; d++) {
+    const seasonMult = prof.season ? prof.season[(d-1) % prof.season.length] : 1;
+    const paidAcq = Math.max(0, Math.floor(rNorm(dailyMkt/prof.acqCost, 1.5) * totalAcqMult));
+    const footTraffic = Math.max(0, Math.round(rNorm(organicBase, 1.0) * seasonMult));
+    const wordOfMouth = Math.round(customers * 0.003 * em.growthBoost);
+    const acq = paidAcq + footTraffic + wordOfMouth;
+    const churned = Math.floor(customers * prof.churn / 30);
+    customers = Math.max(0, customers + acq - churned);
+    const rev  = customers * (params.price * prof.visitsPerMonth / 30) * rnd(.75, 1.25) * seasonMult;
+    const fixed = (prof.fixBase * params.team + params.capital * prof.fixR * 0.05 / totalDays) * totalCostMult;
+    const varC  = rev * prof.varR * totalCostMult;
+    const totalCost = fixed + varC + dailyMkt;
+    cash += rev - totalCost;
+    days.push({d, rev, cost:totalCost, profit:rev-totalCost, customers, cash});
+  }
+  return days;
+}
+
+function monteCarloLong(params, totalDays) {
+  const baseProf = PROFILES[params.industry];
+  const em   = ENGINE_MODES[params.engMode||'balanced'];
+  const expM = EXP_MULT[params.exp||'some'];
+  const compM= COMP_MULT[params.comp||'medium'];
+  const totalAcqMult = em.acqMult * expM * compM;
+  const totalCostMult= em.costMult;
+  const organicBase = Math.max(0.5,Math.log(params.team+1)*1.2)*baseProf.organicMult*totalAcqMult;
+  const finals = [];
+  for (let r=0; r<300; r++) {
+    const p = {
+      fixR:    Math.max(.03, rNorm(baseProf.fixR,   baseProf.fixR*.25)),
+      varR:    Math.max(.01, rNorm(baseProf.varR,   baseProf.varR*.2)),
+      acqCost: Math.max(1,   rNorm(baseProf.acqCost,baseProf.acqCost*.3)),
+      churn:   Math.max(.005,rNorm(baseProf.churn,  baseProf.churn*.25)),
+    };
+    let cash=params.capital, customers=0;
+    const dailyMkt=(params.mktBud/totalDays)*em.mktMult;
+    for (let d=1; d<=totalDays; d++) {
+      const seasonMult = baseProf.season ? baseProf.season[(d-1)%baseProf.season.length] : 1;
+      const paidAcq=Math.max(0,Math.floor(rNorm(dailyMkt/p.acqCost,1.2)*totalAcqMult));
+      const footTraffic=Math.max(0,Math.round(rNorm(organicBase,1.0)));
+      const wordOfMouth=Math.round(customers*0.003*em.growthBoost);
+      customers=Math.max(0,customers+paidAcq+footTraffic+wordOfMouth-Math.floor(customers*p.churn/30));
+      const rev=customers*(params.price*baseProf.visitsPerMonth/30)*rnd(.6,1.4)*seasonMult;
+      const fixedC=(baseProf.fixBase*params.team+params.capital*p.fixR*0.05/totalDays)*totalCostMult;
+      cash+=rev-(fixedC+rev*p.varR*totalCostMult+dailyMkt);
+    }
+    finals.push(cash);
+  }
+  finals.sort((a,b)=>a-b);
+  const N=finals.length;
+  return {
+    p10:finals[Math.floor(N*.1)], p50:finals[Math.floor(N*.5)], p90:finals[Math.floor(N*.9)],
+    survivalRate:finals.filter(v=>v>0).length/N
+  };
+}
+
+// ─── FORECAST RENDER ─────────────────────────────────────────────────────────
+S.forecastMode = '6m';
+
+function switchForecast(mode) {
+  S.forecastMode = mode;
+  document.querySelectorAll('.ft-btn').forEach(b=>b.classList.remove('active'));
+  const btn = document.getElementById('ft-'+mode);
+  if (btn) btn.classList.add('active');
+  renderForecast();
+}
+
+function renderForecast() {
+  const el = document.getElementById('forecast-content');
+  if (!el) return;
+  if (!S.done || !S.ext) { el.innerHTML='<div class="empty-state"><p>Run a simulation first to see extended projections.</p></div>'; return; }
+
+  const mode = S.forecastMode || '6m';
+  const ext = S.ext[mode];
+  if (!ext) return;
+
+  const d = ext.days;
+  const mc = ext.mc;
+  const totalDays = mode === '6m' ? 180 : 365;
+  const label = mode === '6m' ? '6-Month (180 Days)' : '12-Month (365 Days)';
+
+  const totalRev  = d.reduce((s,x)=>s+x.rev,0);
+  const totalCost = d.reduce((s,x)=>s+x.cost,0);
+  const netProfit = totalRev - totalCost;
+  const last      = d[d.length-1];
+  const profDays  = d.filter(x=>x.profit>0).length;
+  const kc = v => v>0?'var(--emerald)':v<0?'var(--red)':'var(--amber)';
+
+  // Aggregate to weekly bars
+  const weekSize = mode === '6m' ? 7 : 7;
+  const weeks = [];
+  for (let i=0; i<d.length; i+=weekSize) {
+    const chunk = d.slice(i, i+weekSize);
+    weeks.push({
+      rev:   chunk.reduce((s,x)=>s+x.rev,0),
+      cost:  chunk.reduce((s,x)=>s+x.cost,0),
+      profit:chunk.reduce((s,x)=>s+x.profit,0),
+    });
+  }
+  const maxRev  = Math.max(...weeks.map(w=>w.rev), 1);
+  const maxCost = Math.max(...weeks.map(w=>w.cost), 1);
+  const maxH    = Math.max(maxRev, maxCost);
+
+  // Break-even day
+  const beDay = d.find(x=>x.cash>S.params.capital);
+
+  el.innerHTML = `
+    <div style="font-family:var(--mono);font-size:9px;color:var(--muted-2);letter-spacing:.08em;margin-bottom:1rem;">
+      PROJECTING ${label.toUpperCase()} · BASED ON YOUR ${S.params.industry.toUpperCase()} SIMULATION · ${Math.round(mc.survivalRate*100)}% PROJECTED SURVIVAL RATE
+    </div>
+
+    <div class="g4" style="margin-bottom:1.25rem;">
+      <div class="card"><div class="card-lbl">PROJECTED REVENUE</div><div class="card-val c">${fmt(totalRev)}</div><div class="card-sub">${fmt(totalRev/totalDays)}/day avg</div></div>
+      <div class="card"><div class="card-lbl">PROJECTED PROFIT</div><div class="card-val" style="color:${kc(netProfit)}">${fmt(netProfit)}</div><div class="card-sub">Margin: ${totalRev>0?(netProfit/totalRev*100).toFixed(1):'0'}%</div></div>
+      <div class="card"><div class="card-lbl">END CASH</div><div class="card-val" style="color:${kc(last.cash)}">${fmt(last.cash)}</div><div class="card-sub">${profDays}/${totalDays} profitable days</div></div>
+      <div class="card"><div class="card-lbl">CUSTOMERS AT END</div><div class="card-val p">${last.customers}</div><div class="card-sub">Survival rate: ${Math.round(mc.survivalRate*100)}%</div></div>
+    </div>
+
+    <div class="chart-panel">
+      <div class="chart-title">WEEKLY REVENUE vs COST — ${label.toUpperCase()} <span class="chart-badge">WEEKLY</span></div>
+      <div class="fc-bar-wrap">
+        ${weeks.map((w,i)=>{
+          const isBE = beDay && beDay.d >= i*weekSize+1 && beDay.d <= (i+1)*weekSize;
+          return `<div style="display:flex;flex-direction:column;align-items:center;gap:1px;flex:1;position:relative;" title="W${i+1}: Rev ${fmt(w.rev)} / Cost ${fmt(w.cost)}">
+            ${isBE?`<div style="position:absolute;bottom:100%;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:6px;color:var(--cyan);white-space:nowrap;">B/E</div>`:''}
+            <div class="fc-bar" style="height:${(w.rev/maxH*90).toFixed(1)}px;background:${isBE?'rgba(0,224,96,.85)':'rgba(0,224,96,.4)'};"></div>
+            <div class="fc-bar" style="height:${(w.cost/maxH*90).toFixed(1)}px;background:rgba(244,63,94,.35);"></div>
+          </div>`;
+        }).join('')}
+      </div>
+      <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;color:var(--muted-2);margin-top:.4rem;">
+        <span>Week 1</span>
+        <span style="color:var(--cyan)">${beDay?'⬆ Break-even Week '+(Math.ceil(beDay.d/7)):'No break-even reached'}</span>
+        <span>Week ${weeks.length}</span>
+      </div>
+      <div style="display:flex;gap:1.5rem;font-family:var(--mono);font-size:9px;color:var(--muted-2);margin-top:.5rem;">
+        <span style="color:var(--emerald)">■</span> Revenue &nbsp;
+        <span style="color:var(--red)">■</span> Cost
+      </div>
+    </div>
+
+    <div class="g2" style="margin-top:1rem;">
+      <div class="card">
+        <div class="card-lbl">MONTE CARLO OUTCOMES (300 RUNS)</div>
+        <div style="margin-top:.85rem;">
+          ${[['Pessimistic (P10)',mc.p10,'var(--red)'],['Median (P50)',mc.p50,'var(--amber)'],['Optimistic (P90)',mc.p90,'var(--emerald)']].map(([lbl,val,col])=>`
+          <div class="prog-row">
+            <div class="prog-label"><span>${lbl}</span><span style="color:${col}">${fmt(val)}</span></div>
+            <div class="prog-bar-bg"><div class="prog-bar-fill" style="width:${Math.min(100,Math.max(0,(val/(mc.p90||1))*100)).toFixed(0)}%;background:${col}"></div></div>
+          </div>`).join('')}
+          <div style="font-family:var(--mono);font-size:9px;color:var(--muted-2);margin-top:.75rem;">
+            Survival rate: <strong style="color:${mc.survivalRate>.6?'var(--emerald)':mc.survivalRate>.35?'var(--amber)':'var(--red)'}">${Math.round(mc.survivalRate*100)}%</strong> of 300 extended scenarios ended with cash remaining.
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-lbl">EXTENDED TIMELINE MILESTONES</div>
+        <div style="margin-top:.85rem;">
+          ${[
+            ['Break-even Day', beDay?'Day '+beDay.d:'Not reached in this period', beDay?'var(--emerald)':'var(--red)'],
+            ['Day 90 Cash (baseline)', fmt(S.days[S.days.length-1]?.cash||0), kc(S.days[S.days.length-1]?.cash||0)],
+            [label+' End Cash', fmt(last.cash), kc(last.cash)],
+            ['Customer Growth', (S.days[S.days.length-1]?.customers||0)+' → '+last.customers+' customers', 'var(--purple)'],
+            ['Profitable Days', profDays+'/'+totalDays+' days', profDays/totalDays>.5?'var(--emerald)':'var(--amber)'],
+          ].map(([lbl,val,col])=>`
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:.45rem 0;border-bottom:1px solid var(--line);font-family:var(--mono);">
+            <span style="font-size:9.5px;color:var(--muted-2)">${lbl}</span>
+            <span style="font-size:10px;font-weight:600;color:${col}">${val}</span>
+          </div>`).join('')}
+        </div>
+      </div>
+    </div>`;
+}
+
 // ─── SCORES ──────────────────────────────────────────────────────────────────
 function calcScores() {
   if (S.scores) return S.scores;
@@ -1499,6 +2084,7 @@ function nav(id) {
   if (id==='sensitivity'&&S.done) updateSensitivity();
   if (id==='compare'){renderScenarioSlots();renderComparisonTable();}
   if (id==='history') renderHistory();
+  if (id==='forecast') renderForecast();
 }
 
 // ─── SIMULATION CONTROLS ─────────────────────────────────────────────────────
@@ -1566,6 +2152,11 @@ function finalize() {
   if (!S.running) return;
   const {days,events}=simulate(S.params);
   S.days=days;S.events=events;S.mc=monteCarlo(S.params);
+  // Extended simulations (run in background, don't block render)
+  S.ext = {
+    '6m':  { days: simulateLong(S.params, 180), mc: monteCarloLong(S.params, 180) },
+    '12m': { days: simulateLong(S.params, 365), mc: monteCarloLong(S.params, 365) },
+  };
   S.running=false;S.done=true;
   setBadge('done');
   $('launch-btn').disabled=false;$('stop-btn').disabled=true;
@@ -1608,7 +2199,7 @@ function setBadge(state) {
 function renderAll() {
   if (!S.done) return;
   renderTicker(); renderDashboard(); renderEconomy();
-  renderCustomers(); renderRisk(); renderLog();
+  renderForecast(); renderCustomers(); renderRisk(); renderLog();
   renderVerdict(); renderReport();
 }
 
@@ -2027,24 +2618,81 @@ function renderResimPanel() {
   </div>`;
 }
 
+// ─── PREPARE RESIM (universal confirm flow) ───────────────────────────────────
+// Fills form with new params, navigates to INPUT, shows confirm banner.
+// User can adjust then click "Confirm & Run" OR the normal Simulate button.
+function prepareResim(newParams, label) {
+  if (!S.done && !newParams) return;
+  const rate = CUR[curCode]?.r || 1;
+  const p = newParams || S.params;
+  const changes = [];
+
+  // Fill form fields
+  const glowEl = el => {
+    if (!el) return;
+    el.style.transition = 'border-color .2s,box-shadow .2s';
+    el.style.borderColor = 'var(--cyan)';
+    el.style.boxShadow = '0 0 0 2px rgba(0,224,255,.2)';
+    setTimeout(()=>{el.style.borderColor='';el.style.boxShadow='';el.style.transition='';}, 4000);
+  };
+
+  if (p.idea !== undefined) { const el=$('i-idea'); if(el){el.value=p.idea;glowEl(el);} }
+  if (p.capital !== undefined) {
+    const el=$('i-cap');
+    if(el){ const v=Math.round(p.capital*rate); el.value=v; glowEl(el);
+      if(S.params&&p.capital!==S.params.capital) changes.push('Capital: '+fmt(S.params.capital*rate)+' → '+fmt(p.capital*rate)); }
+  }
+  if (p.price !== undefined) {
+    const el=$('i-price');
+    if(el){ el.value=+(p.price*rate).toFixed(2); glowEl(el);
+      if(S.params&&p.price!==S.params.price) changes.push('Price: '+fmt(S.params.price*rate)+' → '+fmt(p.price*rate)); }
+  }
+  if (p.mktBud !== undefined) {
+    const el=$('i-mktbud');
+    if(el){ el.value=Math.round(p.mktBud*rate); glowEl(el);
+      if(S.params&&p.mktBud!==S.params.mktBud) changes.push('Marketing budget: '+fmt(S.params.mktBud*rate)+' → '+fmt(p.mktBud*rate)); }
+  }
+  if (p.team !== undefined) { const el=$('i-team'); if(el){el.value=p.team;glowEl(el);} }
+  if (p.industry !== undefined) { const el=$('i-ind'); if(el){el.value=p.industry;updatePriceLabel(p.industry);} }
+  if (p.loc !== undefined) { const el=$('i-loc'); if(el){el.value=p.loc;} }
+  if (p.mkt !== undefined) { const el=$('i-mkt'); if(el){el.value=p.mkt;} }
+  if (p.exp !== undefined) { const el=$('i-exp'); if(el) el.value=p.exp; }
+  if (p.comp !== undefined) { const el=$('i-comp'); if(el) el.value=p.comp; }
+  if (p.engMode !== undefined) selectEngMode(p.engMode);
+
+  // Store new params for confirmAndRun()
+  S._pendingResimParams = p;
+
+  // Show confirm banner
+  const banner = $('resim-confirm-banner');
+  const ideaEl = $('rcb-idea');
+  const changesEl = $('rcb-changes');
+  if (banner) {
+    if (ideaEl) ideaEl.textContent = (label || 'New Scenario') + (p.idea ? ': ' + p.idea.substring(0, 120) + (p.idea.length > 120 ? '…' : '') : '');
+    if (changesEl) {
+      changesEl.innerHTML = changes.length
+        ? changes.map(c=>`• ${c}`).join('<br>')
+        : '• All inputs loaded — review and adjust below if needed, then confirm to simulate.';
+    }
+    banner.style.display = 'block';
+  }
+
+  nav('input');
+  window.scrollTo(0, 0);
+}
+
+function confirmAndRun() {
+  const banner = $('resim-confirm-banner');
+  if (banner) banner.style.display = 'none';
+  startSim();
+}
+
 function applyAndReSim() {
   const result=calcSuggestedFix();
   if(!result) return;
   const {newParams}=result;
-  const rate=CUR[curCode]?.r||1;
-  const glowEl=el=>{
-    if(!el)return;
-    el.style.transition='border-color .2s,box-shadow .2s';
-    el.style.borderColor='var(--cyan)';
-    el.style.boxShadow='0 0 0 2px rgba(0,224,255,.2)';
-    setTimeout(()=>{el.style.borderColor='';el.style.boxShadow='';el.style.transition='';},4000);
-  };
-  if(newParams.capital!==S.params.capital){ const el=$('i-cap'); if(el){el.value=Math.round(newParams.capital*rate);glowEl(el);} }
-  if(newParams.price!==S.params.price){ const el=$('i-price'); if(el){el.value=+(newParams.price*rate).toFixed(2);glowEl(el);} }
-  if(newParams.mktBud!==S.params.mktBud){ const el=$('i-mktbud'); if(el){el.value=Math.round(newParams.mktBud*rate);glowEl(el);} }
-  // Navigate to form so user can review changes, then press Simulate themselves
-  nav('input');
-  showToast('Smart fixes applied — review highlighted fields, then press Simulate', 4000);
+  // Use the unified prepareResim flow
+  prepareResim(newParams, 'Smart Fix Applied');
 }
 
 // ─── CAPITAL ALTERNATIVE CONFIRM ─────────────────────────────────────────────
@@ -2181,7 +2829,21 @@ function applyCapitalAlternative(mode) {
     banner.style.borderColor = mode === 'plus60' ? 'rgba(245,158,11,.4)' : 'rgba(16,185,129,.35)';
   }
 
-  showToast('Alternative applied — review inputs, then press Simulate', 4000);
+  // Store pending params and show universal resim confirm banner
+  S._pendingResimParams = {...S.params, capital:newCapUSD, mktBud:newMktUSD, price:newPriceUSD};
+  const rcbBanner = $('resim-confirm-banner');
+  if (rcbBanner) {
+    const ideaEl = $('rcb-idea');
+    const changesEl = $('rcb-changes');
+    if (ideaEl) ideaEl.textContent = label + ' — same business idea, adjusted capital';
+    if (changesEl) {
+      changesEl.innerHTML =
+        `• Capital: ${fmt(origCap*rate)} → ${fmt(newCapUSD*rate)}<br>` +
+        `• Monthly marketing: ${fmt(origMkt*rate)} → ${fmt(newMktUSD*rate)}` +
+        (priceChanged ? `<br>• Price: ${fmt(origPrice*rate)} → ${fmt(newPriceUSD*rate)} (unit economics nudge)` : '');
+    }
+    rcbBanner.style.display = 'block';
+  }
 }
 
 function computeVerdict() {
@@ -2533,6 +3195,92 @@ function renderCapitalAdvice() {
   </div>`;
 }
 
+// ─── STOP ALTERNATIVES ───────────────────────────────────────────────────────
+function renderStopAlternatives() {
+  const wrap = document.getElementById('stop-alternatives-wrap');
+  if (!wrap) return;
+  // Only show on STOP verdict
+  if (computeVerdict() !== 'stop') { wrap.innerHTML = ''; return; }
+
+  const ind = S.params.industry || 'food';
+  const alts = ALT_BUSINESSES[ind] || ALT_BUSINESSES.food;
+  const comps = INDUSTRY_COMPETITORS[ind] || INDUSTRY_COMPETITORS.food;
+  const hist = INDUSTRY_HISTORY[ind] || INDUSTRY_HISTORY.food;
+  const capital = S.params.capital;
+  const rate = CUR[curCode]?.r || 1;
+
+  wrap.innerHTML = `
+  <div class="alt-section">
+    <div class="alt-section-hdr">💡 SINCE YOUR IDEA GOT A STOP AT THIS CAPITAL — HERE ARE ADJACENT BUSINESSES THAT CAN WORK WITH WHAT YOU HAVE</div>
+
+    <div class="alt-grid">
+      ${alts.map((a,i) => `
+      <div class="alt-card">
+        <div class="alt-name">${a.name}</div>
+        <div class="alt-tagline">${a.tagline}</div>
+        <div class="alt-cap">Est. Capital: ${a.capital}</div>
+        <div class="alt-why">${a.why}</div>
+        <button class="alt-sim-btn" onclick="prepareResim({
+          idea: ${JSON.stringify(a.idea)},
+          capital: ${capital},
+          price: ${S.params.price},
+          mktBud: ${S.params.mktBud},
+          team: ${S.params.team},
+          industry: ${JSON.stringify(ind)},
+          loc: ${JSON.stringify(S.params.loc)},
+          mkt: ${JSON.stringify(S.params.mkt)},
+          exp: ${JSON.stringify(S.params.exp||'some')},
+          comp: ${JSON.stringify(S.params.comp||'medium')},
+          engMode: ${JSON.stringify(S.params.engMode||'balanced')}
+        }, ${JSON.stringify('Alternative: ' + a.name)})">
+          ▶ Simulate This Instead →
+        </button>
+      </div>`).join('')}
+    </div>
+
+    <div class="comp-wrap">
+      <div class="alt-section-hdr">⚔ WHO YOU\'D BE COMPETING AGAINST IN THIS SPACE</div>
+      <div style="overflow-x:auto;">
+        <table class="comp-table">
+          <thead><tr>
+            <th>COMPETITOR</th><th>TYPE</th><th>THEIR PRICING</th>
+            <th class="comp-weak">THEIR WEAKNESS</th><th class="comp-lesson">KEY LESSON</th>
+          </tr></thead>
+          <tbody>
+            ${comps.map(c=>`<tr>
+              <td class="comp-name">${c.name}</td>
+              <td>${c.type}</td>
+              <td>${c.pricing}</td>
+              <td class="comp-weak">${c.weakness}</td>
+              <td class="comp-lesson">${c.lesson}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div>
+      <div class="alt-section-hdr">📚 WHAT HISTORY SAYS — SUCCESSES &amp; FAILURES IN YOUR INDUSTRY</div>
+      <div class="hist-grid">
+        ${hist.wins.map(w=>`
+        <div class="hist-card hist-win">
+          <span class="hist-badge">✅ SUCCESS</span>
+          <div class="hist-co">${w.co}</div>
+          <div class="hist-what">${w.what}</div>
+          <div class="hist-lesson">→ ${w.lesson}</div>
+        </div>`).join('')}
+        ${hist.losses.map(l=>`
+        <div class="hist-card hist-loss">
+          <span class="hist-badge">❌ FAILURE</span>
+          <div class="hist-co">${l.co}</div>
+          <div class="hist-what">${l.what}</div>
+          <div class="hist-lesson">→ ${l.lesson}</div>
+        </div>`).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+
 // ─── RISK REGISTER ───────────────────────────────────────────────────────────
 function renderRiskRegister() {
   const wrap = document.getElementById('risk-register-wrap');
@@ -2735,8 +3483,9 @@ function renderVerdict() {
       </div>
     </div>`);
 
-  // Risk Register (synchronous — data-driven from simulation)
+  // Risk Register + Stop Alternatives (synchronous)
   renderRiskRegister();
+  renderStopAlternatives();
 
   // Async AI enrichment
   const metrics={
