@@ -1944,7 +1944,9 @@ function runBeCalc() {
   // custPerDay * price * visits/30 * targetDay = total_fixed_cost / (1-varR)
 
   const totalFixedCost = (dailyFixed + dailyMkt) * targetDay;
-  const netRevenueNeeded = totalFixedCost / (1 - prof.varR * em.costMult * loc.costMult);
+  // varR uses em.costMult only (location doesn't change COGS ratio)
+  const denominator = Math.max(0.05, 1 - prof.varR * em.costMult);
+  const netRevenueNeeded = totalFixedCost / denominator;
 
   const visits = prof.visitsPerMonth / 30;
 
@@ -2006,9 +2008,10 @@ function simulate(params) {
   const expM = EXP_MULT[params.exp||'some'];
   const compM= COMP_MULT[params.comp||'medium'];
   const loc  = detectLocation(params.loc);
-  const totalAcqMult = em.acqMult * expM * compM;
-  const totalCostMult= em.costMult * loc.costMult;
-  const locAcqCost   = prof.acqCost * loc.cacMult;
+  const totalAcqMult  = em.acqMult * expM * compM;
+  const fixedCostMult = em.costMult * loc.costMult; // location affects rent/salaries (fixed)
+  const varCostMult   = em.costMult;                // location does NOT change COGS ratio (variable)
+  const locAcqCost    = prof.acqCost * loc.cacMult;
 
   const days = [];
   let cash = params.capital, customers = 0;
@@ -2032,8 +2035,8 @@ function simulate(params) {
     customers = Math.max(0,customers+acq-churned);
     const primRev = customers*(params.price*prof.visitsPerMonth/30)*rnd(.75,1.25)*shock*seasonMult;
     const rev     = primRev + (params.extraDailyRev||0);
-    const fixed  = (prof.fixBase*params.team + params.capital*prof.fixR*0.05/SIM_DAYS) * totalCostMult;
-    const varC   = rev*prof.varR*totalCostMult;
+    const fixed  = (prof.fixBase*params.team + params.capital*prof.fixR*0.05/SIM_DAYS) * fixedCostMult;
+    const varC   = rev*prof.varR*varCostMult;
     const totalCost = fixed+varC+dailyMkt;
     const profit = rev-totalCost;
     cash += profit;
@@ -2049,8 +2052,9 @@ function monteCarlo(params) {
   const expM = EXP_MULT[params.exp||'some'];
   const compM= COMP_MULT[params.comp||'medium'];
   const loc  = detectLocation(params.loc);
-  const totalAcqMult = em.acqMult * expM * compM;
-  const totalCostMult= em.costMult * loc.costMult;
+  const totalAcqMult  = em.acqMult * expM * compM;
+  const fixedCostMult = em.costMult * loc.costMult; // location adjusts fixed overhead only
+  const varCostMult   = em.costMult;                // COGS ratio unchanged by location
   const finals = [];
   const organicBase=Math.max(0.5,Math.log(params.team+1)*1.2)*baseProf.organicMult*totalAcqMult;
   for (let r=0;r<500;r++) {
@@ -2069,9 +2073,9 @@ function monteCarlo(params) {
       const wordOfMouth=Math.round(customers*0.003*em.growthBoost);
       const acq=paidAcq+footTraffic+wordOfMouth;
       customers=Math.max(0,customers+acq-Math.floor(customers*p.churn/30));
-      const rev=customers*(params.price*baseProf.visitsPerMonth/30)*rnd(.6,1.4);
-      const fixedCost=(baseProf.fixBase*params.team+params.capital*p.fixR*0.05/SIM_DAYS)*totalCostMult;
-      cash+=rev-(fixedCost+rev*p.varR*totalCostMult+dailyMkt);
+      const rev=customers*(params.price*baseProf.visitsPerMonth/30)*rnd(.6,1.4) + (params.extraDailyRev||0);
+      const fixedCost=(baseProf.fixBase*params.team+params.capital*p.fixR*0.05/SIM_DAYS)*fixedCostMult;
+      cash+=rev-(fixedCost+rev*p.varR*varCostMult+dailyMkt);
     }
     finals.push(cash);
   }
@@ -2093,9 +2097,10 @@ function simulateLong(params, totalDays) {
   const expM = EXP_MULT[params.exp||'some'];
   const compM= COMP_MULT[params.comp||'medium'];
   const loc  = detectLocation(params.loc);
-  const totalAcqMult = em.acqMult * expM * compM;
-  const totalCostMult= em.costMult * loc.costMult;
-  const locAcqCost   = prof.acqCost * loc.cacMult;
+  const totalAcqMult  = em.acqMult * expM * compM;
+  const fixedCostMult = em.costMult * loc.costMult;
+  const varCostMult   = em.costMult;
+  const locAcqCost    = prof.acqCost * loc.cacMult;
 
   const days = [];
   let cash = params.capital, customers = 0;
@@ -2111,8 +2116,8 @@ function simulateLong(params, totalDays) {
     const churned = Math.floor(customers * prof.churn / 30);
     customers = Math.max(0, customers + acq - churned);
     const rev  = customers * (params.price * prof.visitsPerMonth / 30) * rnd(.75, 1.25) * seasonMult + (params.extraDailyRev||0);
-    const fixed = (prof.fixBase * params.team + params.capital * prof.fixR * 0.05 / totalDays) * totalCostMult;
-    const varC  = rev * prof.varR * totalCostMult;
+    const fixed = (prof.fixBase * params.team + params.capital * prof.fixR * 0.05 / totalDays) * fixedCostMult;
+    const varC  = rev * prof.varR * varCostMult;
     const totalCost = fixed + varC + dailyMkt;
     cash += rev - totalCost;
     days.push({d, rev, cost:totalCost, profit:rev-totalCost, customers, cash});
@@ -2126,8 +2131,9 @@ function monteCarloLong(params, totalDays) {
   const expM = EXP_MULT[params.exp||'some'];
   const compM= COMP_MULT[params.comp||'medium'];
   const loc  = detectLocation(params.loc);
-  const totalAcqMult = em.acqMult * expM * compM;
-  const totalCostMult= em.costMult * loc.costMult;
+  const totalAcqMult  = em.acqMult * expM * compM;
+  const fixedCostMult = em.costMult * loc.costMult;
+  const varCostMult   = em.costMult;
   const organicBase = Math.max(0.5,Math.log(params.team+1)*1.2)*baseProf.organicMult*totalAcqMult;
   const finals = [];
   for (let r=0; r<300; r++) {
@@ -2145,9 +2151,9 @@ function monteCarloLong(params, totalDays) {
       const footTraffic=Math.max(0,Math.round(rNorm(organicBase,1.0)));
       const wordOfMouth=Math.round(customers*0.003*em.growthBoost);
       customers=Math.max(0,customers+paidAcq+footTraffic+wordOfMouth-Math.floor(customers*p.churn/30));
-      const rev=customers*(params.price*baseProf.visitsPerMonth/30)*rnd(.6,1.4)*seasonMult;
-      const fixedC=(baseProf.fixBase*params.team+params.capital*p.fixR*0.05/totalDays)*totalCostMult;
-      cash+=rev-(fixedC+rev*p.varR*totalCostMult+dailyMkt);
+      const rev=customers*(params.price*baseProf.visitsPerMonth/30)*rnd(.6,1.4)*seasonMult + (params.extraDailyRev||0);
+      const fixedC=(baseProf.fixBase*params.team+params.capital*p.fixR*0.05/totalDays)*fixedCostMult;
+      cash+=rev-(fixedC+rev*p.varR*varCostMult+dailyMkt);
     }
     finals.push(cash);
   }
@@ -3151,6 +3157,18 @@ function downloadVerdictCard() {
   const canvas = document.getElementById('verdict-canvas');
   if (!canvas) { showToast('Canvas not found.'); return; }
   const ctx = canvas.getContext('2d');
+  // Polyfill ctx.roundRect for Safari / older Chrome
+  if (!ctx.roundRect) {
+    ctx.roundRect = function(x, y, w, h, r) {
+      r = Math.min(r, w/2, h/2);
+      this.beginPath();
+      this.moveTo(x+r, y); this.lineTo(x+w-r, y);
+      this.arcTo(x+w, y, x+w, y+r, r); this.lineTo(x+w, y+h-r);
+      this.arcTo(x+w, y+h, x+w-r, y+h, r); this.lineTo(x+r, y+h);
+      this.arcTo(x, y+h, x, y+h-r, r); this.lineTo(x, y+r);
+      this.arcTo(x, y, x+r, y, r); this.closePath();
+    };
+  }
   const W = 1200, H = 630;
 
   const verdict = computeVerdict();
@@ -3541,7 +3559,7 @@ function exportPDF() {
   </div>
 </div>
 
-<script>window.onload=function(){window.print();}</script>
+<script>window.onload=function(){window.print();}<\/script>
 </body></html>`;
 
   const win = window.open('', '_blank');
