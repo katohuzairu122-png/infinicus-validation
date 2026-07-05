@@ -5526,11 +5526,19 @@ function setCookieConsent(choice){
 let _fbRating=0,_fbRecommend=null,_fbTimer=null;
 function scheduleFeedback(){
   if(localStorage.getItem('inf_fb_done')) return;
-  clearTimeout(_fbTimer);
-  _fbTimer=setTimeout(()=>{
-    const c=document.getElementById('feedback-card');
-    if(c) c.classList.add('fb-visible');
-  },4500);
+  const target=document.getElementById('verdict-panel');
+  if(!target) return;
+  const obs=new IntersectionObserver((entries,o)=>{
+    if(entries[0].isIntersecting){
+      o.disconnect();
+      clearTimeout(_fbTimer);
+      _fbTimer=setTimeout(()=>{
+        const c=document.getElementById('feedback-card');
+        if(c) c.classList.add('fb-visible');
+      },1000);
+    }
+  },{threshold:0.5});
+  obs.observe(target);
 }
 function closeFeedback(){
   const c=document.getElementById('feedback-card');
