@@ -619,11 +619,11 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
     }
   })();
 </script>
-<!-- Sentry Error Monitoring — replace YOUR_SENTRY_DSN with your DSN from sentry.io -->
+<!-- Sentry Error Monitoring — replace https://5796c47d3f6c0f8d2ba058619b3ca229@o4511679886524416.ingest.de.sentry.io/4511679992102992 with your DSN from sentry.io -->
 <script src="https://browser.sentry-cdn.com/7.109.0/bundle.min.js" crossorigin="anonymous"></script>
 <script>
   if(window.Sentry){Sentry.init({
-    dsn:'YOUR_SENTRY_DSN',
+    dsn:'https://5796c47d3f6c0f8d2ba058619b3ca229@o4511679886524416.ingest.de.sentry.io/4511679992102992',
     release:'infinicus@3.0.0',
     environment:location.hostname==='localhost'?'development':'production',
     tracesSampleRate:0.1,
