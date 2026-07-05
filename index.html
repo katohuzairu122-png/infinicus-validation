@@ -3177,7 +3177,7 @@ function shareLink() {
   const profDays=d.filter(x=>x.profit>0).length;
   // Encode key results so recipient sees same verdict without re-running
   const ai=S.aiData||{};
-  const results=btoa(JSON.stringify({
+  const results=btoa(unescape(encodeURIComponent(JSON.stringify({
     v:computeVerdict(),
     rev:Math.round(totalRev*rate),
     cost:Math.round(totalCost*rate),
@@ -3187,7 +3187,7 @@ function shareLink() {
     surv:Math.round(S.mc.survivalRate*100),
     sc:calcScores(),
     hl:(ai.headline||'').substring(0,120)
-  }));
+  }))));
   const params=new URLSearchParams({
     idea:p.idea.substring(0,200),
     cap:Math.round(p.capital*rate),
@@ -5302,7 +5302,7 @@ function restoreFromURL() {
   const r=params.get('r');
   if(r){
     try{
-      const res=JSON.parse(atob(r));
+      const res=JSON.parse(decodeURIComponent(escape(atob(r))));
       const vCol=res.v==='go'?'var(--emerald)':res.v==='modify'?'var(--amber)':'var(--red)';
       const cur2=params.get('cur')||'USD';
       const sym=CUR[cur2]?.s||'$';
