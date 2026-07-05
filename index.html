@@ -595,6 +595,26 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
 .tut-nxt{font-family:var(--mono);font-size:10px;color:#04121a;background:var(--cyan);border:none;border-radius:7px;padding:5px 14px;cursor:pointer;font-weight:700;letter-spacing:.04em;flex-shrink:0;}
 .tut-trigger{background:rgba(0,224,96,.07);border:1px solid rgba(0,224,96,.2);border-radius:7px;padding:5px 9px;font-family:var(--mono);font-size:9.5px;color:var(--cyan);cursor:pointer;letter-spacing:.06em;white-space:nowrap;display:flex;align-items:center;gap:5px;}
 .tut-trigger:hover{background:rgba(0,224,96,.13);}
+/* ── FEEDBACK SLIDE-IN ──────────────────────────────────────────────── */
+#feedback-card{position:fixed;bottom:24px;right:24px;width:296px;background:var(--glass);border:1px solid var(--line);border-radius:14px;padding:20px;z-index:900;transform:translateY(140px);opacity:0;transition:transform .45s cubic-bezier(.22,1,.36,1),opacity .45s ease;pointer-events:none;backdrop-filter:blur(12px);}
+#feedback-card.fb-visible{transform:translateY(0);opacity:1;pointer-events:all;}
+#feedback-card h4{font-family:var(--mono);font-size:10.5px;letter-spacing:.09em;color:var(--cyan);margin:0 0 3px;text-transform:uppercase;}
+#feedback-card>p{font-size:12px;color:var(--muted);margin:0 0 10px;line-height:1.5;}
+.fb-stars{display:flex;gap:7px;margin-bottom:13px;}
+.fb-star{font-size:22px;cursor:pointer;color:var(--muted-2);transition:color .12s;line-height:1;user-select:none;}
+.fb-star:hover,.fb-star.fb-on{color:#f59e0b;}
+.fb-qlabel{font-size:11px;color:var(--muted);margin:0 0 8px;font-family:var(--mono);}
+.fb-recommend{display:flex;gap:8px;margin-bottom:13px;}
+.fb-rbtn{flex:1;padding:7px 4px;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--muted);font-family:var(--mono);font-size:10px;cursor:pointer;letter-spacing:.04em;transition:all .18s;}
+.fb-rbtn.fb-on{border-color:var(--cyan);color:var(--cyan);background:rgba(0,224,96,.07);}
+#feedback-comment{width:100%;box-sizing:border-box;background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:8px;color:var(--text);font-size:11px;padding:8px 10px;margin-bottom:13px;resize:none;height:54px;font-family:var(--mono);display:block;}
+#feedback-comment:focus{outline:none;border-color:var(--cyan);}
+#feedback-submit{width:100%;padding:9px;background:var(--cyan);color:#04121a;font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.07em;border:none;border-radius:8px;cursor:pointer;transition:opacity .15s;}
+#feedback-submit:hover{opacity:.88;}
+#feedback-submit:disabled{opacity:.5;cursor:default;}
+#feedback-close{position:absolute;top:9px;right:12px;background:none;border:none;color:var(--muted-2);font-size:18px;cursor:pointer;line-height:1;padding:0;}
+#feedback-thanks{display:none;text-align:center;padding:12px 0 4px;}
+#feedback-thanks p{color:var(--cyan);font-family:var(--mono);font-size:12px;margin:0;letter-spacing:.05em;}
 </style>
 <!-- Google tag (gtag.js) — consent-gated -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=AW-18295551736"></script>
@@ -2444,6 +2464,7 @@ function renderAll() {
   renderTicker(); renderDashboard(); renderEconomy();
   renderForecast(); renderCustomers(); renderRisk(); renderLog();
   renderVerdict(); renderReport();
+  scheduleFeedback();
 }
 
 // ─── TICKER ──────────────────────────────────────────────────────────────────
@@ -5500,7 +5521,78 @@ function setCookieConsent(choice){
   var b=document.getElementById('cookie-banner');
   if(b) b.style.display='none';
 }
+
+// ── FEEDBACK SLIDE-IN ────────────────────────────────────────────────
+let _fbRating=0,_fbRecommend=null,_fbTimer=null;
+function scheduleFeedback(){
+  if(localStorage.getItem('inf_fb_done')) return;
+  clearTimeout(_fbTimer);
+  _fbTimer=setTimeout(()=>{
+    const c=document.getElementById('feedback-card');
+    if(c) c.classList.add('fb-visible');
+  },4500);
+}
+function closeFeedback(){
+  const c=document.getElementById('feedback-card');
+  if(c) c.classList.remove('fb-visible');
+}
+function fbSetRating(v){
+  _fbRating=v;
+  document.querySelectorAll('.fb-star').forEach(s=>s.classList.toggle('fb-on',parseInt(s.dataset.v)<=v));
+}
+function fbSetRecommend(val){
+  _fbRecommend=val;
+  document.getElementById('fb-yes').classList.toggle('fb-on',val===true);
+  document.getElementById('fb-no').classList.toggle('fb-on',val===false);
+}
+async function submitFeedback(){
+  const comment=(document.getElementById('feedback-comment').value||'').trim();
+  const verdict=(typeof computeVerdict==='function'?computeVerdict():'unknown');
+  const btn=document.getElementById('feedback-submit');
+  btn.disabled=true;
+  try{
+    await fetch('/api/feedback',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({rating:_fbRating,recommend:_fbRecommend,comment,verdict})
+    });
+  }catch(e){}
+  localStorage.setItem('inf_fb_done','1');
+  btn.style.display='none';
+  document.getElementById('feedback-thanks').style.display='block';
+  setTimeout(closeFeedback,2200);
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  const stars=document.querySelectorAll('.fb-star');
+  stars.forEach(s=>{
+    s.addEventListener('click',()=>fbSetRating(parseInt(s.dataset.v)));
+    s.addEventListener('mouseover',()=>stars.forEach(x=>x.classList.toggle('fb-on',parseInt(x.dataset.v)<=parseInt(s.dataset.v))));
+    s.addEventListener('mouseout',()=>stars.forEach(x=>x.classList.toggle('fb-on',parseInt(x.dataset.v)<=_fbRating)));
+  });
+});
 </script>
+
+<!-- FEEDBACK SLIDE-IN CARD -->
+<div id="feedback-card">
+  <button id="feedback-close" onclick="closeFeedback()" title="Dismiss">×</button>
+  <h4>Quick Feedback</h4>
+  <p>How useful was your simulation?</p>
+  <div class="fb-stars">
+    <span class="fb-star" data-v="1">★</span>
+    <span class="fb-star" data-v="2">★</span>
+    <span class="fb-star" data-v="3">★</span>
+    <span class="fb-star" data-v="4">★</span>
+    <span class="fb-star" data-v="5">★</span>
+  </div>
+  <p class="fb-qlabel">Would you recommend INFINICUS?</p>
+  <div class="fb-recommend">
+    <button class="fb-rbtn" id="fb-yes" onclick="fbSetRecommend(true)">👍 Yes</button>
+    <button class="fb-rbtn" id="fb-no" onclick="fbSetRecommend(false)">👎 No</button>
+  </div>
+  <textarea id="feedback-comment" placeholder="Anything to add? (optional)"></textarea>
+  <button id="feedback-submit" onclick="submitFeedback()">SEND FEEDBACK</button>
+  <div id="feedback-thanks"><p>✓ Thanks — your feedback helps us improve.</p></div>
+</div>
 </body>
 </html>
 <div class="disclaimer-bar">
