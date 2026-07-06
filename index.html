@@ -595,6 +595,32 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
 .tut-nxt{font-family:var(--mono);font-size:10px;color:#04121a;background:var(--cyan);border:none;border-radius:7px;padding:5px 14px;cursor:pointer;font-weight:700;letter-spacing:.04em;flex-shrink:0;}
 .tut-trigger{background:rgba(0,224,96,.07);border:1px solid rgba(0,224,96,.2);border-radius:7px;padding:5px 9px;font-family:var(--mono);font-size:9.5px;color:var(--cyan);cursor:pointer;letter-spacing:.06em;white-space:nowrap;display:flex;align-items:center;gap:5px;}
 .tut-trigger:hover{background:rgba(0,224,96,.13);}
+/* ── INPUT TAB UPGRADES ─────────────────────────────────────────────── */
+.inp-progress{display:flex;align-items:flex-start;gap:0;margin-bottom:1.5rem;padding:0 2px;}
+.inp-step{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;position:relative;}
+.inp-step:not(:last-child)::after{content:'';position:absolute;top:11px;left:calc(50% + 13px);right:calc(-50% + 13px);height:1px;background:var(--line);transition:background .4s;}
+.inp-step.ip-done::after{background:rgba(0,224,96,.4);}
+.inp-step.ip-active::after{background:rgba(0,224,96,.25);}
+.inp-step-dot{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--line);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:8px;font-weight:700;color:var(--muted-2);background:var(--bg);transition:all .3s;z-index:1;flex-shrink:0;}
+.inp-step.ip-active .inp-step-dot{border-color:var(--cyan);color:var(--cyan);background:rgba(0,224,96,.09);box-shadow:0 0 0 3px rgba(0,224,96,.12);}
+.inp-step.ip-done .inp-step-dot{border-color:var(--cyan);background:var(--cyan);color:#04121a;font-size:9px;}
+.inp-step-lbl{font-family:var(--mono);font-size:7px;color:var(--muted-2);letter-spacing:.04em;text-align:center;max-width:68px;line-height:1.35;text-transform:uppercase;}
+.inp-step.ip-active .inp-step-lbl{color:rgba(0,224,96,.8);}
+.inp-step.ip-done .inp-step-lbl{color:var(--muted);}
+.inp-motto{font-family:var(--mono);font-size:11.5px;color:var(--muted);line-height:1.65;padding:13px 16px;border-left:2px solid var(--cyan);background:rgba(0,224,96,.035);border-radius:0 9px 9px 0;margin-bottom:1.2rem;letter-spacing:.015em;font-style:italic;}
+.inp-motto strong{color:var(--cyan);font-style:normal;}
+.idea-tip{display:flex;align-items:flex-start;gap:9px;margin-top:8px;padding:9px 12px;background:rgba(0,200,255,.045);border:1px solid rgba(0,200,255,.14);border-radius:8px;font-family:var(--mono);font-size:9.5px;color:var(--muted-2);line-height:1.55;}
+.idea-tip-icon{color:var(--cyan);font-size:13px;flex-shrink:0;margin-top:0px;line-height:1;}
+.cat-hint{font-family:var(--mono);font-size:9.5px;color:rgba(139,92,246,.85);margin-top:6px;padding:7px 10px;background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.18);border-radius:7px;line-height:1.55;display:none;}
+.cat-hint.ch-visible{display:block;}
+.eng-mode-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+@media(max-width:600px){.eng-mode-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:360px){.inp-step-lbl{display:none;}}
+@keyframes btn-glow{0%,100%{box-shadow:0 6px 24px rgba(0,224,96,.22);}50%{box-shadow:0 8px 36px rgba(0,224,96,.48),0 0 0 4px rgba(0,224,96,.09);}}
+.btn-launch:not(:disabled){animation:btn-glow 2.8s ease-in-out infinite;}
+.btn-launch.sim-loading{background:linear-gradient(135deg,rgba(0,224,96,.35),rgba(139,92,246,.35));cursor:wait;animation:none;}
+.btn-launch.sim-loading::after{content:'';display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;margin-left:8px;}
+@keyframes spin{to{transform:rotate(360deg);}}
 /* ── FEEDBACK SLIDE-IN ──────────────────────────────────────────────── */
 #feedback-card{position:fixed;bottom:24px;right:24px;width:296px;background:var(--glass);border:1px solid var(--line);border-radius:14px;padding:20px;z-index:900;transform:translateY(140px);opacity:0;transition:transform .45s cubic-bezier(.22,1,.36,1),opacity .45s ease;pointer-events:none;backdrop-filter:blur(12px);}
 #feedback-card.fb-visible{transform:translateY(0);opacity:1;pointer-events:all;}
@@ -716,6 +742,29 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
 <section class="section active" id="sec-input">
   <div class="pg-title"><span class="c">SIMULATE</span> YOUR<br>BUSINESS REALITY</div>
   <div class="pg-sub">// STATISTICAL ENGINE · VIRTUAL ECONOMY · AGENT-BASED MODELING · MONTE CARLO</div>
+  <!-- 5-STEP PROGRESS INDICATOR -->
+  <div class="inp-progress" id="inp-progress">
+    <div class="inp-step ip-active" id="ip-1">
+      <div class="inp-step-dot">1</div>
+      <div class="inp-step-lbl">Business Idea</div>
+    </div>
+    <div class="inp-step" id="ip-2">
+      <div class="inp-step-dot">2</div>
+      <div class="inp-step-lbl">Market Analysis</div>
+    </div>
+    <div class="inp-step" id="ip-3">
+      <div class="inp-step-dot">3</div>
+      <div class="inp-step-lbl">Financial Insights</div>
+    </div>
+    <div class="inp-step" id="ip-4">
+      <div class="inp-step-dot">4</div>
+      <div class="inp-step-lbl">AI Simulation</div>
+    </div>
+    <div class="inp-step" id="ip-5">
+      <div class="inp-step-dot">5</div>
+      <div class="inp-step-lbl">Results</div>
+    </div>
+  </div>
   <!-- Alternative-applied banner — injected by applyCapitalAlternative() -->
   <div id="alt-applied-banner" style="display:none;background:rgba(0,224,255,.07);border:1px solid rgba(0,224,255,.3);border-radius:10px;padding:.9rem 1.1rem;margin-bottom:1.1rem;font-family:var(--mono);font-size:11px;">
     <div style="display:flex;align-items:flex-start;gap:.75rem;">
@@ -743,28 +792,28 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
   <button class="btn-demo" id="demo-btn" onclick="instantDemo()">▶ TRY INSTANT DEMO — REGISTER FREE IN SECONDS</button>
 
   <!-- ENGINE MODES -->
-  <div style="margin-bottom:.9rem;">
-    <div style="font-family:var(--mono);font-size:9px;color:var(--muted-2);letter-spacing:.1em;margin-bottom:.6rem;">SIMULATION MODE — select how the engine weights growth vs. survival</div>
-    <div class="engine-modes">
+  <div style="margin-bottom:1rem;">
+    <div style="font-family:var(--mono);font-size:9px;color:var(--muted-2);letter-spacing:.1em;margin-bottom:.7rem;">SIMULATION STRATEGY — how should the engine weigh growth vs. survival?</div>
+    <div class="eng-mode-grid">
       <button class="eng-mode selected" id="em-balanced" onclick="selectEngMode('balanced')">
-        <div class="eng-mode-badge emb-b">BALANCED</div>
-        <div class="eng-mode-name">Balanced</div>
-        <div class="eng-mode-desc">Realistic blend of growth and caution. Best default for most ideas.</div>
+        <div class="eng-mode-badge emb-b">RECOMMENDED</div>
+        <div class="eng-mode-name">Safe Growth</div>
+        <div class="eng-mode-desc">Realistic blend of growth and caution. Best starting point for most ideas.</div>
       </button>
       <button class="eng-mode" id="em-lean" onclick="selectEngMode('lean')">
-        <div class="eng-mode-badge emb-l">LEAN</div>
-        <div class="eng-mode-name">Lean Survival</div>
-        <div class="eng-mode-desc">Minimal spend, slower growth. Tests if the idea works on a tight budget.</div>
+        <div class="eng-mode-badge emb-l">BOOTSTRAP</div>
+        <div class="eng-mode-name">Lean Startup</div>
+        <div class="eng-mode-desc">Minimal spend, slow growth. Tests survival on the tightest possible budget.</div>
       </button>
       <button class="eng-mode" id="em-aggressive" onclick="selectEngMode('aggressive')">
-        <div class="eng-mode-badge emb-a">AGGRESSIVE</div>
-        <div class="eng-mode-name">Aggressive Scale</div>
-        <div class="eng-mode-desc">High marketing, faster customer acquisition. Higher reward and risk.</div>
+        <div class="eng-mode-badge emb-a">SCALE FAST</div>
+        <div class="eng-mode-name">High Growth</div>
+        <div class="eng-mode-desc">Heavy marketing, fast acquisition. High upside — and higher risk.</div>
       </button>
       <button class="eng-mode" id="em-investor" onclick="selectEngMode('investor')">
-        <div class="eng-mode-badge emb-i">INVESTOR</div>
-        <div class="eng-mode-name">Investor View</div>
-        <div class="eng-mode-desc">Optimistic projections with growth multiplier. How a pitch deck looks.</div>
+        <div class="eng-mode-badge emb-i">PITCH MODE</div>
+        <div class="eng-mode-name">Investor Perspective</div>
+        <div class="eng-mode-desc">Optimistic growth multiplier. See how a pitch deck models your idea.</div>
       </button>
     </div>
   </div>
@@ -784,10 +833,16 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
     <button class="pill" onclick="qf('realestate')">🏠 Real Estate</button>
     <button class="pill" onclick="qf('logistics')">🚚 Logistics</button>
   </div>
+  <!-- MOTIVATIONAL MESSAGE -->
+  <div class="inp-motto">"Every successful business begins with a well-tested idea. <strong>Tell INFINICUS about yours</strong> — and let 500 Monte Carlo simulations show you if it's ready."</div>
   <div class="form-grid">
     <div class="fg full">
       <label>Business Idea *</label>
-      <textarea id="i-idea" placeholder="Describe your business — what you sell, how you sell it, who buys it…"></textarea>
+      <textarea id="i-idea" placeholder="e.g. A gourmet burger food truck targeting office districts in downtown Dubai. Premium burgers at $12 each. Open lunch and dinner 5 days/week with corporate catering for recurring revenue."></textarea>
+      <div class="idea-tip">
+        <span class="idea-tip-icon">💡</span>
+        <span><strong style="color:var(--cyan);">More detail = more accurate simulation.</strong> Describe what you sell, who buys it, how you reach them, and what makes you different. 2–4 sentences is ideal.</span>
+      </div>
     </div>
     <div class="fg">
       <label>Startup Capital (<span class="cur-code">USD</span>)</label>
@@ -804,7 +859,7 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
     </div>
     <div class="fg">
       <label>Industry Vertical</label>
-      <select id="i-ind" onchange="updatePriceLabel(this.value)">
+      <select id="i-ind" onchange="updatePriceLabel(this.value);updateCategoryHint(this.value);">
         <option value="food">Food &amp; Beverage</option>
         <option value="retail">Retail / E-commerce</option>
         <option value="saas">SaaS / Software</option>
@@ -819,6 +874,7 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
         <option value="realestate">Real Estate / PropTech</option>
         <option value="logistics">Logistics &amp; Delivery</option>
       </select>
+      <div class="cat-hint" id="cat-hint"></div>
     </div>
     <div class="fg">
       <label id="price-label">Primary Price Per Sale (<span class="cur-code">USD</span>)</label>
@@ -892,8 +948,9 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
     </div>
   </div>
 
+  <div style="font-family:var(--mono);font-size:9px;color:var(--muted-2);text-align:center;letter-spacing:.08em;margin-bottom:.6rem;opacity:.7;">500 Monte Carlo runs · Agent-based model · 90-day projection</div>
   <div class="sim-controls">
-    <button class="btn-launch" id="launch-btn" onclick="startSim()">▶ START SIMULATION</button>
+    <button class="btn-launch" id="launch-btn" onclick="startSim()">▶ RUN SIMULATION</button>
     <button class="btn-stop"   id="stop-btn"   onclick="stopSim()" disabled>⏸ STOP</button>
     <button class="btn-reset"  id="reset-btn"  onclick="resetSim()">↺ RESET</button>
   </div>
@@ -2386,7 +2443,10 @@ function startSim() {
   trackEvent('sim_start',{industry,cur:curCode});
   S.running=true;S.done=false;S.scores=null;S.aiData=null;
   setBadge('running');
-  $('launch-btn').disabled=true;$('stop-btn').disabled=false;
+  advanceInputProgress(4);
+  const lb=$('launch-btn');
+  lb.disabled=true;lb.classList.add('sim-loading');lb.textContent='RUNNING…';
+  $('stop-btn').disabled=false;
   nav('dashboard');
   $('dash-loading').style.display='block';
   $('dash-content').style.display='none';
@@ -2422,7 +2482,10 @@ function finalize() {
   };
   S.running=false;S.done=true;
   setBadge('done');
-  $('launch-btn').disabled=false;$('stop-btn').disabled=true;
+  advanceInputProgress(5);
+  const lb2=$('launch-btn');
+  lb2.disabled=false;lb2.classList.remove('sim-loading');lb2.textContent='▶ RUN SIMULATION';
+  $('stop-btn').disabled=true;
   $('dash-loading').style.display='none';$('dash-content').style.display='block';
   if ($('dash-actions')) $('dash-actions').style.display='flex';
   if (U){U.simCount=(U.simCount||0)+1;saveUser();}
@@ -2436,7 +2499,9 @@ function finalize() {
 function stopSim() {
   if (S.timer){clearTimeout(S.timer);S.timer=null;}
   S.running=false;setBadge('idle');
-  $('launch-btn').disabled=false;$('stop-btn').disabled=true;
+  const lb3=$('launch-btn');
+  lb3.disabled=false;lb3.classList.remove('sim-loading');lb3.textContent='▶ RUN SIMULATION';
+  $('stop-btn').disabled=true;
   $('dash-loading').style.display='none';$('dash-content').style.display='block';
 }
 
@@ -5522,6 +5587,84 @@ function setCookieConsent(choice){
   if(b) b.style.display='none';
 }
 
+// ── INPUT TAB UPGRADES ───────────────────────────────────────────────
+const IND_HINTS={
+  food:'Tip: Food businesses win on repeat visits. Describe your signature item, location footfall, and any catering or delivery angle.',
+  retail:'Tip: Retail scales on margins and reorders. Describe your product category, sourcing, and main sales channel (online/physical).',
+  saas:'Tip: SaaS grows on retention. Describe your tool\'s core feature, pricing tier, and the specific pain it solves for users.',
+  service:'Tip: Services scale through referrals. Describe your deliverable, how you charge (hourly/retainer), and your ideal client profile.',
+  fitness:'Tip: Fitness monetizes memberships. Describe your format (classes/1-on-1/online), pricing, and what differentiates you locally.',
+  agency:'Tip: Agencies grow on retainers. Describe your core service, average contract size, and how many clients you can handle per month.',
+  health:'Tip: Health startups face trust barriers. Describe your service, patient acquisition path, and any compliance considerations.',
+  edtech:'Tip: EdTech wins on completion rates. Describe your course format, pricing, learner persona, and delivery method.',
+  marketplace:'Tip: Marketplaces need both sides. Describe your supply/demand sides, take rate (%), and how you crack the chicken-and-egg problem.',
+  events:'Tip: Events revenue is lumpy. Describe your event type, ticket pricing, attendance target, and any sponsor revenue.',
+  fintech:'Tip: FinTech scales on trust. Describe your product, target user segment, monetization model, and compliance approach.',
+  realestate:'Tip: Real estate deals are high-value and slow. Describe your model, deal size, commission structure, and client acquisition path.',
+  logistics:'Tip: Logistics wins on unit economics. Describe your delivery area, volume target, vehicle/courier model, and margin per delivery.'
+};
+const IND_PLACEHOLDERS={
+  food:'e.g. A gourmet burger food truck targeting office districts in Dubai. $12 burgers, open lunch + dinner, 5 days/week. Corporate catering partnerships for recurring revenue.',
+  retail:'e.g. An online leather wallet brand targeting men 25–40 via Instagram ads. Average order $65, 40% margin, direct-to-consumer Shopify store.',
+  saas:'e.g. A project management tool for freelance designers. $29/month subscription. Automates client onboarding and invoices. Target: 500 paying users in year one.',
+  service:'e.g. A home cleaning service in Nairobi for middle-class families. $50 per session, 2 sessions/client monthly. 5 trained cleaners, WhatsApp bookings.',
+  fitness:'e.g. A private personal training studio in Lagos. $150/month membership, max 40 members. Weight loss program with weekly check-ins and meal plans.',
+  agency:'e.g. A social media agency for e-commerce brands. $2,000/month retainer. Content creation, paid ads, monthly reporting. Starting with 3 clients.',
+  health:'e.g. A telemedicine platform connecting patients to GPs via video call. $25/consultation. Target: working adults who can\'t take time off for clinic visits.',
+  edtech:'e.g. An online coding bootcamp for career switchers. $499 per 8-week cohort. Live sessions + recordings. 30 students/cohort, 2 cohorts/month.',
+  marketplace:'e.g. A marketplace connecting handymen to homeowners in Accra. 15% commission per job. Focus on verified, rated service providers.',
+  events:'e.g. Monthly networking for tech founders in Riyadh. $50 ticket, 150 attendees, VC sponsorships as secondary revenue stream.',
+  fintech:'e.g. A mobile savings app for informal workers in Kenya. Free to use, monetized via microloans at 8% interest. Target: gig workers and market vendors.',
+  realestate:'e.g. A property management company in Kampala handling Airbnb rentals for landlords. 15% of booking revenue, starting with 10 properties.',
+  logistics:'e.g. Same-day delivery for pharmacies in Cairo. $3/delivery. Partnering with 20 pharmacies. 10 motorbike couriers to start.'
+};
+function updateCategoryHint(ind){
+  const hint=document.getElementById('cat-hint');
+  const idea=document.getElementById('i-idea');
+  if(!hint) return;
+  if(IND_HINTS[ind]){
+    hint.textContent=IND_HINTS[ind];
+    hint.classList.add('ch-visible');
+  } else {
+    hint.classList.remove('ch-visible');
+  }
+  if(idea && IND_PLACEHOLDERS[ind] && !idea.value.trim()){
+    idea.placeholder=IND_PLACEHOLDERS[ind];
+  }
+  advanceInputProgress(idea&&idea.value.trim()?2:1);
+}
+function advanceInputProgress(step){
+  const steps=document.querySelectorAll('.inp-step');
+  steps.forEach((s,i)=>{
+    s.classList.remove('ip-active','ip-done');
+    if(i+1<step) s.classList.add('ip-done');
+    else if(i+1===step) s.classList.add('ip-active');
+  });
+}
+// Advance progress as user fills form
+(function(){
+  const fields=['i-idea','i-cap','i-loc','i-mkt'];
+  function checkProgress(){
+    const idea=(document.getElementById('i-idea')?.value||'').trim();
+    const cap=(document.getElementById('i-cap')?.value||'').trim();
+    const loc=(document.getElementById('i-loc')?.value||'').trim();
+    const mkt=(document.getElementById('i-mkt')?.value||'').trim();
+    let step=1;
+    if(idea.length>10) step=2;
+    if(idea.length>10&&cap) step=3;
+    if(idea.length>10&&cap&&loc&&mkt) step=4;
+    advanceInputProgress(step);
+  }
+  document.addEventListener('DOMContentLoaded',()=>{
+    fields.forEach(id=>{
+      const el=document.getElementById(id);
+      if(el) el.addEventListener('input',checkProgress);
+    });
+    // Init category hint on load
+    const ind=document.getElementById('i-ind');
+    if(ind) updateCategoryHint(ind.value);
+  });
+})();
 // ── FEEDBACK SLIDE-IN ────────────────────────────────────────────────
 let _fbRating=0,_fbRecommend=null,_fbTimer=null;
 function scheduleFeedback(){
