@@ -3962,6 +3962,25 @@ function renderCapitalAdvice() {
 }
 
 // ─── STOP ALTERNATIVES ───────────────────────────────────────────────────────
+function prepareResimFromAlt(ind, idx) {
+  const alts = ALT_BUSINESSES[ind] || ALT_BUSINESSES.food;
+  const a = alts[idx];
+  if (!a) return;
+  prepareResim({
+    idea:    a.idea,
+    capital: S.params.capital,
+    price:   S.params.price,
+    mktBud:  S.params.mktBud,
+    team:    S.params.team,
+    industry: ind,
+    loc:     S.params.loc,
+    mkt:     S.params.mkt,
+    exp:     S.params.exp    || 'some',
+    comp:    S.params.comp   || 'medium',
+    engMode: S.params.engMode || 'balanced'
+  }, 'Alternative: ' + a.name);
+}
+
 function renderStopAlternatives() {
   const wrap = document.getElementById('stop-alternatives-wrap');
   if (!wrap) return;
@@ -3986,19 +4005,7 @@ function renderStopAlternatives() {
         <div class="alt-tagline">${a.tagline}</div>
         <div class="alt-cap">Est. Capital: ${a.capital}</div>
         <div class="alt-why">${a.why}</div>
-        <button class="alt-sim-btn" onclick="prepareResim({
-          idea: ${JSON.stringify(a.idea)},
-          capital: ${capital},
-          price: ${S.params.price},
-          mktBud: ${S.params.mktBud},
-          team: ${S.params.team},
-          industry: ${JSON.stringify(ind)},
-          loc: ${JSON.stringify(S.params.loc)},
-          mkt: ${JSON.stringify(S.params.mkt)},
-          exp: ${JSON.stringify(S.params.exp||'some')},
-          comp: ${JSON.stringify(S.params.comp||'medium')},
-          engMode: ${JSON.stringify(S.params.engMode||'balanced')}
-        }, ${JSON.stringify('Alternative: ' + a.name)})">
+        <button class="alt-sim-btn" onclick="prepareResimFromAlt('${ind}', ${i})">
           ▶ Simulate This Instead →
         </button>
       </div>`).join('')}
