@@ -5675,12 +5675,12 @@ function advanceInputProgress(step){
 // ── FEEDBACK SLIDE-IN ────────────────────────────────────────────────
 let _fbRating=0,_fbRecommend=null,_fbTimer=null;
 function scheduleFeedback(){
-  if(localStorage.getItem('inf_fb_done')) return;
+  if(localStorage.getItem('inf_fb_v2')) return;
   clearTimeout(_fbTimer);
   _fbTimer=setTimeout(()=>{
     const c=document.getElementById('feedback-card');
     if(c) c.classList.add('fb-visible');
-  },5000);
+  },4000);
 }
 function closeFeedback(){
   const c=document.getElementById('feedback-card');
@@ -5707,7 +5707,7 @@ async function submitFeedback(){
       body:JSON.stringify({rating:_fbRating,recommend:_fbRecommend,comment,verdict})
     });
   }catch(e){}
-  localStorage.setItem('inf_fb_done','1');
+  localStorage.setItem('inf_fb_v2','1');
   btn.style.display='none';
   document.getElementById('feedback-thanks').style.display='block';
   setTimeout(closeFeedback,2200);
