@@ -5676,19 +5676,11 @@ function advanceInputProgress(step){
 let _fbRating=0,_fbRecommend=null,_fbTimer=null;
 function scheduleFeedback(){
   if(localStorage.getItem('inf_fb_done')) return;
-  const target=document.getElementById('verdict-panel');
-  if(!target) return;
-  const obs=new IntersectionObserver((entries,o)=>{
-    if(entries[0].isIntersecting){
-      o.disconnect();
-      clearTimeout(_fbTimer);
-      _fbTimer=setTimeout(()=>{
-        const c=document.getElementById('feedback-card');
-        if(c) c.classList.add('fb-visible');
-      },1000);
-    }
-  },{threshold:0.5});
-  obs.observe(target);
+  clearTimeout(_fbTimer);
+  _fbTimer=setTimeout(()=>{
+    const c=document.getElementById('feedback-card');
+    if(c) c.classList.add('fb-visible');
+  },5000);
 }
 function closeFeedback(){
   const c=document.getElementById('feedback-card');
