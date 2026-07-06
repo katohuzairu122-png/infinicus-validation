@@ -41,7 +41,7 @@ export async function onRequestPost(context) {
         },
         body: JSON.stringify({
           from: 'INFINICUS ENGINE <noreply@infini-cus.com>',
-          to: ['katohuzairu122@gmail.com'],
+          to: ['infinicussimulationengine@gmail.com'],
           subject: `[Feedback] ${stars} — ${String(verdict).toUpperCase()} verdict`,
           html: `
             <div style="font-family:monospace;max-width:480px;margin:0 auto;padding:24px;background:#0a0f0d;color:#e2e8f0;border-radius:12px;">

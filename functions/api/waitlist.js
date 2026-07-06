@@ -2,7 +2,7 @@
 // Sends owner notification email via Resend when someone joins the waitlist
 // Env var required: RESEND_API_KEY (set in Cloudflare Pages → Settings → Environment variables)
 
-const OWNER_EMAIL = 'katohuzairu122@gmail.com';
+const OWNER_EMAIL = 'infinicussimulationengine@gmail.com';
 const FROM_ADDRESS = 'INFINICUS ENGINE <noreply@infini-cus.com>';
 
 const CORS = {
