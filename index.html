@@ -621,6 +621,17 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
 .btn-launch.sim-loading{background:linear-gradient(135deg,rgba(0,224,96,.35),rgba(139,92,246,.35));cursor:wait;animation:none;}
 .btn-launch.sim-loading::after{content:'';display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;margin-left:8px;}
 @keyframes spin{to{transform:rotate(360deg);}}
+/* ── IDEA UPLOAD ────────────────────────────────────────────────────── */
+.idea-upload-row{display:flex;gap:8px;margin-bottom:6px;align-items:center;flex-wrap:wrap;}
+.idea-upload-btn{display:inline-flex;align-items:center;gap:5px;background:rgba(0,224,96,.07);border:1px solid rgba(0,224,96,.25);border-radius:7px;padding:5px 11px;color:var(--cyan);font-family:var(--mono);font-size:9.5px;cursor:pointer;letter-spacing:.05em;transition:background .15s;}
+.idea-upload-btn:hover{background:rgba(0,224,96,.14);}
+.idea-upload-status{font-family:var(--mono);font-size:9.5px;color:var(--muted);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.idea-upload-status.ok{color:var(--emerald);}
+.idea-upload-status.err{color:var(--red);}
+.idea-upload-status.loading{color:var(--amber);}
+/* ── LANGUAGE SELECTOR ──────────────────────────────────────────────── */
+#lang-select{background:var(--glass);border:1px solid var(--line);border-radius:7px;color:var(--text);font-family:var(--mono);font-size:9.5px;padding:4px 6px;cursor:pointer;outline:none;}
+#lang-select:focus{border-color:var(--cyan);}
 /* ── FEEDBACK SLIDE-IN ──────────────────────────────────────────────── */
 #feedback-card{position:fixed;bottom:24px;right:24px;width:296px;background:var(--glass);border:1px solid var(--line);border-radius:14px;padding:20px;z-index:900;transform:translateY(140px);opacity:0;transition:transform .45s cubic-bezier(.22,1,.36,1),opacity .45s ease;pointer-events:none;backdrop-filter:blur(12px);}
 #feedback-card.fb-visible{transform:translateY(0);opacity:1;pointer-events:all;}
@@ -687,17 +698,17 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
   </div>
   <button class="ham-btn" id="ham-btn" onclick="toggleNav()" aria-label="Menu">☰</button>
   <nav class="nav" id="main-nav">
-    <button class="nb active" data-section="input"       onclick="nav('input')">INPUT</button>
-    <button class="nb"        data-section="dashboard"   onclick="nav('dashboard')">DASH</button>
-    <button class="nb"        data-section="history"     onclick="nav('history')">HISTORY</button>
-    <button class="nb"        data-section="economy"     onclick="nav('economy')">ECON</button>
-    <button class="nb"        data-section="forecast"    onclick="nav('forecast')">FORECAST</button>
-    <button class="nb"        data-section="customers"   onclick="nav('customers')">CUST / LOG</button>
-    <button class="nb"        data-section="risk"        onclick="nav('risk')">RISK / MC</button>
-    <button class="nb"        data-section="verdict"     onclick="nav('verdict')">VERDICT</button>
-    <button class="nb"        data-section="report"      onclick="nav('report')">REPORT</button>
-    <button class="nb"        data-section="sensitivity" onclick="nav('sensitivity')">SENSI</button>
-    <button class="nb"        data-section="compare"     onclick="nav('compare')">COMPARE</button>
+    <button class="nb active" data-section="input"       onclick="nav('input')"       data-i18n="nav_input">INPUT</button>
+    <button class="nb"        data-section="dashboard"   onclick="nav('dashboard')"   data-i18n="nav_dash">DASH</button>
+    <button class="nb"        data-section="history"     onclick="nav('history')"     data-i18n="nav_history">HISTORY</button>
+    <button class="nb"        data-section="economy"     onclick="nav('economy')"     data-i18n="nav_econ">ECON</button>
+    <button class="nb"        data-section="forecast"    onclick="nav('forecast')"    data-i18n="nav_forecast">FORECAST</button>
+    <button class="nb"        data-section="customers"   onclick="nav('customers')"   data-i18n="nav_cust">CUST / LOG</button>
+    <button class="nb"        data-section="risk"        onclick="nav('risk')"        data-i18n="nav_risk">RISK / MC</button>
+    <button class="nb"        data-section="verdict"     onclick="nav('verdict')"     data-i18n="nav_verdict">VERDICT</button>
+    <button class="nb"        data-section="report"      onclick="nav('report')"      data-i18n="nav_report">REPORT</button>
+    <button class="nb"        data-section="sensitivity" onclick="nav('sensitivity')" data-i18n="nav_sensi">SENSI</button>
+    <button class="nb"        data-section="compare"     onclick="nav('compare')"     data-i18n="nav_compare">COMPARE</button>
   </nav>
   <div class="hdr-right">
     <button id="signin-btn" class="nb" onclick="openRegModal()" style="display:none;border-color:rgba(0,224,96,.25);color:var(--cyan);" title="Sign in or create account">SIGN IN</button>
@@ -714,6 +725,17 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
         <button class="user-menu-item danger" onclick="signOutEngine()">⎋&nbsp; Sign Out</button>
       </div>
     </div>
+    <select id="lang-select" onchange="applyLang(this.value)" title="Language / 语言 / Idioma">
+      <option value="en">🌐 EN</option>
+      <option value="es">ES</option>
+      <option value="fr">FR</option>
+      <option value="pt">PT</option>
+      <option value="de">DE</option>
+      <option value="ar">AR</option>
+      <option value="zh">中文</option>
+      <option value="hi">HI</option>
+      <option value="ja">JA</option>
+    </select>
     <select id="cur-select" class="cur-select" onchange="setCurrency(this.value)" title="Display currency">
       <option value="USD">$ USD</option>
       <option value="EUR">€ EUR</option>
@@ -837,7 +859,12 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
   <div class="inp-motto">"Every successful business begins with a well-tested idea. <strong>Tell INFINICUS about yours</strong> — and let 500 Monte Carlo simulations show you if it's ready."</div>
   <div class="form-grid">
     <div class="fg full">
-      <label>Business Idea *</label>
+      <label data-i18n="label_idea">Business Idea *</label>
+      <div class="idea-upload-row">
+        <button type="button" class="idea-upload-btn" onclick="document.getElementById('idea-file-input').click()">📎 Upload PDF / Image / Text</button>
+        <span class="idea-upload-status" id="idea-upload-status">or paste / type your idea below</span>
+        <input type="file" id="idea-file-input" accept=".pdf,.txt,.png,.jpg,.jpeg,.webp,.gif,.doc,.docx" style="display:none" onchange="handleIdeaUpload(this)">
+      </div>
       <textarea id="i-idea" placeholder="e.g. A gourmet burger food truck targeting office districts in downtown Dubai. Premium burgers at $12 each. Open lunch and dinner 5 days/week with corporate catering for recurring revenue."></textarea>
       <div class="idea-tip">
         <span class="idea-tip-icon">💡</span>
@@ -3962,16 +3989,32 @@ function renderCapitalAdvice() {
 }
 
 // ─── STOP ALTERNATIVES ───────────────────────────────────────────────────────
+// Parse the lower-bound of an ALT_BUSINESSES capital string e.g. '$2K–$8K' → 2000
+function parseAltCapital(str, fallback) {
+  try {
+    const lower = str.split(/[–\-]/)[0].replace(/[^0-9.KkMm]/g,'');
+    const n = parseFloat(lower);
+    if (isNaN(n)) return fallback;
+    if (/[Kk]/.test(lower)) return Math.round(n * 1000);
+    if (/[Mm]/.test(lower)) return Math.round(n * 1000000);
+    return Math.round(n);
+  } catch(e) { return fallback; }
+}
+
 function prepareResimFromAlt(ind, idx) {
   const alts = ALT_BUSINESSES[ind] || ALT_BUSINESSES.food;
   const a = alts[idx];
   if (!a) return;
+  // Use the alternative's recommended minimum capital so it gets a fair simulation.
+  // If the user's original capital already exceeds the recommended minimum, keep theirs.
+  const altMinCap = parseAltCapital(a.capital, S.params.capital);
+  const capital   = Math.max(altMinCap, S.params.capital);
   prepareResim({
     idea:    a.idea,
-    capital: S.params.capital,
+    capital,
     price:   S.params.price,
-    mktBud:  S.params.mktBud,
-    team:    S.params.team,
+    mktBud:  Math.max(S.params.mktBud, Math.round(capital * 0.1)),
+    team:    Math.min(S.params.team || 1, 2),
     industry: ind,
     loc:     S.params.loc,
     mkt:     S.params.mkt,
@@ -5672,6 +5715,284 @@ function advanceInputProgress(step){
     if(ind) updateCategoryHint(ind.value);
   });
 })();
+// ── IDEA UPLOAD ──────────────────────────────────────────────────────
+async function handleIdeaUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const status = document.getElementById('idea-upload-status');
+  const ideaEl = document.getElementById('i-idea');
+  const setStatus = (msg, cls) => { status.textContent = msg; status.className = 'idea-upload-status ' + (cls||''); };
+  const ext = file.name.split('.').pop().toLowerCase();
+
+  setStatus('⏳ Reading file…', 'loading');
+
+  try {
+    // ── Plain text ─────────────────────────────────────────────────
+    if (['txt','md','csv'].includes(ext)) {
+      const text = await file.text();
+      ideaEl.value = text.substring(0, 1000).trim();
+      ideaEl.dispatchEvent(new Event('input', {bubbles:true}));
+      setStatus('✓ Text loaded — review and edit below', 'ok');
+
+    // ── PDF ────────────────────────────────────────────────────────
+    } else if (ext === 'pdf') {
+      setStatus('⏳ Loading PDF parser…', 'loading');
+      if (!window.pdfjsLib) {
+        await new Promise((res, rej) => {
+          const s = document.createElement('script');
+          s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+          s.onload = res; s.onerror = rej;
+          document.head.appendChild(s);
+        });
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+          'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      }
+      setStatus('⏳ Extracting text from PDF…', 'loading');
+      const buf = await file.arrayBuffer();
+      const pdf = await window.pdfjsLib.getDocument({data: buf}).promise;
+      let text = '';
+      for (let i = 1; i <= Math.min(pdf.numPages, 5); i++) {
+        const page = await pdf.getPage(i);
+        const content = await page.getTextContent();
+        text += content.items.map(it => it.str).join(' ') + '\n';
+      }
+      text = text.replace(/\s+/g,' ').trim().substring(0, 1200);
+      if (!text) { setStatus('⚠ No text found in PDF — try a text-based PDF', 'err'); return; }
+      ideaEl.value = text;
+      ideaEl.dispatchEvent(new Event('input', {bubbles:true}));
+      setStatus('✓ PDF text extracted — review and edit below', 'ok');
+
+    // ── Image (send to Cloudflare AI) ──────────────────────────────
+    } else if (['png','jpg','jpeg','webp','gif'].includes(ext)) {
+      setStatus('⏳ Analysing image with AI…', 'loading');
+      const formData = new FormData();
+      formData.append('image', file);
+      const res = await fetch('/api/parse-idea', { method: 'POST', body: formData });
+      if (!res.ok) throw new Error('AI parse failed');
+      const data = await res.json();
+      if (!data.idea) throw new Error('No idea extracted');
+      ideaEl.value = data.idea;
+      ideaEl.dispatchEvent(new Event('input', {bubbles:true}));
+      setStatus('✓ Idea extracted from image — review and edit below', 'ok');
+
+    // ── DOCX (basic — extract raw text from XML inside zip) ─────────
+    } else if (['doc','docx'].includes(ext)) {
+      setStatus('⏳ Reading document…', 'loading');
+      const buf = await file.arrayBuffer();
+      const text = new TextDecoder().decode(new Uint8Array(buf))
+        .replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').replace(/[^\x20-\x7E\n]/g,'').trim().substring(0,1000);
+      if (text.length < 20) { setStatus('⚠ Could not read .doc — try copy-pasting your idea', 'err'); return; }
+      ideaEl.value = text;
+      ideaEl.dispatchEvent(new Event('input', {bubbles:true}));
+      setStatus('✓ Document text loaded — review and edit below', 'ok');
+
+    } else {
+      setStatus('⚠ Unsupported format — try PDF, image, or .txt', 'err');
+    }
+  } catch(e) {
+    setStatus('⚠ Could not read file: ' + e.message, 'err');
+  }
+  input.value = ''; // reset so same file can be re-uploaded
+}
+
+// ── MULTI-LANGUAGE ────────────────────────────────────────────────────
+const TRANSLATIONS = {
+  en: {
+    nav_input:'INPUT', nav_dash:'DASH', nav_history:'HISTORY', nav_econ:'ECON',
+    nav_forecast:'FORECAST', nav_cust:'CUST / LOG', nav_risk:'RISK / MC',
+    nav_verdict:'VERDICT', nav_report:'REPORT', nav_sensi:'SENSI', nav_compare:'COMPARE',
+    label_idea:'Business Idea *', label_cap:'Startup Capital', label_loc:'City / Country',
+    label_mkt:'Target Customers', label_price:'Price per Sale', label_mktbud:'Monthly Marketing Budget',
+    label_team:'Team Size', label_ind:'Industry', label_exp:'Founder Experience',
+    label_comp:'Competition Level', label_engmode:'Simulation Strategy',
+    btn_run:'▶ RUN SIMULATION', btn_stop:'■ STOP',
+    btn_pdf:'⎙ EXPORT PDF', btn_share:'⎋ SHARE LINK', btn_card:'🖼 SHARE CARD',
+    upload_btn:'📎 Upload PDF / Image / Text',
+    upload_hint:'or paste / type your idea below',
+    idle:'● IDLE', running:'● RUNNING', done:'● DONE',
+    verdict_go:'GO', verdict_modify:'MODIFY', verdict_stop:'STOP',
+    how_it_works:'? HOW IT WORKS',
+  },
+  es: {
+    nav_input:'ENTRADA', nav_dash:'PANEL', nav_history:'HISTORIAL', nav_econ:'ECONOMÍA',
+    nav_forecast:'PROYECCIÓN', nav_cust:'CLIENTES', nav_risk:'RIESGO / MC',
+    nav_verdict:'VEREDICTO', nav_report:'INFORME', nav_sensi:'SENSIB.', nav_compare:'COMPARAR',
+    label_idea:'Idea de Negocio *', label_cap:'Capital Inicial', label_loc:'Ciudad / País',
+    label_mkt:'Clientes Objetivo', label_price:'Precio por Venta', label_mktbud:'Presupuesto de Marketing',
+    label_team:'Tamaño del Equipo', label_ind:'Industria', label_exp:'Experiencia del Fundador',
+    label_comp:'Nivel de Competencia', label_engmode:'Estrategia de Simulación',
+    btn_run:'▶ EJECUTAR SIMULACIÓN', btn_stop:'■ DETENER',
+    btn_pdf:'⎙ EXPORTAR PDF', btn_share:'⎋ COMPARTIR ENLACE', btn_card:'🖼 COMPARTIR TARJETA',
+    upload_btn:'📎 Subir PDF / Imagen / Texto',
+    upload_hint:'o pega / escribe tu idea abajo',
+    idle:'● INACTIVO', running:'● EJECUTANDO', done:'● LISTO',
+    verdict_go:'ADELANTE', verdict_modify:'MODIFICAR', verdict_stop:'DETENER',
+    how_it_works:'? CÓMO FUNCIONA',
+  },
+  fr: {
+    nav_input:'SAISIE', nav_dash:'TABLEAU', nav_history:'HISTORIQUE', nav_econ:'ÉCONOMIE',
+    nav_forecast:'PRÉVISION', nav_cust:'CLIENTS', nav_risk:'RISQUE / MC',
+    nav_verdict:'VERDICT', nav_report:'RAPPORT', nav_sensi:'SENSIB.', nav_compare:'COMPARER',
+    label_idea:'Idée d\'Entreprise *', label_cap:'Capital de Départ', label_loc:'Ville / Pays',
+    label_mkt:'Clients Cibles', label_price:'Prix par Vente', label_mktbud:'Budget Marketing Mensuel',
+    label_team:'Taille de l\'Équipe', label_ind:'Secteur', label_exp:'Expérience du Fondateur',
+    label_comp:'Niveau de Concurrence', label_engmode:'Stratégie de Simulation',
+    btn_run:'▶ LANCER LA SIMULATION', btn_stop:'■ ARRÊTER',
+    btn_pdf:'⎙ EXPORTER PDF', btn_share:'⎋ PARTAGER LE LIEN', btn_card:'🖼 PARTAGER LA CARTE',
+    upload_btn:'📎 Importer PDF / Image / Texte',
+    upload_hint:'ou collez / tapez votre idée ci-dessous',
+    idle:'● INACTIF', running:'● EN COURS', done:'● TERMINÉ',
+    verdict_go:'GO', verdict_modify:'MODIFIER', verdict_stop:'STOP',
+    how_it_works:'? COMMENT ÇA MARCHE',
+  },
+  pt: {
+    nav_input:'ENTRADA', nav_dash:'PAINEL', nav_history:'HISTÓRICO', nav_econ:'ECONOMIA',
+    nav_forecast:'PREVISÃO', nav_cust:'CLIENTES', nav_risk:'RISCO / MC',
+    nav_verdict:'VEREDICTO', nav_report:'RELATÓRIO', nav_sensi:'SENSIB.', nav_compare:'COMPARAR',
+    label_idea:'Ideia de Negócio *', label_cap:'Capital Inicial', label_loc:'Cidade / País',
+    label_mkt:'Clientes-Alvo', label_price:'Preço por Venda', label_mktbud:'Orçamento de Marketing',
+    label_team:'Tamanho da Equipe', label_ind:'Indústria', label_exp:'Experiência do Fundador',
+    label_comp:'Nível de Concorrência', label_engmode:'Estratégia de Simulação',
+    btn_run:'▶ EXECUTAR SIMULAÇÃO', btn_stop:'■ PARAR',
+    btn_pdf:'⎙ EXPORTAR PDF', btn_share:'⎋ COMPARTILHAR LINK', btn_card:'🖼 COMPARTILHAR CARD',
+    upload_btn:'📎 Enviar PDF / Imagem / Texto',
+    upload_hint:'ou cole / escreva sua ideia abaixo',
+    idle:'● INATIVO', running:'● EXECUTANDO', done:'● CONCLUÍDO',
+    verdict_go:'IR', verdict_modify:'MODIFICAR', verdict_stop:'PARAR',
+    how_it_works:'? COMO FUNCIONA',
+  },
+  de: {
+    nav_input:'EINGABE', nav_dash:'ÜBERSICHT', nav_history:'VERLAUF', nav_econ:'WIRTSCHAFT',
+    nav_forecast:'PROGNOSE', nav_cust:'KUNDEN', nav_risk:'RISIKO / MC',
+    nav_verdict:'URTEIL', nav_report:'BERICHT', nav_sensi:'SENSIT.', nav_compare:'VERGLEICH',
+    label_idea:'Geschäftsidee *', label_cap:'Startkapital', label_loc:'Stadt / Land',
+    label_mkt:'Zielkunden', label_price:'Preis pro Verkauf', label_mktbud:'Monatliches Marketingbudget',
+    label_team:'Teamgröße', label_ind:'Branche', label_exp:'Gründererfahrung',
+    label_comp:'Wettbewerbsniveau', label_engmode:'Simulationsstrategie',
+    btn_run:'▶ SIMULATION STARTEN', btn_stop:'■ STOPPEN',
+    btn_pdf:'⎙ PDF EXPORTIEREN', btn_share:'⎋ LINK TEILEN', btn_card:'🖼 KARTE TEILEN',
+    upload_btn:'📎 PDF / Bild / Text hochladen',
+    upload_hint:'oder Idee unten einfügen / eingeben',
+    idle:'● INAKTIV', running:'● LÄUFT', done:'● FERTIG',
+    verdict_go:'GO', verdict_modify:'ANPASSEN', verdict_stop:'STOP',
+    how_it_works:'? SO FUNKTIONIERT ES',
+  },
+  ar: {
+    nav_input:'الإدخال', nav_dash:'لوحة التحكم', nav_history:'السجل', nav_econ:'الاقتصاد',
+    nav_forecast:'التوقعات', nav_cust:'العملاء', nav_risk:'المخاطر / MC',
+    nav_verdict:'الحكم', nav_report:'التقرير', nav_sensi:'الحساسية', nav_compare:'مقارنة',
+    label_idea:'فكرة العمل *', label_cap:'رأس المال الأولي', label_loc:'المدينة / الدولة',
+    label_mkt:'العملاء المستهدفون', label_price:'السعر لكل بيعة', label_mktbud:'ميزانية التسويق الشهرية',
+    label_team:'حجم الفريق', label_ind:'الصناعة', label_exp:'خبرة المؤسس',
+    label_comp:'مستوى المنافسة', label_engmode:'استراتيجية المحاكاة',
+    btn_run:'▶ تشغيل المحاكاة', btn_stop:'■ إيقاف',
+    btn_pdf:'⎙ تصدير PDF', btn_share:'⎋ مشاركة الرابط', btn_card:'🖼 مشاركة البطاقة',
+    upload_btn:'📎 رفع PDF / صورة / نص',
+    upload_hint:'أو الصق / اكتب فكرتك أدناه',
+    idle:'● خامل', running:'● يعمل', done:'● مكتمل',
+    verdict_go:'انطلق', verdict_modify:'عدّل', verdict_stop:'توقف',
+    how_it_works:'? كيف يعمل',
+  },
+  zh: {
+    nav_input:'输入', nav_dash:'仪表板', nav_history:'历史', nav_econ:'经济',
+    nav_forecast:'预测', nav_cust:'客户', nav_risk:'风险/MC',
+    nav_verdict:'结论', nav_report:'报告', nav_sensi:'敏感性', nav_compare:'对比',
+    label_idea:'商业创意 *', label_cap:'启动资金', label_loc:'城市/国家',
+    label_mkt:'目标客户', label_price:'每次销售价格', label_mktbud:'月度营销预算',
+    label_team:'团队规模', label_ind:'行业', label_exp:'创始人经验',
+    label_comp:'竞争程度', label_engmode:'模拟策略',
+    btn_run:'▶ 运行模拟', btn_stop:'■ 停止',
+    btn_pdf:'⎙ 导出PDF', btn_share:'⎋ 分享链接', btn_card:'🖼 分享卡片',
+    upload_btn:'📎 上传 PDF / 图片 / 文本',
+    upload_hint:'或在下方粘贴/输入您的创意',
+    idle:'● 空闲', running:'● 运行中', done:'● 完成',
+    verdict_go:'通过', verdict_modify:'修改', verdict_stop:'停止',
+    how_it_works:'? 使用说明',
+  },
+  hi: {
+    nav_input:'इनपुट', nav_dash:'डैशबोर्ड', nav_history:'इतिहास', nav_econ:'अर्थव्यवस्था',
+    nav_forecast:'पूर्वानुमान', nav_cust:'ग्राहक', nav_risk:'जोखिम / MC',
+    nav_verdict:'निर्णय', nav_report:'रिपोर्ट', nav_sensi:'संवेदनशीलता', nav_compare:'तुलना',
+    label_idea:'व्यवसाय विचार *', label_cap:'स्टार्टअप पूंजी', label_loc:'शहर / देश',
+    label_mkt:'लक्षित ग्राहक', label_price:'प्रति बिक्री मूल्य', label_mktbud:'मासिक मार्केटिंग बजट',
+    label_team:'टीम का आकार', label_ind:'उद्योग', label_exp:'संस्थापक अनुभव',
+    label_comp:'प्रतिस्पर्धा स्तर', label_engmode:'सिमुलेशन रणनीति',
+    btn_run:'▶ सिमुलेशन चलाएं', btn_stop:'■ रोकें',
+    btn_pdf:'⎙ PDF निर्यात करें', btn_share:'⎋ लिंक साझा करें', btn_card:'🖼 कार्ड साझा करें',
+    upload_btn:'📎 PDF / छवि / टेक्स्ट अपलोड करें',
+    upload_hint:'या नीचे अपना विचार पेस्ट/टाइप करें',
+    idle:'● निष्क्रिय', running:'● चल रहा है', done:'● पूर्ण',
+    verdict_go:'जाएं', verdict_modify:'संशोधित करें', verdict_stop:'रोकें',
+    how_it_works:'? यह कैसे काम करता है',
+  },
+  ja: {
+    nav_input:'入力', nav_dash:'ダッシュ', nav_history:'履歴', nav_econ:'経済',
+    nav_forecast:'予測', nav_cust:'顧客', nav_risk:'リスク/MC',
+    nav_verdict:'判定', nav_report:'レポート', nav_sensi:'感度', nav_compare:'比較',
+    label_idea:'ビジネスアイデア *', label_cap:'スタートアップ資金', label_loc:'都市/国',
+    label_mkt:'ターゲット顧客', label_price:'販売単価', label_mktbud:'月次マーケティング予算',
+    label_team:'チーム規模', label_ind:'業界', label_exp:'創業者の経験',
+    label_comp:'競合レベル', label_engmode:'シミュレーション戦略',
+    btn_run:'▶ シミュレーション実行', btn_stop:'■ 停止',
+    btn_pdf:'⎙ PDF出力', btn_share:'⎋ リンク共有', btn_card:'🖼 カード共有',
+    upload_btn:'📎 PDF / 画像 / テキストをアップロード',
+    upload_hint:'またはアイデアを以下に貼り付け/入力してください',
+    idle:'● 待機中', running:'● 実行中', done:'● 完了',
+    verdict_go:'GO', verdict_modify:'修正', verdict_stop:'STOP',
+    how_it_works:'? 使い方',
+  },
+};
+
+let _currentLang = 'en';
+
+function applyLang(code) {
+  const T = TRANSLATIONS[code] || TRANSLATIONS.en;
+  _currentLang = code;
+  try { localStorage.setItem('inf_lang', code); } catch(e){}
+
+  // Apply to all data-i18n elements
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    if (T[key]) el.textContent = T[key];
+  });
+
+  // Upload button & hint
+  const uploadBtn = document.querySelector('.idea-upload-btn');
+  if (uploadBtn) uploadBtn.textContent = T.upload_btn || uploadBtn.textContent;
+  const uploadHint = document.getElementById('idea-upload-status');
+  if (uploadHint && !uploadHint.classList.contains('ok') && !uploadHint.classList.contains('err'))
+    uploadHint.textContent = T.upload_hint || uploadHint.textContent;
+
+  // Sim badge
+  const badge = document.getElementById('sim-badge');
+  if (badge) {
+    const state = S?.done ? 'done' : 'idle';
+    badge.textContent = T[state] || badge.textContent;
+  }
+
+  // HOW IT WORKS button
+  const tutBtn = document.querySelector('.tut-trigger');
+  if (tutBtn) tutBtn.innerHTML = (T.how_it_works || '? HOW IT WORKS').replace('? ','? <span>').replace(/$/,'</span>').replace('? <span>','? <span>');
+
+  // RTL support for Arabic
+  document.documentElement.setAttribute('dir', code === 'ar' ? 'rtl' : 'ltr');
+  document.documentElement.setAttribute('lang', code);
+
+  // Sync selector
+  const sel = document.getElementById('lang-select');
+  if (sel && sel.value !== code) sel.value = code;
+}
+
+// Restore saved language on load
+(function(){
+  try {
+    const saved = localStorage.getItem('inf_lang');
+    if (saved && TRANSLATIONS[saved]) {
+      document.addEventListener('DOMContentLoaded', () => applyLang(saved));
+    }
+  } catch(e){}
+})();
+
 // ── FEEDBACK SLIDE-IN ────────────────────────────────────────────────
 let _fbRating=0,_fbRecommend=null,_fbTimer=null;
 function scheduleFeedback(){
