@@ -872,20 +872,20 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
       </div>
     </div>
     <div class="fg">
-      <label>Startup Capital (<span class="cur-code">USD</span>)</label>
+      <label><span data-i18n="label_cap">Startup Capital</span> (<span class="cur-code">USD</span>)</label>
       <input id="i-cap" type="number" min="0" placeholder="e.g. 10000">
     </div>
     <div class="fg">
-      <label>City / Country</label>
+      <label data-i18n="label_loc">City / Country</label>
       <input id="i-loc" placeholder="e.g. Nairobi, Kenya" oninput="updateLocIndicator(this.value)">
       <div id="loc-indicator" style="font-family:var(--mono);font-size:10px;color:var(--muted-2);margin-top:4px;height:14px;"></div>
     </div>
     <div class="fg">
-      <label>Target Customers</label>
+      <label data-i18n="label_mkt">Target Customers</label>
       <input id="i-mkt" placeholder="e.g. office workers 25–40">
     </div>
     <div class="fg">
-      <label>Industry Vertical</label>
+      <label data-i18n="label_ind">Industry Vertical</label>
       <select id="i-ind" onchange="updatePriceLabel(this.value);updateCategoryHint(this.value);">
         <option value="food">Food &amp; Beverage</option>
         <option value="retail">Retail / E-commerce</option>
@@ -904,11 +904,11 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
       <div class="cat-hint" id="cat-hint"></div>
     </div>
     <div class="fg">
-      <label id="price-label">Primary Price Per Sale (<span class="cur-code">USD</span>)</label>
+      <label id="price-label"><span data-i18n="label_price">Primary Price Per Sale</span> (<span class="cur-code">USD</span>)</label>
       <input id="i-price" type="number" min="0" placeholder="e.g. 25">
     </div>
     <div class="fg">
-      <label>Monthly Marketing Budget (<span class="cur-code">USD</span>)</label>
+      <label><span data-i18n="label_mktbud">Monthly Marketing Budget</span> (<span class="cur-code">USD</span>)</label>
       <input id="i-mktbud" type="number" min="0" placeholder="e.g. 500">
     </div>
     <!-- ── ADDITIONAL REVENUE STREAMS ── -->
@@ -930,11 +930,11 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
       </div>
     </div>
     <div class="fg">
-      <label>Team Size at Launch</label>
+      <label data-i18n="label_team">Team Size at Launch</label>
       <input id="i-team" type="number" min="1" placeholder="e.g. 1">
     </div>
     <div class="fg">
-      <label>Founder Experience Level</label>
+      <label data-i18n="label_exp">Founder Experience Level</label>
       <select id="i-exp">
         <option value="first">First-time founder</option>
         <option value="some" selected>Some experience (1–2 ventures)</option>
@@ -943,7 +943,7 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
       </select>
     </div>
     <div class="fg">
-      <label>Market Competition</label>
+      <label data-i18n="label_comp">Market Competition</label>
       <select id="i-comp">
         <option value="low">Low — few direct competitors</option>
         <option value="medium" selected>Medium — established players exist</option>
@@ -977,8 +977,8 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
 
   <div style="font-family:var(--mono);font-size:9px;color:var(--muted-2);text-align:center;letter-spacing:.08em;margin-bottom:.6rem;opacity:.7;">500 Monte Carlo runs · Agent-based model · 90-day projection</div>
   <div class="sim-controls">
-    <button class="btn-launch" id="launch-btn" onclick="startSim()">▶ RUN SIMULATION</button>
-    <button class="btn-stop"   id="stop-btn"   onclick="stopSim()" disabled>⏸ STOP</button>
+    <button class="btn-launch" id="launch-btn" data-i18n="btn_run" onclick="startSim()">▶ RUN SIMULATION</button>
+    <button class="btn-stop"   id="stop-btn"   data-i18n="btn_stop" onclick="stopSim()" disabled>⏸ STOP</button>
     <button class="btn-reset"  id="reset-btn"  onclick="resetSim()">↺ RESET</button>
   </div>
   <div class="err" id="err-box"></div>
@@ -2511,7 +2511,8 @@ function finalize() {
   setBadge('done');
   advanceInputProgress(5);
   const lb2=$('launch-btn');
-  lb2.disabled=false;lb2.classList.remove('sim-loading');lb2.textContent='▶ RUN SIMULATION';
+  lb2.disabled=false;lb2.classList.remove('sim-loading');
+  lb2.textContent=(typeof TRANSLATIONS!=='undefined'&&TRANSLATIONS[_currentLang]?.btn_run)||'▶ RUN SIMULATION';
   $('stop-btn').disabled=true;
   $('dash-loading').style.display='none';$('dash-content').style.display='block';
   if ($('dash-actions')) $('dash-actions').style.display='flex';
@@ -2527,7 +2528,8 @@ function stopSim() {
   if (S.timer){clearTimeout(S.timer);S.timer=null;}
   S.running=false;setBadge('idle');
   const lb3=$('launch-btn');
-  lb3.disabled=false;lb3.classList.remove('sim-loading');lb3.textContent='▶ RUN SIMULATION';
+  lb3.disabled=false;lb3.classList.remove('sim-loading');
+  lb3.textContent=(typeof TRANSLATIONS!=='undefined'&&TRANSLATIONS[_currentLang]?.btn_run)||'▶ RUN SIMULATION';
   $('stop-btn').disabled=true;
   $('dash-loading').style.display='none';$('dash-content').style.display='block';
 }
