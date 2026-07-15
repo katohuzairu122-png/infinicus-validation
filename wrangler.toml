@@ -38,6 +38,14 @@ id      = "REPLACE_WITH_INFINICUS_WAITLIST_NAMESPACE_ID"
 #   NURTURE_BATCH_SECRET  — random string, e.g.: openssl rand -hex 32
 #   SENTRY_DSN            — from sentry.io → Project → Client Keys
 #
+#   ── n8n automation (optional; see N8N_INTEGRATION.md) ──
+#   N8N_WAITLIST_WEBHOOK_URL  — n8n Webhook Trigger "Production URL" for waitlist signups.
+#                               When set, /api/waitlist POSTs each signup to n8n
+#                               (fire-and-forget; never blocks the form).
+#   N8N_FEEDBACK_WEBHOOK_URL  — n8n Webhook Trigger "Production URL" for feedback.
+#                               When set, /api/feedback POSTs each submission to n8n.
+#   Leave either unset to disable that webhook — the endpoints work exactly as before.
+#
 # ── Cron Setup (Nurture Emails) ───────────────────────────────────────────────
 # Cloudflare Pages does not support cron triggers natively (that's Workers only).
 # Use a FREE external cron service to call /api/nurture-batch daily:

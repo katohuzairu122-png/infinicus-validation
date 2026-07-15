@@ -27,6 +27,18 @@ export async function onRequestPost(context) {
     }
   } catch(e) { console.error('KV write failed', e); }
 
+  // Fire-and-forget: notify n8n for downstream routing
+  // (Slack alert on low ratings, log to a sheet/CRM, weekly digest, …).
+  // Inert unless N8N_FEEDBACK_WEBHOOK_URL is set in Cloudflare env vars.
+  if (env.N8N_FEEDBACK_WEBHOOK_URL) {
+    const notify = fetch(env.N8N_FEEDBACK_WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ event: 'feedback.submitted', ...entry, source: 'infini-cus.com' }),
+    }).catch((e) => console.error('n8n feedback webhook failed:', e));
+    if (context.waitUntil) context.waitUntil(notify);
+  }
+
   // Send email notification via Resend
   try {
     if (env.RESEND_API_KEY) {

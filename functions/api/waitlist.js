@@ -51,6 +51,23 @@ export async function onRequestPost(context) {
     }
   }
 
+  // Fire-and-forget: notify n8n so it can run downstream automations
+  // (add to CRM/sheet, Slack/Discord alert, lead enrichment, mailing list, …).
+  // Inert unless N8N_WAITLIST_WEBHOOK_URL is set in Cloudflare env vars.
+  if (env.N8N_WAITLIST_WEBHOOK_URL) {
+    const notify = fetch(env.N8N_WAITLIST_WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        event: 'waitlist.signup',
+        name, email, tier,
+        signedUpAt: new Date().toISOString(),
+        source: 'infini-cus.com',
+      }),
+    }).catch((e) => console.error('n8n waitlist webhook failed:', e));
+    if (context.waitUntil) context.waitUntil(notify);
+  }
+
   // Always return ok — never break the user-facing form
   const apiKey = env.RESEND_API_KEY;
   if (!apiKey) {
