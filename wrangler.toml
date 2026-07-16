@@ -1,8 +1,8 @@
 # wrangler.toml — INFINICUS ENGINE
-# Cloudflare Pages project configuration + KV binding documentation.
+# Cloudflare Pages project configuration + KV / D1 binding documentation.
 #
-# ⚠️  This file documents required KV namespaces.
-#     You MUST create these namespaces in the Cloudflare dashboard and paste the IDs below.
+# ⚠️  This file documents required bindings.
+#     You MUST create these in the Cloudflare dashboard and paste the IDs below.
 #
 # HOW TO CREATE KV NAMESPACES (do this once):
 #   1. Go to dash.cloudflare.com → Workers & Pages → KV
@@ -14,6 +14,17 @@
 #   7. Add binding: variable name = INFINICUS_USERS    → select namespace INFINICUS_USERS
 #   8. Add binding: variable name = INFINICUS_WAITLIST → select namespace INFINICUS_WAITLIST
 #   9. Redeploy (git push) for the bindings to take effect
+#
+# HOW TO CREATE THE D1 DATABASE (do this once):
+#   1. Go to dash.cloudflare.com → Workers & Pages → D1
+#   2. Click "Create database"
+#   3. Name it "INFINICUS_DB" → copy the Database ID shown after creation
+#   4. Replace the placeholder ID below (database_id field)
+#   5. Go to your Pages project → Settings → Functions → D1 database bindings
+#   6. Add binding: variable name = INFINICUS_DB → select database INFINICUS_DB
+#   7. Run the schema migration: wrangler d1 execute INFINICUS_DB --file=schema.sql
+#      OR paste the contents of schema.sql into the D1 console SQL editor
+#   8. Redeploy (git push) for the binding to take effect
 
 name = "infinicus-engine"
 compatibility_date = "2024-01-01"
@@ -29,6 +40,13 @@ id      = "REPLACE_WITH_INFINICUS_USERS_NAMESPACE_ID"
 binding = "INFINICUS_WAITLIST"
 id      = "REPLACE_WITH_INFINICUS_WAITLIST_NAMESPACE_ID"
 # preview_id = "REPLACE_WITH_PREVIEW_NAMESPACE_ID_IF_NEEDED"
+
+# ── D1 Database Binding ───────────────────────────────────────────────────────
+
+[[d1_databases]]
+binding     = "INFINICUS_DB"
+database_name = "INFINICUS_DB"
+database_id   = "REPLACE_WITH_INFINICUS_DB_DATABASE_ID"
 
 # ── Environment Variables ─────────────────────────────────────────────────────
 # Set these in: Cloudflare Pages → Settings → Environment Variables (NOT here)
