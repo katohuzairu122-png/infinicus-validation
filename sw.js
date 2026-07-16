@@ -1,7 +1,7 @@
 // sw.js — INFINICUS Engine v3 Service Worker
 // Bump CACHE_VERSION when deploying significant updates to force re-cache
-// Deployed: 2026-07-16 rev17 — My Business BI layer + magic-link auth backend
-const CACHE_VERSION = 'v21';
+// Deployed: 2026-07-16 rev18 — fix mobile nav dropdown (flex:none override)
+const CACHE_VERSION = 'v22';
 const CACHE = 'infinicus-' + CACHE_VERSION;
 
 // Core shell assets — cached on install
