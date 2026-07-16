@@ -1,7 +1,7 @@
 // sw.js — INFINICUS Engine v3 Service Worker
 // Bump CACHE_VERSION when deploying significant updates to force re-cache
-// Deployed: 2026-07-16 rev19 — password auth modal, Digital Twin, Decision Intelligence, rate limiting
-const CACHE_VERSION = 'v23';
+// Deployed: 2026-07-16 rev20 — debug fixes: --green var, btn-sm/btn-main CSS, decisions sub-routes, _routes.json root
+const CACHE_VERSION = 'v24';
 const CACHE = 'infinicus-' + CACHE_VERSION;
 
 // Core shell assets — cached on install
