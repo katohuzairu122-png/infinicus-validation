@@ -7,10 +7,10 @@
 <meta name="description" content="Simulate your business idea across 90 virtual days with a statistical engine, Monte Carlo risk analysis, and a Go/Modify/Stop verdict.">
 <!-- Open Graph -->
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://infinicus-validation.pages.dev/index.html">
+<meta property="og:url" content="https://infini-cus.com/">
 <meta property="og:title" content="INFINICUS ENGINE v3 — Business Reality Simulator">
 <meta property="og:description" content="Run your business idea through a 90-day statistical simulation. Monte Carlo risk, AI venture analysis, Go/Modify/Stop verdict. 10 free AI analyses — no card required.">
-<meta property="og:image" content="https://infinicus-validation.pages.dev/og-image.svg">
+<meta property="og:image" content="https://infini-cus.com/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:site_name" content="INFINICUS ENGINE">
@@ -18,9 +18,9 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="INFINICUS ENGINE v3 — Business Reality Simulator">
 <meta name="twitter:description" content="90-day Monte Carlo simulation · AI venture analysis · Go/Modify/Stop verdict.">
-<meta name="twitter:image" content="https://infinicus-validation.pages.dev/og-image.svg">
+<meta name="twitter:image" content="https://infini-cus.com/og-image.png">
 <!-- Canonical -->
-<link rel="canonical" href="https://infinicus-validation.pages.dev/">
+<link rel="canonical" href="https://infini-cus.com/">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;600;700&family=Sora:wght@700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -34,7 +34,7 @@
   --navy-900:#060a14; --navy-800:#0a1020; --navy-700:#0e1628; --navy-600:#141e35;
   --glass:rgba(255,255,255,.04); --glass-2:rgba(255,255,255,.07); --glass-3:rgba(255,255,255,.1);
   --line:rgba(255,255,255,.09); --line-2:rgba(255,255,255,.14);
-  --cyan:#00e060; --green:#00e060; --purple:#8b5cf6; --emerald:#10b981; --amber:#f59e0b; --red:#f43f5e;
+  --cyan:#00e060; --purple:#8b5cf6; --emerald:#10b981; --amber:#f59e0b; --red:#f43f5e;
   --text:#e9eefb; --muted:#8893ad; --muted-2:#5d6885;
   --mono:'IBM Plex Mono',monospace; --sans:'Inter',system-ui,sans-serif; --head:'Sora',sans-serif;
 }
@@ -257,7 +257,7 @@ select option{background:var(--navy-800);}
 .ham-btn{display:none;background:none;border:1px solid var(--line);border-radius:6px;padding:6px 10px;cursor:pointer;color:var(--muted);font-size:19px;line-height:1;flex-shrink:0;}
 .ham-btn:hover{color:var(--cyan);border-color:rgba(0,224,96,.25);}
 @media(max-width:820px){
-  .nav{display:none;flex-direction:column;flex:none;width:100%;order:10;border-top:1px solid var(--line);padding-top:.5rem;margin-top:.5rem;}
+  .nav{display:none;flex-direction:column;width:100%;order:10;border-top:1px solid var(--line);padding-top:.5rem;margin-top:.5rem;}
   .nav.open{display:flex;}
   .ham-btn{display:flex;align-items:center;}
   header{flex-wrap:wrap;}
@@ -352,10 +352,6 @@ select option{background:var(--navy-800);}
 .modal-field input:focus{border-color:rgba(0,224,96,.45);}
 .modal-err{font-family:var(--mono);font-size:13px;color:var(--red);margin-bottom:.75rem;display:none;padding:.4rem .6rem;background:rgba(244,63,94,.08);border-radius:6px;border:1px solid rgba(244,63,94,.2);}
 .modal-fine{font-family:var(--mono);font-size:11px;color:var(--muted-2);text-align:center;margin-top:.75rem;}
-.auth-modal-tabs{display:flex;gap:0;margin-bottom:1.5rem;border-bottom:1px solid var(--line);}
-.auth-modal-tab{flex:1;background:none;border:none;border-bottom:2px solid transparent;padding:.6rem;font-family:var(--mono);font-size:12px;letter-spacing:.08em;color:var(--muted);cursor:pointer;transition:all .15s;margin-bottom:-1px;}
-.auth-modal-tab.active{color:var(--cyan);border-bottom-color:var(--cyan);}
-.auth-modal-tab:hover{color:var(--text);}
 
 /* PLAN GRID */
 .plan-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.8rem;margin-top:1rem;}
@@ -429,41 +425,6 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
 .sens-verdict.stop{background:rgba(244,63,94,.1);color:var(--red);border:1px solid rgba(244,63,94,.2);}
 
 /* SCENARIO COMPARISON */
-/* ── MY BUSINESS ──────────────────────────────── */
-.biz-tabs{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1.2rem;}
-.biz-tab{background:none;border:1px solid var(--line-2);border-radius:6px;color:var(--muted);font-family:var(--mono);font-size:12px;letter-spacing:.08em;padding:6px 14px;cursor:pointer;transition:all .15s;}
-.biz-tab:hover{border-color:var(--green);color:var(--green);}
-.biz-tab.active{background:rgba(0,224,96,.12);border-color:var(--green);color:var(--green);}
-.biz-form-panel{display:none;background:var(--glass);border:1px solid var(--line-2);border-radius:10px;padding:1.2rem;margin-bottom:1.2rem;}
-.biz-form-panel.visible{display:block;}
-.biz-field{display:grid;grid-template-columns:170px 1fr;align-items:center;gap:.6rem;margin-bottom:.75rem;}
-@media(max-width:600px){.biz-field{grid-template-columns:1fr;}}
-.biz-field label{font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.05em;}
-.biz-field input,.biz-field select,.biz-field textarea{background:rgba(255,255,255,.04);border:1px solid var(--line-2);border-radius:6px;color:var(--text);font-family:var(--mono);font-size:13px;padding:7px 10px;width:100%;box-sizing:border-box;outline:none;}
-.biz-field input:focus,.biz-field select:focus,.biz-field textarea:focus{border-color:var(--green);}
-.biz-kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:.85rem;margin-top:1rem;}
-.biz-kpi-card{background:var(--glass);border:1px solid var(--line-2);border-radius:10px;padding:1rem;}
-.biz-kpi-label{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.25rem;}
-.biz-kpi-val{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--green);}
-.biz-kpi-sub{font-family:var(--mono);font-size:10px;color:var(--muted-2);margin-top:.2rem;}
-.biz-selector-row{display:flex;align-items:center;gap:.7rem;flex-wrap:wrap;margin-bottom:1.2rem;}
-.biz-selector-row select{background:rgba(255,255,255,.04);border:1px solid var(--line-2);border-radius:6px;color:var(--text);font-family:var(--mono);font-size:13px;padding:7px 12px;min-width:200px;outline:none;cursor:pointer;}
-.biz-selector-row select:focus{border-color:var(--green);}
-.biz-period-row{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin-bottom:1rem;}
-.biz-period-row input[type=date]{background:rgba(255,255,255,.04);border:1px solid var(--line-2);border-radius:6px;color:var(--text);font-family:var(--mono);font-size:12px;padding:5px 9px;outline:none;}
-.biz-period-row input[type=date]:focus{border-color:var(--green);}
-.biz-sub-list{list-style:none;padding:0;margin:.6rem 0 0;}
-.biz-sub-list li{font-family:var(--mono);font-size:12px;color:var(--muted);padding:3px 0;border-bottom:1px solid rgba(255,255,255,.04);}
-.biz-sub-list li span{color:var(--text);}
-.biz-create-form{background:rgba(0,224,96,.04);border:1px solid rgba(0,224,96,.2);border-radius:10px;padding:1.2rem;margin-bottom:1.2rem;display:none;}
-.biz-create-form.visible{display:block;}
-.btn-main{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 20px;background:var(--cyan);color:#04121a;font-family:var(--mono);font-size:13px;font-weight:700;letter-spacing:.07em;border:none;border-radius:8px;cursor:pointer;transition:all .15s;}
-.btn-main:hover{background:#00ff70;box-shadow:0 4px 16px rgba(0,224,96,.3);}
-.btn-main:disabled{background:var(--glass);color:var(--muted-2);cursor:not-allowed;box-shadow:none;}
-.btn-sm{display:inline-flex;align-items:center;gap:5px;padding:6px 14px;background:transparent;color:var(--cyan);font-family:var(--mono);font-size:12px;letter-spacing:.07em;border:1px solid rgba(0,224,96,.3);border-radius:6px;cursor:pointer;transition:all .15s;}
-.btn-sm:hover{background:rgba(0,224,96,.08);border-color:rgba(0,224,96,.55);}
-.btn-sm:disabled{opacity:.4;cursor:not-allowed;}
-/* ── COMPARE ──────────────────────────────────── */
 .sc-slots{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.25rem;}
 @media(max-width:600px){.sc-slots{grid-template-columns:1fr;}}
 .sc-slot{background:var(--glass);border:1px solid var(--line-2);border-radius:10px;padding:1rem;min-height:80px;}
@@ -737,12 +698,17 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
   </div>
   <button class="ham-btn" id="ham-btn" onclick="toggleNav()" aria-label="Menu">☰</button>
   <nav class="nav" id="main-nav">
-    <button class="nb active" data-section="data"         onclick="nav('data')"        >DATA ACQ</button>
-    <button class="nb"        data-section="operations"   onclick="nav('operations')"  >OPERATIONS</button>
-    <button class="nb"        data-section="intelligence" onclick="nav('intelligence')">INTEL</button>
-    <button class="nb"        data-section="twin"         onclick="nav('twin')"        >TWIN</button>
-    <button class="nb"        data-section="simulation"   onclick="nav('simulation')"  >SIMULATE</button>
-    <button class="nb"        data-section="decisions"    onclick="nav('decisions')"   >AI DECISIONS</button>
+    <button class="nb active" data-section="input"       onclick="nav('input')"       data-i18n="nav_input">INPUT</button>
+    <button class="nb"        data-section="dashboard"   onclick="nav('dashboard')"   data-i18n="nav_dash">DASH</button>
+    <button class="nb"        data-section="history"     onclick="nav('history')"     data-i18n="nav_history">HISTORY</button>
+    <button class="nb"        data-section="economy"     onclick="nav('economy')"     data-i18n="nav_econ">ECON</button>
+    <button class="nb"        data-section="forecast"    onclick="nav('forecast')"    data-i18n="nav_forecast">FORECAST</button>
+    <button class="nb"        data-section="customers"   onclick="nav('customers')"   data-i18n="nav_cust">CUST / LOG</button>
+    <button class="nb"        data-section="risk"        onclick="nav('risk')"        data-i18n="nav_risk">RISK / MC</button>
+    <button class="nb"        data-section="verdict"     onclick="nav('verdict')"     data-i18n="nav_verdict">VERDICT</button>
+    <button class="nb"        data-section="report"      onclick="nav('report')"      data-i18n="nav_report">REPORT</button>
+    <button class="nb"        data-section="sensitivity" onclick="nav('sensitivity')" data-i18n="nav_sensi">SENSI</button>
+    <button class="nb"        data-section="compare"     onclick="nav('compare')"     data-i18n="nav_compare">COMPARE</button>
   </nav>
   <div class="hdr-right">
     <button id="signin-btn" class="nb" onclick="openRegModal()" style="display:none;border-color:rgba(0,224,96,.25);color:var(--cyan);" title="Sign in or create account">SIGN IN</button>
@@ -795,9 +761,9 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
 </header>
 
 <!-- ══ INPUT ══ -->
-<section class="section active" id="sec-data">
-  <div class="pg-title"><span class="c">DATA</span> ACQUISITION<br>LAYER</div>
-  <div class="pg-sub">// FEED THE ENGINE — BUSINESS PARAMETERS · MARKET CONDITIONS · FINANCIAL INPUTS</div>
+<section class="section active" id="sec-input">
+  <div class="pg-title"><span class="c">SIMULATE</span> YOUR<br>BUSINESS REALITY</div>
+  <div class="pg-sub">// STATISTICAL ENGINE · VIRTUAL ECONOMY · AGENT-BASED MODELING · MONTE CARLO</div>
   <!-- 5-STEP PROGRESS INDICATOR -->
   <div class="inp-progress" id="inp-progress">
     <div class="inp-step ip-active" id="ip-1">
@@ -1019,41 +985,6 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
 </section>
 
 <!-- ══ DASHBOARD ══ -->
-<!-- ══ INTELLIGENCE HUB ══ -->
-<section class="section" id="sec-intelligence">
-  <div class="pg-title" style="font-size:22px;margin-bottom:.1rem;">BUSINESS <span class="c">INTELLIGENCE</span></div>
-  <div class="pg-sub">// KPI DASHBOARD · ECONOMY · CUSTOMERS · FORECAST · HISTORY</div>
-  <div style="font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.1em;margin-bottom:1.2rem;margin-top:1rem;">SELECT A MODULE TO EXPLORE</div>
-  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.85rem;">
-    <div style="background:var(--glass);border:1px solid var(--line-2);border-radius:12px;padding:1.2rem;cursor:pointer;transition:all .2s;" onclick="nav('dashboard')" onmouseover="this.style.borderColor='rgba(0,224,96,.35)'" onmouseout="this.style.borderColor='rgba(255,255,255,.14)'">
-      <div style="font-family:var(--mono);font-size:10px;color:var(--cyan);letter-spacing:.12em;margin-bottom:.5rem;">01</div>
-      <div style="font-family:var(--head);font-size:16px;font-weight:700;margin-bottom:.3rem;">KPI DASHBOARD</div>
-      <div style="font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.5;">Core simulation metrics — revenue, profit, runway, customer acquisition.</div>
-    </div>
-    <div style="background:var(--glass);border:1px solid var(--line-2);border-radius:12px;padding:1.2rem;cursor:pointer;transition:all .2s;" onclick="nav('economy')" onmouseover="this.style.borderColor='rgba(0,224,96,.35)'" onmouseout="this.style.borderColor='rgba(255,255,255,.14)'">
-      <div style="font-family:var(--mono);font-size:10px;color:var(--cyan);letter-spacing:.12em;margin-bottom:.5rem;">02</div>
-      <div style="font-family:var(--head);font-size:16px;font-weight:700;margin-bottom:.3rem;">ECONOMY</div>
-      <div style="font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.5;">Revenue vs expenses, daily cashflow chart, burn analysis.</div>
-    </div>
-    <div style="background:var(--glass);border:1px solid var(--line-2);border-radius:12px;padding:1.2rem;cursor:pointer;transition:all .2s;" onclick="nav('customers')" onmouseover="this.style.borderColor='rgba(0,224,96,.35)'" onmouseout="this.style.borderColor='rgba(255,255,255,.14)'">
-      <div style="font-family:var(--mono);font-size:10px;color:var(--cyan);letter-spacing:.12em;margin-bottom:.5rem;">03</div>
-      <div style="font-family:var(--head);font-size:16px;font-weight:700;margin-bottom:.3rem;">CUSTOMERS</div>
-      <div style="font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.5;">Acquisition curve, LTV, churn, channel breakdown.</div>
-    </div>
-    <div style="background:var(--glass);border:1px solid var(--line-2);border-radius:12px;padding:1.2rem;cursor:pointer;transition:all .2s;" onclick="nav('forecast')" onmouseover="this.style.borderColor='rgba(0,224,96,.35)'" onmouseout="this.style.borderColor='rgba(255,255,255,.14)'">
-      <div style="font-family:var(--mono);font-size:10px;color:var(--cyan);letter-spacing:.12em;margin-bottom:.5rem;">04</div>
-      <div style="font-family:var(--head);font-size:16px;font-weight:700;margin-bottom:.3rem;">FORECAST</div>
-      <div style="font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.5;">6-month and 12-month financial projections with growth curves.</div>
-    </div>
-    <div style="background:var(--glass);border:1px solid var(--line-2);border-radius:12px;padding:1.2rem;cursor:pointer;transition:all .2s;" onclick="nav('history')" onmouseover="this.style.borderColor='rgba(0,224,96,.35)'" onmouseout="this.style.borderColor='rgba(255,255,255,.14)'">
-      <div style="font-family:var(--mono);font-size:10px;color:var(--cyan);letter-spacing:.12em;margin-bottom:.5rem;">05</div>
-      <div style="font-family:var(--head);font-size:16px;font-weight:700;margin-bottom:.3rem;">HISTORY</div>
-      <div style="font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.5;">All previous simulation runs — compare, restore, track progress.</div>
-    </div>
-  </div>
-  <div style="margin-top:1.5rem;font-family:var(--mono);font-size:11px;color:var(--muted-2);text-align:center;">Run a simulation in DATA ACQ first to populate these modules.</div>
-</section>
-
 <section class="section" id="sec-dashboard">
   <div id="dash-loading" class="loading-wrap" style="display:none;">
     <img src="./infinicus logo.jpeg" class="loading-logo" width="76" height="76" alt="INFINICUS" style="border-radius:18px;display:block;">
@@ -1156,41 +1087,6 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
 </section>
 
 <!-- ══ RISK ══ -->
-<!-- ══ SIMULATION HUB ══ -->
-<section class="section" id="sec-simulation">
-  <div class="pg-title" style="font-size:22px;margin-bottom:.1rem;">SIMULATION <span class="c">ENGINE</span></div>
-  <div class="pg-sub">// MONTE CARLO · SENSITIVITY · SCENARIO COMPARISON · VERDICT · REPORT</div>
-  <div style="font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.1em;margin-bottom:1.2rem;margin-top:1rem;">SELECT AN ANALYSIS MODULE</div>
-  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.85rem;">
-    <div style="background:var(--glass);border:1px solid var(--line-2);border-radius:12px;padding:1.2rem;cursor:pointer;transition:all .2s;" onclick="nav('risk')" onmouseover="this.style.borderColor='rgba(0,224,96,.35)'" onmouseout="this.style.borderColor='rgba(255,255,255,.14)'">
-      <div style="font-family:var(--mono);font-size:10px;color:var(--cyan);letter-spacing:.12em;margin-bottom:.5rem;">01</div>
-      <div style="font-family:var(--head);font-size:16px;font-weight:700;margin-bottom:.3rem;">RISK / MONTE CARLO</div>
-      <div style="font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.5;">500-run probability distribution — cash outcomes, failure rates, upside range.</div>
-    </div>
-    <div style="background:var(--glass);border:1px solid var(--line-2);border-radius:12px;padding:1.2rem;cursor:pointer;transition:all .2s;" onclick="nav('sensitivity')" onmouseover="this.style.borderColor='rgba(0,224,96,.35)'" onmouseout="this.style.borderColor='rgba(255,255,255,.14)'">
-      <div style="font-family:var(--mono);font-size:10px;color:var(--cyan);letter-spacing:.12em;margin-bottom:.5rem;">02</div>
-      <div style="font-family:var(--head);font-size:16px;font-weight:700;margin-bottom:.3rem;">SENSITIVITY</div>
-      <div style="font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.5;">Which variables move the needle most — heatmap of all key drivers.</div>
-    </div>
-    <div style="background:var(--glass);border:1px solid var(--line-2);border-radius:12px;padding:1.2rem;cursor:pointer;transition:all .2s;" onclick="nav('compare')" onmouseover="this.style.borderColor='rgba(0,224,96,.35)'" onmouseout="this.style.borderColor='rgba(255,255,255,.14)'">
-      <div style="font-family:var(--mono);font-size:10px;color:var(--cyan);letter-spacing:.12em;margin-bottom:.5rem;">03</div>
-      <div style="font-family:var(--head);font-size:16px;font-weight:700;margin-bottom:.3rem;">COMPARE</div>
-      <div style="font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.5;">Side-by-side scenario comparison — test different assumptions head to head.</div>
-    </div>
-    <div style="background:var(--glass);border:1px solid var(--line-2);border-radius:12px;padding:1.2rem;cursor:pointer;transition:all .2s;" onclick="nav('verdict')" onmouseover="this.style.borderColor='rgba(0,224,96,.35)'" onmouseout="this.style.borderColor='rgba(255,255,255,.14)'">
-      <div style="font-family:var(--mono);font-size:10px;color:var(--cyan);letter-spacing:.12em;margin-bottom:.5rem;">04</div>
-      <div style="font-family:var(--head);font-size:16px;font-weight:700;margin-bottom:.3rem;">VERDICT</div>
-      <div style="font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.5;">AI business health assessment — GO, MODIFY, or STOP recommendation.</div>
-    </div>
-    <div style="background:var(--glass);border:1px solid var(--line-2);border-radius:12px;padding:1.2rem;cursor:pointer;transition:all .2s;" onclick="nav('report')" onmouseover="this.style.borderColor='rgba(0,224,96,.35)'" onmouseout="this.style.borderColor='rgba(255,255,255,.14)'">
-      <div style="font-family:var(--mono);font-size:10px;color:var(--cyan);letter-spacing:.12em;margin-bottom:.5rem;">05</div>
-      <div style="font-family:var(--head);font-size:16px;font-weight:700;margin-bottom:.3rem;">REPORT</div>
-      <div style="font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.5;">Full printable business plan — PDF export, shareable link.</div>
-    </div>
-  </div>
-  <div style="margin-top:1.5rem;font-family:var(--mono);font-size:11px;color:var(--muted-2);text-align:center;">Run a simulation in DATA ACQ to unlock all analysis modules.</div>
-</section>
-
 <section class="section" id="sec-risk">
   <div class="pg-title" style="font-size:22px;margin-bottom:.1rem;">RISK / MONTE CARLO</div>
   <div class="pg-sub">// 500 SIMULATION RUNS · PROBABILITY DISTRIBUTION</div>
@@ -1314,232 +1210,6 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
   </div>
 </section>
 
-<!-- ══ MY BUSINESS ══ -->
-<section class="section" id="sec-operations">
-  <div class="pg-title" style="font-size:22px;margin-bottom:.1rem;">BUSINESS <span class="c">OPERATIONS</span></div>
-  <div class="pg-sub">// LOG REAL EVENTS — SALES · EXPENSES · INVENTORY · CUSTOMERS · TEAM</div>
-
-  <!-- Auth gate -->
-  <div id="biz-auth-gate" style="display:none;text-align:center;padding:2.5rem 1rem;">
-    <div style="font-size:36px;margin-bottom:.7rem;">🔒</div>
-    <div style="font-family:var(--mono);font-size:14px;color:var(--muted-2);margin-bottom:1rem;">Sign in to track your real business operations.</div>
-    <button class="btn-main" onclick="openRegModal()">SIGN IN</button>
-  </div>
-
-  <!-- Main content (shown when logged in) -->
-  <div id="biz-main" style="display:none;">
-
-    <!-- Business selector row -->
-    <div class="biz-selector-row">
-      <select id="biz-select" onchange="bizOnSelectChange()">
-        <option value="">— Select a business —</option>
-      </select>
-      <button class="btn-sm" onclick="bizToggleCreateForm()">＋ NEW BUSINESS</button>
-    </div>
-
-    <!-- Create business form -->
-    <div class="biz-create-form" id="biz-create-form">
-      <div style="font-family:var(--mono);font-size:12px;color:var(--green);letter-spacing:.1em;margin-bottom:.9rem;">CREATE NEW BUSINESS</div>
-      <div class="biz-field"><label>Business Name</label><input id="biz-new-name" type="text" placeholder="e.g. Sunrise Café"></div>
-      <div class="biz-field">
-        <label>Industry</label>
-        <select id="biz-new-ind">
-          <option value="food">Food & Beverage</option>
-          <option value="retail">Retail</option>
-          <option value="tech">Tech / SaaS</option>
-          <option value="service">Services</option>
-          <option value="health">Health & Wellness</option>
-          <option value="education">Education</option>
-          <option value="real_estate">Real Estate</option>
-          <option value="creative">Creative / Media</option>
-          <option value="logistics">Logistics</option>
-          <option value="finance">Finance</option>
-          <option value="other">Other</option>
-        </select>
-      </div>
-      <button class="btn-main" onclick="bizCreateBusiness()" style="margin-top:.4rem;">CREATE →</button>
-    </div>
-
-    <!-- Event entry tabs (shown when a business is selected) -->
-    <div id="biz-event-area" style="display:none;">
-
-      <div style="font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.1em;margin-bottom:.6rem;">LOG AN EVENT</div>
-      <div class="biz-tabs">
-        <button class="biz-tab active" onclick="bizTab('sale',this)">💰 SALE</button>
-        <button class="biz-tab" onclick="bizTab('expense',this)">📤 EXPENSE</button>
-        <button class="biz-tab" onclick="bizTab('inventory',this)">📦 INVENTORY</button>
-        <button class="biz-tab" onclick="bizTab('customer',this)">👥 CUSTOMER</button>
-        <button class="biz-tab" onclick="bizTab('team',this)">🧑‍💼 TEAM</button>
-      </div>
-
-      <!-- SALE form -->
-      <div class="biz-form-panel visible" id="biz-panel-sale">
-        <div class="biz-field"><label>Revenue Amount (USD)</label><input id="biz-sale-amount" type="number" min="0" step="0.01" placeholder="e.g. 150.00"></div>
-        <div class="biz-field"><label>Units Sold</label><input id="biz-sale-qty" type="number" min="0" step="1" placeholder="e.g. 3"></div>
-        <div class="biz-field"><label>Customer ID (optional)</label><input id="biz-sale-cust" type="text" placeholder="e.g. cust_001"></div>
-        <div class="biz-field"><label>Notes</label><input id="biz-sale-notes" type="text" placeholder="optional"></div>
-        <button class="btn-main" onclick="bizLogEvent('sale')" style="margin-top:.3rem;">LOG SALE →</button>
-        <div class="biz-event-msg" id="biz-msg-sale"></div>
-      </div>
-
-      <!-- EXPENSE form -->
-      <div class="biz-form-panel" id="biz-panel-expense">
-        <div class="biz-field"><label>Amount (USD)</label><input id="biz-exp-amount" type="number" min="0" step="0.01" placeholder="e.g. 320.00"></div>
-        <div class="biz-field"><label>Category</label><input id="biz-exp-cat" type="text" placeholder="e.g. Rent, Supplies, Marketing"></div>
-        <div class="biz-field"><label>Notes</label><input id="biz-exp-notes" type="text" placeholder="optional"></div>
-        <button class="btn-main" onclick="bizLogEvent('expense')" style="margin-top:.3rem;">LOG EXPENSE →</button>
-        <div class="biz-event-msg" id="biz-msg-expense"></div>
-      </div>
-
-      <!-- INVENTORY form -->
-      <div class="biz-form-panel" id="biz-panel-inventory">
-        <div class="biz-field"><label>Item Name</label><input id="biz-inv-item" type="text" placeholder="e.g. Coffee Beans 1kg"></div>
-        <div class="biz-field"><label>Quantity Delta</label><input id="biz-inv-qty" type="number" step="1" placeholder="+10 received / -5 used"></div>
-        <div class="biz-field"><label>Unit Cost (USD)</label><input id="biz-inv-cost" type="number" min="0" step="0.01" placeholder="optional"></div>
-        <div class="biz-field"><label>Notes</label><input id="biz-inv-notes" type="text" placeholder="optional"></div>
-        <button class="btn-main" onclick="bizLogEvent('inventory')" style="margin-top:.3rem;">LOG INVENTORY →</button>
-        <div class="biz-event-msg" id="biz-msg-inventory"></div>
-      </div>
-
-      <!-- CUSTOMER form -->
-      <div class="biz-form-panel" id="biz-panel-customer">
-        <div class="biz-field"><label>Customer ID</label><input id="biz-cust-id" type="text" placeholder="e.g. cust_042"></div>
-        <div class="biz-field">
-          <label>Action</label>
-          <select id="biz-cust-action">
-            <option value="new">New customer</option>
-            <option value="return">Returning customer</option>
-            <option value="churn">Churned</option>
-          </select>
-        </div>
-        <div class="biz-field"><label>Notes</label><input id="biz-cust-notes" type="text" placeholder="optional"></div>
-        <button class="btn-main" onclick="bizLogEvent('customer')" style="margin-top:.3rem;">LOG CUSTOMER →</button>
-        <div class="biz-event-msg" id="biz-msg-customer"></div>
-      </div>
-
-      <!-- TEAM form -->
-      <div class="biz-form-panel" id="biz-panel-team">
-        <div class="biz-field"><label>Team Member ID</label><input id="biz-team-id" type="text" placeholder="e.g. emp_003"></div>
-        <div class="biz-field">
-          <label>Action</label>
-          <select id="biz-team-action">
-            <option value="hire">Hire</option>
-            <option value="fire">Terminate</option>
-            <option value="review">Performance review</option>
-          </select>
-        </div>
-        <div class="biz-field"><label>Hours Logged</label><input id="biz-team-hours" type="number" min="0" step="0.5" placeholder="optional, e.g. 8"></div>
-        <div class="biz-field"><label>Notes</label><input id="biz-team-notes" type="text" placeholder="optional"></div>
-        <button class="btn-main" onclick="bizLogEvent('team')" style="margin-top:.3rem;">LOG TEAM EVENT →</button>
-        <div class="biz-event-msg" id="biz-msg-team"></div>
-      </div>
-
-      <!-- KPI Dashboard -->
-      <div style="margin-top:2rem;">
-        <div style="font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.1em;margin-bottom:.6rem;">KPI SUMMARY</div>
-        <div class="biz-period-row">
-          <label style="font-family:var(--mono);font-size:12px;color:var(--muted);">From:</label>
-          <input type="date" id="biz-from-date">
-          <label style="font-family:var(--mono);font-size:12px;color:var(--muted);">To:</label>
-          <input type="date" id="biz-to-date">
-          <button class="btn-sm" onclick="bizLoadSummary()">⟳ REFRESH KPIs</button>
-        </div>
-        <div id="biz-kpi-area">
-          <div style="font-family:var(--mono);font-size:12px;color:var(--muted-2);text-align:center;padding:1.5rem;">Select a period and click REFRESH KPIs.</div>
-        </div>
-      </div>
-
-      <!-- Navigation hint -->
-      <div style="margin-top:2rem;padding:1rem;background:rgba(0,224,96,.04);border:1px solid rgba(0,224,96,.15);border-radius:10px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;">
-        <div style="font-family:var(--mono);font-size:12px;color:var(--muted);">Next step: view your live business snapshot</div>
-        <button class="btn-sm" onclick="nav('twin')">VIEW DIGITAL TWIN →</button>
-      </div>
-
-    </div><!-- /biz-event-area -->
-
-  </div><!-- /biz-main -->
-</section>
-
-<!-- ══ DIGITAL TWIN ══ -->
-<section class="section" id="sec-twin">
-  <div class="pg-title" style="font-size:22px;margin-bottom:.1rem;">DIGITAL <span class="c">TWIN</span></div>
-  <div class="pg-sub">// LIVE 30-DAY SNAPSHOT · CACHED · AUTO-REFRESHES HOURLY FROM YOUR EVENT STREAM</div>
-
-  <!-- Auth gate -->
-  <div id="twin-auth-gate" style="display:none;text-align:center;padding:2.5rem 1rem;">
-    <div style="font-size:36px;margin-bottom:.7rem;">🔒</div>
-    <div style="font-family:var(--mono);font-size:14px;color:var(--muted-2);margin-bottom:1rem;">Sign in to access your Digital Twin.</div>
-    <button class="btn-main" onclick="openRegModal()">SIGN IN</button>
-  </div>
-
-  <!-- No business selected -->
-  <div id="twin-no-biz" style="display:none;text-align:center;padding:2.5rem 1rem;">
-    <div style="font-size:36px;margin-bottom:.7rem;">📊</div>
-    <div style="font-family:var(--mono);font-size:13px;color:var(--muted-2);margin-bottom:1rem;">Select a business in OPERATIONS first.</div>
-    <button class="btn-sm" onclick="nav('operations')">GO TO OPERATIONS →</button>
-  </div>
-
-  <!-- Twin content -->
-  <div id="twin-main" style="display:none;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.7rem;flex-wrap:wrap;gap:.5rem;">
-      <div>
-        <div style="font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.1em;">DIGITAL TWIN — 30-DAY LIVE SNAPSHOT</div>
-        <div style="font-family:var(--mono);font-size:10px;color:var(--muted-2);margin-top:2px;" id="twin-biz-label">Cached · auto-refreshes hourly from your event stream</div>
-      </div>
-      <div style="display:flex;gap:.5rem;">
-        <button class="btn-sm" onclick="bizLoadTwin()">⟳ LOAD TWIN</button>
-        <button class="btn-sm" onclick="bizRefreshTwin()">↺ FORCE REFRESH</button>
-      </div>
-    </div>
-    <div id="biz-twin-area">
-      <div style="font-family:var(--mono);font-size:12px;color:var(--muted-2);text-align:center;padding:1.5rem;">Click LOAD TWIN to see your live business snapshot.</div>
-    </div>
-    <div style="margin-top:1.5rem;padding:1rem;background:rgba(0,224,96,.04);border:1px solid rgba(0,224,96,.15);border-radius:10px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;">
-      <div style="font-family:var(--mono);font-size:12px;color:var(--muted);">Ready for AI-powered recommendations?</div>
-      <button class="btn-sm" onclick="nav('decisions')">AI DECISION INTELLIGENCE →</button>
-    </div>
-  </div>
-</section>
-
-<!-- ══ AI DECISIONS ══ -->
-<section class="section" id="sec-decisions">
-  <div class="pg-title" style="font-size:22px;margin-bottom:.1rem;">AI DECISION <span class="c">INTELLIGENCE</span></div>
-  <div class="pg-sub">// RECOMMENDATIONS GROUNDED IN YOUR REAL DATA — NEVER FABRICATED</div>
-
-  <!-- Auth gate -->
-  <div id="decisions-auth-gate" style="display:none;text-align:center;padding:2.5rem 1rem;">
-    <div style="font-size:36px;margin-bottom:.7rem;">🔒</div>
-    <div style="font-family:var(--mono);font-size:14px;color:var(--muted-2);margin-bottom:1rem;">Sign in to access AI Decision Intelligence.</div>
-    <button class="btn-main" onclick="openRegModal()">SIGN IN</button>
-  </div>
-
-  <!-- No business / no twin -->
-  <div id="decisions-no-biz" style="display:none;text-align:center;padding:2.5rem 1rem;">
-    <div style="font-size:36px;margin-bottom:.7rem;">⚡</div>
-    <div style="font-family:var(--mono);font-size:13px;color:var(--muted-2);margin-bottom:1rem;">Load your Digital Twin first — AI decisions are grounded in real data.</div>
-    <button class="btn-sm" onclick="nav('twin')">GO TO DIGITAL TWIN →</button>
-  </div>
-
-  <!-- Decisions content -->
-  <div id="decisions-main" style="display:none;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.7rem;flex-wrap:wrap;gap:.5rem;">
-      <div>
-        <div style="font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.1em;">DECISION INTELLIGENCE — AI ADVISOR</div>
-        <div style="font-family:var(--mono);font-size:10px;color:var(--muted-2);margin-top:2px;" id="decisions-biz-label">Powered by claude-haiku-4-5 · grounded in your live twin</div>
-      </div>
-      <button class="btn-sm" onclick="bizGetDecisions()">⚡ GET DECISIONS</button>
-    </div>
-    <div id="biz-decisions-area">
-      <div style="font-family:var(--mono);font-size:12px;color:var(--muted-2);text-align:center;padding:1.5rem;">Click GET DECISIONS to generate AI recommendations from your twin data.</div>
-    </div>
-    <!-- Decision history -->
-    <div style="margin-top:1rem;">
-      <button class="btn-sm" onclick="bizLoadDecisionHistory()" style="font-size:11px;">DECISION HISTORY →</button>
-      <div id="biz-decision-history" style="display:none;margin-top:.75rem;"></div>
-    </div>
-  </div>
-</section>
-
 <!-- ══ HISTORY ══ -->
 <section class="section" id="sec-history">
   <div class="pg-title" style="font-size:22px;margin-bottom:.1rem;">SIMULATION <span class="c">HISTORY</span></div>
@@ -1640,46 +1310,42 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
   </div>
 </div>
 
-<!-- ══ PASSWORD AUTH MODAL ══ -->
+<!-- ══ MAGIC LINK AUTH MODAL ══ -->
 <div class="modal-overlay" id="reg-modal" style="display:none" role="dialog" aria-modal="true" aria-labelledby="reg-modal-h">
   <div class="modal-box">
-    <button class="modal-close" onclick="closeRegModal()" aria-label="Close">×</button>
     <div class="modal-logo">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="28" height="28" style="display:block;border-radius:8px;"><rect width="100" height="100" rx="22" fill="#07080a"/><rect x="2" y="2" width="96" height="96" rx="21" fill="none" stroke="#00e676" stroke-width="2" opacity="0.7"/><path d="M 50,50 C 50,34 38,24 28,30 C 18,36 18,64 28,70 C 38,76 50,66 50,50 Z" fill="none" stroke="#00e676" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><path d="M 50,50 C 50,34 62,24 72,30 C 82,36 82,64 72,70 C 62,76 50,66 50,50 Z" fill="none" stroke="#00e676" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/></svg>
       <span class="modal-logo-name">INFIN<span class="c">ICUS</span><span class="modal-logo-ver"> ENGINE v3</span></span>
     </div>
-    <!-- Tab switcher -->
-    <div class="auth-modal-tabs">
-      <button id="auth-tab-signin" class="auth-modal-tab active" onclick="switchAuthTab('signin')">SIGN IN</button>
-      <button id="auth-tab-register" class="auth-modal-tab" onclick="switchAuthTab('register')">CREATE ACCOUNT</button>
+
+    <!-- Step 1: email input -->
+    <div id="auth-step-email">
+      <div class="modal-h" id="reg-modal-h">Sign In / Create Account</div>
+      <div class="modal-sub">Enter your email and we'll send you a magic sign-in link — no password needed.</div>
+      <div class="modal-field">
+        <label for="reg-email">EMAIL ADDRESS</label>
+        <input id="reg-email" type="email" placeholder="you@example.com" autocomplete="email" onkeydown="if(event.key==='Enter')requestMagicLink()">
+      </div>
+      <div class="modal-err" id="reg-err"></div>
+      <button class="btn-launch" style="width:100%;margin-top:.25rem" id="magic-link-btn" onclick="requestMagicLink()">Send Magic Link →</button>
+      <p class="modal-fine">No password. No spam. One click and you're in.</p>
     </div>
-    <!-- Sign in pane -->
-    <div id="auth-pane-signin">
-      <div class="modal-field">
-        <label for="signin-email">EMAIL ADDRESS</label>
-        <input id="signin-email" type="email" placeholder="you@example.com" autocomplete="email" onkeydown="if(event.key==='Enter')doLogin()">
-      </div>
-      <div class="modal-field">
-        <label for="signin-password">PASSWORD</label>
-        <input id="signin-password" type="password" placeholder="Your password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
-      </div>
-      <div class="modal-err" id="signin-err"></div>
-      <button class="btn-launch" style="width:100%;margin-top:.25rem" id="signin-btn-submit" onclick="doLogin()">Sign In →</button>
-      <p class="modal-fine">New here? <button onclick="switchAuthTab('register')" style="background:none;border:none;color:var(--cyan);cursor:pointer;font-family:var(--mono);font-size:12px;padding:0;letter-spacing:.04em">Create an account →</button></p>
+
+    <!-- Step 2: sent confirmation -->
+    <div id="auth-step-sent" style="display:none;text-align:center;padding:.5rem 0">
+      <div style="font-size:40px;margin-bottom:.75rem">📬</div>
+      <div class="modal-h" style="font-size:23px">Check your inbox</div>
+      <div class="modal-sub" style="margin-top:.5rem">We sent a sign-in link to <strong id="auth-sent-email" style="color:var(--cyan)"></strong>.<br>The link expires in 30 minutes.</div>
+      <p class="modal-fine" style="margin-top:1.25rem">Didn't receive it? <button onclick="resetAuthModal()" style="background:none;border:none;color:var(--cyan);cursor:pointer;font-family:var(--mono);font-size:12px;padding:0;letter-spacing:.04em">Try again →</button></p>
     </div>
-    <!-- Register pane -->
-    <div id="auth-pane-register" style="display:none">
-      <div class="modal-field">
-        <label for="register-email">EMAIL ADDRESS</label>
-        <input id="register-email" type="email" placeholder="you@example.com" autocomplete="email" onkeydown="if(event.key==='Enter')doRegister()">
+
+    <!-- Step 3: verifying spinner -->
+    <div id="auth-step-verify" style="display:none;text-align:center;padding:.5rem 0">
+      <div class="loading-logo" style="width:48px;height:48px;margin:0 auto 1rem">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="48" height="48" style="display:block;border-radius:12px;animation:spin 1.2s linear infinite;filter:drop-shadow(0 0 10px rgba(0,224,96,.5));"><rect width="100" height="100" rx="22" fill="#07080a"/><rect x="2" y="2" width="96" height="96" rx="21" fill="none" stroke="#00e676" stroke-width="2" opacity="0.7"/><path d="M 50,50 C 50,34 38,24 28,30 C 18,36 18,64 28,70 C 38,76 50,66 50,50 Z" fill="none" stroke="#00e676" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><path d="M 50,50 C 50,34 62,24 72,30 C 82,36 82,64 72,70 C 62,76 50,66 50,50 Z" fill="none" stroke="#00e676" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </div>
-      <div class="modal-field">
-        <label for="register-password">PASSWORD (8+ CHARACTERS)</label>
-        <input id="register-password" type="password" placeholder="At least 8 characters" autocomplete="new-password" onkeydown="if(event.key==='Enter')doRegister()">
-      </div>
-      <div class="modal-err" id="register-err"></div>
-      <button class="btn-launch" style="width:100%;margin-top:.25rem" id="register-btn-submit" onclick="doRegister()">Create Account →</button>
-      <p class="modal-fine">Already have an account? <button onclick="switchAuthTab('signin')" style="background:none;border:none;color:var(--cyan);cursor:pointer;font-family:var(--mono);font-size:12px;padding:0;letter-spacing:.04em">Sign in →</button></p>
+      <div class="modal-h" style="font-size:21px">Verifying your link…</div>
+      <div class="modal-sub">Just a second while we sign you in.</div>
     </div>
   </div>
 </div>
@@ -2877,7 +2543,7 @@ function resetSim() {
   initHeatmap();
   $h('score-rings','<div style="font-family:var(--mono);font-size:12px;color:var(--muted-2);margin-top:.5rem;">Run a simulation to see scores.</div>');
   $h('perf-bars','<div style="font-family:var(--mono);font-size:12px;color:var(--muted-2);">Run a simulation to see benchmarks.</div>');
-  nav('data');
+  nav('input');
 }
 
 function setBadge(state) {
@@ -3369,7 +3035,7 @@ function prepareResim(newParams, label) {
     banner.style.display = 'block';
   }
 
-  nav('data');
+  nav('input');
   window.scrollTo(0, 0);
 }
 
@@ -3500,7 +3166,7 @@ function applyCapitalAlternative(mode) {
   if (priceChanged) glowField(priceEl);
 
   // Navigate to input form
-  nav('data');
+  nav('input');
 
   // Populate and show the banner
   const banner  = $('alt-applied-banner');
@@ -5253,77 +4919,111 @@ document.addEventListener('click', function(e){
   if(wrap && !wrap.contains(e.target)) closeUserMenu();
 });
 
-// ── Password auth modal helpers ──
+// ── Magic link modal helpers ──
 function openRegModal() {
-  switchAuthTab('signin');
+  resetAuthModal();
   $('reg-modal').style.display='flex';
-  setTimeout(()=>$('signin-email')?.focus(),50);
+  setTimeout(()=>$('reg-email')?.focus(),50);
 }
 function closeRegModal(){ $('reg-modal').style.display='none'; }
 
-function switchAuthTab(tab) {
-  const isSignin = tab === 'signin';
-  $('auth-pane-signin').style.display   = isSignin ? 'block' : 'none';
-  $('auth-pane-register').style.display = isSignin ? 'none'  : 'block';
-  $('auth-tab-signin').classList.toggle('active',  isSignin);
-  $('auth-tab-register').classList.toggle('active', !isSignin);
-  setTimeout(()=>$(isSignin ? 'signin-email' : 'register-email')?.focus(), 50);
+function resetAuthModal() {
+  $('auth-step-email').style.display='block';
+  $('auth-step-sent').style.display='none';
+  $('auth-step-verify').style.display='none';
+  const errEl=$('reg-err');
+  if(errEl){errEl.textContent='';errEl.style.display='none';}
+  const btn=$('magic-link-btn');
+  if(btn){btn.textContent='Send Magic Link →';btn.disabled=false;}
+  const emailEl=$('reg-email');
+  if(emailEl) emailEl.value='';
 }
 
-async function doLogin() {
-  const email    = ($('signin-email')?.value   || '').trim();
-  const password =  $('signin-password')?.value || '';
-  const errEl    =  $('signin-err');
-  const btn      =  $('signin-btn-submit');
-  if(!email || !password){
-    errEl.textContent='Email and password required.'; errEl.style.display='block'; return;
+async function requestMagicLink() {
+  const emailEl=$('reg-email');
+  const errEl=$('reg-err');
+  const btn=$('magic-link-btn');
+  const email=(emailEl?.value||'').trim();
+
+  if(!email||!email.includes('@')){
+    errEl.textContent='Please enter a valid email address.';
+    errEl.style.display='block';
+    return;
   }
   errEl.style.display='none';
-  btn.textContent='Signing in…'; btn.disabled=true;
+  btn.textContent='Sending…'; btn.disabled=true;
+
   try {
-    const res  = await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});
-    const data = await res.json();
-    if(!res.ok||!data.ok){
-      errEl.textContent=data.error||'Sign in failed. Please try again.'; errEl.style.display='block';
-      btn.textContent='Sign In →'; btn.disabled=false; return;
+    const res=await fetch('/api/auth/request',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email})
+    });
+    const data=await res.json();
+
+    if(!res.ok || !data.ok){
+      errEl.textContent=data.error||'Could not send email. Please try again.';
+      errEl.style.display='block';
+      btn.textContent='Send Magic Link →'; btn.disabled=false;
+      return;
     }
-    U={email:data.email,plan:data.plan||'free',simCount:data.simCount||0,createdAt:data.createdAt||Date.now()};
-    saveUser(); renderUserBadge(); closeRegModal();
+
+    // Dev mode: server returned a direct link
+    if(data.dev_link){
+      window.location.href=data.dev_link;
+      return;
+    }
+
+    // Show "check inbox" state
+    $('auth-sent-email').textContent=email;
+    $('auth-step-email').style.display='none';
+    $('auth-step-sent').style.display='block';
+
+  } catch(e){
+    errEl.textContent='Network error. Please try again.';
+    errEl.style.display='block';
+    btn.textContent='Send Magic Link →'; btn.disabled=false;
+  }
+}
+
+// ── Handle magic link callback on page load ──
+async function checkMagicLink() {
+  const params=new URLSearchParams(window.location.search);
+  const token=params.get('magic_token');
+  const email=params.get('email');
+  if(!token||!email) return;
+
+  // Show verifying modal immediately
+  $('auth-step-email').style.display='none';
+  $('auth-step-sent').style.display='none';
+  $('auth-step-verify').style.display='block';
+  $('reg-modal').style.display='flex';
+
+  // Clean URL
+  const clean=window.location.pathname+(window.location.hash||'');
+  history.replaceState(null,'',clean);
+
+  try {
+    const res=await fetch(`/api/auth/verify?token=${encodeURIComponent(token)}`);
+    const data=await res.json();
+
+    closeRegModal();
+
+    if(!res.ok || !data.ok){
+      showToast(data.error||'Link expired. Please sign in again.');
+      return;
+    }
+
+    // Log the user in
+    const prev=U||{};
+    U={email:data.email,plan:prev.plan||'free',simCount:prev.simCount||0,createdAt:prev.createdAt||Date.now(),verifiedAt:Date.now()};
+    saveUser(); renderUserBadge();
     showToast(`Signed in as ${data.email} ✓`);
     if(_pendingSimAfterReg){_pendingSimAfterReg=false;startSim();}
-  } catch(e){
-    errEl.textContent='Network error. Please try again.'; errEl.style.display='block';
-    btn.textContent='Sign In →'; btn.disabled=false;
-  }
-}
 
-async function doRegister() {
-  const email    = ($('register-email')?.value    || '').trim();
-  const password =  $('register-password')?.value || '';
-  const errEl    =  $('register-err');
-  const btn      =  $('register-btn-submit');
-  if(!email||!email.includes('@')){
-    errEl.textContent='Valid email required.'; errEl.style.display='block'; return;
-  }
-  if(password.length < 8){
-    errEl.textContent='Password must be at least 8 characters.'; errEl.style.display='block'; return;
-  }
-  errEl.style.display='none';
-  btn.textContent='Creating account…'; btn.disabled=true;
-  try {
-    const res  = await fetch('/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});
-    const data = await res.json();
-    if(!res.ok||!data.ok){
-      errEl.textContent=data.error||'Registration failed. Please try again.'; errEl.style.display='block';
-      btn.textContent='Create Account →'; btn.disabled=false; return;
-    }
-    U={email:data.email,plan:'free',simCount:0,createdAt:Date.now()};
-    saveUser(); renderUserBadge(); closeRegModal();
-    showToast(`Account created! Welcome, ${data.email} ✓`);
-    if(_pendingSimAfterReg){_pendingSimAfterReg=false;startSim();}
   } catch(e){
-    errEl.textContent='Network error. Please try again.'; errEl.style.display='block';
-    btn.textContent='Create Account →'; btn.disabled=false;
+    closeRegModal();
+    showToast('Verification failed. Please try again.');
   }
 }
 
@@ -5490,7 +5190,7 @@ function renderHistory() {
   if(!hist.length){
     el.innerHTML=`<div style="text-align:center;padding:3.5rem 1rem;font-family:var(--mono);font-size:13px;color:var(--muted-2);">
       No simulations yet.<br><br>
-      <button onclick="nav('data')" style="margin-top:.5rem;padding:8px 18px;border:1px solid rgba(0,224,96,.3);background:none;color:var(--cyan);font-family:var(--mono);font-size:12px;border-radius:6px;cursor:pointer;letter-spacing:.06em;">▶ RUN YOUR FIRST SIMULATION</button>
+      <button onclick="nav('input')" style="margin-top:.5rem;padding:8px 18px;border:1px solid rgba(0,224,96,.3);background:none;color:var(--cyan);font-family:var(--mono);font-size:12px;border-radius:6px;cursor:pointer;letter-spacing:.06em;">▶ RUN YOUR FIRST SIMULATION</button>
     </div>`;
     return;
   }
@@ -5542,7 +5242,7 @@ function restoreFromHistory(id) {
   // Legacy entries (saved before restore support): populate form and re-run
   if(!entry.days||!entry.mc||!entry.params){
     if(entry.params) populateFormFromParams(entry.params);
-    nav('data');
+    nav('input');
     showToast('Params loaded — press Start to re-run.');
     return;
   }
@@ -5569,7 +5269,7 @@ function rerunFromHistory(id) {
   const entry=hist.find(h=>h.id===id);
   if(!entry){showToast('History entry not found.');return;}
   if(entry.params) populateFormFromParams(entry.params);
-  nav('data');
+  nav('input');
   showToast('Params loaded — tweak and re-run ✓');
 }
 
@@ -5746,6 +5446,7 @@ function restoreFromURL() {
 (function init() {
   initHeatmap();
   loadUser();
+  checkMagicLink(); // handle ?magic_token= callback
   try {
     const saved=localStorage.getItem('infinicus_scenarios');
     if(saved){const arr=JSON.parse(saved);arr.forEach(s=>SCENARIOS.push(s));}
@@ -5859,7 +5560,7 @@ const TUT={
   ],
   start(){
     this.i=0;this.on=true;
-    if(typeof nav==='function')nav('data');
+    if(typeof nav==='function')nav('input');
     document.getElementById('tut-ov').style.display='block';
     this.draw();
   },
@@ -6096,471 +5797,12 @@ async function handleIdeaUpload(input) {
   input.value = ''; // reset so same file can be re-uploaded
 }
 
-// ── MY BUSINESS ───────────────────────────────────────────────────────
-// State
-let _bizCurrentId   = null;   // selected business_id
-let _bizCurrentType = 'sale'; // active event tab
-
-// Called when nav('operations') fires — show/hide auth gate and load businesses
-function bizInit() {
-  const email = (U && U.email) ? U.email : null;
-  const gate  = document.getElementById('biz-auth-gate');
-  const main  = document.getElementById('biz-main');
-  if (!email) {
-    if (gate) gate.style.display = 'block';
-    if (main) main.style.display = 'none';
-    return;
-  }
-  if (gate) gate.style.display = 'none';
-  if (main) main.style.display = 'block';
-  bizLoadBusinesses(email);
-  // Set default date range: last 30 days
-  const today = new Date();
-  const prior = new Date(today - 30 * 86400000);
-  const fmt = d => d.toISOString().slice(0,10);
-  const f = document.getElementById('biz-from-date');
-  const t = document.getElementById('biz-to-date');
-  if (f && !f.value) f.value = fmt(prior);
-  if (t && !t.value) t.value = fmt(today);
-}
-
-async function bizLoadBusinesses(email) {
-  const sel = document.getElementById('biz-select');
-  if (!sel) return;
-  try {
-    const r = await fetch(`/api/business/manage?user_email=${encodeURIComponent(email)}`);
-    const d = await r.json();
-    if (!d.ok) return;
-    sel.innerHTML = '<option value="">— Select a business —</option>';
-    (d.businesses || []).forEach(b => {
-      const o = document.createElement('option');
-      o.value = b.id;
-      o.textContent = `${b.name} (${b.industry})`;
-      sel.appendChild(o);
-    });
-    if (_bizCurrentId) sel.value = _bizCurrentId;
-    bizOnSelectChange();
-  } catch(e) { console.warn('bizLoadBusinesses:', e); }
-}
-
-function bizOnSelectChange() {
-  const sel = document.getElementById('biz-select');
-  _bizCurrentId = sel?.value || null;
-  const area = document.getElementById('biz-event-area');
-  if (area) area.style.display = _bizCurrentId ? 'block' : 'none';
-}
-
-function bizToggleCreateForm() {
-  const f = document.getElementById('biz-create-form');
-  if (!f) return;
-  const visible = f.classList.contains('visible');
-  f.classList.toggle('visible', !visible);
-}
-
-async function bizCreateBusiness() {
-  const email = (U && U.email) ? U.email : null;
-  if (!email) return;
-  const name = (document.getElementById('biz-new-name')?.value || '').trim();
-  const ind  = document.getElementById('biz-new-ind')?.value || 'other';
-  if (!name) { alert('Please enter a business name.'); return; }
-  try {
-    const r = await fetch('/api/business/manage', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_email: email, name, industry: ind }),
-    });
-    const d = await r.json();
-    if (!d.ok) { alert('Could not create business: ' + d.error); return; }
-    _bizCurrentId = d.business.id;
-    document.getElementById('biz-create-form')?.classList.remove('visible');
-    const nameEl = document.getElementById('biz-new-name'); if (nameEl) nameEl.value = '';
-    bizLoadBusinesses(email);
-  } catch(e) { alert('Network error: ' + e.message); }
-}
-
-function bizTab(type, btn) {
-  _bizCurrentType = type;
-  document.querySelectorAll('.biz-tab').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  document.querySelectorAll('.biz-form-panel').forEach(p => p.classList.remove('visible'));
-  document.getElementById('biz-panel-' + type)?.classList.add('visible');
-}
-
-function bizShowMsg(type, msg, isErr) {
-  const el = document.getElementById('biz-msg-' + type);
-  if (!el) return;
-  el.style.cssText = `margin-top:.5rem;font-family:var(--mono);font-size:12px;color:${isErr?'var(--red)':'var(--green)'};`;
-  el.textContent = msg;
-  setTimeout(() => { el.textContent = ''; }, 3000);
-}
-
-async function bizLogEvent(type) {
-  if (!_bizCurrentId) return;
-  const payload = { business_id: _bizCurrentId, event_type: type };
-  if (type === 'sale') {
-    payload.amount    = parseFloat(document.getElementById('biz-sale-amount')?.value) || null;
-    payload.quantity  = parseFloat(document.getElementById('biz-sale-qty')?.value)    || null;
-    payload.customer_id = document.getElementById('biz-sale-cust')?.value.trim() || null;
-    payload.notes     = document.getElementById('biz-sale-notes')?.value.trim() || null;
-  } else if (type === 'expense') {
-    payload.amount    = parseFloat(document.getElementById('biz-exp-amount')?.value) || null;
-    payload.category  = document.getElementById('biz-exp-cat')?.value.trim() || null;
-    payload.notes     = document.getElementById('biz-exp-notes')?.value.trim() || null;
-  } else if (type === 'inventory') {
-    payload.category  = document.getElementById('biz-inv-item')?.value.trim() || null;
-    payload.quantity  = parseFloat(document.getElementById('biz-inv-qty')?.value)    || null;
-    payload.amount    = parseFloat(document.getElementById('biz-inv-cost')?.value)   || null;
-    payload.notes     = document.getElementById('biz-inv-notes')?.value.trim() || null;
-  } else if (type === 'customer') {
-    payload.customer_id = document.getElementById('biz-cust-id')?.value.trim()      || null;
-    payload.action      = document.getElementById('biz-cust-action')?.value         || 'new';
-    payload.notes       = document.getElementById('biz-cust-notes')?.value.trim()   || null;
-  } else if (type === 'team') {
-    payload.member_id = document.getElementById('biz-team-id')?.value.trim()      || null;
-    payload.action    = document.getElementById('biz-team-action')?.value         || 'hire';
-    payload.quantity  = parseFloat(document.getElementById('biz-team-hours')?.value) || null;
-    payload.notes     = document.getElementById('biz-team-notes')?.value.trim()   || null;
-  }
-  try {
-    const r = await fetch('/api/business/events', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-    const d = await r.json();
-    if (!d.ok) { bizShowMsg(type, '✗ ' + d.error, true); return; }
-    bizShowMsg(type, '✓ Event logged!', false);
-    // Clear numeric fields
-    ['biz-sale-amount','biz-sale-qty','biz-exp-amount','biz-inv-qty','biz-inv-cost','biz-team-hours'].forEach(id => {
-      const el = document.getElementById(id); if (el) el.value = '';
-    });
-  } catch(e) { bizShowMsg(type, '✗ Network error', true); }
-}
-
-async function bizLoadSummary() {
-  if (!_bizCurrentId) return;
-  const fromDate = document.getElementById('biz-from-date')?.value;
-  const toDate   = document.getElementById('biz-to-date')?.value;
-  const fromMs   = fromDate ? new Date(fromDate).getTime() : 0;
-  const toMs     = toDate   ? new Date(toDate + 'T23:59:59').getTime() : Date.now();
-  const area     = document.getElementById('biz-kpi-area');
-  if (area) area.innerHTML = '<div style="font-family:var(--mono);font-size:12px;color:var(--muted-2);padding:1rem;">Loading...</div>';
-  try {
-    const r = await fetch(
-      `/api/business/summary?business_id=${_bizCurrentId}&from=${fromMs}&to=${toMs}`
-    );
-    const d = await r.json();
-    if (!d.ok || !area) { if(area) area.innerHTML = '<div style="color:var(--red);font-family:var(--mono);font-size:12px;padding:1rem;">Error: ' + (d.error||'unknown') + '</div>'; return; }
-    const s = d.summary;
-    const fmt = n => n == null ? '—' : (Number(n) >= 1000 ? '$'+Number(n).toLocaleString('en',{maximumFractionDigits:0}) : '$'+Number(n).toFixed(2));
-    const fmtN = n => n == null ? '—' : Number(n).toLocaleString('en');
-    area.innerHTML = `
-    <div class="biz-kpi-grid">
-      <div class="biz-kpi-card">
-        <div class="biz-kpi-label">💰 Total Revenue</div>
-        <div class="biz-kpi-val">${fmt(s.sales.total_revenue)}</div>
-        <div class="biz-kpi-sub">${fmtN(s.sales.transaction_count)} sales · avg ${fmt(s.sales.avg_sale_value)}</div>
-        ${s.sales.top_customer ? `<ul class="biz-sub-list"><li>Top customer: <span>${s.sales.top_customer.id}</span> (${fmt(s.sales.top_customer.spend)})</li></ul>` : ''}
-      </div>
-      <div class="biz-kpi-card">
-        <div class="biz-kpi-label">📤 Total Expenses</div>
-        <div class="biz-kpi-val" style="color:var(--red);">${fmt(s.expenses.total_spend)}</div>
-        <div class="biz-kpi-sub">Burn rate ${fmt(s.expenses.burn_rate_per_day)}/day</div>
-        ${s.expenses.by_category.slice(0,3).length ? `<ul class="biz-sub-list">${s.expenses.by_category.slice(0,3).map(c=>`<li>${c.category}: <span>${fmt(c.amount)}</span></li>`).join('')}</ul>` : ''}
-      </div>
-      <div class="biz-kpi-card">
-        <div class="biz-kpi-label">📦 Inventory</div>
-        <div class="biz-kpi-val" style="color:var(--cyan);">${fmtN(s.inventory.net_units_delta)} units</div>
-        <div class="biz-kpi-sub">COGS ${fmt(s.inventory.total_cogs)}</div>
-        ${s.inventory.top_items.slice(0,3).length ? `<ul class="biz-sub-list">${s.inventory.top_items.slice(0,3).map(i=>`<li>${i.item}: <span>${fmtN(i.net_units)}</span></li>`).join('')}</ul>` : ''}
-      </div>
-      <div class="biz-kpi-card">
-        <div class="biz-kpi-label">👥 Customers</div>
-        <div class="biz-kpi-val" style="color:var(--cyan);">${fmtN(s.customers.new_customers)} new</div>
-        <div class="biz-kpi-sub">${fmtN(s.customers.returning)} returning · ${fmtN(s.customers.churned)} churned</div>
-        <ul class="biz-sub-list">
-          <li>Churn rate: <span>${s.customers.churn_rate_pct}%</span></li>
-          <li>Avg LTV: <span>${fmt(s.customers.avg_ltv)}</span></li>
-        </ul>
-      </div>
-      <div class="biz-kpi-card">
-        <div class="biz-kpi-label">🧑‍💼 Team</div>
-        <div class="biz-kpi-val" style="color:var(--cyan);">+${fmtN(s.team.hired)} / -${fmtN(s.team.fired)}</div>
-        <div class="biz-kpi-sub">Net: ${s.team.net_headcount_delta >= 0 ? '+' : ''}${fmtN(s.team.net_headcount_delta)} headcount</div>
-        <ul class="biz-sub-list">
-          <li>Hours logged: <span>${fmtN(s.team.total_hours_logged)}</span></li>
-          <li>Reviews: <span>${fmtN(s.team.performance_reviews)}</span></li>
-        </ul>
-      </div>
-      <div class="biz-kpi-card">
-        <div class="biz-kpi-label">📊 Profit / Loss</div>
-        <div class="biz-kpi-val" style="color:${(s.sales.total_revenue - s.expenses.total_spend) >= 0 ? 'var(--green)' : 'var(--red)'};">
-          ${fmt(s.sales.total_revenue - s.expenses.total_spend)}
-        </div>
-        <div class="biz-kpi-sub">Revenue − Expenses (${d.period.days} days)</div>
-      </div>
-    </div>`;
-  } catch(e) {
-    if (area) area.innerHTML = '<div style="color:var(--red);font-family:var(--mono);font-size:12px;padding:1rem;">Network error: ' + e.message + '</div>';
-  }
-}
-
-// ── Digital Twin ──────────────────────────────────────────────────────────────
-
-async function bizLoadTwin() {
-  const area = $('biz-twin-area');
-  if (!area || !_bizCurrentId) { showToast('Select a business first.'); return; }
-  area.innerHTML = '<div style="font-family:var(--mono);font-size:12px;color:var(--muted-2);padding:.75rem;">Loading twin…</div>';
-  try {
-    const r = await fetch(`/api/business/twin?business_id=${_bizCurrentId}`);
-    const d = await r.json();
-    if (!d.ok) { area.innerHTML = `<div style="color:var(--red);font-family:var(--mono);font-size:12px;padding:.75rem;">${d.error||'Error loading twin.'}</div>`; return; }
-    renderTwin(d.twin, d.cached);
-  } catch(e) { area.innerHTML = '<div style="color:var(--red);font-family:var(--mono);font-size:12px;padding:.75rem;">Network error.</div>'; }
-}
-
-async function bizRefreshTwin() {
-  const area = $('biz-twin-area');
-  if (!area || !_bizCurrentId) { showToast('Select a business first.'); return; }
-  area.innerHTML = '<div style="font-family:var(--mono);font-size:12px;color:var(--muted-2);padding:.75rem;">Refreshing twin from event stream…</div>';
-  try {
-    const r = await fetch('/api/business/twin', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ business_id: _bizCurrentId }),
-    });
-    const d = await r.json();
-    if (!d.ok) { area.innerHTML = `<div style="color:var(--red);font-family:var(--mono);font-size:12px;padding:.75rem;">${d.error||'Error refreshing twin.'}</div>`; return; }
-    renderTwin(d.twin, false);
-    showToast('Digital Twin refreshed ✓');
-  } catch(e) { area.innerHTML = '<div style="color:var(--red);font-family:var(--mono);font-size:12px;padding:.75rem;">Network error.</div>'; }
-}
-
-function renderTwin(t, cached) {
-  const area = $('biz-twin-area');
-  if (!area || !t) return;
-  const fmt  = n => n == null ? '—' : (Math.abs(Number(n)) >= 1000 ? '$'+Number(n).toLocaleString('en',{maximumFractionDigits:0}) : '$'+Number(n).toFixed(2));
-  const fmtN = n => n == null ? '—' : Number(n).toLocaleString('en');
-  const pnl  = t.financial.profit_30d;
-  const snap = new Date(t.snapshot_at).toLocaleString();
-  area.innerHTML = `
-  <div style="font-family:var(--mono);font-size:10px;color:var(--muted-2);margin-bottom:.75rem;">
-    Snapshot: ${snap} ${cached ? '· <span style="color:var(--cyan)">cached</span>' : '· <span style="color:var(--emerald)">fresh</span>'}
-  </div>
-  <div class="biz-kpi-grid">
-    <div class="biz-kpi-card">
-      <div class="biz-kpi-label">💰 30d Revenue</div>
-      <div class="biz-kpi-val">${fmt(t.financial.revenue_30d)}</div>
-      <div class="biz-kpi-sub">${fmtN(t.financial.sales_count_30d)} transactions</div>
-    </div>
-    <div class="biz-kpi-card">
-      <div class="biz-kpi-label">📤 30d Expenses</div>
-      <div class="biz-kpi-val" style="color:var(--red);">${fmt(t.financial.expenses_30d)}</div>
-      <div class="biz-kpi-sub">Burn ${fmt(t.financial.burn_rate_per_day)}/day</div>
-    </div>
-    <div class="biz-kpi-card">
-      <div class="biz-kpi-label">📊 30d P&L</div>
-      <div class="biz-kpi-val" style="color:${pnl>=0?'var(--emerald)':'var(--red)'};">${pnl>=0?'+':''}${fmt(pnl)}</div>
-      <div class="biz-kpi-sub">${pnl>=0?'Profitable':'Loss-making'} this period</div>
-    </div>
-    <div class="biz-kpi-card">
-      <div class="biz-kpi-label">👥 Customers</div>
-      <div class="biz-kpi-val" style="color:var(--cyan);">${fmtN(t.customers.new_30d + t.customers.returning_30d)}</div>
-      <div class="biz-kpi-sub">${fmtN(t.customers.new_30d)} new · ${t.customers.churn_rate_pct}% churn</div>
-    </div>
-    <div class="biz-kpi-card">
-      <div class="biz-kpi-label">📦 Inventory</div>
-      <div class="biz-kpi-val" style="color:var(--cyan);">${fmtN(t.operations.net_inventory_units_30d)}</div>
-      <div class="biz-kpi-sub">net unit delta (30d)</div>
-    </div>
-    <div class="biz-kpi-card">
-      <div class="biz-kpi-label">🧑‍💼 Team</div>
-      <div class="biz-kpi-val" style="color:var(--cyan);">${t.team.net_headcount_delta >= 0 ? '+' : ''}${fmtN(t.team.net_headcount_delta)}</div>
-      <div class="biz-kpi-sub">${fmtN(t.team.hired_30d)} hired · ${fmtN(t.team.terminated_30d)} left</div>
-    </div>
-  </div>`;
-}
-
-// ── Decision Intelligence ─────────────────────────────────────────────────────
-
-async function bizGetDecisions() {
-  const area = $('biz-decisions-area');
-  if (!area || !_bizCurrentId) { showToast('Select a business first.'); return; }
-  area.innerHTML = '<div style="font-family:var(--mono);font-size:12px;color:var(--muted-2);padding:.75rem;">Analysing your real business data…</div>';
-  try {
-    const r = await fetch('/api/business/decisions/recommend', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ business_id: _bizCurrentId }),
-    });
-    const d = await r.json();
-    if (!d.ok) {
-      area.innerHTML = `<div style="color:var(--red);font-family:var(--mono);font-size:12px;padding:.75rem;">${d.error||'Error getting decisions.'}</div>`;
-      return;
-    }
-    renderDecisions(d.decisions);
-  } catch(e) { area.innerHTML = '<div style="color:var(--red);font-family:var(--mono);font-size:12px;padding:.75rem;">Network error.</div>'; }
-}
-
-function renderDecisions(decisions) {
-  const area = $('biz-decisions-area');
-  if (!area || !decisions?.length) return;
-  const riskColor = r => r==='high'?'var(--red)':r==='medium'?'var(--amber)':'var(--emerald)';
-  area.innerHTML = decisions.map(d => `
-    <div style="background:var(--glass);border:1px solid var(--line);border-radius:10px;padding:1rem;margin-bottom:.75rem;">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.5rem;flex-wrap:wrap;margin-bottom:.5rem;">
-        <div style="font-family:var(--sans);font-size:14px;font-weight:500;flex:1;">${d.decision}</div>
-        <span style="font-family:var(--mono);font-size:10px;padding:2px 6px;border-radius:4px;border:1px solid ${riskColor(d.risk_level)};color:${riskColor(d.risk_level)};white-space:nowrap;">${(d.risk_level||'?').toUpperCase()} RISK</span>
-      </div>
-      <div style="font-family:var(--mono);font-size:11px;color:var(--muted-2);margin-bottom:.4rem;">RATIONALE</div>
-      <div style="font-size:13px;color:var(--muted);margin-bottom:.6rem;">${d.rationale}</div>
-      <div style="font-family:var(--mono);font-size:11px;color:var(--muted-2);margin-bottom:.4rem;">EXPECTED OUTCOME</div>
-      <div style="font-size:13px;color:var(--cyan);margin-bottom:.75rem;">${d.expected_outcome}</div>
-      <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
-        <button class="btn-sm" style="background:rgba(0,224,96,.12);border-color:rgba(0,224,96,.3);color:var(--cyan);" onclick="bizRecordChoice('${d.id}',true,this)">✓ I'll do this</button>
-        <button class="btn-sm" onclick="bizRecordChoice('${d.id}',false,this)">✗ Skip</button>
-        <button class="btn-sm" onclick="bizRecordOutcome('${d.id}')" id="outcome-btn-${d.id}" style="display:none;">📝 Record outcome</button>
-      </div>
-    </div>`).join('');
-}
-
-async function bizRecordChoice(decisionId, chosen, btn) {
-  try {
-    await fetch('/api/business/decisions/record-choice', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ decision_id: decisionId, chosen }),
-    });
-    btn.textContent = chosen ? '✓ Chosen' : '✗ Skipped';
-    btn.disabled = true;
-    if (chosen) {
-      const outBtn = $(`outcome-btn-${decisionId}`);
-      if (outBtn) outBtn.style.display = 'inline-flex';
-    }
-  } catch(e) { showToast('Failed to record choice.'); }
-}
-
-async function bizRecordOutcome(decisionId) {
-  const notes = prompt('How did it go? Describe the actual outcome:');
-  if (!notes) return;
-  try {
-    await fetch('/api/business/decisions/record-outcome', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ decision_id: decisionId, outcome_notes: notes }),
-    });
-    showToast('Outcome recorded ✓');
-    const btn = $(`outcome-btn-${decisionId}`);
-    if (btn) { btn.textContent = '✓ Outcome saved'; btn.disabled = true; }
-  } catch(e) { showToast('Failed to record outcome.'); }
-}
-
-async function bizLoadDecisionHistory() {
-  const histDiv = $('biz-decision-history');
-  if (!histDiv || !_bizCurrentId) return;
-  if (histDiv.style.display !== 'none') { histDiv.style.display = 'none'; return; }
-  histDiv.style.display = 'block';
-  histDiv.innerHTML = '<div style="font-family:var(--mono);font-size:12px;color:var(--muted-2);padding:.5rem;">Loading…</div>';
-  try {
-    const r = await fetch(`/api/business/decisions/history?business_id=${_bizCurrentId}`);
-    const d = await r.json();
-    if (!d.ok || !d.decisions?.length) {
-      histDiv.innerHTML = '<div style="font-family:var(--mono);font-size:12px;color:var(--muted-2);padding:.5rem;">No decision history yet.</div>';
-      return;
-    }
-    histDiv.innerHTML = d.decisions.map(dec => `
-      <div style="border-left:2px solid var(--line-2);padding:.5rem .75rem;margin-bottom:.5rem;">
-        <div style="font-size:13px;margin-bottom:.2rem;">${dec.decision_text}</div>
-        <div style="font-family:var(--mono);font-size:11px;color:var(--muted-2);">
-          ${new Date(dec.recommended_at).toLocaleDateString()} ·
-          ${dec.chosen ? '<span style="color:var(--cyan)">Chosen</span>' : '<span style="color:var(--muted-2)">Skipped</span>'}
-          ${dec.outcome_notes ? ` · <span style="color:var(--emerald)">Outcome: ${dec.outcome_notes}</span>` : ''}
-        </div>
-      </div>`).join('');
-  } catch(e) { histDiv.innerHTML = '<div style="color:var(--red);font-family:var(--mono);font-size:12px;padding:.5rem;">Error loading history.</div>'; }
-}
-
-// Auth+state init for Digital Twin section
-function bizInitTwin() {
-  const email = U && U.email ? U.email : null;
-  const authGate = document.getElementById('twin-auth-gate');
-  const noBiz    = document.getElementById('twin-no-biz');
-  const main     = document.getElementById('twin-main');
-  if (!email) {
-    if (authGate) authGate.style.display = 'block';
-    if (noBiz)    noBiz.style.display    = 'none';
-    if (main)     main.style.display     = 'none';
-    return;
-  }
-  if (authGate) authGate.style.display = 'none';
-  if (!_bizCurrentId) {
-    if (noBiz)  noBiz.style.display  = 'block';
-    if (main)   main.style.display   = 'none';
-    return;
-  }
-  if (noBiz)  noBiz.style.display  = 'none';
-  if (main)   main.style.display   = 'block';
-  const lbl = document.getElementById('twin-biz-label');
-  if (lbl) lbl.textContent = `Business ID: ${_bizCurrentId} · cached · auto-refreshes hourly`;
-}
-
-// Auth+state init for AI Decisions section
-function bizInitDecisions() {
-  const email = U && U.email ? U.email : null;
-  const authGate = document.getElementById('decisions-auth-gate');
-  const noBiz    = document.getElementById('decisions-no-biz');
-  const main     = document.getElementById('decisions-main');
-  if (!email) {
-    if (authGate) authGate.style.display = 'block';
-    if (noBiz)    noBiz.style.display    = 'none';
-    if (main)     main.style.display     = 'none';
-    return;
-  }
-  if (authGate) authGate.style.display = 'none';
-  if (!_bizCurrentId) {
-    if (noBiz)  noBiz.style.display  = 'block';
-    if (main)   main.style.display   = 'none';
-    return;
-  }
-  if (noBiz)  noBiz.style.display  = 'none';
-  if (main)   main.style.display   = 'block';
-  const lbl = document.getElementById('decisions-biz-label');
-  if (lbl) lbl.textContent = `Powered by claude-haiku-4-5 · grounded in live twin · Business: ${_bizCurrentId}`;
-}
-
-// Hook into the nav function: call biz init functions when layer tabs are opened
-// (Will be wired below after nav() is defined, via a safe patch)
-(function patchNavForBiz() {
-  const _origNav = window.nav;
-  if (typeof _origNav === 'function') {
-    window.nav = function(sec) {
-      _origNav(sec);
-      if (sec === 'operations') bizInit();
-      if (sec === 'twin')       bizInitTwin();
-      if (sec === 'decisions')  bizInitDecisions();
-    };
-  } else {
-    // nav may not be defined yet — retry on DOMContentLoaded
-    document.addEventListener('DOMContentLoaded', () => {
-      const orig = window.nav;
-      if (typeof orig === 'function') {
-        window.nav = function(sec) {
-          orig(sec);
-          if (sec === 'operations') bizInit();
-          if (sec === 'twin')       bizInitTwin();
-          if (sec === 'decisions')  bizInitDecisions();
-        };
-      }
-    });
-  }
-})();
-
 // ── MULTI-LANGUAGE ────────────────────────────────────────────────────
 const TRANSLATIONS = {
   en: {
     nav_input:'INPUT', nav_dash:'DASH', nav_history:'HISTORY', nav_econ:'ECON',
     nav_forecast:'FORECAST', nav_cust:'CUST / LOG', nav_risk:'RISK / MC',
-    nav_verdict:'VERDICT', nav_report:'REPORT', nav_sensi:'SENSI', nav_compare:'COMPARE', nav_biz:'MY BIZ',
+    nav_verdict:'VERDICT', nav_report:'REPORT', nav_sensi:'SENSI', nav_compare:'COMPARE',
     label_idea:'Business Idea *', label_cap:'Startup Capital', label_loc:'City / Country',
     label_mkt:'Target Customers', label_price:'Price per Sale', label_mktbud:'Monthly Marketing Budget',
     label_team:'Team Size', label_ind:'Industry', label_exp:'Founder Experience',
@@ -6576,7 +5818,7 @@ const TRANSLATIONS = {
   es: {
     nav_input:'ENTRADA', nav_dash:'PANEL', nav_history:'HISTORIAL', nav_econ:'ECONOMÍA',
     nav_forecast:'PROYECCIÓN', nav_cust:'CLIENTES', nav_risk:'RIESGO / MC',
-    nav_verdict:'VEREDICTO', nav_report:'INFORME', nav_sensi:'SENSIB.', nav_compare:'COMPARAR', nav_biz:'MI NEG.',
+    nav_verdict:'VEREDICTO', nav_report:'INFORME', nav_sensi:'SENSIB.', nav_compare:'COMPARAR',
     label_idea:'Idea de Negocio *', label_cap:'Capital Inicial', label_loc:'Ciudad / País',
     label_mkt:'Clientes Objetivo', label_price:'Precio por Venta', label_mktbud:'Presupuesto de Marketing',
     label_team:'Tamaño del Equipo', label_ind:'Industria', label_exp:'Experiencia del Fundador',
@@ -6592,7 +5834,7 @@ const TRANSLATIONS = {
   fr: {
     nav_input:'SAISIE', nav_dash:'TABLEAU', nav_history:'HISTORIQUE', nav_econ:'ÉCONOMIE',
     nav_forecast:'PRÉVISION', nav_cust:'CLIENTS', nav_risk:'RISQUE / MC',
-    nav_verdict:'VERDICT', nav_report:'RAPPORT', nav_sensi:'SENSIB.', nav_compare:'COMPARER', nav_biz:'MON BIZ',
+    nav_verdict:'VERDICT', nav_report:'RAPPORT', nav_sensi:'SENSIB.', nav_compare:'COMPARER',
     label_idea:'Idée d\'Entreprise *', label_cap:'Capital de Départ', label_loc:'Ville / Pays',
     label_mkt:'Clients Cibles', label_price:'Prix par Vente', label_mktbud:'Budget Marketing Mensuel',
     label_team:'Taille de l\'Équipe', label_ind:'Secteur', label_exp:'Expérience du Fondateur',
@@ -6608,7 +5850,7 @@ const TRANSLATIONS = {
   pt: {
     nav_input:'ENTRADA', nav_dash:'PAINEL', nav_history:'HISTÓRICO', nav_econ:'ECONOMIA',
     nav_forecast:'PREVISÃO', nav_cust:'CLIENTES', nav_risk:'RISCO / MC',
-    nav_verdict:'VEREDICTO', nav_report:'RELATÓRIO', nav_sensi:'SENSIB.', nav_compare:'COMPARAR', nav_biz:'MEU NEG.',
+    nav_verdict:'VEREDICTO', nav_report:'RELATÓRIO', nav_sensi:'SENSIB.', nav_compare:'COMPARAR',
     label_idea:'Ideia de Negócio *', label_cap:'Capital Inicial', label_loc:'Cidade / País',
     label_mkt:'Clientes-Alvo', label_price:'Preço por Venda', label_mktbud:'Orçamento de Marketing',
     label_team:'Tamanho da Equipe', label_ind:'Indústria', label_exp:'Experiência do Fundador',
@@ -6624,7 +5866,7 @@ const TRANSLATIONS = {
   de: {
     nav_input:'EINGABE', nav_dash:'ÜBERSICHT', nav_history:'VERLAUF', nav_econ:'WIRTSCHAFT',
     nav_forecast:'PROGNOSE', nav_cust:'KUNDEN', nav_risk:'RISIKO / MC',
-    nav_verdict:'URTEIL', nav_report:'BERICHT', nav_sensi:'SENSIT.', nav_compare:'VERGLEICH', nav_biz:'MEIN BIZ',
+    nav_verdict:'URTEIL', nav_report:'BERICHT', nav_sensi:'SENSIT.', nav_compare:'VERGLEICH',
     label_idea:'Geschäftsidee *', label_cap:'Startkapital', label_loc:'Stadt / Land',
     label_mkt:'Zielkunden', label_price:'Preis pro Verkauf', label_mktbud:'Monatliches Marketingbudget',
     label_team:'Teamgröße', label_ind:'Branche', label_exp:'Gründererfahrung',
@@ -6640,7 +5882,7 @@ const TRANSLATIONS = {
   ar: {
     nav_input:'الإدخال', nav_dash:'لوحة التحكم', nav_history:'السجل', nav_econ:'الاقتصاد',
     nav_forecast:'التوقعات', nav_cust:'العملاء', nav_risk:'المخاطر / MC',
-    nav_verdict:'الحكم', nav_report:'التقرير', nav_sensi:'الحساسية', nav_compare:'مقارنة', nav_biz:'أعمالي',
+    nav_verdict:'الحكم', nav_report:'التقرير', nav_sensi:'الحساسية', nav_compare:'مقارنة',
     label_idea:'فكرة العمل *', label_cap:'رأس المال الأولي', label_loc:'المدينة / الدولة',
     label_mkt:'العملاء المستهدفون', label_price:'السعر لكل بيعة', label_mktbud:'ميزانية التسويق الشهرية',
     label_team:'حجم الفريق', label_ind:'الصناعة', label_exp:'خبرة المؤسس',
@@ -6656,7 +5898,7 @@ const TRANSLATIONS = {
   zh: {
     nav_input:'输入', nav_dash:'仪表板', nav_history:'历史', nav_econ:'经济',
     nav_forecast:'预测', nav_cust:'客户', nav_risk:'风险/MC',
-    nav_verdict:'结论', nav_report:'报告', nav_sensi:'敏感性', nav_compare:'对比', nav_biz:'我的业务',
+    nav_verdict:'结论', nav_report:'报告', nav_sensi:'敏感性', nav_compare:'对比',
     label_idea:'商业创意 *', label_cap:'启动资金', label_loc:'城市/国家',
     label_mkt:'目标客户', label_price:'每次销售价格', label_mktbud:'月度营销预算',
     label_team:'团队规模', label_ind:'行业', label_exp:'创始人经验',
@@ -6672,7 +5914,7 @@ const TRANSLATIONS = {
   hi: {
     nav_input:'इनपुट', nav_dash:'डैशबोर्ड', nav_history:'इतिहास', nav_econ:'अर्थव्यवस्था',
     nav_forecast:'पूर्वानुमान', nav_cust:'ग्राहक', nav_risk:'जोखिम / MC',
-    nav_verdict:'निर्णय', nav_report:'रिपोर्ट', nav_sensi:'संवेदनशीलता', nav_compare:'तुलना', nav_biz:'मेरा बिज़',
+    nav_verdict:'निर्णय', nav_report:'रिपोर्ट', nav_sensi:'संवेदनशीलता', nav_compare:'तुलना',
     label_idea:'व्यवसाय विचार *', label_cap:'स्टार्टअप पूंजी', label_loc:'शहर / देश',
     label_mkt:'लक्षित ग्राहक', label_price:'प्रति बिक्री मूल्य', label_mktbud:'मासिक मार्केटिंग बजट',
     label_team:'टीम का आकार', label_ind:'उद्योग', label_exp:'संस्थापक अनुभव',
@@ -6688,7 +5930,7 @@ const TRANSLATIONS = {
   ja: {
     nav_input:'入力', nav_dash:'ダッシュ', nav_history:'履歴', nav_econ:'経済',
     nav_forecast:'予測', nav_cust:'顧客', nav_risk:'リスク/MC',
-    nav_verdict:'判定', nav_report:'レポート', nav_sensi:'感度', nav_compare:'比較', nav_biz:'マイビズ',
+    nav_verdict:'判定', nav_report:'レポート', nav_sensi:'感度', nav_compare:'比較',
     label_idea:'ビジネスアイデア *', label_cap:'スタートアップ資金', label_loc:'都市/国',
     label_mkt:'ターゲット顧客', label_price:'販売単価', label_mktbud:'月次マーケティング予算',
     label_team:'チーム規模', label_ind:'業界', label_exp:'創業者の経験',
