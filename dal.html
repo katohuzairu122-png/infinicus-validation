@@ -1,0 +1,1600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="INFINICUS Data Acquisition Layer — Business event ingestion, validation, and storage.">
+  <meta name="theme-color" content="#000000">
+  <title>DAL · Data Acquisition Layer — INFINICUS</title>
+
+  <!-- IBM Plex fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ═══════════════════════════════════════════════════════════════
+       DESIGN TOKENS
+    ═══════════════════════════════════════════════════════════════ */
+    :root {
+      /* Backgrounds */
+      --bg:          #000000;
+      --bg-surface:  #070707;
+      --bg-elevated: #0D0D0D;
+      --bg-input:    #090909;
+      --bg-hover:    #111111;
+
+      /* Borders */
+      --border:      #1C1C1C;
+      --border-2:    #252525;
+
+      /* Accent — neon green */
+      --accent:      #00FF41;
+      --accent-dim:  rgba(0, 255, 65, 0.13);
+      --accent-glow: rgba(0, 255, 65, 0.07);
+      --accent-muted:rgba(0, 255, 65, 0.04);
+
+      /* Status colours */
+      --red:        #FF3B3B;
+      --red-dim:    rgba(255, 59,  59, 0.11);
+      --amber:      #F5A623;
+      --amber-dim:  rgba(245, 166, 35, 0.11);
+      --blue:       #4A9EFF;
+      --blue-dim:   rgba(74,  158, 255, 0.11);
+      --purple:     #B06EFF;
+      --purple-dim: rgba(176, 110, 255, 0.11);
+
+      /* Typography */
+      --text:       #FFFFFF;
+      --text-2:     #8A8A8A;
+      --text-3:     #404040;
+      --text-acc:   #00FF41;
+
+      /* Fonts */
+      --sans: 'IBM Plex Sans',  system-ui, -apple-system, sans-serif;
+      --mono: 'IBM Plex Mono', 'Courier New', monospace;
+
+      /* Layout */
+      --sidebar-w:   252px;
+      --header-h:    52px;
+      --content-max: 1160px;
+
+      /* Shape */
+      --r:    6px;
+      --r-sm: 4px;
+      --r-lg: 10px;
+      --r-xl: 14px;
+
+      /* Motion */
+      --t: .14s ease;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       RESET
+    ═══════════════════════════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html {
+      height: 100%;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+      min-height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 14px;
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    ul, ol { list-style: none; }
+    a      { color: inherit; text-decoration: none; }
+    button { cursor: pointer; font-family: inherit; border: none; background: none; }
+    input, select, textarea { font-family: inherit; }
+    img    { max-width: 100%; display: block; }
+
+    /* Focus ring — keyboard only */
+    :focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       SCROLLBAR
+    ═══════════════════════════════════════════════════════════════ */
+    ::-webkit-scrollbar        { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track  { background: transparent; }
+    ::-webkit-scrollbar-thumb  { background: #222; border-radius: 2px; }
+    ::-webkit-scrollbar-thumb:hover { background: #333; }
+
+    /* ═══════════════════════════════════════════════════════════════
+       APP SHELL
+    ═══════════════════════════════════════════════════════════════ */
+    .app {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       SIDEBAR
+    ═══════════════════════════════════════════════════════════════ */
+    .sidebar {
+      width: var(--sidebar-w);
+      min-height: 100vh;
+      background: var(--bg-surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      z-index: 200;
+      overflow-y: auto;
+      overflow-x: hidden;
+      transition: transform var(--t);
+      flex-shrink: 0;
+    }
+
+    /* Brand block */
+    .sidebar-brand {
+      padding: 20px 18px 18px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .brand-eyebrow {
+      font-family: var(--mono);
+      font-size: 8.5px;
+      font-weight: 600;
+      letter-spacing: .22em;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .brand-name {
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: .01em;
+      line-height: 1.35;
+    }
+
+    .brand-meta {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--text-3);
+      margin-top: 4px;
+      letter-spacing: .06em;
+    }
+
+    /* Nav section label */
+    .nav-group-label {
+      font-family: var(--mono);
+      font-size: 8.5px;
+      font-weight: 600;
+      letter-spacing: .16em;
+      color: var(--text-3);
+      text-transform: uppercase;
+      padding: 18px 18px 5px;
+      user-select: none;
+    }
+
+    /* Nav list */
+    .nav-list {
+      padding: 8px 10px;
+      flex: 1;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 10px;
+      border-radius: var(--r);
+      color: var(--text-2);
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: .01em;
+      cursor: pointer;
+      transition: background var(--t), color var(--t), border-color var(--t);
+      user-select: none;
+      border: 1px solid transparent;
+      margin-bottom: 1px;
+      line-height: 1.4;
+    }
+
+    .nav-item:hover {
+      background: var(--bg-elevated);
+      color: var(--text);
+    }
+
+    .nav-item.active {
+      background: var(--accent-dim);
+      color: var(--text-acc);
+      border-color: rgba(0, 255, 65, 0.16);
+    }
+
+    .nav-icon {
+      width: 15px;
+      height: 15px;
+      flex-shrink: 0;
+      opacity: .55;
+      transition: opacity var(--t);
+    }
+
+    .nav-item:hover  .nav-icon { opacity: .8; }
+    .nav-item.active .nav-icon { opacity: 1; }
+
+    .nav-badge {
+      margin-left: auto;
+      font-family: var(--mono);
+      font-size: 9.5px;
+      font-weight: 600;
+      padding: 1px 6px;
+      border-radius: 10px;
+      background: var(--red-dim);
+      color: var(--red);
+      line-height: 1.7;
+    }
+
+    /* Sidebar footer */
+    .sidebar-footer {
+      padding: 14px 18px;
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .status-row {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--text-3);
+      letter-spacing: .04em;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      background: var(--text-3);
+      transition: background .3s, box-shadow .3s;
+    }
+
+    .status-dot.ready  { background: var(--accent); box-shadow: 0 0 7px rgba(0,255,65,.5); }
+    .status-dot.error  { background: var(--red); }
+    .status-dot.init   { background: var(--amber); animation: pulse-amber 1.2s infinite; }
+
+    @keyframes pulse-amber {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: .4; }
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       MOBILE HEADER
+    ═══════════════════════════════════════════════════════════════ */
+    .mobile-header {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: var(--header-h);
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border);
+      align-items: center;
+      padding: 0 14px;
+      gap: 12px;
+      z-index: 150;
+    }
+
+    .menu-btn {
+      width: 34px;
+      height: 34px;
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-2);
+      flex-shrink: 0;
+      transition: border-color var(--t), color var(--t);
+    }
+
+    .menu-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .mobile-brand {
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: .06em;
+    }
+
+    .mobile-brand em {
+      color: var(--accent);
+      font-style: normal;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       SIDEBAR OVERLAY (mobile)
+    ═══════════════════════════════════════════════════════════════ */
+    .sidebar-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .75);
+      backdrop-filter: blur(3px);
+      z-index: 190;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity var(--t);
+    }
+
+    .sidebar-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       MAIN CONTENT
+    ═══════════════════════════════════════════════════════════════ */
+    .main {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── View sections ── */
+    .view {
+      display: none;
+      flex: 1;
+      flex-direction: column;
+      min-height: calc(100vh - 1px);
+    }
+
+    .view.active {
+      display: flex;
+    }
+
+    /* ── Page header ── */
+    .page-hd {
+      padding: 30px 32px 0;
+    }
+
+    .page-eyebrow {
+      font-family: var(--mono);
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: .2em;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .page-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -.02em;
+      line-height: 1.2;
+      margin-bottom: 5px;
+    }
+
+    .page-sub {
+      font-family: var(--mono);
+      font-size: 10.5px;
+      color: var(--text-3);
+      letter-spacing: .05em;
+      padding-bottom: 22px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 28px;
+    }
+
+    .page-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: -8px;
+      padding-bottom: 22px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 28px;
+    }
+
+    /* ── Content area ── */
+    .content {
+      padding: 0 32px 56px;
+      max-width: var(--content-max);
+      width: 100%;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       COMPONENT: CARD
+    ═══════════════════════════════════════════════════════════════ */
+    .card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      overflow: hidden;
+    }
+
+    .card + .card {
+      margin-top: 16px;
+    }
+
+    .card-hd {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 13px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .card-title {
+      font-family: var(--mono);
+      font-size: 10.5px;
+      font-weight: 600;
+      letter-spacing: .1em;
+      color: var(--text-2);
+      text-transform: uppercase;
+    }
+
+    .card-body {
+      padding: 18px;
+    }
+
+    .card-body + .card-hd {
+      border-top: 1px solid var(--border);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       COMPONENT: BUTTONS
+    ═══════════════════════════════════════════════════════════════ */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 15px;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .07em;
+      border-radius: var(--r);
+      border: 1px solid transparent;
+      transition: all var(--t);
+      white-space: nowrap;
+      line-height: 1;
+      text-transform: uppercase;
+    }
+
+    /* Primary */
+    .btn-primary {
+      background: var(--accent);
+      color: #000;
+      border-color: var(--accent);
+    }
+    .btn-primary:hover:not(:disabled) {
+      background: #20FF5A;
+      box-shadow: 0 0 16px rgba(0, 255, 65, .22);
+    }
+    .btn-primary:active:not(:disabled) {
+      transform: translateY(1px);
+    }
+
+    /* Secondary */
+    .btn-secondary {
+      background: transparent;
+      color: var(--text-2);
+      border-color: var(--border-2);
+    }
+    .btn-secondary:hover:not(:disabled) {
+      color: var(--text);
+      border-color: #333;
+      background: var(--bg-elevated);
+    }
+
+    /* Ghost */
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-3);
+      border-color: transparent;
+    }
+    .btn-ghost:hover:not(:disabled) {
+      color: var(--text-2);
+      background: var(--bg-elevated);
+    }
+
+    /* Danger */
+    .btn-danger {
+      background: transparent;
+      color: var(--red);
+      border-color: rgba(255, 59, 59, .22);
+    }
+    .btn-danger:hover:not(:disabled) {
+      background: var(--red-dim);
+    }
+
+    /* Accent outline */
+    .btn-accent {
+      background: transparent;
+      color: var(--accent);
+      border-color: rgba(0, 255, 65, .3);
+    }
+    .btn-accent:hover:not(:disabled) {
+      background: var(--accent-dim);
+      border-color: rgba(0, 255, 65, .5);
+    }
+
+    /* Sizes */
+    .btn-sm  { padding: 5px 11px; font-size: 10px; }
+    .btn-lg  { padding: 11px 22px; font-size: 12px; }
+    .btn-xl  { padding: 13px 28px; font-size: 13px; }
+    .btn-ico { padding: 7px; }
+
+    .btn:disabled { opacity: .32; cursor: not-allowed; }
+
+    /* Icon inside button */
+    .btn svg { flex-shrink: 0; }
+
+    /* ═══════════════════════════════════════════════════════════════
+       COMPONENT: FORM
+    ═══════════════════════════════════════════════════════════════ */
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .form-label {
+      display: block;
+      font-family: var(--mono);
+      font-size: 9.5px;
+      font-weight: 600;
+      letter-spacing: .12em;
+      color: var(--text-2);
+      text-transform: uppercase;
+      margin-bottom: 7px;
+    }
+
+    .form-label .req {
+      color: var(--accent);
+      margin-left: 3px;
+    }
+
+    .form-control {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 13px;
+      padding: 9px 12px;
+      outline: none;
+      transition: border-color var(--t), box-shadow var(--t);
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    .form-control:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(0, 255, 65, .07);
+    }
+
+    .form-control::placeholder {
+      color: var(--text-3);
+    }
+
+    .form-control.is-error {
+      border-color: var(--red);
+      box-shadow: 0 0 0 3px var(--red-dim);
+    }
+
+    .form-control.is-valid {
+      border-color: rgba(0, 255, 65, .35);
+    }
+
+    /* Select arrow */
+    select.form-control {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' viewBox='0 0 11 7'%3E%3Cpath d='M1 1l4.5 4.5L10 1' stroke='%23404040' stroke-width='1.4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 11px center;
+      padding-right: 32px;
+      cursor: pointer;
+    }
+
+    select.form-control option {
+      background: var(--bg-elevated);
+      color: var(--text);
+    }
+
+    textarea.form-control {
+      resize: vertical;
+      min-height: 82px;
+      line-height: 1.6;
+    }
+
+    .form-hint {
+      font-family: var(--mono);
+      font-size: 9.5px;
+      color: var(--text-3);
+      margin-top: 5px;
+      letter-spacing: .03em;
+      line-height: 1.5;
+    }
+
+    .form-error-msg {
+      font-family: var(--mono);
+      font-size: 9.5px;
+      color: var(--red);
+      margin-top: 5px;
+      letter-spacing: .03em;
+      display: none;
+    }
+
+    .form-error-msg.visible {
+      display: block;
+    }
+
+    /* Grid layouts for form rows */
+    .form-row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .form-row-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 640px) {
+      .form-row-2,
+      .form-row-3 { grid-template-columns: 1fr; }
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       COMPONENT: BADGE
+    ═══════════════════════════════════════════════════════════════ */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-family: var(--mono);
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      padding: 2px 7px;
+      border-radius: 20px;
+      white-space: nowrap;
+      line-height: 1.7;
+    }
+
+    .badge-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: currentColor;
+      flex-shrink: 0;
+    }
+
+    .badge-green  { background: var(--accent-dim);  color: var(--accent); }
+    .badge-red    { background: var(--red-dim);     color: var(--red);    }
+    .badge-amber  { background: var(--amber-dim);   color: var(--amber);  }
+    .badge-blue   { background: var(--blue-dim);    color: var(--blue);   }
+    .badge-purple { background: var(--purple-dim);  color: var(--purple); }
+    .badge-muted  { background: var(--bg-elevated); color: var(--text-3); }
+
+    /* ═══════════════════════════════════════════════════════════════
+       COMPONENT: STAT TILE
+    ═══════════════════════════════════════════════════════════════ */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .stat-tile {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 16px 18px 14px;
+    }
+
+    .stat-label {
+      font-family: var(--mono);
+      font-size: 8.5px;
+      font-weight: 600;
+      letter-spacing: .15em;
+      color: var(--text-3);
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .stat-value {
+      font-family: var(--mono);
+      font-size: 28px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -.03em;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .stat-value.c-acc    { color: var(--accent); }
+    .stat-value.c-red    { color: var(--red);    }
+    .stat-value.c-amber  { color: var(--amber);  }
+    .stat-value.c-blue   { color: var(--blue);   }
+
+    .stat-sub {
+      font-family: var(--mono);
+      font-size: 9.5px;
+      color: var(--text-3);
+      line-height: 1.4;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       COMPONENT: DATA TABLE
+    ═══════════════════════════════════════════════════════════════ */
+    .tbl-wrap {
+      overflow-x: auto;
+    }
+
+    .data-tbl {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    .data-tbl thead tr {
+      border-bottom: 1px solid var(--border);
+    }
+
+    .data-tbl th {
+      font-family: var(--mono);
+      font-size: 8.5px;
+      font-weight: 600;
+      letter-spacing: .14em;
+      color: var(--text-3);
+      text-transform: uppercase;
+      text-align: left;
+      padding: 8px 14px;
+      white-space: nowrap;
+    }
+
+    .data-tbl td {
+      font-family: var(--mono);
+      font-size: 12px;
+      padding: 11px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, .03);
+      color: var(--text-2);
+      vertical-align: middle;
+    }
+
+    .data-tbl td.c-text  { font-family: var(--sans); font-size: 13px; color: var(--text); }
+    .data-tbl td.c-muted { color: var(--text-3); font-size: 11px; }
+    .data-tbl td.c-acc   { color: var(--accent); }
+
+    .data-tbl tr:last-child td { border-bottom: none; }
+
+    .data-tbl tbody tr {
+      transition: background var(--t);
+    }
+
+    .data-tbl tbody tr:hover {
+      background: var(--bg-elevated);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       COMPONENT: ALERT / NOTIFICATION BANNER
+    ═══════════════════════════════════════════════════════════════ */
+    .alert {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 11px 14px;
+      border-radius: var(--r);
+      font-family: var(--mono);
+      font-size: 11px;
+      line-height: 1.6;
+      letter-spacing: .02em;
+      margin-bottom: 16px;
+      border: 1px solid transparent;
+    }
+
+    .alert-ok     { background: var(--accent-dim); color: var(--accent); border-color: rgba(0,255,65,.18); }
+    .alert-err    { background: var(--red-dim);    color: var(--red);    border-color: rgba(255,59,59,.18); }
+    .alert-warn   { background: var(--amber-dim);  color: var(--amber);  border-color: rgba(245,166,35,.18); }
+    .alert-info   { background: var(--blue-dim);   color: var(--blue);   border-color: rgba(74,158,255,.18); }
+
+    /* ═══════════════════════════════════════════════════════════════
+       COMPONENT: EMPTY STATE
+    ═══════════════════════════════════════════════════════════════ */
+    .empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 60px 24px;
+      gap: 10px;
+    }
+
+    .empty-icon {
+      width: 40px;
+      height: 40px;
+      color: var(--text-3);
+      margin-bottom: 4px;
+    }
+
+    .empty-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-2);
+    }
+
+    .empty-sub {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-3);
+      max-width: 300px;
+      line-height: 1.65;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       COMPONENT: DIVIDER
+    ═══════════════════════════════════════════════════════════════ */
+    .hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 24px 0;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       COMPONENT: SKELETON LOADER
+    ═══════════════════════════════════════════════════════════════ */
+    @keyframes shimmer {
+      from { background-position: -700px 0; }
+      to   { background-position:  700px 0; }
+    }
+
+    .skeleton {
+      background: linear-gradient(90deg,
+        var(--bg-elevated) 25%,
+        #181818 50%,
+        var(--bg-elevated) 75%);
+      background-size: 700px 100%;
+      animation: shimmer 1.6s infinite;
+      border-radius: var(--r-sm);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       COMPONENT: MONO CODE DISPLAY
+    ═══════════════════════════════════════════════════════════════ */
+    .code-block {
+      font-family: var(--mono);
+      font-size: 11.5px;
+      color: var(--text-2);
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 14px 16px;
+      overflow-x: auto;
+      line-height: 1.75;
+      white-space: pre;
+    }
+
+    .code-block .hl  { color: var(--accent); }
+    .code-block .dim { color: var(--text-3); }
+    .code-block .str { color: var(--amber);  }
+    .code-block .key { color: var(--blue);   }
+
+    /* ═══════════════════════════════════════════════════════════════
+       COMPONENT: TABS
+    ═══════════════════════════════════════════════════════════════ */
+    .tab-bar {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+
+    .tab-btn {
+      font-family: var(--mono);
+      font-size: 10.5px;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      padding: 9px 16px;
+      color: var(--text-3);
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: color var(--t), border-color var(--t);
+      background: none;
+      cursor: pointer;
+    }
+
+    .tab-btn:hover   { color: var(--text-2); }
+    .tab-btn.active  { color: var(--accent); border-bottom-color: var(--accent); }
+
+    .tab-panel       { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ═══════════════════════════════════════════════════════════════
+       COMPONENT: PROGRESS BAR
+    ═══════════════════════════════════════════════════════════════ */
+    .progress-bar {
+      height: 3px;
+      background: var(--bg-elevated);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 2px;
+      transition: width .3s ease;
+      box-shadow: 0 0 8px rgba(0, 255, 65, .4);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       COMPONENT: TOOLTIP (pure CSS, hover)
+    ═══════════════════════════════════════════════════════════════ */
+    [data-tip] {
+      position: relative;
+    }
+
+    [data-tip]::after {
+      content: attr(data-tip);
+      position: absolute;
+      bottom: calc(100% + 7px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-2);
+      color: var(--text-2);
+      font-family: var(--mono);
+      font-size: 10px;
+      white-space: nowrap;
+      padding: 4px 9px;
+      border-radius: var(--r-sm);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity var(--t);
+      z-index: 9999;
+    }
+
+    [data-tip]:hover::after {
+      opacity: 1;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       PLACEHOLDER (Block 1 only — removed in later blocks)
+    ═══════════════════════════════════════════════════════════════ */
+    .placeholder {
+      border: 1px dashed var(--border-2);
+      border-radius: var(--r-lg);
+      padding: 44px 32px;
+      text-align: center;
+    }
+
+    .placeholder-icon {
+      font-size: 28px;
+      margin-bottom: 12px;
+      opacity: .4;
+    }
+
+    .placeholder-title {
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-2);
+      letter-spacing: .06em;
+      margin-bottom: 6px;
+    }
+
+    .placeholder-sub {
+      font-family: var(--mono);
+      font-size: 10.5px;
+      color: var(--text-3);
+      line-height: 1.65;
+      max-width: 360px;
+      margin: 0 auto;
+    }
+
+    .placeholder-sub code {
+      color: var(--accent);
+      background: var(--accent-muted);
+      padding: 1px 5px;
+      border-radius: 3px;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       RESPONSIVE
+    ═══════════════════════════════════════════════════════════════ */
+    @media (max-width: 899px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+        box-shadow: 8px 0 40px rgba(0, 0, 0, .7);
+      }
+
+      .mobile-header {
+        display: flex;
+      }
+
+      .main {
+        margin-left: 0;
+        padding-top: var(--header-h);
+      }
+
+      .page-hd  { padding: 20px 18px 0; }
+      .content  { padding: 0 18px 48px; }
+    }
+
+    @media (max-width: 540px) {
+      .stat-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .page-title { font-size: 20px; }
+    }
+
+    @media (max-width: 360px) {
+      .stat-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* ── Accessibility: visually hidden helper ── */
+    .sr-only {
+      position: absolute;
+      width: 1px; height: 1px;
+      padding: 0; margin: -1px;
+      overflow: hidden;
+      clip: rect(0,0,0,0);
+      white-space: nowrap;
+      border: 0;
+    }
+  </style>
+</head>
+
+<body>
+<div class="app" id="app">
+
+  <!-- ══ MOBILE OVERLAY ══ -->
+  <div class="sidebar-overlay"
+       id="sidebar-overlay"
+       role="presentation"
+       aria-hidden="true"></div>
+
+  <!-- ══ SIDEBAR ══ -->
+  <nav class="sidebar"
+       id="sidebar"
+       role="navigation"
+       aria-label="Main navigation">
+
+    <h2 class="sr-only">Data Acquisition Layer Navigation</h2>
+
+    <!-- Brand -->
+    <div class="sidebar-brand">
+      <div class="brand-eyebrow">INFINICUS Platform</div>
+      <div class="brand-name">Data Acquisition<br>Layer</div>
+      <div class="brand-meta">Layer 1 &nbsp;·&nbsp; v1.0.0</div>
+    </div>
+
+    <!-- Navigation -->
+    <ul class="nav-list" role="menubar" aria-label="Primary navigation">
+
+      <li class="nav-group-label" role="presentation">Core</li>
+
+      <li class="nav-item active"
+          data-view="dashboard"
+          role="menuitem"
+          tabindex="0"
+          aria-current="page"
+          aria-label="Dashboard — layer overview and pipeline health">
+        <!-- Grid icon -->
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <rect x="1.5" y="1.5" width="5.5" height="5.5" rx="1" fill="currentColor" opacity=".55"/>
+          <rect x="9"   y="1.5" width="5.5" height="5.5" rx="1" fill="currentColor" opacity=".55"/>
+          <rect x="1.5" y="9"   width="5.5" height="5.5" rx="1" fill="currentColor" opacity=".55"/>
+          <rect x="9"   y="9"   width="5.5" height="5.5" rx="1" fill="currentColor" opacity=".55"/>
+        </svg>
+        Dashboard
+      </li>
+
+      <li class="nav-item"
+          data-view="businesses"
+          role="menuitem"
+          tabindex="0"
+          aria-label="Businesses — create and manage business profiles">
+        <!-- Building icon -->
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <rect x="2" y="6" width="12" height="9" rx="1" stroke="currentColor" stroke-width="1.3"/>
+          <path d="M5.5 6V4.5a2.5 2.5 0 015 0V6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+          <rect x="6.25" y="8.75" width="3.5" height="3.5" rx=".5" stroke="currentColor" stroke-width="1.1"/>
+        </svg>
+        Businesses
+      </li>
+
+      <li class="nav-group-label" role="presentation">Data Entry</li>
+
+      <li class="nav-item"
+          data-view="manual-entry"
+          role="menuitem"
+          tabindex="0"
+          aria-label="Manual Entry — log sales, expenses, customers, inventory">
+        <!-- Pencil icon -->
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M11 2.5l2.5 2.5L5 13.5H2.5V11L11 2.5z"
+                stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
+          <path d="M9.5 4l2.5 2.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+        </svg>
+        Manual Entry
+      </li>
+
+      <li class="nav-item"
+          data-view="imports"
+          role="menuitem"
+          tabindex="0"
+          aria-label="Imports — upload and process CSV files">
+        <!-- Download icon -->
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M8 2v8M5.5 7.5L8 10l2.5-2.5"
+                stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M3 11.5v1a1 1 0 001 1h8a1 1 0 001-1v-1"
+                stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+        </svg>
+        Imports
+      </li>
+
+      <li class="nav-item"
+          data-view="sources"
+          role="menuitem"
+          tabindex="0"
+          aria-label="Data Sources — manage connected data sources">
+        <!-- Network icon -->
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <circle cx="8"  cy="3"  r="1.8" stroke="currentColor" stroke-width="1.3"/>
+          <circle cx="3"  cy="13" r="1.8" stroke="currentColor" stroke-width="1.3"/>
+          <circle cx="13" cy="13" r="1.8" stroke="currentColor" stroke-width="1.3"/>
+          <path d="M8 4.8v3.2M6.5 9.5L4.4 11.2M9.5 9.5l2.1 1.7"
+                stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+        </svg>
+        Data Sources
+      </li>
+
+      <li class="nav-group-label" role="presentation">Monitoring</li>
+
+      <li class="nav-item"
+          data-view="event-log"
+          role="menuitem"
+          tabindex="0"
+          aria-label="Event Log — view all ingested business events">
+        <!-- List icon -->
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <rect x="2" y="2" width="12" height="12" rx="1.5" stroke="currentColor" stroke-width="1.3"/>
+          <line x1="5" y1="5.5" x2="11" y2="5.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="5" y1="8"   x2="11" y2="8"   stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="5" y1="10.5" x2="8.5" y2="10.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+        </svg>
+        Event Log
+      </li>
+
+      <li class="nav-item"
+          data-view="errors"
+          role="menuitem"
+          tabindex="0"
+          aria-label="Validation Errors — review rejected events">
+        <!-- Warning triangle icon -->
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M8 2L14.5 13.5H1.5L8 2z"
+                stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
+          <line x1="8" y1="6.5" x2="8" y2="9.5"
+                stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+          <circle cx="8" cy="11.5" r=".75" fill="currentColor"/>
+        </svg>
+        Errors
+        <span class="nav-badge" id="nav-err-badge" style="display:none" aria-live="polite">0</span>
+      </li>
+
+      <li class="nav-group-label" role="presentation">System</li>
+
+      <li class="nav-item"
+          data-view="settings"
+          role="menuitem"
+          tabindex="0"
+          aria-label="Settings — preferences and data management">
+        <!-- Gear icon -->
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <circle cx="8" cy="8" r="2.4" stroke="currentColor" stroke-width="1.3"/>
+          <path d="M8 1.5v1.5M8 13v1.5M1.5 8H3M13 8h1.5M3.4 3.4l1.1 1.1M11.5 11.5l1.1 1.1M3.4 12.6l1.1-1.1M11.5 4.5l1.1-1.1"
+                stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+        </svg>
+        Settings
+      </li>
+
+    </ul>
+
+    <!-- Footer status -->
+    <div class="sidebar-footer">
+      <div class="status-row">
+        <div class="status-dot init" id="dal-status-dot" aria-hidden="true"></div>
+        <span id="dal-status-text">Initializing…</span>
+      </div>
+    </div>
+
+  </nav><!-- /.sidebar -->
+
+  <!-- ══ MOBILE HEADER ══ -->
+  <header class="mobile-header" role="banner">
+    <button class="menu-btn"
+            id="menu-btn"
+            type="button"
+            aria-label="Open navigation menu"
+            aria-expanded="false"
+            aria-controls="sidebar">
+      <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+        <line x1="1.5" y1="3"   x2="13.5" y2="3"   stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="1.5" y1="7.5" x2="13.5" y2="7.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="1.5" y1="12"  x2="13.5" y2="12"  stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </button>
+    <div class="mobile-brand">
+      <em>DAL</em>&nbsp;·&nbsp;Data Acquisition Layer
+    </div>
+  </header>
+
+  <!-- ══ MAIN CONTENT ══ -->
+  <main class="main" id="main" role="main">
+
+    <!-- ── DASHBOARD ─────────────────────────────────── -->
+    <section class="view active"
+             id="view-dashboard"
+             role="region"
+             aria-label="Dashboard">
+      <div class="page-hd">
+        <div class="page-eyebrow">Layer 1 · Overview</div>
+        <h1 class="page-title">Dashboard</h1>
+        <p class="page-sub">// PIPELINE HEALTH &nbsp;·&nbsp; EVENT THROUGHPUT &nbsp;·&nbsp; BUSINESS SUMMARY</p>
+      </div>
+      <div class="content">
+        <div class="placeholder">
+          <div class="placeholder-icon">⬛</div>
+          <div class="placeholder-title">BLOCK 14 — Dashboard</div>
+          <div class="placeholder-sub">
+            Stat tiles, recent event stream, event type breakdown.<br>
+            Populated after <code>Block 4</code> (Storage) + <code>Block 5</code> (Businesses).
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── BUSINESSES ────────────────────────────────── -->
+    <section class="view"
+             id="view-businesses"
+             role="region"
+             aria-label="Businesses"
+             aria-hidden="true">
+      <div class="page-hd">
+        <div class="page-eyebrow">Identity Management</div>
+        <h1 class="page-title">Businesses</h1>
+        <p class="page-sub">// PROFILES &nbsp;·&nbsp; INDUSTRY &nbsp;·&nbsp; CURRENCY &nbsp;·&nbsp; STATUS</p>
+      </div>
+      <div class="content">
+        <div class="placeholder">
+          <div class="placeholder-icon">🏢</div>
+          <div class="placeholder-title">BLOCK 5 — Business Identity</div>
+          <div class="placeholder-sub">
+            Create and manage business profiles.<br>
+            Routes: <code>data.business.create</code> · <code>data.business.get</code> · <code>data.business.update</code>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── MANUAL ENTRY ───────────────────────────────── -->
+    <section class="view"
+             id="view-manual-entry"
+             role="region"
+             aria-label="Manual Entry"
+             aria-hidden="true">
+      <div class="page-hd">
+        <div class="page-eyebrow">Data Entry</div>
+        <h1 class="page-title">Manual Entry</h1>
+        <p class="page-sub">// SALES &nbsp;·&nbsp; EXPENSES &nbsp;·&nbsp; CUSTOMERS &nbsp;·&nbsp; INVENTORY</p>
+      </div>
+      <div class="content">
+        <div class="placeholder">
+          <div class="placeholder-icon">✏️</div>
+          <div class="placeholder-title">BLOCKS 9 & 10 — Manual Entry Forms</div>
+          <div class="placeholder-sub">
+            Validated forms for each event type. Full ingestion pipeline on submit.<br>
+            Routes: <code>data.sale.ingest</code> · <code>data.expense.ingest</code> ·
+            <code>data.customer.ingest</code> · <code>data.inventory.ingest</code>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── IMPORTS ───────────────────────────────────── -->
+    <section class="view"
+             id="view-imports"
+             role="region"
+             aria-label="Imports"
+             aria-hidden="true">
+      <div class="page-hd">
+        <div class="page-eyebrow">Data Entry</div>
+        <h1 class="page-title">Imports</h1>
+        <p class="page-sub">// CSV UPLOAD &nbsp;·&nbsp; COLUMN MAP &nbsp;·&nbsp; PREVIEW &nbsp;·&nbsp; BATCH EXECUTE</p>
+      </div>
+      <div class="content">
+        <div class="placeholder">
+          <div class="placeholder-icon">📥</div>
+          <div class="placeholder-title">BLOCK 11 — CSV Import</div>
+          <div class="placeholder-sub">
+            File upload (max 10 MB · 5,000 rows), safe preview, column mapping, and batch execution.<br>
+            Routes: <code>data.import.csv.preview</code> · <code>data.import.csv.execute</code> · <code>data.import.status</code>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── DATA SOURCES ──────────────────────────────── -->
+    <section class="view"
+             id="view-sources"
+             role="region"
+             aria-label="Data Sources"
+             aria-hidden="true">
+      <div class="page-hd">
+        <div class="page-eyebrow">Connectors</div>
+        <h1 class="page-title">Data Sources</h1>
+        <p class="page-sub">// SOURCE REGISTRY &nbsp;·&nbsp; CONNECTION STATUS &nbsp;·&nbsp; SYNC METADATA</p>
+      </div>
+      <div class="content">
+        <div class="placeholder">
+          <div class="placeholder-icon">🔌</div>
+          <div class="placeholder-title">BLOCK 6 — Data Source Registry</div>
+          <div class="placeholder-sub">
+            Register, inspect, and disconnect data sources.<br>
+            Routes: <code>data.source.register</code> · <code>data.source.list</code> · <code>data.source.disconnect</code>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── EVENT LOG ─────────────────────────────────── -->
+    <section class="view"
+             id="view-event-log"
+             role="region"
+             aria-label="Event Log"
+             aria-hidden="true">
+      <div class="page-hd">
+        <div class="page-eyebrow">Monitoring</div>
+        <h1 class="page-title">Event Log</h1>
+        <p class="page-sub">// ALL INGESTED EVENTS &nbsp;·&nbsp; FILTER &nbsp;·&nbsp; INSPECT &nbsp;·&nbsp; EXPORT</p>
+      </div>
+      <div class="content">
+        <div class="placeholder">
+          <div class="placeholder-icon">📋</div>
+          <div class="placeholder-title">BLOCK 12 — Event Log View</div>
+          <div class="placeholder-sub">
+            Paginated event table, type + date filters, event detail drawer, JSON inspector.<br>
+            Route: <code>data.event.list</code>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── ERRORS ────────────────────────────────────── -->
+    <section class="view"
+             id="view-errors"
+             role="region"
+             aria-label="Validation Errors"
+             aria-hidden="true">
+      <div class="page-hd">
+        <div class="page-eyebrow">Monitoring</div>
+        <h1 class="page-title">Validation Errors</h1>
+        <p class="page-sub">// REJECTED EVENTS &nbsp;·&nbsp; SCHEMA FAILURES &nbsp;·&nbsp; SECURITY BLOCKS</p>
+      </div>
+      <div class="content">
+        <div class="placeholder">
+          <div class="placeholder-icon">⚠️</div>
+          <div class="placeholder-title">BLOCK 13 — Validation Error Log</div>
+          <div class="placeholder-sub">
+            Detailed log of every rejected event — field, rule, payload (sanitized).<br>
+            Cap: 500 entries · FIFO eviction · clearable.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── SETTINGS ──────────────────────────────────── -->
+    <section class="view"
+             id="view-settings"
+             role="region"
+             aria-label="Settings"
+             aria-hidden="true">
+      <div class="page-hd">
+        <div class="page-eyebrow">System</div>
+        <h1 class="page-title">Settings</h1>
+        <p class="page-sub">// PREFERENCES &nbsp;·&nbsp; DEFAULTS &nbsp;·&nbsp; RETENTION &nbsp;·&nbsp; BACKUP</p>
+      </div>
+      <div class="content">
+        <div class="placeholder">
+          <div class="placeholder-icon">⚙️</div>
+          <div class="placeholder-title">BLOCK 16 — Settings Module</div>
+          <div class="placeholder-sub">
+            Currency, timezone, default business, data retention policy, export, and full data wipe.<br>
+            Storage: <code>localStorage → dal.settings</code>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main><!-- /.main -->
+
+</div><!-- /.app -->
+
+<!-- ════════════════════════════════════════════════════════════════
+     BLOCK 1 · SHELL NAVIGATION
+     Minimal JS — just enough to navigate between views.
+     No modules, no bus, no storage yet.
+     Subsequent blocks will populate window.INFINICUS.
+════════════════════════════════════════════════════════════════ -->
+<script>
+(function ShellNav() {
+  'use strict';
+
+  /* ── Elements ─────────────────────────────────────────────── */
+  const sidebar    = document.getElementById('sidebar');
+  const overlay    = document.getElementById('sidebar-overlay');
+  const menuBtn    = document.getElementById('menu-btn');
+  const statusDot  = document.getElementById('dal-status-dot');
+  const statusText = document.getElementById('dal-status-text');
+  const navItems   = document.querySelectorAll('.nav-item[data-view]');
+
+  /* ── View switching ───────────────────────────────────────── */
+  function showView(viewId) {
+    // Deactivate all views
+    document.querySelectorAll('.view').forEach(function(v) {
+      v.classList.remove('active');
+      v.setAttribute('aria-hidden', 'true');
+    });
+
+    // Deactivate all nav items
+    navItems.forEach(function(n) {
+      n.classList.remove('active');
+      n.removeAttribute('aria-current');
+    });
+
+    // Activate target view
+    var view = document.getElementById('view-' + viewId);
+    if (view) {
+      view.classList.add('active');
+      view.removeAttribute('aria-hidden');
+      // Move focus to the section heading for screen readers
+      var h = view.querySelector('h1');
+      if (h) { h.setAttribute('tabindex', '-1'); h.focus(); }
+    }
+
+    // Activate target nav item
+    var btn = document.querySelector('.nav-item[data-view="' + viewId + '"]');
+    if (btn) {
+      btn.classList.add('active');
+      btn.setAttribute('aria-current', 'page');
+    }
+
+    closeSidebar();
+    window.scrollTo({ top: 0, behavior: 'instant' });
+
+    // Forward to EngineBus if available (wired in Block 2)
+    if (window.INFINICUS && window.INFINICUS.bus) {
+      window.INFINICUS.bus.emit('dal.nav.changed', { view: viewId });
+    }
+  }
+
+  /* ── Nav item interaction ─────────────────────────────────── */
+  navItems.forEach(function(item) {
+    item.addEventListener('click', function() {
+      showView(item.dataset.view);
+    });
+
+    item.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        showView(item.dataset.view);
+      }
+      // Arrow key nav within menu
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        var next = item.nextElementSibling;
+        while (next && !next.dataset.view) next = next.nextElementSibling;
+        if (next) next.focus();
+      }
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        var prev = item.previousElementSibling;
+        while (prev && !prev.dataset.view) prev = prev.previousElementSibling;
+        if (prev) prev.focus();
+      }
+    });
+  });
+
+  /* ── Mobile sidebar ───────────────────────────────────────── */
+  function openSidebar() {
+    sidebar.classList.add('open');
+    overlay.classList.add('open');
+    overlay.removeAttribute('aria-hidden');
+    menuBtn.setAttribute('aria-expanded', 'true');
+    document.body.style.overflow = 'hidden';
+    // Focus first nav item for keyboard users
+    var first = sidebar.querySelector('.nav-item[data-view]');
+    if (first) first.focus();
+  }
+
+  function closeSidebar() {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('open');
+    overlay.setAttribute('aria-hidden', 'true');
+    menuBtn.setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = '';
+  }
+
+  if (menuBtn) menuBtn.addEventListener('click', openSidebar);
+  if (overlay)  overlay.addEventListener('click', closeSidebar);
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && sidebar.classList.contains('open')) {
+      closeSidebar();
+      if (menuBtn) menuBtn.focus();
+    }
+  });
+
+  /* ── Status indicator (initial state) ────────────────────── */
+  function setStatus(state, label) {
+    statusDot.className  = 'status-dot ' + state;
+    statusText.textContent = label;
+  }
+
+  /* ── Global interface ─────────────────────────────────────── */
+  // Exposed so subsequent blocks can call showView and setStatus
+  window.__DAL = {
+    nav: showView,
+    setStatus: setStatus
+  };
+
+  /* ── Init ─────────────────────────────────────────────────── */
+  // Ensure correct aria-hidden state on load
+  document.querySelectorAll('.view').forEach(function(v) {
+    if (!v.classList.contains('active')) {
+      v.setAttribute('aria-hidden', 'true');
+    }
+  });
+
+  setStatus('init', 'Block 1 ready');
+
+})();
+</script>
+
+</body>
+</html>
