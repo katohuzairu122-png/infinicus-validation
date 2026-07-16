@@ -14,6 +14,11 @@
 // D1 binding required: INFINICUS_DB
 // Tables: businesses, business_events (see schema.sql)
 
+import { makeRateLimiter, getIP } from '../../_shared/rateLimit.js';
+
+const rlWrite = makeRateLimiter(30, 60 * 60 * 1000); // 30 writes/hour
+const rlRead  = makeRateLimiter(60, 60 * 60 * 1000); // 60 reads/hour
+
 const CORS = {
   'Access-Control-Allow-Origin':  '*',
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
@@ -32,6 +37,8 @@ export async function onRequestOptions() {
 // ── POST — record an event ────────────────────────────────────────────────────
 
 export async function onRequestPost({ request, env }) {
+  if (!rlWrite.check(getIP(request))) return rlWrite.response();
+
   const db = env.INFINICUS_DB;
   if (!db) return Response.json({ ok: false, error: 'DB not configured.' }, { status: 500, headers: CORS });
 
@@ -51,42 +58,49 @@ export async function onRequestPost({ request, env }) {
     );
   }
 
-  // Verify the business exists (also acts as an ownership guard when caller passes user_email)
-  const biz = await db.prepare('SELECT id FROM businesses WHERE id = ?').bind(business_id).first();
-  if (!biz) {
-    return Response.json({ ok: false, error: 'Business not found.' }, { status: 404, headers: CORS });
+  try {
+    // Verify business exists
+    const biz = await db.prepare('SELECT id FROM businesses WHERE id = ?').bind(business_id).first();
+    if (!biz) {
+      return Response.json({ ok: false, error: 'Business not found.' }, { status: 404, headers: CORS });
+    }
+
+    const id         = generateId();
+    const amount     = body.amount     != null ? Number(body.amount)   : null;
+    const quantity   = body.quantity   != null ? Number(body.quantity) : null;
+    const category   = body.category   || null;
+    const customer_id = body.customer_id || null;
+    const member_id  = body.member_id  || null;
+    const action     = body.action     || null;
+    const notes      = body.notes      || null;
+    const created_at = Date.now();
+
+    await db.prepare(`
+      INSERT INTO business_events
+        (id, business_id, event_type, amount, quantity, category, customer_id, member_id, action, notes, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      id, business_id, event_type,
+      amount, quantity, category,
+      customer_id, member_id, action, notes, created_at
+    ).run();
+
+    return Response.json({
+      ok: true,
+      event: { id, business_id, event_type, amount, quantity, category,
+               customer_id, member_id, action, notes, created_at }
+    }, { status: 201, headers: CORS });
+  } catch (e) {
+    console.error('events POST DB error:', e);
+    return Response.json({ ok: false, error: 'Database error. Please try again.' }, { status: 500, headers: CORS });
   }
-
-  const id         = generateId();
-  const amount     = body.amount     != null ? Number(body.amount)   : null;
-  const quantity   = body.quantity   != null ? Number(body.quantity) : null;
-  const category   = (body.category   || null);
-  const customer_id = (body.customer_id || null);
-  const member_id  = (body.member_id  || null);
-  const action     = (body.action     || null);
-  const notes      = (body.notes      || null);
-  const created_at = Date.now();
-
-  await db.prepare(`
-    INSERT INTO business_events
-      (id, business_id, event_type, amount, quantity, category, customer_id, member_id, action, notes, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).bind(
-    id, business_id, event_type,
-    amount, quantity, category,
-    customer_id, member_id, action, notes, created_at
-  ).run();
-
-  return Response.json({
-    ok: true,
-    event: { id, business_id, event_type, amount, quantity, category,
-             customer_id, member_id, action, notes, created_at }
-  }, { status: 201, headers: CORS });
 }
 
 // ── GET — query events ────────────────────────────────────────────────────────
 
 export async function onRequestGet({ request, env }) {
+  if (!rlRead.check(getIP(request))) return rlRead.response();
+
   const db = env.INFINICUS_DB;
   if (!db) return Response.json({ ok: false, error: 'DB not configured.' }, { status: 500, headers: CORS });
 
@@ -110,20 +124,25 @@ export async function onRequestGet({ request, env }) {
     );
   }
 
-  let query  = 'SELECT * FROM business_events WHERE business_id = ? AND created_at BETWEEN ? AND ?';
-  let params = [business_id, from_ms, to_ms];
+  try {
+    let query  = 'SELECT * FROM business_events WHERE business_id = ? AND created_at BETWEEN ? AND ?';
+    let params = [business_id, from_ms, to_ms];
 
-  if (type_filter) {
-    query  += ' AND event_type = ?';
-    params.push(type_filter);
+    if (type_filter) {
+      query  += ' AND event_type = ?';
+      params.push(type_filter);
+    }
+
+    query += ' ORDER BY created_at DESC LIMIT ?';
+    params.push(limit);
+
+    const { results } = await db.prepare(query).bind(...params).all();
+
+    return Response.json({ ok: true, events: results || [] }, { status: 200, headers: CORS });
+  } catch (e) {
+    console.error('events GET DB error:', e);
+    return Response.json({ ok: false, error: 'Database error. Please try again.' }, { status: 500, headers: CORS });
   }
-
-  query += ' ORDER BY created_at DESC LIMIT ?';
-  params.push(limit);
-
-  const { results } = await db.prepare(query).bind(...params).all();
-
-  return Response.json({ ok: true, events: results || [] }, { status: 200, headers: CORS });
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

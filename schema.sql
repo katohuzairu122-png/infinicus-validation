@@ -46,3 +46,26 @@ CREATE INDEX IF NOT EXISTS idx_events_business_time
 -- Optional: filter by event type within a business
 CREATE INDEX IF NOT EXISTS idx_events_business_type
   ON business_events (business_id, event_type);
+
+-- ── decision_memory ───────────────────────────────────────────────────────────
+-- Tracks AI-recommended decisions, user choices, and actual outcomes.
+-- Enables Decision Intelligence to improve recommendations over time.
+-- Note: ALTER TABLE does not support IF NOT EXISTS — this is a one-time migration.
+-- Run separately on an existing DB: ALTER TABLE decision_memory ADD COLUMN ...
+-- For a fresh DB, this CREATE TABLE IF NOT EXISTS is idempotent.
+
+CREATE TABLE IF NOT EXISTS decision_memory (
+  id             TEXT    PRIMARY KEY,           -- UUID
+  business_id    TEXT    NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
+  recommended_at INTEGER NOT NULL,              -- ms epoch when AI made recommendation
+  decision_text  TEXT    NOT NULL,              -- the recommendation
+  expected_outcome TEXT,                        -- AI-projected outcome summary
+  risk_level     TEXT,                          -- 'low' | 'medium' | 'high'
+  chosen         INTEGER NOT NULL DEFAULT 0,    -- 1 = user chose this, 0 = declined
+  chosen_at      INTEGER,                       -- ms epoch
+  outcome_notes  TEXT,                          -- user-recorded actual outcome
+  outcome_at     INTEGER                        -- ms epoch when outcome was recorded
+);
+
+CREATE INDEX IF NOT EXISTS idx_decisions_business
+  ON decision_memory (business_id, recommended_at DESC);

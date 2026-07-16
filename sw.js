@@ -1,7 +1,7 @@
 // sw.js — INFINICUS Engine v3 Service Worker
 // Bump CACHE_VERSION when deploying significant updates to force re-cache
-// Deployed: 2026-07-16 rev18 — fix mobile nav dropdown (flex:none override)
-const CACHE_VERSION = 'v22';
+// Deployed: 2026-07-16 rev19 — password auth modal, Digital Twin, Decision Intelligence, rate limiting
+const CACHE_VERSION = 'v23';
 const CACHE = 'infinicus-' + CACHE_VERSION;
 
 // Core shell assets — cached on install

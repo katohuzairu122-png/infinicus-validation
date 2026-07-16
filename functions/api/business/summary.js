@@ -11,6 +11,9 @@
 //
 // D1 binding required: INFINICUS_DB
 
+import { makeRateLimiter, getIP } from '../../_shared/rateLimit.js';
+const rl = makeRateLimiter(60, 60 * 60 * 1000); // 60 reads/hour
+
 const CORS = {
   'Access-Control-Allow-Origin':  '*',
   'Access-Control-Allow-Methods': 'GET, OPTIONS',
@@ -23,6 +26,8 @@ export async function onRequestOptions() {
 }
 
 export async function onRequestGet({ request, env }) {
+  if (!rl.check(getIP(request))) return rl.response();
+
   const db = env.INFINICUS_DB;
   if (!db) return Response.json({ ok: false, error: 'DB not configured.' }, { status: 500, headers: CORS });
 
@@ -35,35 +40,40 @@ export async function onRequestGet({ request, env }) {
     return Response.json({ ok: false, error: 'business_id required.' }, { status: 400, headers: CORS });
   }
 
-  // Verify business exists
-  const biz = await db.prepare('SELECT id FROM businesses WHERE id = ?').bind(business_id).first();
-  if (!biz) {
-    return Response.json({ ok: false, error: 'Business not found.' }, { status: 404, headers: CORS });
+  try {
+    // Verify business exists
+    const biz = await db.prepare('SELECT id FROM businesses WHERE id = ?').bind(business_id).first();
+    if (!biz) {
+      return Response.json({ ok: false, error: 'Business not found.' }, { status: 404, headers: CORS });
+    }
+
+    // Run all 5 aggregations in parallel
+    const [salesRes, expensesRes, inventoryRes, customersRes, teamRes] = await Promise.all([
+      aggregateSales(db, business_id, from_ms, to_ms),
+      aggregateExpenses(db, business_id, from_ms, to_ms),
+      aggregateInventory(db, business_id, from_ms, to_ms),
+      aggregateCustomers(db, business_id, from_ms, to_ms),
+      aggregateTeam(db, business_id, from_ms, to_ms),
+    ]);
+
+    const days = Math.max(1, Math.round((to_ms - from_ms) / 86_400_000));
+
+    return Response.json({
+      ok: true,
+      business_id,
+      period: { from_ms, to_ms, days },
+      summary: {
+        sales:     salesRes,
+        expenses:  expensesRes,
+        inventory: inventoryRes,
+        customers: customersRes,
+        team:      teamRes,
+      },
+    }, { status: 200, headers: CORS });
+  } catch (e) {
+    console.error('summary GET DB error:', e);
+    return Response.json({ ok: false, error: 'Database error. Please try again.' }, { status: 500, headers: CORS });
   }
-
-  // Run all 5 aggregations in parallel
-  const [salesRes, expensesRes, inventoryRes, customersRes, teamRes] = await Promise.all([
-    aggregateSales(db, business_id, from_ms, to_ms),
-    aggregateExpenses(db, business_id, from_ms, to_ms),
-    aggregateInventory(db, business_id, from_ms, to_ms),
-    aggregateCustomers(db, business_id, from_ms, to_ms),
-    aggregateTeam(db, business_id, from_ms, to_ms),
-  ]);
-
-  const days = Math.max(1, Math.round((to_ms - from_ms) / 86_400_000));
-
-  return Response.json({
-    ok: true,
-    business_id,
-    period: { from_ms, to_ms, days },
-    summary: {
-      sales:     salesRes,
-      expenses:  expensesRes,
-      inventory: inventoryRes,
-      customers: customersRes,
-      team:      teamRes,
-    },
-  }, { status: 200, headers: CORS });
 }
 
 // ── 1. Sales ──────────────────────────────────────────────────────────────────

@@ -7,6 +7,11 @@
 // D1 binding required: INFINICUS_DB
 // Table: businesses (see schema.sql)
 
+import { makeRateLimiter, getIP } from '../../_shared/rateLimit.js';
+
+const rlWrite = makeRateLimiter(30, 60 * 60 * 1000); // 30 writes/hour
+const rlRead  = makeRateLimiter(60, 60 * 60 * 1000); // 60 reads/hour
+
 const CORS = {
   'Access-Control-Allow-Origin':  '*',
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
@@ -21,6 +26,8 @@ export async function onRequestOptions() {
 // ── POST /api/business/manage — create a business ────────────────────────────
 
 export async function onRequestPost({ request, env }) {
+  if (!rlWrite.check(getIP(request))) return rlWrite.response();
+
   const db = env.INFINICUS_DB;
   if (!db) return Response.json({ ok: false, error: 'DB not configured.' }, { status: 500, headers: CORS });
 
@@ -44,10 +51,15 @@ export async function onRequestPost({ request, env }) {
   const id  = generateId();
   const now = Date.now();
 
-  await db.prepare(`
-    INSERT INTO businesses (id, user_email, name, industry, created_at, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?)
-  `).bind(id, user_email, name, industry, now, now).run();
+  try {
+    await db.prepare(`
+      INSERT INTO businesses (id, user_email, name, industry, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `).bind(id, user_email, name, industry, now, now).run();
+  } catch (e) {
+    console.error('manage POST DB error:', e);
+    return Response.json({ ok: false, error: 'Database error. Please try again.' }, { status: 500, headers: CORS });
+  }
 
   return Response.json({ ok: true, business: { id, user_email, name, industry, created_at: now } }, { status: 201, headers: CORS });
 }
@@ -55,6 +67,8 @@ export async function onRequestPost({ request, env }) {
 // ── GET /api/business/manage — list or fetch businesses ──────────────────────
 
 export async function onRequestGet({ request, env }) {
+  if (!rlRead.check(getIP(request))) return rlRead.response();
+
   const db = env.INFINICUS_DB;
   if (!db) return Response.json({ ok: false, error: 'DB not configured.' }, { status: 500, headers: CORS });
 
@@ -66,24 +80,29 @@ export async function onRequestGet({ request, env }) {
     return Response.json({ ok: false, error: 'user_email required.' }, { status: 400, headers: CORS });
   }
 
-  if (id) {
-    // Fetch single business — ensure it belongs to this user
-    const row = await db.prepare(`
-      SELECT * FROM businesses WHERE id = ? AND user_email = ?
-    `).bind(id, user_email).first();
+  try {
+    if (id) {
+      // Fetch single business — ensure it belongs to this user
+      const row = await db.prepare(`
+        SELECT * FROM businesses WHERE id = ? AND user_email = ?
+      `).bind(id, user_email).first();
 
-    if (!row) {
-      return Response.json({ ok: false, error: 'Business not found.' }, { status: 404, headers: CORS });
+      if (!row) {
+        return Response.json({ ok: false, error: 'Business not found.' }, { status: 404, headers: CORS });
+      }
+      return Response.json({ ok: true, business: row }, { status: 200, headers: CORS });
     }
-    return Response.json({ ok: true, business: row }, { status: 200, headers: CORS });
+
+    // List all businesses for this user
+    const { results } = await db.prepare(`
+      SELECT * FROM businesses WHERE user_email = ? ORDER BY created_at DESC
+    `).bind(user_email).all();
+
+    return Response.json({ ok: true, businesses: results || [] }, { status: 200, headers: CORS });
+  } catch (e) {
+    console.error('manage GET DB error:', e);
+    return Response.json({ ok: false, error: 'Database error. Please try again.' }, { status: 500, headers: CORS });
   }
-
-  // List all businesses for this user
-  const { results } = await db.prepare(`
-    SELECT * FROM businesses WHERE user_email = ? ORDER BY created_at DESC
-  `).bind(user_email).all();
-
-  return Response.json({ ok: true, businesses: results || [] }, { status: 200, headers: CORS });
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -91,7 +110,6 @@ export async function onRequestGet({ request, env }) {
 function generateId() {
   const bytes = new Uint8Array(16);
   crypto.getRandomValues(bytes);
-  // Format as UUID v4
   bytes[6] = (bytes[6] & 0x0f) | 0x40;
   bytes[8] = (bytes[8] & 0x3f) | 0x80;
   const hex = [...bytes].map(b => b.toString(16).padStart(2, '0')).join('');
