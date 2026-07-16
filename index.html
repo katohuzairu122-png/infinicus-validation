@@ -737,18 +737,12 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
   </div>
   <button class="ham-btn" id="ham-btn" onclick="toggleNav()" aria-label="Menu">☰</button>
   <nav class="nav" id="main-nav">
-    <button class="nb active" data-section="input"       onclick="nav('input')"       data-i18n="nav_input">INPUT</button>
-    <button class="nb"        data-section="dashboard"   onclick="nav('dashboard')"   data-i18n="nav_dash">DASH</button>
-    <button class="nb"        data-section="history"     onclick="nav('history')"     data-i18n="nav_history">HISTORY</button>
-    <button class="nb"        data-section="economy"     onclick="nav('economy')"     data-i18n="nav_econ">ECON</button>
-    <button class="nb"        data-section="forecast"    onclick="nav('forecast')"    data-i18n="nav_forecast">FORECAST</button>
-    <button class="nb"        data-section="customers"   onclick="nav('customers')"   data-i18n="nav_cust">CUST / LOG</button>
-    <button class="nb"        data-section="risk"        onclick="nav('risk')"        data-i18n="nav_risk">RISK / MC</button>
-    <button class="nb"        data-section="verdict"     onclick="nav('verdict')"     data-i18n="nav_verdict">VERDICT</button>
-    <button class="nb"        data-section="report"      onclick="nav('report')"      data-i18n="nav_report">REPORT</button>
-    <button class="nb"        data-section="sensitivity" onclick="nav('sensitivity')" data-i18n="nav_sensi">SENSI</button>
-    <button class="nb"        data-section="compare"     onclick="nav('compare')"     data-i18n="nav_compare">COMPARE</button>
-    <button class="nb"        data-section="mybusiness"  onclick="nav('mybusiness')"  data-i18n="nav_biz">MY BIZ</button>
+    <button class="nb active" data-section="data"         onclick="nav('data')"        >DATA ACQ</button>
+    <button class="nb"        data-section="operations"   onclick="nav('operations')"  >OPERATIONS</button>
+    <button class="nb"        data-section="intelligence" onclick="nav('intelligence')">INTEL</button>
+    <button class="nb"        data-section="twin"         onclick="nav('twin')"        >TWIN</button>
+    <button class="nb"        data-section="simulation"   onclick="nav('simulation')"  >SIMULATE</button>
+    <button class="nb"        data-section="decisions"    onclick="nav('decisions')"   >AI DECISIONS</button>
   </nav>
   <div class="hdr-right">
     <button id="signin-btn" class="nb" onclick="openRegModal()" style="display:none;border-color:rgba(0,224,96,.25);color:var(--cyan);" title="Sign in or create account">SIGN IN</button>
@@ -801,9 +795,9 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
 </header>
 
 <!-- ══ INPUT ══ -->
-<section class="section active" id="sec-input">
-  <div class="pg-title"><span class="c">SIMULATE</span> YOUR<br>BUSINESS REALITY</div>
-  <div class="pg-sub">// STATISTICAL ENGINE · VIRTUAL ECONOMY · AGENT-BASED MODELING · MONTE CARLO</div>
+<section class="section active" id="sec-data">
+  <div class="pg-title"><span class="c">DATA</span> ACQUISITION<br>LAYER</div>
+  <div class="pg-sub">// FEED THE ENGINE — BUSINESS PARAMETERS · MARKET CONDITIONS · FINANCIAL INPUTS</div>
   <!-- 5-STEP PROGRESS INDICATOR -->
   <div class="inp-progress" id="inp-progress">
     <div class="inp-step ip-active" id="ip-1">
@@ -1025,6 +1019,41 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
 </section>
 
 <!-- ══ DASHBOARD ══ -->
+<!-- ══ INTELLIGENCE HUB ══ -->
+<section class="section" id="sec-intelligence">
+  <div class="pg-title" style="font-size:22px;margin-bottom:.1rem;">BUSINESS <span class="c">INTELLIGENCE</span></div>
+  <div class="pg-sub">// KPI DASHBOARD · ECONOMY · CUSTOMERS · FORECAST · HISTORY</div>
+  <div style="font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.1em;margin-bottom:1.2rem;margin-top:1rem;">SELECT A MODULE TO EXPLORE</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.85rem;">
+    <div style="background:var(--glass);border:1px solid var(--line-2);border-radius:12px;padding:1.2rem;cursor:pointer;transition:all .2s;" onclick="nav('dashboard')" onmouseover="this.style.borderColor='rgba(0,224,96,.35)'" onmouseout="this.style.borderColor='rgba(255,255,255,.14)'">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--cyan);letter-spacing:.12em;margin-bottom:.5rem;">01</div>
+      <div style="font-family:var(--head);font-size:16px;font-weight:700;margin-bottom:.3rem;">KPI DASHBOARD</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.5;">Core simulation metrics — revenue, profit, runway, customer acquisition.</div>
+    </div>
+    <div style="background:var(--glass);border:1px solid var(--line-2);border-radius:12px;padding:1.2rem;cursor:pointer;transition:all .2s;" onclick="nav('economy')" onmouseover="this.style.borderColor='rgba(0,224,96,.35)'" onmouseout="this.style.borderColor='rgba(255,255,255,.14)'">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--cyan);letter-spacing:.12em;margin-bottom:.5rem;">02</div>
+      <div style="font-family:var(--head);font-size:16px;font-weight:700;margin-bottom:.3rem;">ECONOMY</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.5;">Revenue vs expenses, daily cashflow chart, burn analysis.</div>
+    </div>
+    <div style="background:var(--glass);border:1px solid var(--line-2);border-radius:12px;padding:1.2rem;cursor:pointer;transition:all .2s;" onclick="nav('customers')" onmouseover="this.style.borderColor='rgba(0,224,96,.35)'" onmouseout="this.style.borderColor='rgba(255,255,255,.14)'">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--cyan);letter-spacing:.12em;margin-bottom:.5rem;">03</div>
+      <div style="font-family:var(--head);font-size:16px;font-weight:700;margin-bottom:.3rem;">CUSTOMERS</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.5;">Acquisition curve, LTV, churn, channel breakdown.</div>
+    </div>
+    <div style="background:var(--glass);border:1px solid var(--line-2);border-radius:12px;padding:1.2rem;cursor:pointer;transition:all .2s;" onclick="nav('forecast')" onmouseover="this.style.borderColor='rgba(0,224,96,.35)'" onmouseout="this.style.borderColor='rgba(255,255,255,.14)'">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--cyan);letter-spacing:.12em;margin-bottom:.5rem;">04</div>
+      <div style="font-family:var(--head);font-size:16px;font-weight:700;margin-bottom:.3rem;">FORECAST</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.5;">6-month and 12-month financial projections with growth curves.</div>
+    </div>
+    <div style="background:var(--glass);border:1px solid var(--line-2);border-radius:12px;padding:1.2rem;cursor:pointer;transition:all .2s;" onclick="nav('history')" onmouseover="this.style.borderColor='rgba(0,224,96,.35)'" onmouseout="this.style.borderColor='rgba(255,255,255,.14)'">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--cyan);letter-spacing:.12em;margin-bottom:.5rem;">05</div>
+      <div style="font-family:var(--head);font-size:16px;font-weight:700;margin-bottom:.3rem;">HISTORY</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.5;">All previous simulation runs — compare, restore, track progress.</div>
+    </div>
+  </div>
+  <div style="margin-top:1.5rem;font-family:var(--mono);font-size:11px;color:var(--muted-2);text-align:center;">Run a simulation in DATA ACQ first to populate these modules.</div>
+</section>
+
 <section class="section" id="sec-dashboard">
   <div id="dash-loading" class="loading-wrap" style="display:none;">
     <img src="./infinicus logo.jpeg" class="loading-logo" width="76" height="76" alt="INFINICUS" style="border-radius:18px;display:block;">
@@ -1127,6 +1156,41 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
 </section>
 
 <!-- ══ RISK ══ -->
+<!-- ══ SIMULATION HUB ══ -->
+<section class="section" id="sec-simulation">
+  <div class="pg-title" style="font-size:22px;margin-bottom:.1rem;">SIMULATION <span class="c">ENGINE</span></div>
+  <div class="pg-sub">// MONTE CARLO · SENSITIVITY · SCENARIO COMPARISON · VERDICT · REPORT</div>
+  <div style="font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.1em;margin-bottom:1.2rem;margin-top:1rem;">SELECT AN ANALYSIS MODULE</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.85rem;">
+    <div style="background:var(--glass);border:1px solid var(--line-2);border-radius:12px;padding:1.2rem;cursor:pointer;transition:all .2s;" onclick="nav('risk')" onmouseover="this.style.borderColor='rgba(0,224,96,.35)'" onmouseout="this.style.borderColor='rgba(255,255,255,.14)'">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--cyan);letter-spacing:.12em;margin-bottom:.5rem;">01</div>
+      <div style="font-family:var(--head);font-size:16px;font-weight:700;margin-bottom:.3rem;">RISK / MONTE CARLO</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.5;">500-run probability distribution — cash outcomes, failure rates, upside range.</div>
+    </div>
+    <div style="background:var(--glass);border:1px solid var(--line-2);border-radius:12px;padding:1.2rem;cursor:pointer;transition:all .2s;" onclick="nav('sensitivity')" onmouseover="this.style.borderColor='rgba(0,224,96,.35)'" onmouseout="this.style.borderColor='rgba(255,255,255,.14)'">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--cyan);letter-spacing:.12em;margin-bottom:.5rem;">02</div>
+      <div style="font-family:var(--head);font-size:16px;font-weight:700;margin-bottom:.3rem;">SENSITIVITY</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.5;">Which variables move the needle most — heatmap of all key drivers.</div>
+    </div>
+    <div style="background:var(--glass);border:1px solid var(--line-2);border-radius:12px;padding:1.2rem;cursor:pointer;transition:all .2s;" onclick="nav('compare')" onmouseover="this.style.borderColor='rgba(0,224,96,.35)'" onmouseout="this.style.borderColor='rgba(255,255,255,.14)'">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--cyan);letter-spacing:.12em;margin-bottom:.5rem;">03</div>
+      <div style="font-family:var(--head);font-size:16px;font-weight:700;margin-bottom:.3rem;">COMPARE</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.5;">Side-by-side scenario comparison — test different assumptions head to head.</div>
+    </div>
+    <div style="background:var(--glass);border:1px solid var(--line-2);border-radius:12px;padding:1.2rem;cursor:pointer;transition:all .2s;" onclick="nav('verdict')" onmouseover="this.style.borderColor='rgba(0,224,96,.35)'" onmouseout="this.style.borderColor='rgba(255,255,255,.14)'">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--cyan);letter-spacing:.12em;margin-bottom:.5rem;">04</div>
+      <div style="font-family:var(--head);font-size:16px;font-weight:700;margin-bottom:.3rem;">VERDICT</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.5;">AI business health assessment — GO, MODIFY, or STOP recommendation.</div>
+    </div>
+    <div style="background:var(--glass);border:1px solid var(--line-2);border-radius:12px;padding:1.2rem;cursor:pointer;transition:all .2s;" onclick="nav('report')" onmouseover="this.style.borderColor='rgba(0,224,96,.35)'" onmouseout="this.style.borderColor='rgba(255,255,255,.14)'">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--cyan);letter-spacing:.12em;margin-bottom:.5rem;">05</div>
+      <div style="font-family:var(--head);font-size:16px;font-weight:700;margin-bottom:.3rem;">REPORT</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.5;">Full printable business plan — PDF export, shareable link.</div>
+    </div>
+  </div>
+  <div style="margin-top:1.5rem;font-family:var(--mono);font-size:11px;color:var(--muted-2);text-align:center;">Run a simulation in DATA ACQ to unlock all analysis modules.</div>
+</section>
+
 <section class="section" id="sec-risk">
   <div class="pg-title" style="font-size:22px;margin-bottom:.1rem;">RISK / MONTE CARLO</div>
   <div class="pg-sub">// 500 SIMULATION RUNS · PROBABILITY DISTRIBUTION</div>
@@ -1251,9 +1315,9 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
 </section>
 
 <!-- ══ MY BUSINESS ══ -->
-<section class="section" id="sec-mybusiness">
-  <div class="pg-title" style="font-size:22px;margin-bottom:.1rem;">MY <span class="c">BUSINESS</span></div>
-  <div class="pg-sub">// TRACK REAL OPERATIONS — SALES · EXPENSES · CUSTOMERS · TEAM</div>
+<section class="section" id="sec-operations">
+  <div class="pg-title" style="font-size:22px;margin-bottom:.1rem;">BUSINESS <span class="c">OPERATIONS</span></div>
+  <div class="pg-sub">// LOG REAL EVENTS — SALES · EXPENSES · INVENTORY · CUSTOMERS · TEAM</div>
 
   <!-- Auth gate -->
   <div id="biz-auth-gate" style="display:none;text-align:center;padding:2.5rem 1rem;">
@@ -1385,45 +1449,95 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
         </div>
       </div>
 
-      <!-- Digital Twin -->
-      <div style="margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--line);">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.7rem;flex-wrap:wrap;gap:.5rem;">
-          <div>
-            <div style="font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.1em;">DIGITAL TWIN — 30-DAY LIVE SNAPSHOT</div>
-            <div style="font-family:var(--mono);font-size:10px;color:var(--muted-2);margin-top:2px;">Cached · auto-refreshes hourly from your event stream</div>
-          </div>
-          <div style="display:flex;gap:.5rem;">
-            <button class="btn-sm" onclick="bizLoadTwin()">⟳ LOAD TWIN</button>
-            <button class="btn-sm" onclick="bizRefreshTwin()">↺ FORCE REFRESH</button>
-          </div>
-        </div>
-        <div id="biz-twin-area">
-          <div style="font-family:var(--mono);font-size:12px;color:var(--muted-2);text-align:center;padding:1.5rem;">Click LOAD TWIN to see your live business snapshot.</div>
-        </div>
-      </div>
-
-      <!-- Decision Intelligence -->
-      <div style="margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--line);">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.7rem;flex-wrap:wrap;gap:.5rem;">
-          <div>
-            <div style="font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.1em;">DECISION INTELLIGENCE — AI ADVISOR</div>
-            <div style="font-family:var(--mono);font-size:10px;color:var(--muted-2);margin-top:2px;">Recommendations grounded in your real data — never fabricated</div>
-          </div>
-          <button class="btn-sm" onclick="bizGetDecisions()">⚡ GET DECISIONS</button>
-        </div>
-        <div id="biz-decisions-area">
-          <div style="font-family:var(--mono);font-size:12px;color:var(--muted-2);text-align:center;padding:1.5rem;">Load your Digital Twin first, then click GET DECISIONS.</div>
-        </div>
-        <!-- Decision history -->
-        <div style="margin-top:1rem;">
-          <button class="btn-sm" onclick="bizLoadDecisionHistory()" style="font-size:11px;">DECISION HISTORY →</button>
-          <div id="biz-decision-history" style="display:none;margin-top:.75rem;"></div>
-        </div>
+      <!-- Navigation hint -->
+      <div style="margin-top:2rem;padding:1rem;background:rgba(0,224,96,.04);border:1px solid rgba(0,224,96,.15);border-radius:10px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;">
+        <div style="font-family:var(--mono);font-size:12px;color:var(--muted);">Next step: view your live business snapshot</div>
+        <button class="btn-sm" onclick="nav('twin')">VIEW DIGITAL TWIN →</button>
       </div>
 
     </div><!-- /biz-event-area -->
 
   </div><!-- /biz-main -->
+</section>
+
+<!-- ══ DIGITAL TWIN ══ -->
+<section class="section" id="sec-twin">
+  <div class="pg-title" style="font-size:22px;margin-bottom:.1rem;">DIGITAL <span class="c">TWIN</span></div>
+  <div class="pg-sub">// LIVE 30-DAY SNAPSHOT · CACHED · AUTO-REFRESHES HOURLY FROM YOUR EVENT STREAM</div>
+
+  <!-- Auth gate -->
+  <div id="twin-auth-gate" style="display:none;text-align:center;padding:2.5rem 1rem;">
+    <div style="font-size:36px;margin-bottom:.7rem;">🔒</div>
+    <div style="font-family:var(--mono);font-size:14px;color:var(--muted-2);margin-bottom:1rem;">Sign in to access your Digital Twin.</div>
+    <button class="btn-main" onclick="openRegModal()">SIGN IN</button>
+  </div>
+
+  <!-- No business selected -->
+  <div id="twin-no-biz" style="display:none;text-align:center;padding:2.5rem 1rem;">
+    <div style="font-size:36px;margin-bottom:.7rem;">📊</div>
+    <div style="font-family:var(--mono);font-size:13px;color:var(--muted-2);margin-bottom:1rem;">Select a business in OPERATIONS first.</div>
+    <button class="btn-sm" onclick="nav('operations')">GO TO OPERATIONS →</button>
+  </div>
+
+  <!-- Twin content -->
+  <div id="twin-main" style="display:none;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.7rem;flex-wrap:wrap;gap:.5rem;">
+      <div>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.1em;">DIGITAL TWIN — 30-DAY LIVE SNAPSHOT</div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--muted-2);margin-top:2px;" id="twin-biz-label">Cached · auto-refreshes hourly from your event stream</div>
+      </div>
+      <div style="display:flex;gap:.5rem;">
+        <button class="btn-sm" onclick="bizLoadTwin()">⟳ LOAD TWIN</button>
+        <button class="btn-sm" onclick="bizRefreshTwin()">↺ FORCE REFRESH</button>
+      </div>
+    </div>
+    <div id="biz-twin-area">
+      <div style="font-family:var(--mono);font-size:12px;color:var(--muted-2);text-align:center;padding:1.5rem;">Click LOAD TWIN to see your live business snapshot.</div>
+    </div>
+    <div style="margin-top:1.5rem;padding:1rem;background:rgba(0,224,96,.04);border:1px solid rgba(0,224,96,.15);border-radius:10px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;">
+      <div style="font-family:var(--mono);font-size:12px;color:var(--muted);">Ready for AI-powered recommendations?</div>
+      <button class="btn-sm" onclick="nav('decisions')">AI DECISION INTELLIGENCE →</button>
+    </div>
+  </div>
+</section>
+
+<!-- ══ AI DECISIONS ══ -->
+<section class="section" id="sec-decisions">
+  <div class="pg-title" style="font-size:22px;margin-bottom:.1rem;">AI DECISION <span class="c">INTELLIGENCE</span></div>
+  <div class="pg-sub">// RECOMMENDATIONS GROUNDED IN YOUR REAL DATA — NEVER FABRICATED</div>
+
+  <!-- Auth gate -->
+  <div id="decisions-auth-gate" style="display:none;text-align:center;padding:2.5rem 1rem;">
+    <div style="font-size:36px;margin-bottom:.7rem;">🔒</div>
+    <div style="font-family:var(--mono);font-size:14px;color:var(--muted-2);margin-bottom:1rem;">Sign in to access AI Decision Intelligence.</div>
+    <button class="btn-main" onclick="openRegModal()">SIGN IN</button>
+  </div>
+
+  <!-- No business / no twin -->
+  <div id="decisions-no-biz" style="display:none;text-align:center;padding:2.5rem 1rem;">
+    <div style="font-size:36px;margin-bottom:.7rem;">⚡</div>
+    <div style="font-family:var(--mono);font-size:13px;color:var(--muted-2);margin-bottom:1rem;">Load your Digital Twin first — AI decisions are grounded in real data.</div>
+    <button class="btn-sm" onclick="nav('twin')">GO TO DIGITAL TWIN →</button>
+  </div>
+
+  <!-- Decisions content -->
+  <div id="decisions-main" style="display:none;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.7rem;flex-wrap:wrap;gap:.5rem;">
+      <div>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.1em;">DECISION INTELLIGENCE — AI ADVISOR</div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--muted-2);margin-top:2px;" id="decisions-biz-label">Powered by claude-haiku-4-5 · grounded in your live twin</div>
+      </div>
+      <button class="btn-sm" onclick="bizGetDecisions()">⚡ GET DECISIONS</button>
+    </div>
+    <div id="biz-decisions-area">
+      <div style="font-family:var(--mono);font-size:12px;color:var(--muted-2);text-align:center;padding:1.5rem;">Click GET DECISIONS to generate AI recommendations from your twin data.</div>
+    </div>
+    <!-- Decision history -->
+    <div style="margin-top:1rem;">
+      <button class="btn-sm" onclick="bizLoadDecisionHistory()" style="font-size:11px;">DECISION HISTORY →</button>
+      <div id="biz-decision-history" style="display:none;margin-top:.75rem;"></div>
+    </div>
+  </div>
 </section>
 
 <!-- ══ HISTORY ══ -->
@@ -2763,7 +2877,7 @@ function resetSim() {
   initHeatmap();
   $h('score-rings','<div style="font-family:var(--mono);font-size:12px;color:var(--muted-2);margin-top:.5rem;">Run a simulation to see scores.</div>');
   $h('perf-bars','<div style="font-family:var(--mono);font-size:12px;color:var(--muted-2);">Run a simulation to see benchmarks.</div>');
-  nav('input');
+  nav('data');
 }
 
 function setBadge(state) {
@@ -3255,7 +3369,7 @@ function prepareResim(newParams, label) {
     banner.style.display = 'block';
   }
 
-  nav('input');
+  nav('data');
   window.scrollTo(0, 0);
 }
 
@@ -3386,7 +3500,7 @@ function applyCapitalAlternative(mode) {
   if (priceChanged) glowField(priceEl);
 
   // Navigate to input form
-  nav('input');
+  nav('data');
 
   // Populate and show the banner
   const banner  = $('alt-applied-banner');
@@ -5376,7 +5490,7 @@ function renderHistory() {
   if(!hist.length){
     el.innerHTML=`<div style="text-align:center;padding:3.5rem 1rem;font-family:var(--mono);font-size:13px;color:var(--muted-2);">
       No simulations yet.<br><br>
-      <button onclick="nav('input')" style="margin-top:.5rem;padding:8px 18px;border:1px solid rgba(0,224,96,.3);background:none;color:var(--cyan);font-family:var(--mono);font-size:12px;border-radius:6px;cursor:pointer;letter-spacing:.06em;">▶ RUN YOUR FIRST SIMULATION</button>
+      <button onclick="nav('data')" style="margin-top:.5rem;padding:8px 18px;border:1px solid rgba(0,224,96,.3);background:none;color:var(--cyan);font-family:var(--mono);font-size:12px;border-radius:6px;cursor:pointer;letter-spacing:.06em;">▶ RUN YOUR FIRST SIMULATION</button>
     </div>`;
     return;
   }
@@ -5428,7 +5542,7 @@ function restoreFromHistory(id) {
   // Legacy entries (saved before restore support): populate form and re-run
   if(!entry.days||!entry.mc||!entry.params){
     if(entry.params) populateFormFromParams(entry.params);
-    nav('input');
+    nav('data');
     showToast('Params loaded — press Start to re-run.');
     return;
   }
@@ -5455,7 +5569,7 @@ function rerunFromHistory(id) {
   const entry=hist.find(h=>h.id===id);
   if(!entry){showToast('History entry not found.');return;}
   if(entry.params) populateFormFromParams(entry.params);
-  nav('input');
+  nav('data');
   showToast('Params loaded — tweak and re-run ✓');
 }
 
@@ -5745,7 +5859,7 @@ const TUT={
   ],
   start(){
     this.i=0;this.on=true;
-    if(typeof nav==='function')nav('input');
+    if(typeof nav==='function')nav('data');
     document.getElementById('tut-ov').style.display='block';
     this.draw();
   },
@@ -5987,7 +6101,7 @@ async function handleIdeaUpload(input) {
 let _bizCurrentId   = null;   // selected business_id
 let _bizCurrentType = 'sale'; // active event tab
 
-// Called when nav('mybusiness') fires — show/hide auth gate
+// Called when nav('operations') fires — show/hide auth gate and load businesses
 function bizInit() {
   const email = (U && U.email) ? U.email : null;
   const gate  = document.getElementById('biz-auth-gate');
@@ -6366,21 +6480,76 @@ async function bizLoadDecisionHistory() {
   } catch(e) { histDiv.innerHTML = '<div style="color:var(--red);font-family:var(--mono);font-size:12px;padding:.5rem;">Error loading history.</div>'; }
 }
 
-// Hook into the nav function: call bizInit when mybusiness tab is opened
+// Auth+state init for Digital Twin section
+function bizInitTwin() {
+  const email = U && U.email ? U.email : null;
+  const authGate = document.getElementById('twin-auth-gate');
+  const noBiz    = document.getElementById('twin-no-biz');
+  const main     = document.getElementById('twin-main');
+  if (!email) {
+    if (authGate) authGate.style.display = 'block';
+    if (noBiz)    noBiz.style.display    = 'none';
+    if (main)     main.style.display     = 'none';
+    return;
+  }
+  if (authGate) authGate.style.display = 'none';
+  if (!_bizCurrentId) {
+    if (noBiz)  noBiz.style.display  = 'block';
+    if (main)   main.style.display   = 'none';
+    return;
+  }
+  if (noBiz)  noBiz.style.display  = 'none';
+  if (main)   main.style.display   = 'block';
+  const lbl = document.getElementById('twin-biz-label');
+  if (lbl) lbl.textContent = `Business ID: ${_bizCurrentId} · cached · auto-refreshes hourly`;
+}
+
+// Auth+state init for AI Decisions section
+function bizInitDecisions() {
+  const email = U && U.email ? U.email : null;
+  const authGate = document.getElementById('decisions-auth-gate');
+  const noBiz    = document.getElementById('decisions-no-biz');
+  const main     = document.getElementById('decisions-main');
+  if (!email) {
+    if (authGate) authGate.style.display = 'block';
+    if (noBiz)    noBiz.style.display    = 'none';
+    if (main)     main.style.display     = 'none';
+    return;
+  }
+  if (authGate) authGate.style.display = 'none';
+  if (!_bizCurrentId) {
+    if (noBiz)  noBiz.style.display  = 'block';
+    if (main)   main.style.display   = 'none';
+    return;
+  }
+  if (noBiz)  noBiz.style.display  = 'none';
+  if (main)   main.style.display   = 'block';
+  const lbl = document.getElementById('decisions-biz-label');
+  if (lbl) lbl.textContent = `Powered by claude-haiku-4-5 · grounded in live twin · Business: ${_bizCurrentId}`;
+}
+
+// Hook into the nav function: call biz init functions when layer tabs are opened
 // (Will be wired below after nav() is defined, via a safe patch)
 (function patchNavForBiz() {
   const _origNav = window.nav;
   if (typeof _origNav === 'function') {
     window.nav = function(sec) {
       _origNav(sec);
-      if (sec === 'mybusiness') bizInit();
+      if (sec === 'operations') bizInit();
+      if (sec === 'twin')       bizInitTwin();
+      if (sec === 'decisions')  bizInitDecisions();
     };
   } else {
     // nav may not be defined yet — retry on DOMContentLoaded
     document.addEventListener('DOMContentLoaded', () => {
       const orig = window.nav;
       if (typeof orig === 'function') {
-        window.nav = function(sec) { orig(sec); if (sec === 'mybusiness') bizInit(); };
+        window.nav = function(sec) {
+          orig(sec);
+          if (sec === 'operations') bizInit();
+          if (sec === 'twin')       bizInitTwin();
+          if (sec === 'decisions')  bizInitDecisions();
+        };
       }
     });
   }
