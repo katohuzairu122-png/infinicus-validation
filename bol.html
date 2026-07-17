@@ -1,0 +1,2614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="INFINICUS Business Operations Layer — daily operations: sales, inventory, cash, staff, and closing.">
+  <meta name="theme-color" content="#000000">
+  <title>BOL · Business Operations Layer — INFINICUS</title>
+
+  <!-- IBM Plex fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ═══════════════════════════════════════════════════════════════
+       DESIGN TOKENS — identical to Layer 1 (dal.html) for visual
+       and structural continuity across the INFINICUS platform.
+    ═══════════════════════════════════════════════════════════════ */
+    :root {
+      /* Backgrounds */
+      --bg:          #000000;
+      --bg-surface:  #070707;
+      --bg-elevated: #0D0D0D;
+      --bg-input:    #090909;
+      --bg-hover:    #111111;
+
+      /* Borders */
+      --border:      #1C1C1C;
+      --border-2:    #252525;
+
+      /* Accent — neon green */
+      --accent:      #00FF41;
+      --accent-dim:  rgba(0, 255, 65, 0.13);
+      --accent-glow: rgba(0, 255, 65, 0.07);
+      --accent-muted:rgba(0, 255, 65, 0.04);
+
+      /* Status colours */
+      --red:        #FF3B3B;
+      --red-dim:    rgba(255, 59,  59, 0.11);
+      --amber:      #F5A623;
+      --amber-dim:  rgba(245, 166, 35, 0.11);
+      --blue:       #4A9EFF;
+      --blue-dim:   rgba(74,  158, 255, 0.11);
+      --purple:     #B06EFF;
+      --purple-dim: rgba(176, 110, 255, 0.11);
+
+      /* Typography */
+      --text:       #FFFFFF;
+      --text-2:     #8A8A8A;
+      --text-3:     #404040;
+      --text-acc:   #00FF41;
+
+      /* Fonts */
+      --sans: 'IBM Plex Sans',  system-ui, -apple-system, sans-serif;
+      --mono: 'IBM Plex Mono', 'Courier New', monospace;
+
+      /* Layout */
+      --sidebar-w:   252px;
+      --header-h:    48px;
+      --tabbar-h:    60px;
+      --content-max: 1160px;
+
+      /* Shape */
+      --r:    6px;
+      --r-sm: 4px;
+      --r-lg: 10px;
+      --r-xl: 14px;
+
+      /* Motion */
+      --t: .14s ease;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       RESET
+    ═══════════════════════════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { height: 100%; -webkit-text-size-adjust: 100%; }
+
+    body {
+      min-height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 14px;
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    ul, ol { list-style: none; }
+    a      { color: inherit; text-decoration: none; }
+    button { cursor: pointer; font-family: inherit; border: none; background: none; }
+    input, select, textarea { font-family: inherit; }
+    img    { max-width: 100%; display: block; }
+
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    ::-webkit-scrollbar        { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track  { background: transparent; }
+    ::-webkit-scrollbar-thumb  { background: #222; border-radius: 2px; }
+    ::-webkit-scrollbar-thumb:hover { background: #333; }
+
+    /* ═══════════════════════════════════════════════════════════════
+       APP SHELL
+    ═══════════════════════════════════════════════════════════════ */
+    .app { display: flex; min-height: 100vh; }
+
+    /* ═══════════════════════════════════════════════════════════════
+       SIDEBAR — desktop only (≥900px). Mobile uses bottom-tabs + more-sheet.
+    ═══════════════════════════════════════════════════════════════ */
+    .sidebar {
+      width: var(--sidebar-w);
+      min-height: 100vh;
+      background: var(--bg-surface);
+      border-right: 1px solid var(--border);
+      display: none;
+      flex-direction: column;
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      z-index: 200;
+      overflow-y: auto;
+      overflow-x: hidden;
+      flex-shrink: 0;
+    }
+
+    .sidebar-brand {
+      padding: 20px 18px 18px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .brand-eyebrow {
+      font-family: var(--mono);
+      font-size: 8.5px;
+      font-weight: 600;
+      letter-spacing: .22em;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .brand-name {
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: .01em;
+      line-height: 1.35;
+    }
+
+    .brand-meta {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--text-3);
+      margin-top: 4px;
+      letter-spacing: .06em;
+    }
+
+    .brand-ctx {
+      margin-top: 12px;
+      padding: 8px 10px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      font-family: var(--mono);
+      font-size: 9.5px;
+      color: var(--text-3);
+      line-height: 1.6;
+    }
+    .brand-ctx b { color: var(--text-2); font-weight: 600; }
+
+    .nav-group-label {
+      font-family: var(--mono);
+      font-size: 8.5px;
+      font-weight: 600;
+      letter-spacing: .16em;
+      color: var(--text-3);
+      text-transform: uppercase;
+      padding: 16px 18px 5px;
+      user-select: none;
+    }
+
+    .nav-list { padding: 8px 10px; flex: 1; }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 10px;
+      border-radius: var(--r);
+      color: var(--text-2);
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: .01em;
+      cursor: pointer;
+      transition: background var(--t), color var(--t), border-color var(--t);
+      user-select: none;
+      border: 1px solid transparent;
+      margin-bottom: 1px;
+      line-height: 1.4;
+    }
+
+    .nav-item:hover { background: var(--bg-elevated); color: var(--text); }
+
+    .nav-item.active {
+      background: var(--accent-dim);
+      color: var(--text-acc);
+      border-color: rgba(0, 255, 65, 0.16);
+    }
+
+    .nav-icon { width: 15px; height: 15px; flex-shrink: 0; opacity: .55; transition: opacity var(--t); }
+    .nav-item:hover  .nav-icon { opacity: .8; }
+    .nav-item.active .nav-icon { opacity: 1; }
+
+    .nav-badge {
+      margin-left: auto;
+      font-family: var(--mono);
+      font-size: 9.5px;
+      font-weight: 600;
+      padding: 1px 6px;
+      border-radius: 10px;
+      background: var(--red-dim);
+      color: var(--red);
+      line-height: 1.7;
+    }
+
+    .sidebar-footer { padding: 14px 18px; border-top: 1px solid var(--border); flex-shrink: 0; }
+
+    .status-row {
+      display: flex; align-items: center; gap: 7px;
+      font-family: var(--mono); font-size: 10px; color: var(--text-3); letter-spacing: .04em;
+    }
+
+    .status-dot {
+      width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+      background: var(--text-3);
+      transition: background .3s, box-shadow .3s;
+    }
+    .status-dot.ready { background: var(--accent); box-shadow: 0 0 7px rgba(0,255,65,.5); }
+    .status-dot.error { background: var(--red); }
+    .status-dot.init  { background: var(--amber); animation: pulse-amber 1.2s infinite; }
+
+    @keyframes pulse-amber { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
+
+    /* ═══════════════════════════════════════════════════════════════
+       MOBILE HEADER — slim top bar, current view title only
+       (no hamburger: mobile navigation is bottom-tabs + more-sheet)
+    ═══════════════════════════════════════════════════════════════ */
+    .mobile-header {
+      display: flex;
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: var(--header-h);
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border);
+      align-items: center;
+      padding: 0 16px;
+      z-index: 150;
+    }
+
+    .mobile-header .mh-title {
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: .04em;
+    }
+    .mobile-header .mh-title em { color: var(--accent); font-style: normal; }
+
+    .mobile-header .mh-sub {
+      margin-left: auto;
+      font-family: var(--mono);
+      font-size: 9.5px;
+      color: var(--text-3);
+      max-width: 45%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       BOTTOM TABS — mobile primary navigation
+       Home · Sell · Orders · Inventory · More
+    ═══════════════════════════════════════════════════════════════ */
+    .bottom-tabs {
+      display: flex;
+      position: fixed;
+      left: 0; right: 0; bottom: 0;
+      height: var(--tabbar-h);
+      background: var(--bg-surface);
+      border-top: 1px solid var(--border);
+      z-index: 210;
+      padding-bottom: env(safe-area-inset-bottom, 0);
+    }
+
+    .tab-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      color: var(--text-3);
+      transition: color var(--t);
+      position: relative;
+    }
+
+    .tab-item .tab-icon { width: 19px; height: 19px; opacity: .7; }
+    .tab-item .tab-label {
+      font-family: var(--mono);
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    .tab-item.active { color: var(--accent); }
+    .tab-item.active .tab-icon { opacity: 1; }
+
+    .tab-item.tab-sell { color: var(--bg); }
+    .tab-item.tab-sell .tab-sell-fab {
+      position: absolute;
+      top: -14px;
+      width: 42px; height: 42px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 18px rgba(0,255,65,.35);
+    }
+    .tab-item.tab-sell .tab-sell-fab svg { width: 19px; height: 19px; }
+    .tab-item.tab-sell .tab-label { margin-top: 16px; color: var(--text-2); }
+    .tab-item.tab-sell.active .tab-label { color: var(--accent); }
+
+    /* ═══════════════════════════════════════════════════════════════
+       MORE SHEET — mobile slide-up panel for secondary views
+    ═══════════════════════════════════════════════════════════════ */
+    .more-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.75);
+      backdrop-filter: blur(3px);
+      z-index: 220;
+      opacity: 0; pointer-events: none;
+      transition: opacity var(--t);
+    }
+    .more-backdrop.open { opacity: 1; pointer-events: auto; }
+
+    .more-sheet {
+      position: fixed;
+      left: 0; right: 0; bottom: 0;
+      max-height: 78vh;
+      background: var(--bg-surface);
+      border-top: 1px solid var(--border-2);
+      border-radius: var(--r-xl) var(--r-xl) 0 0;
+      z-index: 221;
+      transform: translateY(100%);
+      transition: transform .22s ease;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .more-sheet.open { transform: translateY(0); }
+
+    .more-sheet-hd {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .more-sheet-hd .ms-title {
+      font-family: var(--mono); font-size: 11px; font-weight: 700;
+      letter-spacing: .12em; color: var(--text-2); text-transform: uppercase;
+    }
+    .more-sheet-close {
+      width: 26px; height: 26px;
+      display: flex; align-items: center; justify-content: center;
+      border: 1px solid var(--border); border-radius: 50%;
+      color: var(--text-3);
+    }
+
+    .more-sheet-body { overflow-y: auto; padding: 8px 10px 24px; }
+
+    /* ═══════════════════════════════════════════════════════════════
+       MAIN CONTENT
+    ═══════════════════════════════════════════════════════════════ */
+    .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+
+    .view { display: none; flex: 1; flex-direction: column; min-height: calc(100vh - 1px); }
+    .view.active { display: flex; }
+
+    .page-hd { padding: 24px 18px 0; }
+
+    .page-eyebrow {
+      font-family: var(--mono); font-size: 9px; font-weight: 600;
+      letter-spacing: .2em; color: var(--accent); text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .page-title {
+      font-size: 22px; font-weight: 700; color: var(--text);
+      letter-spacing: -.02em; line-height: 1.2; margin-bottom: 5px;
+    }
+
+    .page-sub {
+      font-family: var(--mono); font-size: 10.5px; color: var(--text-3);
+      letter-spacing: .05em; padding-bottom: 20px;
+      border-bottom: 1px solid var(--border); margin-bottom: 22px;
+    }
+
+    .page-actions {
+      display: flex; align-items: center; gap: 8px; margin-top: -8px;
+      padding-bottom: 20px; border-bottom: 1px solid var(--border); margin-bottom: 22px;
+    }
+
+    .content { padding: 0 18px 96px; max-width: var(--content-max); width: 100%; }
+
+    /* ═══════════════════════════════════════════════════════════════
+       COMPONENT: CARD
+    ═══════════════════════════════════════════════════════════════ */
+    .card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      overflow: hidden;
+    }
+    .card + .card { margin-top: 14px; }
+
+    .card-hd {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 13px 16px; border-bottom: 1px solid var(--border);
+    }
+
+    .card-title {
+      font-family: var(--mono); font-size: 10.5px; font-weight: 600;
+      letter-spacing: .1em; color: var(--text-2); text-transform: uppercase;
+    }
+
+    .card-body { padding: 16px; }
+    .card-body + .card-hd { border-top: 1px solid var(--border); }
+
+    /* ═══════════════════════════════════════════════════════════════
+       COMPONENT: BUTTONS
+    ═══════════════════════════════════════════════════════════════ */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 8px 15px; font-family: var(--mono); font-size: 11px; font-weight: 600;
+      letter-spacing: .07em; border-radius: var(--r); border: 1px solid transparent;
+      transition: all var(--t); white-space: nowrap; line-height: 1; text-transform: uppercase;
+    }
+
+    .btn-primary { background: var(--accent); color: #000; border-color: var(--accent); }
+    .btn-primary:hover:not(:disabled) { background: #20FF5A; box-shadow: 0 0 16px rgba(0, 255, 65, .22); }
+    .btn-primary:active:not(:disabled) { transform: translateY(1px); }
+
+    .btn-secondary { background: transparent; color: var(--text-2); border-color: var(--border-2); }
+    .btn-secondary:hover:not(:disabled) { color: var(--text); border-color: #333; background: var(--bg-elevated); }
+
+    .btn-ghost { background: transparent; color: var(--text-3); border-color: transparent; }
+    .btn-ghost:hover:not(:disabled) { color: var(--text-2); background: var(--bg-elevated); }
+
+    .btn-danger { background: transparent; color: var(--red); border-color: rgba(255, 59, 59, .22); }
+    .btn-danger:hover:not(:disabled) { background: var(--red-dim); }
+
+    .btn-accent { background: transparent; color: var(--accent); border-color: rgba(0, 255, 65, .3); }
+    .btn-accent:hover:not(:disabled) { background: var(--accent-dim); border-color: rgba(0, 255, 65, .5); }
+
+    .btn-sm  { padding: 5px 11px; font-size: 10px; }
+    .btn-lg  { padding: 11px 22px; font-size: 12px; }
+    .btn-xl  { padding: 13px 28px; font-size: 13px; }
+    .btn-ico { padding: 7px; }
+    .btn:disabled { opacity: .32; cursor: not-allowed; }
+    .btn svg { flex-shrink: 0; }
+
+    /* ═══════════════════════════════════════════════════════════════
+       COMPONENT: FORM
+    ═══════════════════════════════════════════════════════════════ */
+    .form-group { margin-bottom: 18px; }
+
+    .form-label {
+      display: block; font-family: var(--mono); font-size: 9.5px; font-weight: 600;
+      letter-spacing: .12em; color: var(--text-2); text-transform: uppercase; margin-bottom: 7px;
+    }
+    .form-label .req { color: var(--accent); margin-left: 3px; }
+
+    .form-control {
+      width: 100%; background: var(--bg-input); border: 1px solid var(--border);
+      border-radius: var(--r); color: var(--text); font-family: var(--mono); font-size: 13px;
+      padding: 9px 12px; outline: none; transition: border-color var(--t), box-shadow var(--t);
+      -webkit-appearance: none; appearance: none;
+    }
+    .form-control:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0, 255, 65, .07); }
+    .form-control::placeholder { color: var(--text-3); }
+    .form-control.is-error { border-color: var(--red); box-shadow: 0 0 0 3px var(--red-dim); }
+    .form-control.is-valid { border-color: rgba(0, 255, 65, .35); }
+
+    select.form-control {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' viewBox='0 0 11 7'%3E%3Cpath d='M1 1l4.5 4.5L10 1' stroke='%23404040' stroke-width='1.4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 11px center; padding-right: 32px; cursor: pointer;
+    }
+    select.form-control option { background: var(--bg-elevated); color: var(--text); }
+
+    textarea.form-control { resize: vertical; min-height: 82px; line-height: 1.6; }
+
+    .form-hint { font-family: var(--mono); font-size: 9.5px; color: var(--text-3); margin-top: 5px; letter-spacing: .03em; line-height: 1.5; }
+    .form-error-msg { font-family: var(--mono); font-size: 9.5px; color: var(--red); margin-top: 5px; letter-spacing: .03em; display: none; }
+    .form-error-msg.visible { display: block; }
+
+    .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+    @media (max-width: 640px) { .form-row-2, .form-row-3 { grid-template-columns: 1fr; } }
+
+    /* ═══════════════════════════════════════════════════════════════
+       COMPONENT: BADGE
+    ═══════════════════════════════════════════════════════════════ */
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px; font-family: var(--mono);
+      font-size: 9px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase;
+      padding: 2px 7px; border-radius: 20px; white-space: nowrap; line-height: 1.7;
+    }
+    .badge-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+    .badge-green  { background: var(--accent-dim);  color: var(--accent); }
+    .badge-red    { background: var(--red-dim);     color: var(--red);    }
+    .badge-amber  { background: var(--amber-dim);   color: var(--amber);  }
+    .badge-blue   { background: var(--blue-dim);    color: var(--blue);   }
+    .badge-purple { background: var(--purple-dim);  color: var(--purple); }
+    .badge-muted  { background: var(--bg-elevated); color: var(--text-3); }
+
+    /* ═══════════════════════════════════════════════════════════════
+       COMPONENT: STAT TILE
+    ═══════════════════════════════════════════════════════════════ */
+    .stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-bottom: 22px; }
+    .stat-tile { background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 14px 16px 12px; }
+    .stat-label { font-family: var(--mono); font-size: 8.5px; font-weight: 600; letter-spacing: .15em; color: var(--text-3); text-transform: uppercase; margin-bottom: 10px; }
+    .stat-value { font-family: var(--mono); font-size: 24px; font-weight: 600; color: var(--text); letter-spacing: -.03em; line-height: 1; margin-bottom: 6px; }
+    .stat-value.c-acc   { color: var(--accent); }
+    .stat-value.c-red   { color: var(--red);    }
+    .stat-value.c-amber { color: var(--amber);  }
+    .stat-value.c-blue  { color: var(--blue);   }
+    .stat-sub { font-family: var(--mono); font-size: 9.5px; color: var(--text-3); line-height: 1.4; }
+
+    /* ═══════════════════════════════════════════════════════════════
+       COMPONENT: DATA TABLE
+    ═══════════════════════════════════════════════════════════════ */
+    .tbl-wrap { overflow-x: auto; }
+    .data-tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .data-tbl thead tr { border-bottom: 1px solid var(--border); }
+    .data-tbl th {
+      font-family: var(--mono); font-size: 8.5px; font-weight: 600; letter-spacing: .14em;
+      color: var(--text-3); text-transform: uppercase; text-align: left; padding: 8px 14px; white-space: nowrap;
+    }
+    .data-tbl td { font-family: var(--mono); font-size: 12px; padding: 11px 14px; border-bottom: 1px solid rgba(255, 255, 255, .03); color: var(--text-2); vertical-align: middle; }
+    .data-tbl td.c-text  { font-family: var(--sans); font-size: 13px; color: var(--text); }
+    .data-tbl td.c-muted { color: var(--text-3); font-size: 11px; }
+    .data-tbl td.c-acc   { color: var(--accent); }
+    .data-tbl tr:last-child td { border-bottom: none; }
+    .data-tbl tbody tr { transition: background var(--t); }
+    .data-tbl tbody tr:hover { background: var(--bg-elevated); }
+
+    /* ═══════════════════════════════════════════════════════════════
+       COMPONENT: ALERT
+    ═══════════════════════════════════════════════════════════════ */
+    .alert {
+      display: flex; align-items: flex-start; gap: 10px; padding: 11px 14px; border-radius: var(--r);
+      font-family: var(--mono); font-size: 11px; line-height: 1.6; letter-spacing: .02em;
+      margin-bottom: 16px; border: 1px solid transparent;
+    }
+    .alert-ok   { background: var(--accent-dim); color: var(--accent); border-color: rgba(0,255,65,.18); }
+    .alert-err  { background: var(--red-dim);    color: var(--red);    border-color: rgba(255,59,59,.18); }
+    .alert-warn { background: var(--amber-dim);  color: var(--amber);  border-color: rgba(245,166,35,.18); }
+    .alert-info { background: var(--blue-dim);   color: var(--blue);   border-color: rgba(74,158,255,.18); }
+
+    /* ═══════════════════════════════════════════════════════════════
+       COMPONENT: EMPTY / PLACEHOLDER
+    ═══════════════════════════════════════════════════════════════ */
+    .empty { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 52px 20px; gap: 10px; }
+    .empty-icon { width: 40px; height: 40px; color: var(--text-3); margin-bottom: 4px; }
+    .empty-title { font-size: 15px; font-weight: 600; color: var(--text-2); }
+    .empty-sub { font-family: var(--mono); font-size: 11px; color: var(--text-3); max-width: 300px; line-height: 1.65; }
+
+    .placeholder { border: 1px dashed var(--border-2); border-radius: var(--r-lg); padding: 40px 24px; text-align: center; }
+    .placeholder-icon { font-size: 26px; margin-bottom: 12px; opacity: .4; }
+    .placeholder-title { font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--text-2); letter-spacing: .06em; margin-bottom: 6px; }
+    .placeholder-sub { font-family: var(--mono); font-size: 10.5px; color: var(--text-3); line-height: 1.65; max-width: 380px; margin: 0 auto; }
+    .placeholder-sub code { color: var(--accent); background: var(--accent-muted); padding: 1px 5px; border-radius: 3px; }
+
+    .hr { border: none; border-top: 1px solid var(--border); margin: 22px 0; }
+
+    /* ═══════════════════════════════════════════════════════════════
+       COMPONENT: TABS / PROGRESS
+    ═══════════════════════════════════════════════════════════════ */
+    .tab-bar { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 22px; overflow-x: auto; scrollbar-width: none; }
+    .tab-bar::-webkit-scrollbar { display: none; }
+    .tab-btn {
+      font-family: var(--mono); font-size: 10.5px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+      padding: 9px 16px; color: var(--text-3); border-bottom: 2px solid transparent; margin-bottom: -1px;
+      transition: color var(--t), border-color var(--t); background: none; cursor: pointer; white-space: nowrap;
+    }
+    .tab-btn:hover  { color: var(--text-2); }
+    .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .tab-panel        { display: none; }
+    .tab-panel.active { display: block; }
+
+    .progress-bar { height: 3px; background: var(--bg-elevated); border-radius: 2px; overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width .3s ease; box-shadow: 0 0 8px rgba(0, 255, 65, .4); }
+
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
+    /* ═══════════════════════════════════════════════════════════════
+       RESPONSIVE — breakpoint at 900px: sidebar+no-tabs above,
+       bottom-tabs+mobile-header below
+    ═══════════════════════════════════════════════════════════════ */
+    @media (min-width: 900px) {
+      .sidebar        { display: flex; }
+      .mobile-header  { display: none; }
+      .bottom-tabs    { display: none; }
+      .more-backdrop  { display: none; }
+      .more-sheet     { display: none; }
+      .main           { margin-left: var(--sidebar-w); }
+      .page-hd        { padding: 30px 32px 0; }
+      .page-title     { font-size: 24px; }
+      .page-sub, .page-actions { padding-bottom: 22px; margin-bottom: 28px; }
+      .content        { padding: 0 32px 56px; }
+      .stat-grid      { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; }
+    }
+
+    @media (max-width: 899px) {
+      .main   { padding-top: var(--header-h); padding-bottom: var(--tabbar-h); }
+    }
+
+    @media (max-width: 380px) {
+      .tab-item .tab-label { font-size: 8px; }
+    }
+  </style>
+</head>
+
+<body>
+<div class="app" id="app">
+
+  <!-- ══ DESKTOP SIDEBAR (≥900px) ══ -->
+  <nav class="sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
+
+    <h2 class="sr-only">Business Operations Layer Navigation</h2>
+
+    <div class="sidebar-brand">
+      <div class="brand-eyebrow">INFINICUS Platform</div>
+      <div class="brand-name">Business Operations<br>Layer</div>
+      <div class="brand-meta">Layer 2 &nbsp;·&nbsp; v1.0.0</div>
+      <div class="brand-ctx" id="ctx-chip">No business selected</div>
+    </div>
+
+    <ul class="nav-list" role="menubar" aria-label="Primary navigation" id="nav-list">
+      <!-- populated below by NAV_ITEMS via JS to guarantee sidebar / bottom-tabs / more-sheet stay in sync -->
+    </ul>
+
+    <div class="sidebar-footer">
+      <div class="status-row">
+        <div class="status-dot init" id="ops-status-dot" aria-hidden="true"></div>
+        <span id="ops-status-text">Initializing…</span>
+      </div>
+    </div>
+
+  </nav><!-- /.sidebar -->
+
+  <!-- ══ MOBILE TOP BAR (<900px) ══ -->
+  <header class="mobile-header" role="banner">
+    <div class="mh-title"><em>BOL</em>&nbsp;·&nbsp;<span id="mh-view-title">Home</span></div>
+    <div class="mh-sub" id="mh-ctx">No business</div>
+  </header>
+
+  <!-- ══ MOBILE MORE-SHEET (<900px) ══ -->
+  <div class="more-backdrop" id="more-backdrop" role="presentation" aria-hidden="true"></div>
+  <div class="more-sheet" id="more-sheet" role="dialog" aria-modal="true" aria-label="More">
+    <div class="more-sheet-hd">
+      <div class="ms-title">More</div>
+      <button class="more-sheet-close" id="more-close" aria-label="Close">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="more-sheet-body" id="more-sheet-body" role="menu" aria-label="Secondary navigation">
+      <!-- populated by JS from NAV_ITEMS (secondary group) -->
+    </div>
+  </div>
+
+  <!-- ══ MOBILE BOTTOM TABS (<900px) ══ -->
+  <nav class="bottom-tabs" id="bottom-tabs" role="navigation" aria-label="Primary mobile navigation">
+    <!-- populated by JS: home / sell / orders / inventory / more -->
+  </nav>
+
+  <!-- ══ MAIN CONTENT ══ -->
+  <main class="main" id="main" role="main">
+    <!-- 18 <section class="view" id="view-*"> blocks injected by JS below,
+         one per operational module, per the NAV_ITEMS map. -->
+  </main>
+
+</div><!-- /.app -->
+
+<!-- ════════════════════════════════════════════════════════════════
+     BLOCK 1 · SHELL NAVIGATION
+     Defines the single NAV_ITEMS source of truth, renders the
+     desktop sidebar + mobile bottom-tabs + more-sheet + all 18 view
+     sections from it, and wires view-switching for all three
+     trigger surfaces through one showView() function.
+     No business logic yet — EngineBus lands in Block 2.
+════════════════════════════════════════════════════════════════ -->
+<script>
+(function ShellNav() {
+  'use strict';
+
+  /* ── Single source of truth for navigation ─────────────────────
+     group    : sidebar section label (also used as page-eyebrow)
+     id       : view id → #view-<id>, data-view="<id>"
+     label    : nav text
+     primary  : true → also appears in the mobile bottom-tab bar
+     icon     : inline SVG path(s), 16x16 viewBox, stroke=currentColor
+     block    : which future block populates #view-<id> .content
+     desc     : one-line description shown in the Block-1 placeholder
+  ─────────────────────────────────────────────────────────────── */
+  var NAV_ITEMS = [
+    { group: 'Core', id: 'home',      label: 'Home',      primary: true, block: 4,
+      icon: '<rect x="1.5" y="7" width="13" height="7.5" rx="1" stroke="currentColor" stroke-width="1.3"/><path d="M1 7.5L8 1.5l7 6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>',
+      desc: 'Business workspace — today’s snapshot, active shift, branch context, quick actions.' },
+
+    { group: 'Core', id: 'sell',      label: 'Sell',       primary: true, block: 6,
+      icon: '<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.3"/><path d="M8 4.5v7M5.2 6.3c0-1 .9-1.8 2.8-1.8s2.8.7 2.8 1.6c0 2.2-5.6.9-5.6 3 0 1 1 1.7 2.8 1.7s2.8-.7 2.8-1.7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>',
+      desc: 'Fast order-entry: select branch → add products → customer → totals → payment → complete.' },
+
+    { group: 'Core', id: 'orders',    label: 'Orders',     primary: true, block: 6,
+      icon: '<rect x="2" y="2" width="12" height="12" rx="1.5" stroke="currentColor" stroke-width="1.3"/><line x1="5" y1="5.5" x2="11" y2="5.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><line x1="5" y1="8" x2="11" y2="8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><line x1="5" y1="10.5" x2="8.5" y2="10.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>',
+      desc: 'Order history, status, detail, refunds and cancellations.' },
+
+    { group: 'Core', id: 'inventory', label: 'Inventory',  primary: true, block: 9,
+      icon: '<path d="M1.5 5L8 1.5 14.5 5v6L8 14.5 1.5 11V5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M1.5 5L8 8.5 14.5 5M8 8.5v6" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>',
+      desc: 'Stock levels, movement ledger (8 movement types), low-stock alerts.' },
+
+    { group: 'Catalog & Setup', id: 'catalog', label: 'Catalog', primary: false, block: 5,
+      icon: '<rect x="1.5" y="2.5" width="13" height="11" rx="1.2" stroke="currentColor" stroke-width="1.3"/><line x1="1.5" y1="6" x2="14.5" y2="6" stroke="currentColor" stroke-width="1.2"/><line x1="4" y1="9" x2="9" y2="9" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>',
+      desc: 'Products & services: pricing, SKU, category, tax rate, stock tracking.' },
+
+    { group: 'Catalog & Setup', id: 'branches', label: 'Branches', primary: false, block: 4,
+      icon: '<circle cx="8" cy="6.3" r="2.3" stroke="currentColor" stroke-width="1.3"/><path d="M8 8.6C5 8.6 3 11.8 3 14h10c0-2.2-2-5.4-5-5.4z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>',
+      desc: 'Locations under this business — create, edit, switch active branch.' },
+
+    { group: 'Money', id: 'payments', label: 'Payments', primary: false, block: 7,
+      icon: '<rect x="1.5" y="4" width="13" height="9" rx="1.3" stroke="currentColor" stroke-width="1.3"/><line x1="1.5" y1="7" x2="14.5" y2="7" stroke="currentColor" stroke-width="1.3"/><line x1="4" y1="10" x2="7" y2="10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>',
+      desc: 'Payment records per order — method, tendered/change, refund links.' },
+
+    { group: 'Money', id: 'cash', label: 'Cash Register', primary: false, block: 8,
+      icon: '<rect x="1.5" y="3.5" width="13" height="9.5" rx="1.2" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="8.2" r="2" stroke="currentColor" stroke-width="1.2"/><line x1="3.2" y1="6" x2="3.2" y2="6.01" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>',
+      desc: 'Open/close till sessions, cash movements, expected-vs-counted reconciliation.' },
+
+    { group: 'Money', id: 'expenses', label: 'Expenses', primary: false, block: 10,
+      icon: '<path d="M3 2.5h10v11H3z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M5.5 6h5M5.5 8.5h5M5.5 11h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>',
+      desc: 'Expense entry with category, vendor, and an approval workflow.' },
+
+    { group: 'Money', id: 'closing', label: 'Daily Closing', primary: false, block: 18,
+      icon: '<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.3"/><path d="M8 4.5V8l2.8 1.6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>',
+      desc: 'End-of-day reconciliation: sales, expenses, cash variance, order counts.' },
+
+    { group: 'Relationships', id: 'customers', label: 'Customers', primary: false, block: 11,
+      icon: '<circle cx="8" cy="5.5" r="2.8" stroke="currentColor" stroke-width="1.3"/><path d="M2.5 14c0-3 2.5-4.5 5.5-4.5s5.5 1.5 5.5 4.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>',
+      desc: 'Customer profiles and purchase history, linked to completed sales.' },
+
+    { group: 'Relationships', id: 'suppliers', label: 'Suppliers', primary: false, block: 12,
+      icon: '<rect x="2" y="6.5" width="12" height="7" rx="1" stroke="currentColor" stroke-width="1.3"/><path d="M5 6.5V4.8a3 3 0 016 0V6.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>',
+      desc: 'Supplier directory — contact info, category, linked purchase orders.' },
+
+    { group: 'Relationships', id: 'purchase-orders', label: 'Purchase Orders', primary: false, block: 13,
+      icon: '<path d="M4 1.5h6l3 3v10h-9z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M10 1.5v3h3" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M6 9l1.5 1.5L10.5 7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>',
+      desc: 'Create POs against suppliers, receive against a PO, auto inventory.received.' },
+
+    { group: 'Team', id: 'employees', label: 'Employees', primary: false, block: 14,
+      icon: '<circle cx="6" cy="5" r="2.2" stroke="currentColor" stroke-width="1.2"/><circle cx="11.3" cy="6" r="1.7" stroke="currentColor" stroke-width="1.2"/><path d="M1.8 14c0-2.5 1.9-4 4.2-4s4.2 1.5 4.2 4M10 10.6c1.9.1 3.2 1.3 3.2 3.4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>',
+      desc: 'Staff profiles — role, branch assignment, pay basis, start date.' },
+
+    { group: 'Team', id: 'roles', label: 'Roles & Permissions', primary: false, block: 15,
+      icon: '<path d="M8 1.5l5.5 2.3v4c0 3.4-2.3 5.9-5.5 6.7-3.2-.8-5.5-3.3-5.5-6.7v-4L8 1.5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M5.7 8l1.6 1.6 3-3.2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>',
+      desc: 'Permission sets per role; gates sensitive actions across the app.' },
+
+    { group: 'Team', id: 'shifts', label: 'Shifts', primary: false, block: 16,
+      icon: '<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.3"/><path d="M8 4.5V8l2.2 2.2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 2l-2 1.6M11 2l2 1.6" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>',
+      desc: 'Clock in/out, opening cash tie-in, shift-level sales & variance summary.' },
+
+    { group: 'Work', id: 'tasks', label: 'Tasks', primary: false, block: 17,
+      icon: '<rect x="2.5" y="2.5" width="11" height="11" rx="1.3" stroke="currentColor" stroke-width="1.3"/><path d="M5.3 8l1.7 1.7 3.4-3.6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>',
+      desc: 'Assignable to-dos with priority and due date, tracked per business.' },
+
+    { group: 'System', id: 'audit', label: 'Audit Log', primary: false, block: 19,
+      icon: '<rect x="2" y="1.5" width="12" height="13" rx="1.2" stroke="currentColor" stroke-width="1.3"/><line x1="4.5" y1="5" x2="11.5" y2="5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/><line x1="4.5" y1="7.7" x2="11.5" y2="7.7" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/><line x1="4.5" y1="10.4" x2="9" y2="10.4" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>',
+      desc: 'Immutable trail of every mutating action — actor, before/after, timestamp.' },
+
+    { group: 'System', id: 'export', label: 'Export & Backup', primary: false, block: 20,
+      icon: '<path d="M8 1.5v8M5 6.8L8 9.8l3-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M2.5 11.5v1.8a1 1 0 001 1h9a1 1 0 001-1v-1.8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>',
+      desc: 'Full operational data export (JSON) and scoped backups.' },
+
+    { group: 'System', id: 'settings', label: 'Settings', primary: false, block: 20,
+      icon: '<circle cx="8" cy="8" r="2.4" stroke="currentColor" stroke-width="1.3"/><path d="M8 1.5v1.5M8 13v1.5M1.5 8H3M13 8h1.5M3.4 3.4l1.1 1.1M11.5 11.5l1.1 1.1M3.4 12.6l1.1-1.1M11.5 4.5l1.1-1.1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>',
+      desc: 'Workspace defaults — tax, currency display, receipt footer, thresholds.' }
+  ];
+
+  // Icons used only by the bottom-tab bar's "More" pseudo-item (not a view)
+  var MORE_ICON = '<circle cx="3.2" cy="8" r="1.3" fill="currentColor"/><circle cx="8" cy="8" r="1.3" fill="currentColor"/><circle cx="12.8" cy="8" r="1.3" fill="currentColor"/>';
+  var SELL_TAB_ICON = '<circle cx="9" cy="9" r="7" stroke="currentColor" stroke-width="1.4"/><path d="M9 5v8M6 7.2c0-1.1 1-2 3-2s3 .8 3 1.8c0 2.4-6 1-6 3.2 0 1.1 1.1 1.9 3 1.9s3-.8 3-1.9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>';
+
+  var PRIMARY = NAV_ITEMS.filter(function(n) { return n.primary; });
+  var GROUPS  = [];
+  NAV_ITEMS.forEach(function(n) { if (GROUPS.indexOf(n.group) === -1) GROUPS.push(n.group); });
+
+  /* ── Render: desktop sidebar nav list, grouped ──────────────── */
+  function renderSidebar() {
+    var html = '';
+    GROUPS.forEach(function(group) {
+      html += '<li class="nav-group-label" role="presentation">' + group + '</li>';
+      NAV_ITEMS.filter(function(n) { return n.group === group; }).forEach(function(n) {
+        html +=
+          '<li class="nav-item' + (n.id === 'home' ? ' active' : '') + '" ' +
+              'data-view="' + n.id + '" role="menuitem" tabindex="0"' +
+              (n.id === 'home' ? ' aria-current="page"' : '') + ' ' +
+              'aria-label="' + n.label + '">' +
+            '<svg class="nav-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true">' + n.icon + '</svg>' +
+            n.label +
+          '</li>';
+      });
+    });
+    document.getElementById('nav-list').innerHTML = html;
+  }
+
+  /* ── Render: mobile bottom tab bar (4 primary + More) ───────── */
+  function renderBottomTabs() {
+    var html = PRIMARY.map(function(n) {
+      if (n.id === 'sell') {
+        return '<button class="tab-item tab-sell" data-view="sell" aria-label="Sell">' +
+                 '<span class="tab-sell-fab"><svg width="19" height="19" viewBox="0 0 18 18" fill="none">' + SELL_TAB_ICON + '</svg></span>' +
+                 '<span class="tab-label">Sell</span>' +
+               '</button>';
+      }
+      return '<button class="tab-item' + (n.id === 'home' ? ' active' : '') + '" data-view="' + n.id + '" aria-label="' + n.label + '">' +
+               '<svg class="tab-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true">' + n.icon + '</svg>' +
+               '<span class="tab-label">' + n.label + '</span>' +
+             '</button>';
+    }).join('');
+
+    html += '<button class="tab-item" data-more="1" aria-label="More" aria-haspopup="true" aria-expanded="false">' +
+              '<svg class="tab-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true">' + MORE_ICON + '</svg>' +
+              '<span class="tab-label">More</span>' +
+            '</button>';
+
+    document.getElementById('bottom-tabs').innerHTML = html;
+  }
+
+  /* ── Render: more-sheet body, grouped (secondary items only) ── */
+  function renderMoreSheet() {
+    var html = '';
+    GROUPS.forEach(function(group) {
+      var items = NAV_ITEMS.filter(function(n) { return n.group === group && !n.primary; });
+      if (!items.length) return;
+      html += '<div class="nav-group-label" role="presentation">' + group + '</div>';
+      items.forEach(function(n) {
+        html +=
+          '<div class="nav-item" data-view="' + n.id + '" role="menuitem" tabindex="0" aria-label="' + n.label + '">' +
+            '<svg class="nav-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true">' + n.icon + '</svg>' +
+            n.label +
+          '</div>';
+      });
+    });
+    document.getElementById('more-sheet-body').innerHTML = html;
+  }
+
+  /* ── Render: all 18 view sections into <main> ───────────────── */
+  function renderViews() {
+    var html = '';
+    NAV_ITEMS.forEach(function(n) {
+      html +=
+        '<section class="view' + (n.id === 'home' ? ' active' : '') + '" id="view-' + n.id + '" role="region" aria-label="' + n.label + '"' +
+                 (n.id === 'home' ? '' : ' aria-hidden="true"') + '>' +
+          '<div class="page-hd">' +
+            '<div class="page-eyebrow">' + n.group + '</div>' +
+            '<h1 class="page-title">' + n.label + '</h1>' +
+            '<p class="page-sub">// LAYER 2 &nbsp;·&nbsp; ' + n.group.toUpperCase() + '</p>' +
+          '</div>' +
+          '<div class="content">' +
+            '<div class="placeholder">' +
+              '<div class="placeholder-icon">▢</div>' +
+              '<div class="placeholder-title">BLOCK ' + n.block + ' — ' + n.label + '</div>' +
+              '<div class="placeholder-sub">' + n.desc + '</div>' +
+            '</div>' +
+          '</div>' +
+        '</section>';
+    });
+    document.getElementById('main').innerHTML = html;
+  }
+
+  renderSidebar();
+  renderBottomTabs();
+  renderMoreSheet();
+  renderViews();
+
+  /* ── View switching ──────────────────────────────────────────
+     Single function drives all three trigger surfaces: sidebar
+     items, bottom-tab primary buttons, and more-sheet rows all
+     share the same data-view contract.
+  ─────────────────────────────────────────────────────────────── */
+  var moreBackdrop = document.getElementById('more-backdrop');
+  var moreSheet    = document.getElementById('more-sheet');
+
+  function closeMore() {
+    moreBackdrop.classList.remove('open');
+    moreSheet.classList.remove('open');
+    moreBackdrop.setAttribute('aria-hidden', 'true');
+    var moreTab = document.querySelector('.tab-item[data-more]');
+    if (moreTab) moreTab.setAttribute('aria-expanded', 'false');
+  }
+
+  function openMore() {
+    moreBackdrop.classList.add('open');
+    moreSheet.classList.add('open');
+    moreBackdrop.removeAttribute('aria-hidden');
+    var moreTab = document.querySelector('.tab-item[data-more]');
+    if (moreTab) moreTab.setAttribute('aria-expanded', 'true');
+  }
+
+  function showView(viewId) {
+    var target = document.getElementById('view-' + viewId);
+    if (!target) return;
+
+    document.querySelectorAll('.view').forEach(function(v) {
+      v.classList.remove('active');
+      v.setAttribute('aria-hidden', 'true');
+    });
+    target.classList.add('active');
+    target.removeAttribute('aria-hidden');
+
+    var h = target.querySelector('h1');
+    if (h) { h.setAttribute('tabindex', '-1'); h.focus(); }
+
+    // Sidebar active state
+    document.querySelectorAll('#nav-list .nav-item').forEach(function(el) {
+      var on = el.dataset.view === viewId;
+      el.classList.toggle('active', on);
+      if (on) el.setAttribute('aria-current', 'page'); else el.removeAttribute('aria-current');
+    });
+
+    // Bottom-tab active state — highlights "More" when a secondary view is showing
+    var isPrimary = PRIMARY.some(function(n) { return n.id === viewId; });
+    document.querySelectorAll('#bottom-tabs .tab-item').forEach(function(el) {
+      var on = el.dataset.more ? !isPrimary : el.dataset.view === viewId;
+      el.classList.toggle('active', on);
+    });
+
+    // Mobile header title
+    var item = NAV_ITEMS.filter(function(n) { return n.id === viewId; })[0];
+    var mhTitle = document.getElementById('mh-view-title');
+    if (mhTitle && item) mhTitle.textContent = item.label;
+
+    closeMore();
+    window.scrollTo({ top: 0, behavior: 'instant' });
+
+    if (window.INFINICUS && window.INFINICUS.bus) {
+      window.INFINICUS.bus.emit('ops.nav.changed', { view: viewId });
+    }
+  }
+
+  // Delegated click/keyboard handling — works for sidebar, bottom-tabs, more-sheet
+  document.addEventListener('click', function(e) {
+    var moreBtn = e.target.closest('[data-more]');
+    if (moreBtn) {
+      var isOpen = moreSheet.classList.contains('open');
+      if (isOpen) closeMore(); else openMore();
+      return;
+    }
+    var navEl = e.target.closest('[data-view]');
+    if (navEl) showView(navEl.dataset.view);
+  });
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    var navEl = e.target.closest('[data-view]');
+    if (navEl) { e.preventDefault(); showView(navEl.dataset.view); }
+    var moreBtn = e.target.closest('[data-more]');
+    if (moreBtn) { e.preventDefault(); openMore(); }
+  });
+
+  document.getElementById('more-close').addEventListener('click', closeMore);
+  moreBackdrop.addEventListener('click', closeMore);
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && moreSheet.classList.contains('open')) closeMore();
+  });
+
+  /* ── Status indicator ────────────────────────────────────────── */
+  var statusDot  = document.getElementById('ops-status-dot');
+  var statusText = document.getElementById('ops-status-text');
+  function setStatus(state, label) {
+    statusDot.className = 'status-dot ' + state;
+    statusText.textContent = label;
+  }
+
+  /* ── Business/branch context chip (populated for real in Block 4) ── */
+  function setContext(text) {
+    var chip = document.getElementById('ctx-chip');
+    var mhCtx = document.getElementById('mh-ctx');
+    if (chip) chip.innerHTML = text;
+    if (mhCtx) mhCtx.textContent = text.replace(/<[^>]*>/g, '');
+  }
+
+  /* ── Global interface — later blocks call window.__OPS.* ────── */
+  window.__OPS = {
+    nav:        showView,
+    setStatus:  setStatus,
+    setContext: setContext,
+    navItems:   NAV_ITEMS
+  };
+
+  setStatus('init', 'Block 1 ready');
+
+})();
+</script>
+
+<!-- ════════════════════════════════════════════════════════════════
+     BLOCK 2 · Embedded DAL Core Engine + Operations Schema Extensions
+     Verbatim reproduction of dal.html's non-UI engine (Blocks 2-6),
+     running inside bol.html's own page context so data.event.ingest
+     works standalone against the SAME infinicus_dal IndexedDB.
+     Provides: window.INFINICUS.{bus,security,esc,uuid,sha256,
+               eventChecksum,canonicalize,validator,schemas,storage,
+               _idb,biz,ingestor}
+     Then extends schemas.eventTypes with 14 new canonical types and
+     patches 2 existing inventory payload schemas.
+════════════════════════════════════════════════════════════════ -->
+
+<!-- ── 2A · EngineBus + Security + UUID + Checksum ─────────────── -->
+<script>
+'use strict';
+
+window.INFINICUS = window.INFINICUS || {};
+
+/* ── ENGINE BUS ──────────────────────────────────────────────── */
+(function EngineBusModule() {
+
+  const _routes    = Object.create(null);
+  const _listeners = Object.create(null);
+
+  const bus = {
+    register(route, handler, schema) {
+      if (typeof route !== 'string' || !route.trim()) {
+        console.error('[Bus] register: route must be a non-empty string', route);
+        return;
+      }
+      if (typeof handler !== 'function') {
+        console.error('[Bus] register: handler must be a function for route:', route);
+        return;
+      }
+      if (_routes[route]) {
+        console.warn('[Bus] register: overwriting existing route:', route);
+      }
+      _routes[route] = { handler, schema: schema || null };
+    },
+
+    async call(route, payload) {
+      payload = (payload !== undefined && payload !== null) ? payload : {};
+      const entry = _routes[route];
+
+      if (!entry) {
+        console.warn('[Bus] call: no handler registered for route:', route);
+        return { ok: false, error: 'Route not found: ' + route, code: 'ROUTE_NOT_FOUND' };
+      }
+
+      if (entry.schema && typeof bus.__validator === 'function') {
+        const vr = bus.__validator(entry.schema, payload);
+        if (!vr.valid) {
+          return { ok: false, error: vr.errors[0] || 'Payload validation failed', code: 'VALIDATION_FAILED', errors: vr.errors };
+        }
+      }
+
+      try {
+        const result = await entry.handler(payload);
+        if (result === undefined || result === null) return { ok: true };
+        if (typeof result !== 'object' || Array.isArray(result)) return { ok: true, data: result };
+        if (!('ok' in result)) result.ok = true;
+        return result;
+      } catch (err) {
+        console.error('[Bus] handler threw for route:', route, err);
+        return { ok: false, error: 'Internal error', code: 'HANDLER_ERROR' };
+      }
+    },
+
+    emit(event, data) {
+      const fns = _listeners[event];
+      if (!fns || !fns.length) return;
+      Promise.resolve().then(function() {
+        fns.slice().forEach(function(fn) {
+          try { fn(data, event); }
+          catch(e) { console.error('[Bus] listener threw for event:', event, e); }
+        });
+      });
+    },
+
+    on(event, listener) {
+      if (typeof listener !== 'function') return function(){};
+      if (!_listeners[event]) _listeners[event] = [];
+      _listeners[event].push(listener);
+      return function off() {
+        const idx = _listeners[event] ? _listeners[event].indexOf(listener) : -1;
+        if (idx !== -1) _listeners[event].splice(idx, 1);
+      };
+    },
+
+    off(event, listener) {
+      if (!_listeners[event]) return;
+      const idx = _listeners[event].indexOf(listener);
+      if (idx !== -1) _listeners[event].splice(idx, 1);
+    },
+
+    hasRoute(route) { return Boolean(_routes[route]); },
+    listRoutes() { return Object.keys(_routes); },
+
+    __validator: null,
+    __setValidator(fn) { if (typeof fn === 'function') bus.__validator = fn; }
+  };
+
+  window.INFINICUS.bus = bus;
+
+})(); // EngineBusModule
+
+
+/* ── SECURITY MODULE ─────────────────────────────────────────── */
+(function SecurityModule() {
+
+  const HTML_ESC = { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#x27;','/':'&#x2F;','`':'&#x60;','=':'&#x3D;' };
+  const HTML_ESC_RE = /[&<>"'`=\/]/g;
+
+  const Security = {
+
+    escapeHtml(val) {
+      if (val == null) return '';
+      return String(val).replace(HTML_ESC_RE, function(c) { return HTML_ESC[c]; });
+    },
+
+    sanitizeString(val, maxLen, opts) {
+      maxLen = (maxLen !== undefined) ? maxLen : 1000;
+      opts   = opts || {};
+      if (val == null) return '';
+      let s = String(val);
+      s = s.replace(/\x00/g, '');
+      if (opts.allowNewlines) s = s.replace(/[\x01-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
+      else s = s.replace(/[\x00-\x1F\x7F]/g, '');
+      try { s = s.normalize('NFC'); } catch(_) {}
+      s = s.replace(/<[^>]*>/g, '');
+      s = s.trim();
+      if (s.length > maxLen) throw new RangeError('Input too long: ' + s.length + ' chars (max ' + maxLen + ')');
+      return s;
+    },
+
+    sanitizeNumber(val, opts) {
+      opts = opts || {};
+      let n = opts.integer ? parseInt(String(val), 10) : parseFloat(String(val));
+      if (isNaN(n) || !isFinite(n)) throw new TypeError('Not a valid number: ' + val);
+      if (opts.integer && !Number.isInteger(n)) throw new TypeError('Integer required, got: ' + n);
+      if (opts.min !== undefined && n < opts.min) throw new RangeError('Value ' + n + ' is below minimum ' + opts.min);
+      if (opts.max !== undefined && n > opts.max) throw new RangeError('Value ' + n + ' exceeds maximum ' + opts.max);
+      if (opts.decimals !== undefined) { const factor = Math.pow(10, opts.decimals); n = Math.round(n * factor) / factor; }
+      return n;
+    },
+
+    sanitizeDate(val) {
+      if (val == null || String(val).trim() === '') throw new TypeError('Date is required');
+      const d = new Date(String(val).trim());
+      if (isNaN(d.getTime())) throw new TypeError('Invalid date: ' + val);
+      const MIN_MS = new Date('2000-01-01T00:00:00.000Z').getTime();
+      const MAX_MS = Date.now() + 86400000;
+      if (d.getTime() < MIN_MS) throw new RangeError('Date is before 2000-01-01: ' + val);
+      if (d.getTime() > MAX_MS) throw new RangeError('Date is more than 1 day in the future: ' + val);
+      return d.toISOString();
+    },
+
+    validateEnum(val, allowed) { return Array.isArray(allowed) && allowed.indexOf(val) !== -1; },
+
+    isUUID(str) {
+      return typeof str === 'string' &&
+        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(str);
+    },
+
+    isEmail(str) {
+      return typeof str === 'string' && /^[^\s@]{1,254}@[^\s@]{1,253}\.[^\s@]{2,63}$/.test(str.trim());
+    },
+
+    sanitizeFilename(str) {
+      return String(str).replace(/[^a-zA-Z0-9._\-\s]/g, '').trim().slice(0, 255);
+    },
+
+    isPlainObject(val) {
+      return val !== null && typeof val === 'object' && !Array.isArray(val) &&
+        !(val instanceof Date) && !(val instanceof RegExp);
+    },
+
+    safeGet(obj, key, defaultVal) {
+      if (!obj || typeof obj !== 'object') return defaultVal;
+      const BANNED = ['__proto__', 'constructor', 'prototype'];
+      if (BANNED.indexOf(key) !== -1) return defaultVal;
+      return Object.prototype.hasOwnProperty.call(obj, key) ? obj[key] : defaultVal;
+    }
+  };
+
+  window.INFINICUS.security = Security;
+  window.INFINICUS.esc = Security.escapeHtml.bind(Security);
+
+})(); // SecurityModule
+
+
+/* ── UUID GENERATOR ──────────────────────────────────────────── */
+(function UUIDModule() {
+
+  function uuid() {
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+      return crypto.randomUUID();
+    }
+    if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+      const b = new Uint8Array(16);
+      crypto.getRandomValues(b);
+      b[6] = (b[6] & 0x0f) | 0x40;
+      b[8] = (b[8] & 0x3f) | 0x80;
+      const h = Array.from(b).map(function(x) { return x.toString(16).padStart(2, '0'); }).join('');
+      return h.slice(0,8) + '-' + h.slice(8,12) + '-' + h.slice(12,16) + '-' + h.slice(16,20) + '-' + h.slice(20);
+    }
+    console.warn('[UUID] crypto API unavailable — using Math.random fallback (not secure)');
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      const r = Math.random() * 16 | 0;
+      return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+    });
+  }
+
+  window.INFINICUS.uuid = uuid;
+
+})(); // UUIDModule
+
+
+/* ── SHA-256 CHECKSUM ────────────────────────────────────────── */
+(function ChecksumModule() {
+
+  async function sha256(str) {
+    if (typeof crypto === 'undefined' || !crypto.subtle || typeof crypto.subtle.digest !== 'function') {
+      console.warn('[Checksum] SubtleCrypto unavailable — using fallback hash');
+      return _fallbackHash(str);
+    }
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
+  }
+
+  function _fallbackHash(str) {
+    let h = 5381;
+    for (let i = 0; i < str.length; i++) { h = ((h << 5) + h) ^ str.charCodeAt(i); h = h >>> 0; }
+    return Promise.resolve('fallback-' + h.toString(16).padStart(8, '0'));
+  }
+
+  async function eventChecksum(businessId, eventType, occurredAt, payload) {
+    const key = [businessId, eventType, occurredAt, canonicalize(payload)].join(':');
+    return sha256(key);
+  }
+
+  function canonicalize(val) {
+    if (val === null) return 'null';
+    if (typeof val === 'boolean') return String(val);
+    if (typeof val === 'number') { const rounded = Math.round(val * 100) / 100; return isFinite(rounded) ? String(rounded) : 'null'; }
+    if (typeof val === 'string') return JSON.stringify(val);
+    if (Array.isArray(val)) return '[' + val.map(canonicalize).join(',') + ']';
+    if (typeof val === 'object') {
+      const keys = Object.keys(val).sort();
+      return '{' + keys.map(function(k) { return JSON.stringify(k) + ':' + canonicalize(val[k]); }).join(',') + '}';
+    }
+    return 'null';
+  }
+
+  window.INFINICUS.sha256        = sha256;
+  window.INFINICUS.eventChecksum = eventChecksum;
+  window.INFINICUS.canonicalize  = canonicalize;
+
+})(); // ChecksumModule
+</script>
+
+<!-- ── 2B · ValidationEngine + Schema Registry (10 DAL base schemas) ── -->
+<script>
+'use strict';
+
+(function ValidationEngineModule() {
+
+  var FMT = {
+    'uuid':      function(v) { return /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v); },
+    'date-time': function(v) { return /^\d{4}-\d{2}-\d{2}/.test(v) && !isNaN(new Date(v).getTime()); },
+    'email':     function(v) { return /^[^\s@]{1,254}@[^\s@]{1,253}\.[^\s@]{2,63}$/.test(v.trim()); },
+    'iso-date':  function(v) { return /^\d{4}-\d{2}-\d{2}$/.test(v) && !isNaN(new Date(v).getTime()); },
+    'currency':  function(v) { return /^[A-Z]{3}$/.test(v); }
+  };
+
+  function _typeOf(val) {
+    if (val === null) return 'null';
+    if (Array.isArray(val)) return 'array';
+    return typeof val;
+  }
+
+  function _validateNode(schema, data, path, errors) {
+    if (!schema || typeof schema !== 'object') return;
+    if (data === undefined || data === null) return;
+
+    if (schema.type !== undefined) {
+      var types = Array.isArray(schema.type) ? schema.type : [schema.type];
+      var actual = _typeOf(data);
+      var ok = types.some(function(t) {
+        if (t === 'integer') return typeof data === 'number' && Number.isInteger(data);
+        return actual === t;
+      });
+      if (!ok) { errors.push(path + ': expected ' + types.join('|') + ', got ' + actual); return; }
+    }
+
+    if (schema.enum !== undefined) {
+      if (schema.enum.indexOf(data) === -1) {
+        errors.push(path + ': must be one of [' + schema.enum.map(function(v){ return '"' + v + '"'; }).join(', ') + '], got "' + data + '"');
+      }
+    }
+
+    if (typeof data === 'string') {
+      if (schema.minLength !== undefined && data.length < schema.minLength) errors.push(path + ': minLength ' + schema.minLength + ' (got ' + data.length + ')');
+      if (schema.maxLength !== undefined && data.length > schema.maxLength) errors.push(path + ': maxLength ' + schema.maxLength + ' (got ' + data.length + ')');
+      if (schema.pattern !== undefined) {
+        try { if (!new RegExp(schema.pattern).test(data)) errors.push(path + ': does not match pattern /' + schema.pattern + '/'); }
+        catch(_e) { errors.push(path + ': schema has invalid regex pattern: ' + schema.pattern); }
+      }
+      if (schema.format !== undefined && FMT[schema.format]) {
+        if (!FMT[schema.format](data)) errors.push(path + ': invalid format "' + schema.format + '"');
+      }
+    }
+
+    if (typeof data === 'number') {
+      if (schema.minimum !== undefined && data < schema.minimum) errors.push(path + ': minimum ' + schema.minimum + ' (got ' + data + ')');
+      if (schema.maximum !== undefined && data > schema.maximum) errors.push(path + ': maximum ' + schema.maximum + ' (got ' + data + ')');
+    }
+
+    if (data !== null && typeof data === 'object' && !Array.isArray(data)) {
+      if (Array.isArray(schema.required)) {
+        schema.required.forEach(function(key) {
+          var val = data[key];
+          if (val === undefined || val === null) errors.push(path + '.' + key + ': required field is missing');
+        });
+      }
+      if (schema.properties && typeof schema.properties === 'object') {
+        Object.keys(schema.properties).forEach(function(key) {
+          if (Object.prototype.hasOwnProperty.call(data, key)) {
+            _validateNode(schema.properties[key], data[key], path + '.' + key, errors);
+          }
+        });
+      }
+      if (schema.additionalProperties === false && schema.properties) {
+        var allowed = Object.keys(schema.properties);
+        Object.keys(data).forEach(function(key) {
+          if (allowed.indexOf(key) === -1) errors.push(path + '.' + key + ': additional property not allowed');
+        });
+      }
+    }
+
+    if (Array.isArray(data)) {
+      if (schema.minItems !== undefined && data.length < schema.minItems) errors.push(path + ': minItems ' + schema.minItems + ' (got ' + data.length + ')');
+      if (schema.maxItems !== undefined && data.length > schema.maxItems) errors.push(path + ': maxItems ' + schema.maxItems + ' (got ' + data.length + ')');
+      if (schema.items) {
+        data.forEach(function(item, i) { _validateNode(schema.items, item, path + '[' + i + ']', errors); });
+      }
+    }
+  }
+
+  function validate(schema, data) {
+    var errs = [];
+    _validateNode(schema, data, '$', errs);
+    return { valid: errs.length === 0, errors: errs };
+  }
+
+  window.INFINICUS.validator = { validate: validate, _validateNode: _validateNode };
+
+})(); // ValidationEngineModule
+
+
+(function SchemaRegistryModule() {
+
+  var _store = Object.create(null);
+
+  var EVENT_TYPES = [
+    'business.created', 'sale.created', 'expense.recorded', 'customer.created',
+    'inventory.received', 'inventory.consumed', 'inventory.adjusted',
+    'employee.created', 'supplier.created', 'marketing.activity.recorded'
+  ];
+
+  var ENVELOPE_SCHEMA = {
+    type: 'object',
+    required: ['eventId', 'businessId', 'eventType', 'source', 'occurredAt', 'currency', 'payload'],
+    properties: {
+      eventId:    { type: 'string', format: 'uuid' },
+      businessId: { type: 'string', format: 'uuid' },
+      eventType:  { type: 'string', enum: EVENT_TYPES },
+      source:     { type: 'string', minLength: 1, maxLength: 100 },
+      occurredAt: { type: 'string', format: 'date-time' },
+      receivedAt: { type: 'string', format: 'date-time' },
+      currency:   { type: 'string', pattern: '^[A-Z]{3}$' },
+      payload:    { type: 'object' },
+      metadata:   { type: 'object' }
+    }
+  };
+
+  var PAYLOAD_SCHEMAS = {
+    'business.created': { type:'object', required:['name'], properties:{
+      name:{type:'string',minLength:1,maxLength:255}, industry:{type:'string',maxLength:100},
+      country:{type:'string',minLength:2,maxLength:2}, currency:{type:'string',pattern:'^[A-Z]{3}$'},
+      startedAt:{type:'string',format:'date-time'} } },
+
+    'sale.created': { type:'object', required:['amount'], properties:{
+      amount:{type:'number',minimum:0}, quantity:{type:'number',minimum:0},
+      productId:{type:'string',maxLength:100}, productName:{type:'string',maxLength:255},
+      customerId:{type:'string',maxLength:100},
+      channel:{type:'string',enum:['pos','online','phone','wholesale','other']} } },
+
+    'expense.recorded': { type:'object', required:['amount','category'], properties:{
+      amount:{type:'number',minimum:0}, category:{type:'string',minLength:1,maxLength:100},
+      description:{type:'string',maxLength:500}, vendorId:{type:'string',maxLength:100},
+      vendorName:{type:'string',maxLength:255}, isRecurring:{type:'boolean'} } },
+
+    'customer.created': { type:'object', required:['name'], properties:{
+      name:{type:'string',minLength:1,maxLength:255}, email:{type:'string',format:'email',maxLength:254},
+      phone:{type:'string',maxLength:30}, source:{type:'string',maxLength:100}, segment:{type:'string',maxLength:100} } },
+
+    'inventory.received': { type:'object', required:['itemId','quantity'], properties:{
+      itemId:{type:'string',minLength:1,maxLength:100}, itemName:{type:'string',maxLength:255},
+      quantity:{type:'number',minimum:0}, unitCost:{type:'number',minimum:0},
+      supplierId:{type:'string',maxLength:100}, location:{type:'string',maxLength:100} } },
+
+    'inventory.consumed': { type:'object', required:['itemId','quantity'], properties:{
+      itemId:{type:'string',minLength:1,maxLength:100}, itemName:{type:'string',maxLength:255},
+      quantity:{type:'number',minimum:0}, reason:{type:'string',enum:['sale','waste','sample','transfer','other']} } },
+
+    'inventory.adjusted': { type:'object', required:['itemId','adjustedQuantity'], properties:{
+      itemId:{type:'string',minLength:1,maxLength:100}, itemName:{type:'string',maxLength:255},
+      adjustedQuantity:{type:'number'}, reason:{type:'string',maxLength:255}, countedBy:{type:'string',maxLength:100} } },
+
+    'employee.created': { type:'object', required:['name'], properties:{
+      name:{type:'string',minLength:1,maxLength:255}, role:{type:'string',maxLength:100},
+      startDate:{type:'string',format:'date-time'}, salaryPerPeriod:{type:'number',minimum:0},
+      salaryPeriod:{type:'string',enum:['hour','day','week','month','year']} } },
+
+    'supplier.created': { type:'object', required:['name'], properties:{
+      name:{type:'string',minLength:1,maxLength:255}, contactName:{type:'string',maxLength:255},
+      email:{type:'string',format:'email',maxLength:254}, phone:{type:'string',maxLength:30},
+      category:{type:'string',maxLength:100} } },
+
+    'marketing.activity.recorded': { type:'object', required:['channel'], properties:{
+      channel:{type:'string',enum:['social','email','sms','print','radio','tv','influencer','event','other']},
+      campaign:{type:'string',maxLength:255}, spend:{type:'number',minimum:0},
+      reach:{type:'number',minimum:0}, conversions:{type:'number',minimum:0} } }
+  };
+
+  var SchemaRegistry = {
+    eventTypes: EVENT_TYPES,
+
+    register: function(name, schema) {
+      if (typeof name !== 'string' || !name.trim()) { console.error('[Schema] register: name must be a non-empty string'); return; }
+      if (!schema || typeof schema !== 'object') { console.error('[Schema] register: schema must be an object for:', name); return; }
+      if (_store[name]) console.warn('[Schema] register: overwriting schema:', name);
+      _store[name] = schema;
+    },
+    get: function(name) { return _store[name] || null; },
+    list: function() { return Object.keys(_store); },
+    validate: function(nameOrSchema, data) {
+      var schema;
+      if (typeof nameOrSchema === 'string') {
+        schema = _store[nameOrSchema];
+        if (!schema) return { valid: false, errors: ['Schema not found: ' + nameOrSchema] };
+      } else if (nameOrSchema && typeof nameOrSchema === 'object') {
+        schema = nameOrSchema;
+      } else {
+        return { valid: false, errors: ['validate: invalid schema reference'] };
+      }
+      return window.INFINICUS.validator.validate(schema, data);
+    },
+    validatePayload: function(eventType, payload) { return this.validate('payload.' + eventType, payload); },
+    validateEnvelope: function(envelope) {
+      var envResult = this.validate('dal.event.envelope', envelope);
+      if (!envResult.valid) return envResult;
+      if (envelope && envelope.eventType && envelope.payload) {
+        var payloadSchemaName = 'payload.' + envelope.eventType;
+        if (_store[payloadSchemaName]) {
+          var payResult = this.validate(payloadSchemaName, envelope.payload);
+          if (!payResult.valid) return { valid: false, errors: payResult.errors.map(function(e) { return 'payload' + e.slice(1); }) };
+        }
+      }
+      return { valid: true, errors: [] };
+    }
+  };
+
+  SchemaRegistry.register('dal.event.envelope', ENVELOPE_SCHEMA);
+  EVENT_TYPES.forEach(function(type) {
+    if (PAYLOAD_SCHEMAS[type]) SchemaRegistry.register('payload.' + type, PAYLOAD_SCHEMAS[type]);
+  });
+
+  window.INFINICUS.schemas = SchemaRegistry;
+
+  window.INFINICUS.bus.__setValidator(function busValidator(schema, payload) {
+    return window.INFINICUS.validator.validate(schema, payload);
+  });
+
+})(); // SchemaRegistryModule
+</script>
+
+<!-- ── 2C · Operations Schema Extensions (NEW — additive only) ──
+     Registers 14 new canonical eventTypes via the SAME registry
+     used above, using only its public API (register/get + the
+     shared eventTypes array reference). Does not touch dal.html.
+────────────────────────────────────────────────────────────── -->
+<script>
+'use strict';
+
+(function OperationsSchemaExtensionModule() {
+
+  var schemas = window.INFINICUS.schemas;
+
+  var NEW_EVENT_TYPES = [
+    'order.created', 'order.completed', 'order.cancelled', 'order.refunded',
+    'payment.completed', 'payment.refunded',
+    'expense.approved',
+    'purchaseOrder.created', 'purchaseOrder.received',
+    'shift.started', 'shift.ended',
+    'task.created', 'task.completed',
+    'day.closed'
+  ];
+
+  var OPS_PAYLOAD_SCHEMAS = {
+
+    'order.created': { type:'object', required:['orderId','branchId','itemCount'], properties:{
+      orderId:{type:'string',format:'uuid'}, branchId:{type:'string',format:'uuid'},
+      customerId:{type:'string',maxLength:100}, itemCount:{type:'number',minimum:0},
+      status:{type:'string',enum:['draft']} } },
+
+    'order.completed': { type:'object', required:['orderId','branchId','items','subtotal','total','paymentStatus'], properties:{
+      orderId:{type:'string',format:'uuid'}, branchId:{type:'string',format:'uuid'},
+      customerId:{type:'string',maxLength:100},
+      items:{ type:'array', minItems:1, items:{ type:'object',
+        required:['productId','name','quantity','unitPrice','lineTotal'], properties:{
+          productId:{type:'string',maxLength:100}, name:{type:'string',maxLength:255},
+          quantity:{type:'number',minimum:0}, unitPrice:{type:'number',minimum:0},
+          lineTotal:{type:'number',minimum:0} } } },
+      subtotal:{type:'number',minimum:0}, discount:{type:'number',minimum:0},
+      tax:{type:'number',minimum:0}, total:{type:'number',minimum:0},
+      paymentStatus:{type:'string',enum:['unpaid','partial','paid']} } },
+
+    'order.cancelled': { type:'object', required:['orderId','branchId'], properties:{
+      orderId:{type:'string',format:'uuid'}, branchId:{type:'string',format:'uuid'},
+      reason:{type:'string',maxLength:255} } },
+
+    'order.refunded': { type:'object', required:['orderId','refundId','amount'], properties:{
+      orderId:{type:'string',format:'uuid'}, refundId:{type:'string',format:'uuid'},
+      amount:{type:'number',minimum:0}, reason:{type:'string',maxLength:255} } },
+
+    'payment.completed': { type:'object', required:['paymentId','orderId','amount','method'], properties:{
+      paymentId:{type:'string',format:'uuid'}, orderId:{type:'string',format:'uuid'},
+      amount:{type:'number',minimum:0},
+      method:{type:'string',enum:['cash','card','mobile','bank_transfer','store_credit','other']},
+      tenderedAmount:{type:'number',minimum:0}, changeGiven:{type:'number',minimum:0},
+      reference:{type:'string',maxLength:100} } },
+
+    'payment.refunded': { type:'object', required:['paymentId','orderId','amount','method'], properties:{
+      paymentId:{type:'string',format:'uuid'}, orderId:{type:'string',format:'uuid'},
+      amount:{type:'number',minimum:0},
+      method:{type:'string',enum:['cash','card','mobile','bank_transfer','store_credit','other']},
+      reason:{type:'string',maxLength:255} } },
+
+    'expense.approved': { type:'object', required:['originalEventId','amount'], properties:{
+      originalEventId:{type:'string',format:'uuid'}, approvedBy:{type:'string',maxLength:100},
+      amount:{type:'number',minimum:0} } },
+
+    'purchaseOrder.created': { type:'object', required:['poId','supplierId','branchId','itemCount','totalCost'], properties:{
+      poId:{type:'string',format:'uuid'}, supplierId:{type:'string',maxLength:100},
+      branchId:{type:'string',format:'uuid'}, itemCount:{type:'number',minimum:0},
+      totalCost:{type:'number',minimum:0}, expectedAt:{type:'string',format:'date-time'} } },
+
+    'purchaseOrder.received': { type:'object', required:['poId','supplierId','branchId','itemCount','totalReceived'], properties:{
+      poId:{type:'string',format:'uuid'}, supplierId:{type:'string',maxLength:100},
+      branchId:{type:'string',format:'uuid'}, itemCount:{type:'number',minimum:0},
+      totalReceived:{type:'number',minimum:0} } },
+
+    'shift.started': { type:'object', required:['shiftId','employeeId','branchId'], properties:{
+      shiftId:{type:'string',format:'uuid'}, employeeId:{type:'string',format:'uuid'},
+      branchId:{type:'string',format:'uuid'}, openingCashAmount:{type:'number',minimum:0} } },
+
+    'shift.ended': { type:'object', required:['shiftId','employeeId','branchId'], properties:{
+      shiftId:{type:'string',format:'uuid'}, employeeId:{type:'string',format:'uuid'},
+      branchId:{type:'string',format:'uuid'}, closingCashAmount:{type:'number',minimum:0},
+      expectedCashAmount:{type:'number',minimum:0}, variance:{type:'number'} } },
+
+    'task.created': { type:'object', required:['taskId','title'], properties:{
+      taskId:{type:'string',format:'uuid'}, title:{type:'string',minLength:1,maxLength:255},
+      assignedTo:{type:'string',maxLength:100}, dueAt:{type:'string',format:'date-time'},
+      priority:{type:'string',enum:['low','normal','high','urgent']} } },
+
+    'task.completed': { type:'object', required:['taskId'], properties:{
+      taskId:{type:'string',format:'uuid'}, completedBy:{type:'string',maxLength:100} } },
+
+    'day.closed': { type:'object', required:['branchId','businessDate','totalSales','totalExpenses','cashVariance','orderCount'], properties:{
+      branchId:{type:'string',format:'uuid'}, businessDate:{type:'string',format:'iso-date'},
+      totalSales:{type:'number',minimum:0}, totalExpenses:{type:'number',minimum:0},
+      cashVariance:{type:'number'}, orderCount:{type:'number',minimum:0} } }
+  };
+
+  // Register every new payload schema, then extend the SHARED eventTypes
+  // array (same object referenced by dal.event.envelope AND ingest.single
+  // enum checks — one push updates every validation checkpoint at once).
+  NEW_EVENT_TYPES.forEach(function(type) {
+    schemas.register('payload.' + type, OPS_PAYLOAD_SCHEMAS[type]);
+    if (schemas.eventTypes.indexOf(type) === -1) schemas.eventTypes.push(type);
+  });
+
+  // Patch existing DAL schemas in place (schemas.get returns the live
+  // reference, not a copy — mutating it here is the intended extension
+  // path, not a workaround).
+  var invConsumed = schemas.get('payload.inventory.consumed');
+  if (invConsumed && invConsumed.properties.reason && invConsumed.properties.reason.enum.indexOf('damage') === -1) {
+    invConsumed.properties.reason.enum.push('damage');
+  }
+
+  var invReceived = schemas.get('payload.inventory.received');
+  if (invReceived && !invReceived.properties.reason) {
+    invReceived.properties.reason = { type: 'string', enum: ['purchase','return','transfer-in','adjustment-in','other'] };
+  }
+
+  window.INFINICUS.__opsSchemaExtensions = { newEventTypes: NEW_EVENT_TYPES };
+
+})(); // OperationsSchemaExtensionModule
+</script>
+
+<!-- ── 2D · StorageAdapter + IDB for infinicus_dal (shared with dal.html) ── -->
+<script>
+'use strict';
+
+(function IDBHelpersModule() {
+
+  var DB_NAME    = 'infinicus_dal';
+  var DB_VERSION = 1;
+  var _db        = null;
+
+  function openDB() {
+    if (_db) return Promise.resolve(_db);
+    if (!window.indexedDB) {
+      return Promise.reject(new Error('IndexedDB is not available. Private-browsing mode may be blocking it.'));
+    }
+    return new Promise(function(resolve, reject) {
+      var req = indexedDB.open(DB_NAME, DB_VERSION);
+
+      req.onupgradeneeded = function(e) {
+        var db = e.target.result;
+        var old = e.oldVersion;
+        if (old < 1) {
+          var evSt = db.createObjectStore('events', { keyPath: 'eventId' });
+          evSt.createIndex('by_business',      'businessId',                { unique: false });
+          evSt.createIndex('by_business_type', ['businessId', 'eventType'],  { unique: false });
+          evSt.createIndex('by_business_date', ['businessId', 'occurredAt'], { unique: false });
+          evSt.createIndex('by_checksum',      'checksum',                  { unique: true  });
+          evSt.createIndex('by_occurred',      'occurredAt',                { unique: false });
+
+          var bizSt = db.createObjectStore('businesses', { keyPath: 'businessId' });
+          bizSt.createIndex('by_name',    'name',      { unique: false });
+          bizSt.createIndex('by_created', 'createdAt', { unique: false });
+
+          var impSt = db.createObjectStore('imports', { keyPath: 'importId' });
+          impSt.createIndex('by_business', 'businessId', { unique: false });
+          impSt.createIndex('by_started',  'startedAt',  { unique: false });
+          impSt.createIndex('by_status',   'status',     { unique: false });
+
+          var errSt = db.createObjectStore('errors', { keyPath: 'errorId' });
+          errSt.createIndex('by_business', 'businessId', { unique: false });
+          errSt.createIndex('by_occurred', 'occurredAt', { unique: false });
+          errSt.createIndex('by_code',     'code',       { unique: false });
+        }
+        // NOTE: if dal.html has already created this DB at v1, this
+        // callback simply never fires here — we connect to the existing
+        // stores. Either page can be opened first; both converge on the
+        // same schema because the definitions are byte-identical.
+      };
+
+      req.onsuccess = function() {
+        _db = req.result;
+        _db.onversionchange = function() {
+          _db.close(); _db = null;
+          console.warn('[IDB] Version change — connection closed. Reload to reconnect.');
+        };
+        resolve(_db);
+      };
+      req.onerror   = function() { reject(req.error); };
+      req.onblocked = function() { reject(new Error('IDB open blocked — close other tabs running this app')); };
+    });
+  }
+
+  function idbGet(store, key) {
+    return openDB().then(function(db) {
+      return new Promise(function(resolve, reject) {
+        var tx = db.transaction([store], 'readonly');
+        var req = tx.objectStore(store).get(key);
+        req.onsuccess = function() { resolve(req.result || null); };
+        req.onerror   = function() { reject(req.error); };
+      });
+    });
+  }
+
+  function idbGetAll(store) {
+    return openDB().then(function(db) {
+      return new Promise(function(resolve, reject) {
+        var tx = db.transaction([store], 'readonly');
+        var req = tx.objectStore(store).getAll();
+        req.onsuccess = function() { resolve(req.result || []); };
+        req.onerror   = function() { reject(req.error); };
+      });
+    });
+  }
+
+  function idbGetAllByIndex(store, indexName, keyVal) {
+    return openDB().then(function(db) {
+      return new Promise(function(resolve, reject) {
+        var tx = db.transaction([store], 'readonly');
+        var req = tx.objectStore(store).index(indexName).getAll(keyVal);
+        req.onsuccess = function() { resolve(req.result || []); };
+        req.onerror   = function() { reject(req.error); };
+      });
+    });
+  }
+
+  function idbCount(store, indexName, keyVal) {
+    return openDB().then(function(db) {
+      return new Promise(function(resolve, reject) {
+        var tx  = db.transaction([store], 'readonly');
+        var src = indexName ? tx.objectStore(store).index(indexName) : tx.objectStore(store);
+        var req = (keyVal !== undefined) ? src.count(keyVal) : src.count();
+        req.onsuccess = function() { resolve(req.result); };
+        req.onerror   = function() { reject(req.error); };
+      });
+    });
+  }
+
+  function idbPut(store, record) {
+    return openDB().then(function(db) {
+      return new Promise(function(resolve, reject) {
+        var tx  = db.transaction([store], 'readwrite');
+        var req = tx.objectStore(store).put(record);
+        req.onsuccess = function() { resolve(record); };
+        req.onerror   = function() { reject(req.error); };
+        tx.onerror    = function() { reject(tx.error); };
+      });
+    });
+  }
+
+  function idbCursor(store, indexName, opts) {
+    opts = opts || {};
+    var limit  = opts.limit  || 100;
+    var offset = opts.offset || 0;
+    return openDB().then(function(db) {
+      return new Promise(function(resolve, reject) {
+        var tx     = db.transaction([store], 'readonly');
+        var source = indexName ? tx.objectStore(store).index(indexName) : tx.objectStore(store);
+        var req    = source.openCursor(opts.range || null, opts.direction || 'next');
+        var results = []; var skipped = 0;
+        req.onsuccess = function() {
+          var cursor = req.result;
+          if (!cursor) { resolve(results); return; }
+          if (skipped < offset) { skipped++; cursor.continue(); return; }
+          results.push(cursor.value);
+          if (results.length >= limit) { resolve(results); return; }
+          cursor.continue();
+        };
+        req.onerror = function() { reject(req.error); };
+      });
+    });
+  }
+
+  window.INFINICUS._idb = { openDB, idbGet, idbGetAll, idbGetAllByIndex, idbCount, idbPut, idbCursor };
+
+})(); // IDBHelpersModule
+
+
+(function StorageAdapterModule() {
+
+  var idb  = window.INFINICUS._idb;
+  var bus  = window.INFINICUS.bus;
+  var uuid = window.INFINICUS.uuid;
+  var LS_NS = 'dal.settings.'; // shared prefix — intentional, see Block 2 write-up
+
+  var storage = {
+
+    init: function() {
+      return idb.openDB().then(function(db) { return { ok: true, dbVersion: db.version }; })
+        .catch(function(err) { return { ok: false, error: err.message, code: err.name }; });
+    },
+
+    putEvent: async function(envelope) {
+      try {
+        var record = Object.assign({}, envelope, { receivedAt: new Date().toISOString() });
+        record.checksum = await window.INFINICUS.eventChecksum(record.businessId, record.eventType, record.occurredAt, record.payload);
+
+        var db = await idb.openDB();
+        var saved = await new Promise(function(resolve, reject) {
+          var tx  = db.transaction(['events'], 'readwrite');
+          var req = tx.objectStore('events').put(record);
+          req.onsuccess = function() { resolve(record); };
+          req.onerror   = function() { reject(req.error); };
+          tx.onerror    = function() { reject(tx.error); };
+        });
+
+        bus.emit('dal.event.stored', { eventId: saved.eventId, eventType: saved.eventType, businessId: saved.businessId });
+        return { ok: true, event: saved };
+      } catch(err) {
+        if (err && err.name === 'ConstraintError') return { ok: true, duplicate: true };
+        console.error('[Storage] putEvent:', err);
+        return { ok: false, error: err.message || String(err), code: err.name || 'STORAGE_ERROR' };
+      }
+    },
+
+    getEvent: function(eventId) {
+      return idb.idbGet('events', eventId).then(function(rec) { return { ok: true, event: rec }; })
+        .catch(function(err) { return { ok: false, error: err.message, code: err.name }; });
+    },
+
+    queryEvents: function(businessId, opts) {
+      opts = opts || {};
+      var limit  = Math.min(opts.limit || 50, 500);
+      var offset = opts.offset || 0;
+      var from   = opts.from || '0000-01-01T00:00:00.000Z';
+      var to     = opts.to   || '9999-12-31T23:59:59.999Z';
+      var range  = IDBKeyRange.bound([businessId, from], [businessId, to]);
+
+      return idb.idbCursor('events', 'by_business_date', { range: range, direction: 'prev', limit: limit, offset: offset })
+        .then(function(events) {
+          if (opts.eventType) events = events.filter(function(e) { return e.eventType === opts.eventType; });
+          return { ok: true, events: events, count: events.length };
+        }).catch(function(err) { return { ok: false, error: err.message, code: err.name }; });
+    },
+
+    countEvents: function(businessId) {
+      return idb.idbCount('events', 'by_business', businessId).then(function(n) { return { ok: true, count: n }; })
+        .catch(function(err) { return { ok: false, error: err.message, code: err.name }; });
+    },
+
+    putBusiness: function(profile) {
+      return idb.idbGet('businesses', profile.businessId).then(function(existing) {
+        var now = new Date().toISOString();
+        var record = Object.assign({ createdAt: now }, existing || {}, profile, { updatedAt: now });
+        return idb.idbPut('businesses', record);
+      }).then(function(record) {
+        bus.emit('dal.business.updated', { businessId: record.businessId, name: record.name });
+        return { ok: true, business: record };
+      }).catch(function(err) { return { ok: false, error: err.message, code: err.name }; });
+    },
+
+    getBusiness: function(businessId) {
+      return idb.idbGet('businesses', businessId).then(function(rec) { return { ok: true, business: rec }; })
+        .catch(function(err) { return { ok: false, error: err.message, code: err.name }; });
+    },
+
+    listBusinesses: function() {
+      return idb.idbGetAll('businesses').then(function(all) {
+        all.sort(function(a, b) { return (b.createdAt || '') > (a.createdAt || '') ? 1 : -1; });
+        return { ok: true, businesses: all };
+      }).catch(function(err) { return { ok: false, error: err.message, code: err.name }; });
+    },
+
+    putImport: function(job) {
+      var now = new Date().toISOString();
+      var record = Object.assign({ startedAt: now, status: 'pending' }, job, { updatedAt: now });
+      return idb.idbPut('imports', record).then(function(r) { return { ok: true, import: r }; })
+        .catch(function(err) { return { ok: false, error: err.message, code: err.name }; });
+    },
+
+    getImport: function(importId) {
+      return idb.idbGet('imports', importId).then(function(rec) { return { ok: true, import: rec }; })
+        .catch(function(err) { return { ok: false, error: err.message, code: err.name }; });
+    },
+
+    listImports: function(businessId) {
+      return idb.idbGetAllByIndex('imports', 'by_business', businessId).then(function(all) {
+        all.sort(function(a, b) { return (b.startedAt || '') > (a.startedAt || '') ? 1 : -1; });
+        return { ok: true, imports: all };
+      }).catch(function(err) { return { ok: false, error: err.message, code: err.name }; });
+    },
+
+    putError: function(record) {
+      var now = new Date().toISOString();
+      var rec = Object.assign({ errorId: uuid(), occurredAt: now, businessId: null }, record);
+      return idb.idbPut('errors', rec).then(function(r) { return { ok: true, errorRecord: r }; })
+        .catch(function(err) { return { ok: false, error: err.message, code: err.name }; });
+    },
+
+    queryErrors: function(opts) {
+      opts = opts || {};
+      var limit  = Math.min(opts.limit || 50, 200);
+      var offset = opts.offset || 0;
+      if (opts.businessId) {
+        return idb.idbGetAllByIndex('errors', 'by_business', opts.businessId).then(function(all) {
+          all.sort(function(a, b) { return (b.occurredAt || '') > (a.occurredAt || '') ? 1 : -1; });
+          return { ok: true, errors: all.slice(offset, offset + limit), total: all.length };
+        }).catch(function(err) { return { ok: false, error: err.message, code: err.name }; });
+      }
+      return idb.idbCursor('errors', 'by_occurred', { direction: 'prev', limit: limit, offset: offset })
+        .then(function(errors) { return { ok: true, errors: errors, count: errors.length }; })
+        .catch(function(err) { return { ok: false, error: err.message, code: err.name }; });
+    },
+
+    getSetting: function(key) {
+      try { var raw = localStorage.getItem(LS_NS + key); return raw !== null ? JSON.parse(raw) : null; }
+      catch(_) { return null; }
+    },
+    setSetting: function(key, value) {
+      try { localStorage.setItem(LS_NS + key, JSON.stringify(value)); return true; }
+      catch(err) { console.warn('[Storage] setSetting failed:', key, err.message); return false; }
+    },
+    deleteSetting: function(key) {
+      try { localStorage.removeItem(LS_NS + key); return true; } catch(_) { return false; }
+    }
+  };
+
+  window.INFINICUS.storage = storage;
+
+  var envelopeSchema = window.INFINICUS.schemas.get('dal.event.envelope');
+
+  bus.register('storage.init', function() { return storage.init(); });
+
+  bus.register('storage.event.put',   function(p) { return storage.putEvent(p); }, envelopeSchema);
+  bus.register('storage.event.get',   function(p) { return storage.getEvent(p.eventId); });
+  bus.register('storage.event.query', function(p) { return storage.queryEvents(p.businessId, p); });
+  bus.register('storage.event.count', function(p) { return storage.countEvents(p.businessId); });
+
+  bus.register('storage.business.put',  function(p) { return storage.putBusiness(p); });
+  bus.register('storage.business.get',  function(p) { return storage.getBusiness(p.businessId); });
+  bus.register('storage.business.list', function()  { return storage.listBusinesses(); });
+
+  bus.register('storage.import.put',  function(p) { return storage.putImport(p); });
+  bus.register('storage.import.get',  function(p) { return storage.getImport(p.importId); });
+  bus.register('storage.import.list', function(p) { return storage.listImports(p.businessId); });
+
+  bus.register('storage.error.put',   function(p) { return storage.putError(p); });
+  bus.register('storage.error.query', function(p) { return storage.queryErrors(p); });
+
+  bus.register('storage.settings.get',    function(p) { return { ok: true, value: storage.getSetting(p.key) }; });
+  bus.register('storage.settings.set',    function(p) { return { ok: storage.setSetting(p.key, p.value) }; });
+  bus.register('storage.settings.delete', function(p) { return { ok: storage.deleteSetting(p.key) }; });
+
+})(); // StorageAdapterModule
+</script>
+
+<!-- ── 2E · BusinessManager (manager logic only — Layer 2 builds its
+     own Home/Workspace UI in a later block, not DAL's Businesses view) ── -->
+<script>
+'use strict';
+
+(function BusinessManagerModule() {
+
+  var bus     = window.INFINICUS.bus;
+  var storage = window.INFINICUS.storage;
+  var uuid    = window.INFINICUS.uuid;
+  var sec     = window.INFINICUS.security;
+  var schemas = window.INFINICUS.schemas;
+
+  var SETTING_KEY = 'activeBusinessId';
+
+  var _activeId      = null;
+  var _activeProfile = null;
+
+  var S_CREATE = { type:'object', required:['name'], properties:{
+    name:{type:'string',minLength:1,maxLength:255}, industry:{type:'string',maxLength:100},
+    country:{type:'string',minLength:2,maxLength:2}, currency:{type:'string',pattern:'^[A-Z]{3}$'},
+    startedAt:{type:'string',format:'date-time'} } };
+
+  var S_SELECT = { type:'object', required:['businessId'], properties:{ businessId:{type:'string',format:'uuid'} } };
+
+  var S_UPDATE = { type:'object', required:['businessId'], properties:{
+    businessId:{type:'string',format:'uuid'}, name:{type:'string',minLength:1,maxLength:255},
+    industry:{type:'string',maxLength:100}, country:{type:'string',minLength:2,maxLength:2},
+    currency:{type:'string',pattern:'^[A-Z]{3}$'} } };
+
+  schemas.register('biz.create', S_CREATE);
+  schemas.register('biz.select', S_SELECT);
+  schemas.register('biz.update', S_UPDATE);
+
+  function _setActive(profile) {
+    _activeId      = profile ? profile.businessId : null;
+    _activeProfile = profile || null;
+    storage.setSetting(SETTING_KEY, _activeId);
+    bus.emit('dal.business.selected', { businessId: _activeId, profile: _activeProfile });
+  }
+
+  var biz = {
+    create: async function(fields) {
+      try {
+        var name = sec.sanitizeString(fields.name || '', 255);
+        if (!name) return { ok: false, error: 'Business name is required', code: 'VALIDATION_FAILED' };
+        var profile = {
+          businessId: uuid(), name: name,
+          industry:   fields.industry  ? sec.sanitizeString(fields.industry,  100) : null,
+          country:    fields.country   ? sec.sanitizeString(fields.country,    2)  : null,
+          currency:   fields.currency  ? sec.sanitizeString(fields.currency,   3)  : 'USD',
+          startedAt:  fields.startedAt ? sec.sanitizeDate(fields.startedAt)        : null
+        };
+        if (profile.country)  profile.country  = profile.country.toUpperCase();
+        if (profile.currency) profile.currency = profile.currency.toUpperCase();
+
+        var result = await storage.putBusiness(profile);
+        if (!result.ok) return result;
+        _setActive(result.business);
+        bus.emit('dal.business.created', { businessId: result.business.businessId });
+        return { ok: true, business: result.business };
+      } catch(err) { return { ok: false, error: err.message || String(err), code: err.name || 'BIZ_ERROR' }; }
+    },
+
+    select: async function(businessId) {
+      if (!sec.isUUID(businessId)) return { ok: false, error: 'Invalid businessId', code: 'VALIDATION_FAILED' };
+      var result = await storage.getBusiness(businessId);
+      if (!result.ok) return result;
+      if (!result.business) return { ok: false, error: 'Business not found', code: 'NOT_FOUND' };
+      _setActive(result.business);
+      return { ok: true, business: result.business };
+    },
+
+    deselect: function() { _setActive(null); return { ok: true }; },
+
+    get: async function(businessId) {
+      var id = businessId || _activeId;
+      if (!id) return { ok: true, business: null };
+      if (!sec.isUUID(id)) return { ok: false, error: 'Invalid businessId', code: 'VALIDATION_FAILED' };
+      return storage.getBusiness(id);
+    },
+
+    getActive: function() { return { ok: true, business: _activeProfile, businessId: _activeId }; },
+    getActiveId: function() { return _activeId; },
+    list: function() { return storage.listBusinesses(); },
+
+    update: async function(fields) {
+      if (!sec.isUUID(fields.businessId)) return { ok: false, error: 'Invalid businessId', code: 'VALIDATION_FAILED' };
+      try {
+        var patch = { businessId: fields.businessId };
+        if (fields.name     !== undefined) patch.name     = sec.sanitizeString(fields.name,     255);
+        if (fields.industry !== undefined) patch.industry = sec.sanitizeString(fields.industry, 100);
+        if (fields.country  !== undefined) patch.country  = sec.sanitizeString(fields.country,    2).toUpperCase();
+        if (fields.currency !== undefined) patch.currency = sec.sanitizeString(fields.currency,   3).toUpperCase();
+
+        var result = await storage.putBusiness(patch);
+        if (!result.ok) return result;
+        if (_activeId === fields.businessId) _activeProfile = result.business;
+        bus.emit('dal.business.updated', { businessId: fields.businessId });
+        return { ok: true, business: result.business };
+      } catch(err) { return { ok: false, error: err.message || String(err), code: err.name || 'BIZ_ERROR' }; }
+    },
+
+    restoreActive: async function() {
+      var saved = storage.getSetting(SETTING_KEY);
+      if (!saved || !sec.isUUID(saved)) return false;
+      var result = await storage.getBusiness(saved);
+      if (result.ok && result.business) {
+        _activeId = result.business.businessId; _activeProfile = result.business;
+        bus.emit('dal.business.selected', { businessId: _activeId, profile: _activeProfile });
+        return true;
+      }
+      storage.deleteSetting(SETTING_KEY);
+      return false;
+    }
+  };
+
+  window.INFINICUS.biz = biz;
+
+  bus.register('data.business.create',    function(p) { return biz.create(p); },    S_CREATE);
+  bus.register('data.business.select',    function(p) { return biz.select(p.businessId); }, S_SELECT);
+  bus.register('data.business.deselect',  function()  { return biz.deselect(); });
+  bus.register('data.business.get',       function(p) { return biz.get(p && p.businessId); });
+  bus.register('data.business.getActive', function()  { return biz.getActive(); });
+  bus.register('data.business.list',      function()  { return biz.list(); });
+  bus.register('data.business.update',    function(p) { return biz.update(p); },    S_UPDATE);
+
+})(); // BusinessManagerModule
+</script>
+
+<!-- ── 2F · EventIngestor (data.event.ingest / ingestBatch) ─────── -->
+<script>
+'use strict';
+
+(function EventIngestorModule() {
+
+  var bus     = window.INFINICUS.bus;
+  var sec     = window.INFINICUS.security;
+  var schemas = window.INFINICUS.schemas;
+  var biz     = window.INFINICUS.biz;
+  var uuidFn  = window.INFINICUS.uuid;
+
+  var _stats = { ingested: 0, duplicates: 0, errors: 0, batches: 0 };
+  var _beforeHooks = [];
+  var _afterHooks  = [];
+
+  var INGEST_SCHEMA = { type:'object', required:['eventType','occurredAt','payload'], properties:{
+    businessId:{type:'string',format:'uuid'}, eventType:{type:'string',enum:schemas.eventTypes},
+    occurredAt:{type:'string',format:'date-time'}, currency:{type:'string',pattern:'^[A-Z]{3}$'},
+    source:{type:'string',maxLength:100}, payload:{type:'object'}, metadata:{type:'object'} } };
+  schemas.register('ingest.single', INGEST_SCHEMA);
+
+  function _resolveBusinessId(raw) {
+    var id = raw.businessId || biz.getActiveId();
+    if (!id) return { ok: false, error: 'No business selected — select a business first.', code: 'NO_BUSINESS' };
+    if (!sec.isUUID(id)) return { ok: false, error: 'businessId is not a valid UUID', code: 'VALIDATION_FAILED' };
+    return { ok: true, businessId: id };
+  }
+
+  function _validateEventType(eventType) {
+    if (!sec.validateEnum(eventType, schemas.eventTypes)) {
+      return { ok: false, error: 'Unknown eventType: "' + String(eventType) + '". Must be one of: ' + schemas.eventTypes.join(', '), code: 'INVALID_EVENT_TYPE' };
+    }
+    return { ok: true };
+  }
+
+  function _sanitizeOccurredAt(raw) {
+    try {
+      var val = String(raw).trim();
+      if (/^\d{4}-\d{2}-\d{2}$/.test(val)) val = val + 'T00:00:00.000Z';
+      return { ok: true, occurredAt: sec.sanitizeDate(val) };
+    } catch(err) { return { ok: false, error: 'occurredAt: ' + err.message, code: 'VALIDATION_FAILED' }; }
+  }
+
+  async function _resolveCurrency(rawCurrency, businessId) {
+    if (rawCurrency) {
+      var c = String(rawCurrency).trim().toUpperCase();
+      if (!/^[A-Z]{3}$/.test(c)) return { ok: false, error: 'currency must be 3 uppercase letters (ISO 4217), got: ' + rawCurrency, code: 'VALIDATION_FAILED' };
+      return { ok: true, currency: c };
+    }
+    var r = await biz.get(businessId);
+    if (r.ok && r.business && r.business.currency) return { ok: true, currency: r.business.currency };
+    return { ok: true, currency: 'USD' };
+  }
+
+  function _validatePayload(eventType, payload) {
+    if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+      return { ok: false, error: 'payload must be a non-null object', code: 'VALIDATION_FAILED' };
+    }
+    var vr = schemas.validatePayload(eventType, payload);
+    if (!vr.valid) return { ok: false, error: 'payload validation failed: ' + vr.errors[0], errors: vr.errors, code: 'PAYLOAD_VALIDATION_FAILED' };
+    return { ok: true };
+  }
+
+  function _buildEnvelope(businessId, eventType, occurredAt, currency, source, payload, metadata) {
+    return {
+      eventId: uuidFn(), businessId: businessId, eventType: eventType,
+      source: sec.sanitizeString(source || 'manual', 100), occurredAt: occurredAt, currency: currency,
+      payload: payload, metadata: (metadata && sec.isPlainObject(metadata)) ? metadata : {}
+    };
+  }
+
+  async function ingest(raw) {
+    try {
+      if (!raw || typeof raw !== 'object') return { ok: false, error: 'ingest: raw must be an object', code: 'INVALID_INPUT' };
+
+      var bizResult = _resolveBusinessId(raw);
+      if (!bizResult.ok) { _stats.errors++; return bizResult; }
+      var businessId = bizResult.businessId;
+
+      var typeResult = _validateEventType(raw.eventType);
+      if (!typeResult.ok) { _stats.errors++; return typeResult; }
+
+      var dateResult = _sanitizeOccurredAt(raw.occurredAt);
+      if (!dateResult.ok) { _stats.errors++; return dateResult; }
+
+      var currResult = await _resolveCurrency(raw.currency, businessId);
+      if (!currResult.ok) { _stats.errors++; return currResult; }
+
+      var payloadResult = _validatePayload(raw.eventType, raw.payload);
+      if (!payloadResult.ok) { _stats.errors++; return payloadResult; }
+
+      var envelope = _buildEnvelope(businessId, raw.eventType, dateResult.occurredAt, currResult.currency, raw.source, raw.payload, raw.metadata);
+
+      for (var i = 0; i < _beforeHooks.length; i++) {
+        try { var modified = await _beforeHooks[i](envelope); if (modified && sec.isPlainObject(modified)) envelope = modified; }
+        catch(hookErr) { console.warn('[Ingestor] beforeHook ' + i + ' threw:', hookErr); }
+      }
+
+      var storeResult = await bus.call('storage.event.put', envelope);
+
+      if (storeResult.ok) {
+        if (storeResult.duplicate) { _stats.duplicates++; return { ok: true, duplicate: true }; }
+        _stats.ingested++;
+        for (var j = 0; j < _afterHooks.length; j++) {
+          try { await _afterHooks[j](storeResult.event || envelope); } catch(e) { console.warn('[Ingestor] afterHook ' + j + ' threw:', e); }
+        }
+        bus.emit('dal.event.ingested', { eventId: envelope.eventId, eventType: envelope.eventType, businessId: envelope.businessId, occurredAt: envelope.occurredAt, source: envelope.source });
+        return { ok: true, event: storeResult.event || envelope };
+      }
+      _stats.errors++;
+      return storeResult;
+    } catch(err) {
+      _stats.errors++;
+      console.error('[Ingestor] pipeline error:', err);
+      return { ok: false, error: err.message || String(err), code: err.name || 'INGESTOR_ERROR' };
+    }
+  }
+
+  var BATCH_PROGRESS_INTERVAL = 25;
+
+  async function ingestBatch(rawArray, opts) {
+    if (!Array.isArray(rawArray)) return { ok: false, error: 'ingestBatch: first argument must be an array', code: 'INVALID_INPUT' };
+    opts = opts || {};
+    _stats.batches++;
+    var results = []; var ingested = 0; var duplicates = 0; var errors = 0; var total = rawArray.length;
+    bus.emit('dal.ingest.batch.started', { total: total, source: opts.source || 'batch' });
+
+    for (var i = 0; i < total; i++) {
+      var raw = rawArray[i];
+      if (opts.source && raw && typeof raw === 'object') raw = Object.assign({}, raw, { source: opts.source });
+      var result = await ingest(raw);
+      results.push(result);
+      if (result.ok) { if (result.duplicate) duplicates++; else ingested++; } else { errors++; }
+      if ((i + 1) % BATCH_PROGRESS_INTERVAL === 0 || i === total - 1) {
+        bus.emit('dal.ingest.progress', { processed: i + 1, total: total, pct: Math.round(((i + 1) / total) * 100), ingested: ingested, duplicates: duplicates, errors: errors });
+      }
+    }
+    bus.emit('dal.ingest.batch.complete', { total: total, ingested: ingested, duplicates: duplicates, errors: errors });
+    return { ok: total > 0 && errors < total, results: results, ingested: ingested, duplicates: duplicates, errors: errors, total: total };
+  }
+
+  var ingestor = {
+    ingest: ingest, ingestBatch: ingestBatch,
+    stats: function() { return Object.assign({}, _stats); },
+    resetStats: function() { _stats = { ingested: 0, duplicates: 0, errors: 0, batches: 0 }; },
+    addBeforeHook: function(fn) { if (typeof fn === 'function') _beforeHooks.push(fn); },
+    addAfterHook:  function(fn) { if (typeof fn === 'function') _afterHooks.push(fn); },
+    removeBeforeHook: function(fn) { _beforeHooks = _beforeHooks.filter(function(h) { return h !== fn; }); },
+    removeAfterHook:  function(fn) { _afterHooks  = _afterHooks.filter(function(h)  { return h !== fn; }); }
+  };
+
+  window.INFINICUS.ingestor = ingestor;
+
+  bus.register('data.event.ingest', function(p) { return ingest(p); }, INGEST_SCHEMA);
+  bus.register('data.event.ingestBatch', function(p) {
+    if (!p || !Array.isArray(p.events)) return { ok: false, error: 'ingestBatch: payload.events must be an array', code: 'INVALID_INPUT' };
+    return ingestBatch(p.events, { source: p.source });
+  });
+
+})(); // EventIngestorModule
+</script>
+
+<!-- ── 2G · BLOCK 2 — INIT ──────────────────────────────────────── -->
+<script>
+(function Block2Init() {
+  'use strict';
+
+  var schemas = window.INFINICUS.schemas;
+  var newTypes = window.INFINICUS.__opsSchemaExtensions.newEventTypes;
+
+  if (window.__OPS && typeof window.__OPS.setStatus === 'function') {
+    window.__OPS.setStatus('ready', 'Core engine ready · ' + schemas.eventTypes.length + ' event types');
+  }
+
+  // Self-test 1: an EXISTING DAL type still validates (proves the
+  // embedded engine matches dal.html's behaviour byte-for-byte).
+  var saleTest = schemas.validatePayload('sale.created', { amount: 42.5 });
+
+  // Self-test 2: a NEW Layer-2 type validates through the SAME pipeline.
+  var orderTest = schemas.validatePayload('order.completed', {
+    orderId: window.INFINICUS.uuid(), branchId: window.INFINICUS.uuid(),
+    items: [{ productId: 'p1', name: 'Coffee', quantity: 1, unitPrice: 4, lineTotal: 4 }],
+    subtotal: 4, total: 4, paymentStatus: 'paid'
+  });
+
+  // Self-test 3: a patched enum value ('damage') is accepted.
+  var damageTest = schemas.validatePayload('inventory.consumed', { itemId: 'i1', quantity: 1, reason: 'damage' });
+
+  console.info(
+    '[BOL] Block 2 ready' +
+    ' | routes: ' + window.INFINICUS.bus.listRoutes().length +
+    ' | eventTypes: ' + schemas.eventTypes.length + ' (10 DAL + ' + newTypes.length + ' new)' +
+    ' | sale.created selftest: ' + (saleTest.valid ? 'PASS' : 'FAIL')  +
+    ' | order.completed selftest: ' + (orderTest.valid ? 'PASS' : 'FAIL – ' + orderTest.errors[0]) +
+    ' | damage-reason patch: ' + (damageTest.valid ? 'PASS' : 'FAIL')
+  );
+
+  window.INFINICUS.bus.emit('ops.core.ready', { block: 2, eventTypes: schemas.eventTypes.length });
+
+})(); // Block2Init
+</script>
+
+<!-- ════════════════════════════════════════════════════════════════
+     BLOCK 3 · Operations Storage Adapter (infinicus_ops)
+     Provides: window.INFINICUS.opsStorage, window.INFINICUS._opsIdb
+     DB: 'infinicus_ops' v1 — 16 stores, generic CRUD (put/get/list/
+     query/remove/count), 80 ops.storage.* bus routes generated from
+     STORE_DEFS, ops.settings.* localStorage (prefix 'ops.settings.',
+     distinct from the inherited 'dal.settings.' prefix — no collision).
+════════════════════════════════════════════════════════════════ -->
+<script>
+'use strict';
+
+(function OpsIDBHelpersModule() {
+
+  var DB_NAME    = 'infinicus_ops';
+  var DB_VERSION = 1;
+  var _db        = null;
+
+  // Single source of truth for every operational store — keyPath,
+  // indexes [name, keyPathOrArray, unique]. Adding a 17th store later
+  // means adding one entry here, not hand-writing createObjectStore calls.
+  var STORE_DEFS = [
+    { name: 'branches', key: 'branchId', indexes: [
+        ['by_business', 'businessId', false], ['by_name', 'name', false] ] },
+    { name: 'products', key: 'productId', indexes: [
+        ['by_business', 'businessId', false], ['by_business_sku', ['businessId','sku'], false],
+        ['by_category', 'category', false], ['by_status', 'status', false] ] },
+    { name: 'orders', key: 'orderId', indexes: [
+        ['by_business', 'businessId', false], ['by_branch', 'branchId', false],
+        ['by_business_status', ['businessId','status'], false],
+        ['by_customer', 'customerId', false], ['by_created', 'createdAt', false] ] },
+    { name: 'payments', key: 'paymentId', indexes: [
+        ['by_order', 'orderId', false], ['by_business', 'businessId', false] ] },
+    { name: 'cashSessions', key: 'sessionId', indexes: [
+        ['by_branch', 'branchId', false], ['by_business', 'businessId', false], ['by_status', 'status', false] ] },
+    { name: 'cashMovements', key: 'movementId', indexes: [
+        ['by_session', 'sessionId', false], ['by_business', 'businessId', false] ] },
+    { name: 'inventoryMovements', key: 'movementId', indexes: [
+        ['by_business', 'businessId', false], ['by_branch', 'branchId', false],
+        ['by_product', ['businessId','productId'], false], ['by_occurred', 'occurredAt', false] ] },
+    { name: 'expenses', key: 'expenseId', indexes: [
+        ['by_business', 'businessId', false], ['by_branch', 'branchId', false], ['by_status', 'status', false] ] },
+    { name: 'customers', key: 'customerId', indexes: [
+        ['by_business', 'businessId', false], ['by_email', 'email', false] ] },
+    { name: 'suppliers', key: 'supplierId', indexes: [
+        ['by_business', 'businessId', false] ] },
+    { name: 'purchaseOrders', key: 'poId', indexes: [
+        ['by_business', 'businessId', false], ['by_supplier', 'supplierId', false], ['by_status', 'status', false] ] },
+    { name: 'employees', key: 'employeeId', indexes: [
+        ['by_business', 'businessId', false], ['by_branch', 'branchId', false], ['by_role', 'roleId', false] ] },
+    { name: 'roles', key: 'roleId', indexes: [
+        ['by_business', 'businessId', false] ] },
+    { name: 'shifts', key: 'shiftId', indexes: [
+        ['by_business', 'businessId', false], ['by_branch', 'branchId', false],
+        ['by_employee', 'employeeId', false], ['by_status', 'status', false] ] },
+    { name: 'tasks', key: 'taskId', indexes: [
+        ['by_business', 'businessId', false], ['by_status', 'status', false], ['by_assignee', 'assignedTo', false] ] },
+    { name: 'auditLog', key: 'auditId', indexes: [
+        ['by_business', 'businessId', false], ['by_occurred', 'occurredAt', false],
+        ['by_entity', ['entityType','entityId'], false] ] }
+  ];
+
+  function openDB() {
+    if (_db) return Promise.resolve(_db);
+    if (!window.indexedDB) return Promise.reject(new Error('IndexedDB is not available.'));
+
+    return new Promise(function(resolve, reject) {
+      var req = indexedDB.open(DB_NAME, DB_VERSION);
+
+      req.onupgradeneeded = function(e) {
+        var db = e.target.result;
+        var old = e.oldVersion;
+        if (old < 1) {
+          STORE_DEFS.forEach(function(def) {
+            var st = db.createObjectStore(def.name, { keyPath: def.key });
+            def.indexes.forEach(function(idx) {
+              st.createIndex(idx[0], idx[1], { unique: !!idx[2] });
+            });
+          });
+        }
+      };
+
+      req.onsuccess = function() {
+        _db = req.result;
+        _db.onversionchange = function() { _db.close(); _db = null; console.warn('[OpsIDB] Version change — reload to reconnect.'); };
+        resolve(_db);
+      };
+      req.onerror   = function() { reject(req.error); };
+      req.onblocked = function() { reject(new Error('OpsIDB open blocked — close other tabs running this app')); };
+    });
+  }
+
+  function idbGet(store, key) {
+    return openDB().then(function(db) {
+      return new Promise(function(resolve, reject) {
+        var req = db.transaction([store], 'readonly').objectStore(store).get(key);
+        req.onsuccess = function() { resolve(req.result || null); };
+        req.onerror   = function() { reject(req.error); };
+      });
+    });
+  }
+
+  function idbGetAll(store) {
+    return openDB().then(function(db) {
+      return new Promise(function(resolve, reject) {
+        var req = db.transaction([store], 'readonly').objectStore(store).getAll();
+        req.onsuccess = function() { resolve(req.result || []); };
+        req.onerror   = function() { reject(req.error); };
+      });
+    });
+  }
+
+  function idbGetAllByIndex(store, indexName, keyVal) {
+    return openDB().then(function(db) {
+      return new Promise(function(resolve, reject) {
+        var req = db.transaction([store], 'readonly').objectStore(store).index(indexName).getAll(keyVal);
+        req.onsuccess = function() { resolve(req.result || []); };
+        req.onerror   = function() { reject(req.error); };
+      });
+    });
+  }
+
+  function idbCount(store, indexName, keyVal) {
+    return openDB().then(function(db) {
+      return new Promise(function(resolve, reject) {
+        var tx  = db.transaction([store], 'readonly');
+        var src = indexName ? tx.objectStore(store).index(indexName) : tx.objectStore(store);
+        var req = (keyVal !== undefined) ? src.count(keyVal) : src.count();
+        req.onsuccess = function() { resolve(req.result); };
+        req.onerror   = function() { reject(req.error); };
+      });
+    });
+  }
+
+  function idbPut(store, record) {
+    return openDB().then(function(db) {
+      return new Promise(function(resolve, reject) {
+        var tx  = db.transaction([store], 'readwrite');
+        var req = tx.objectStore(store).put(record);
+        req.onsuccess = function() { resolve(record); };
+        req.onerror   = function() { reject(req.error); };
+        tx.onerror    = function() { reject(tx.error); };
+      });
+    });
+  }
+
+  function idbDelete(store, key) {
+    return openDB().then(function(db) {
+      return new Promise(function(resolve, reject) {
+        var tx  = db.transaction([store], 'readwrite');
+        var req = tx.objectStore(store).delete(key);
+        req.onsuccess = function() { resolve(true); };
+        req.onerror   = function() { reject(req.error); };
+        tx.onerror    = function() { reject(tx.error); };
+      });
+    });
+  }
+
+  function idbCursor(store, indexName, opts) {
+    opts = opts || {};
+    var limit  = opts.limit  || 100;
+    var offset = opts.offset || 0;
+    return openDB().then(function(db) {
+      return new Promise(function(resolve, reject) {
+        var tx     = db.transaction([store], 'readonly');
+        var source = indexName ? tx.objectStore(store).index(indexName) : tx.objectStore(store);
+        var req    = source.openCursor(opts.range || null, opts.direction || 'next');
+        var results = []; var skipped = 0;
+        req.onsuccess = function() {
+          var cursor = req.result;
+          if (!cursor) { resolve(results); return; }
+          if (skipped < offset) { skipped++; cursor.continue(); return; }
+          results.push(cursor.value);
+          if (results.length >= limit) { resolve(results); return; }
+          cursor.continue();
+        };
+        req.onerror = function() { reject(req.error); };
+      });
+    });
+  }
+
+  /** Open ONE transaction spanning multiple stores — used by later
+   *  blocks (e.g. order completion) so a multi-store write is atomic:
+   *  either every store's write commits, or the whole transaction
+   *  aborts and none do. IndexedDB supports this natively when all
+   *  target stores are named up front. */
+  function multiStoreTx(storeNames, mode) {
+    return openDB().then(function(db) { return db.transaction(storeNames, mode || 'readwrite'); });
+  }
+
+  window.INFINICUS._opsIdb = {
+    openDB: openDB, STORE_DEFS: STORE_DEFS,
+    idbGet: idbGet, idbGetAll: idbGetAll, idbGetAllByIndex: idbGetAllByIndex,
+    idbCount: idbCount, idbPut: idbPut, idbDelete: idbDelete, idbCursor: idbCursor,
+    multiStoreTx: multiStoreTx
+  };
+
+})(); // OpsIDBHelpersModule
+
+
+(function OpsStorageAdapterModule() {
+
+  var idb  = window.INFINICUS._opsIdb;
+  var bus  = window.INFINICUS.bus;
+  var LS_NS = 'ops.settings.'; // distinct from the inherited 'dal.settings.' prefix
+
+  var opsStorage = {
+
+    init: function() {
+      return idb.openDB().then(function(db) { return { ok: true, dbVersion: db.version, stores: idb.STORE_DEFS.length }; })
+        .catch(function(err) { return { ok: false, error: err.message, code: err.name }; });
+    },
+
+    /** Upsert. Preserves createdAt across updates, always stamps updatedAt. */
+    put: function(storeName, record) {
+      var keyField = _keyField(storeName);
+      if (!keyField) return Promise.resolve({ ok: false, error: 'Unknown store: ' + storeName, code: 'UNKNOWN_STORE' });
+      if (record[keyField] == null) return Promise.resolve({ ok: false, error: 'Record missing key field "' + keyField + '"', code: 'MISSING_KEY' });
+
+      return idb.idbGet(storeName, record[keyField]).then(function(existing) {
+        var now = new Date().toISOString();
+        var merged = Object.assign({ createdAt: now }, existing || {}, record, { updatedAt: now });
+        return idb.idbPut(storeName, merged);
+      }).then(function(saved) {
+        bus.emit('ops.storage.' + storeName + '.saved', { id: saved[keyField] });
+        return { ok: true, record: saved };
+      }).catch(function(err) { return { ok: false, error: err.message, code: err.name || 'STORAGE_ERROR' }; });
+    },
+
+    get: function(storeName, id) {
+      return idb.idbGet(storeName, id).then(function(rec) { return { ok: true, record: rec }; })
+        .catch(function(err) { return { ok: false, error: err.message, code: err.name }; });
+    },
+
+    /** List. opts: { indexName?, keyVal? } — omit both for the full store. */
+    list: function(storeName, opts) {
+      opts = opts || {};
+      var p = (opts.indexName && opts.keyVal !== undefined)
+        ? idb.idbGetAllByIndex(storeName, opts.indexName, opts.keyVal)
+        : idb.idbGetAll(storeName);
+      return p.then(function(all) { return { ok: true, records: all, count: all.length }; })
+        .catch(function(err) { return { ok: false, error: err.message, code: err.name }; });
+    },
+
+    /** Paginated cursor query. opts: { indexName?, range?, direction?, limit?, offset? } */
+    query: function(storeName, opts) {
+      opts = opts || {};
+      return idb.idbCursor(storeName, opts.indexName || null, opts)
+        .then(function(records) { return { ok: true, records: records, count: records.length }; })
+        .catch(function(err) { return { ok: false, error: err.message, code: err.name }; });
+    },
+
+    /** Hard delete — reserved for records that never became final/immutable
+     *  (e.g. an abandoned draft order, a draft task). Completed/financial
+     *  records are never deleted; see Block 1's Data Integrity notes —
+     *  reversals (refunds, cancellations) are new records, not edits. */
+    remove: function(storeName, id) {
+      return idb.idbDelete(storeName, id).then(function() { return { ok: true }; })
+        .catch(function(err) { return { ok: false, error: err.message, code: err.name }; });
+    },
+
+    count: function(storeName, indexName, keyVal) {
+      return idb.idbCount(storeName, indexName, keyVal).then(function(n) { return { ok: true, count: n }; })
+        .catch(function(err) { return { ok: false, error: err.message, code: err.name }; });
+    },
+
+    getSetting: function(key) {
+      try { var raw = localStorage.getItem(LS_NS + key); return raw !== null ? JSON.parse(raw) : null; }
+      catch(_) { return null; }
+    },
+    setSetting: function(key, value) {
+      try { localStorage.setItem(LS_NS + key, JSON.stringify(value)); return true; }
+      catch(err) { console.warn('[OpsStorage] setSetting failed:', key, err.message); return false; }
+    },
+    deleteSetting: function(key) {
+      try { localStorage.removeItem(LS_NS + key); return true; } catch(_) { return false; }
+    }
+  };
+
+  function _keyField(storeName) {
+    var def = idb.STORE_DEFS.filter(function(d) { return d.name === storeName; })[0];
+    return def ? def.key : null;
+  }
+
+  window.INFINICUS.opsStorage = opsStorage;
+
+  bus.register('ops.storage.init', function() { return opsStorage.init(); });
+
+  // Generic route family per store: put/get/list/query/remove — all
+  // .get/.remove calls take { id }, regardless of the store's actual
+  // keyPath field name (branchId, productId, ...), for a uniform bus API.
+  idb.STORE_DEFS.forEach(function(def) {
+    var n = def.name;
+    bus.register('ops.storage.' + n + '.put',    function(p) { return opsStorage.put(n, p); });
+    bus.register('ops.storage.' + n + '.get',    function(p) { return opsStorage.get(n, p.id); });
+    bus.register('ops.storage.' + n + '.list',   function(p) { return opsStorage.list(n, p); });
+    bus.register('ops.storage.' + n + '.query',  function(p) { return opsStorage.query(n, p); });
+    bus.register('ops.storage.' + n + '.remove', function(p) { return opsStorage.remove(n, p.id); });
+  });
+
+  bus.register('ops.settings.get',    function(p) { return { ok: true, value: opsStorage.getSetting(p.key) }; });
+  bus.register('ops.settings.set',    function(p) { return { ok: opsStorage.setSetting(p.key, p.value) }; });
+  bus.register('ops.settings.delete', function(p) { return { ok: opsStorage.deleteSetting(p.key) }; });
+
+})(); // OpsStorageAdapterModule
+</script>
+
+<!-- ── BLOCK 3 — INIT ───────────────────────────────────────────── -->
+<script>
+(function Block3Init() {
+  'use strict';
+
+  window.INFINICUS.opsStorage.init().then(function(result) {
+    var storeCount = window.INFINICUS._opsIdb.STORE_DEFS.length;
+    var statusMsg = result.ok
+      ? 'Ops storage ready · ' + storeCount + ' stores (infinicus_ops v' + result.dbVersion + ')'
+      : 'Ops storage error · ' + result.error;
+
+    if (window.__OPS && typeof window.__OPS.setStatus === 'function') {
+      window.__OPS.setStatus(result.ok ? 'ready' : 'error', statusMsg);
+    }
+    if (!result.ok) console.error('[BOL] Block 3 IDB failed:', result.error);
+
+    console.info(
+      '[BOL] Block 3 ready' +
+      ' | infinicus_ops: ' + (result.ok ? 'open v' + result.dbVersion + ', ' + storeCount + ' stores' : 'ERROR') +
+      ' | routes: ' + window.INFINICUS.bus.listRoutes().length
+    );
+
+    window.INFINICUS.bus.emit('ops.storage.ready', { block: 3, ok: result.ok, stores: storeCount });
+  });
+
+})(); // Block3Init
+</script>
+
+</body>
+</html>
