@@ -655,6 +655,55 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
 @media(max-width:359px){#feedback-card{right:10px;left:10px;width:auto;bottom:16px;}}
 @media(max-width:600px){#feedback-card{right:12px;bottom:16px;width:calc(100vw - 24px);max-width:296px;}}
 </style>
+<!-- Supabase JS client -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+const SUPA = window.supabase.createClient(
+  'https://dxheognltijswhtpnndk.supabase.co',
+  'sb_publishable_4qESSqE-_s8Wn7Qtjs5qNg_xGaXphch'
+);
+// Auth state change: fires on magic link click, session restore, sign-out
+SUPA.auth.onAuthStateChange(async (event, session) => {
+  if (session?.user) {
+    const { data: profile } = await SUPA.from('profiles').select('*').eq('id', session.user.id).single();
+    const prev = U || {};
+    U = {
+      email:      session.user.email,
+      supaId:     session.user.id,
+      plan:       profile?.plan       || prev.plan     || 'free',
+      simCount:   profile?.sim_count  || prev.simCount || 0,
+      createdAt:  session.user.created_at || prev.createdAt || Date.now(),
+      verifiedAt: Date.now()
+    };
+    saveUser(); renderUserBadge();
+    if (event === 'SIGNED_IN') {
+      showToast('Signed in as ' + session.user.email + ' ✓');
+      const modal = document.getElementById('reg-modal');
+      if (modal) modal.style.display = 'none';
+      if (typeof _pendingSimAfterReg !== 'undefined' && _pendingSimAfterReg) {
+        _pendingSimAfterReg = false; startSim();
+      }
+    }
+  } else if (event === 'SIGNED_OUT') {
+    U = null;
+    try { localStorage.removeItem('infinicus_user'); } catch(e) {}
+    renderUserBadge();
+  }
+});
+async function supabaseSaveSimulation(entry) {
+  const { data: { session } } = await SUPA.auth.getSession();
+  if (!session) return;
+  try {
+    await SUPA.from('simulations').insert({
+      user_id: session.user.id,
+      params:  entry.params,
+      summary: { verdict:entry.verdict, rev:entry.rev, profit:entry.profit,
+                 cash:entry.cash, surv:entry.surv, capital:entry.capital, profDays:entry.profDays }
+    });
+    await SUPA.rpc('increment_sim_count', { user_id: session.user.id });
+  } catch(e) { console.warn('Supabase save:', e); }
+}
+</script>
 <!-- Google tag (gtag.js) — consent-gated -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=AW-18295551736"></script>
 <script>
@@ -4908,8 +4957,9 @@ function toggleUserMenu(e) {
   m.classList.toggle('open');
 }
 function closeUserMenu() { const m=$('user-menu'); if(m) m.classList.remove('open'); }
-function signOutEngine() {
+async function signOutEngine() {
   closeUserMenu();
+  await SUPA.auth.signOut().catch(()=>{});
   try{localStorage.removeItem('infinicus_user');}catch(e){}
   try{localStorage.removeItem('infinicus_tc_accepted');}catch(e){}
   U=null;
@@ -4956,23 +5006,15 @@ async function requestMagicLink() {
   btn.textContent='Sending…'; btn.disabled=true;
 
   try {
-    const res=await fetch('/api/auth/request',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({email})
+    const { error } = await SUPA.auth.signInWithOtp({
+      email,
+      options: { emailRedirectTo: window.location.origin }
     });
-    const data=await res.json();
 
-    if(!res.ok || !data.ok){
-      errEl.textContent=data.error||'Could not send email. Please try again.';
-      errEl.style.display='block';
-      btn.textContent='Send Magic Link →'; btn.disabled=false;
-      return;
-    }
-
-    // Dev mode: server returned a direct link
-    if(data.dev_link){
-      window.location.href=data.dev_link;
+    if (error) {
+      errEl.textContent = error.message || 'Could not send email. Please try again.';
+      errEl.style.display = 'block';
+      btn.textContent = 'Send Magic Link →'; btn.disabled = false;
       return;
     }
 
@@ -4988,48 +5030,14 @@ async function requestMagicLink() {
   }
 }
 
-// ── Handle magic link callback on page load ──
+// ── Magic link callback handled automatically by Supabase onAuthStateChange ──
 async function checkMagicLink() {
-  const params=new URLSearchParams(window.location.search);
-  const token=params.get('magic_token');
-  const email=params.get('email');
-  if(!token||!email) return;
-
-  // Show verifying modal immediately
-  $('auth-step-email').style.display='none';
-  $('auth-step-sent').style.display='none';
-  $('auth-step-verify').style.display='block';
-  $('reg-modal').style.display='flex';
-
-  // Clean URL
-  const clean=window.location.pathname+(window.location.hash||'');
-  history.replaceState(null,'',clean);
-
-  try {
-    const res=await fetch(`/api/auth/verify?token=${encodeURIComponent(token)}`);
-    const data=await res.json();
-
-    closeRegModal();
-
-    if(!res.ok || !data.ok){
-      showToast(data.error||'Link expired. Please sign in again.');
-      return;
-    }
-
-    // Log the user in
-    const prev=U||{};
-    U={email:data.email,plan:prev.plan||'free',simCount:prev.simCount||0,createdAt:prev.createdAt||Date.now(),verifiedAt:Date.now()};
-    saveUser(); renderUserBadge();
-    showToast(`Signed in as ${data.email} ✓`);
-    if(_pendingSimAfterReg){_pendingSimAfterReg=false;startSim();}
-
-  } catch(e){
-    closeRegModal();
-    showToast('Verification failed. Please try again.');
-  }
+  // Supabase JS detects the #access_token hash on load and fires onAuthStateChange.
+  // Nothing extra needed here — kept as a no-op to avoid breaking callers.
 }
 
-function signOut() {
+async function signOut() {
+  await SUPA.auth.signOut().catch(()=>{});
   try{localStorage.removeItem('infinicus_user');}catch(e){}
   try{localStorage.removeItem('infinicus_tc_accepted');}catch(e){}
   U=null;
@@ -5179,6 +5187,7 @@ function saveToHistory() {
     hist.unshift(entry);
     if(hist.length>20) hist=hist.slice(0,20);
     localStorage.setItem('infinicus_history',JSON.stringify(hist));
+    supabaseSaveSimulation(entry); // non-blocking — also persists to Supabase DB
   }catch(e){}
 }
 
