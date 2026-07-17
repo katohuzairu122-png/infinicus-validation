@@ -692,6 +692,53 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
 #feedback-thanks{display:none;text-align:center;padding:12px 0 4px;}
 #feedback-thanks p{color:var(--cyan);font-family:var(--mono);font-size:14px;margin:0;letter-spacing:.05em;}
 </style>
+<!-- Supabase JS client -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+const SUPA = window.supabase.createClient(
+  'https://dxheognltijswhtpnndk.supabase.co',
+  'sb_publishable_4qESSqE-_s8Wn7Qtjs5qNg_xGaXphch'
+);
+SUPA.auth.onAuthStateChange(async (event, session) => {
+  if (session?.user) {
+    const { data: profile } = await SUPA.from('profiles').select('*').eq('id', session.user.id).single();
+    const prev = U || {};
+    U = {
+      email:      session.user.email,
+      supaId:     session.user.id,
+      plan:       profile?.plan      || prev.plan     || 'free',
+      simCount:   profile?.sim_count || prev.simCount || 0,
+      createdAt:  session.user.created_at || prev.createdAt || Date.now(),
+      verifiedAt: Date.now()
+    };
+    saveUser(); renderUserBadge();
+    if (event === 'SIGNED_IN') {
+      const modal = document.getElementById('reg-modal');
+      if (modal) modal.style.display = 'none';
+      if (typeof _pendingSimAfterReg !== 'undefined' && _pendingSimAfterReg) {
+        _pendingSimAfterReg = false; startSim();
+      }
+    }
+  } else if (event === 'SIGNED_OUT') {
+    U = null;
+    try { localStorage.removeItem('infinicus_user'); } catch(e) {}
+    renderUserBadge();
+  }
+});
+async function supabaseSaveSimulation(entry) {
+  const { data: { session } } = await SUPA.auth.getSession();
+  if (!session) return;
+  try {
+    await SUPA.from('simulations').insert({
+      user_id: session.user.id,
+      params:  entry.params,
+      summary: { verdict:entry.verdict, rev:entry.rev, profit:entry.profit,
+                 cash:entry.cash, surv:entry.surv, capital:entry.capital, profDays:entry.profDays }
+    });
+    await SUPA.rpc('increment_sim_count', { user_id: session.user.id });
+  } catch(e) { console.warn('Supabase save:', e); }
+}
+</script>
 <!-- Google tag (gtag.js) — consent-gated -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=AW-18295551736"></script>
 <script>
@@ -5240,8 +5287,9 @@ function toggleUserMenu(e) {
   m.classList.toggle('open');
 }
 function closeUserMenu() { const m=$('user-menu'); if(m) m.classList.remove('open'); }
-function signOutEngine() {
+async function signOutEngine() {
   closeUserMenu();
+  await SUPA.auth.signOut().catch(()=>{});
   try{localStorage.removeItem('infinicus_user');}catch(e){}
   try{localStorage.removeItem('infinicus_tc_accepted');}catch(e){}
   U=null;
@@ -5281,16 +5329,13 @@ async function doLogin() {
   errEl.style.display='none';
   btn.textContent='Signing in…'; btn.disabled=true;
   try {
-    const res  = await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});
-    const data = await res.json();
-    if(!res.ok||!data.ok){
-      errEl.textContent=data.error||'Sign in failed. Please try again.'; errEl.style.display='block';
+    const { data, error } = await SUPA.auth.signInWithPassword({ email, password });
+    if(error){
+      errEl.textContent=error.message||'Sign in failed. Please try again.'; errEl.style.display='block';
       btn.textContent='Sign In →'; btn.disabled=false; return;
     }
-    U={email:data.email,plan:data.plan||'free',simCount:data.simCount||0,createdAt:data.createdAt||Date.now()};
-    saveUser(); renderUserBadge(); closeRegModal();
-    showToast(`Signed in as ${data.email} ✓`);
-    if(_pendingSimAfterReg){_pendingSimAfterReg=false;startSim();}
+    showToast(`Signed in as ${data.user.email} ✓`);
+    // onAuthStateChange handles U update and renderUserBadge
   } catch(e){
     errEl.textContent='Network error. Please try again.'; errEl.style.display='block';
     btn.textContent='Sign In →'; btn.disabled=false;
@@ -5311,23 +5356,23 @@ async function doRegister() {
   errEl.style.display='none';
   btn.textContent='Creating account…'; btn.disabled=true;
   try {
-    const res  = await fetch('/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});
-    const data = await res.json();
-    if(!res.ok||!data.ok){
-      errEl.textContent=data.error||'Registration failed. Please try again.'; errEl.style.display='block';
+    const { data, error } = await SUPA.auth.signUp({ email, password });
+    if(error){
+      errEl.textContent=error.message||'Registration failed. Please try again.'; errEl.style.display='block';
       btn.textContent='Create Account →'; btn.disabled=false; return;
     }
-    U={email:data.email,plan:'free',simCount:0,createdAt:Date.now()};
-    saveUser(); renderUserBadge(); closeRegModal();
-    showToast(`Account created! Welcome, ${data.email} ✓`);
-    if(_pendingSimAfterReg){_pendingSimAfterReg=false;startSim();}
+    // Supabase may require email confirmation — show toast accordingly
+    const confirmed = data.user?.email_confirmed_at;
+    showToast(confirmed ? `Account created! Welcome, ${email} ✓` : `Check your inbox to confirm your email ✓`);
+    // onAuthStateChange fires and sets U once confirmed
   } catch(e){
     errEl.textContent='Network error. Please try again.'; errEl.style.display='block';
     btn.textContent='Create Account →'; btn.disabled=false;
   }
 }
 
-function signOut() {
+async function signOut() {
+  await SUPA.auth.signOut().catch(()=>{});
   try{localStorage.removeItem('infinicus_user');}catch(e){}
   try{localStorage.removeItem('infinicus_tc_accepted');}catch(e){}
   U=null;
@@ -5477,6 +5522,7 @@ function saveToHistory() {
     hist.unshift(entry);
     if(hist.length>20) hist=hist.slice(0,20);
     localStorage.setItem('infinicus_history',JSON.stringify(hist));
+    supabaseSaveSimulation(entry);
   }catch(e){}
 }
 
