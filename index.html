@@ -737,6 +737,9 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
 .sb-link:hover{color:var(--text);background:rgba(255,255,255,.05);}
 .sb-link.active{color:var(--cyan);background:rgba(0,224,96,.08);}
 .sb-link.active::before{content:'▸';margin-right:5px;font-size:10px;}
+.sb-pair{display:grid;grid-template-columns:1fr 1fr;gap:2px;margin-bottom:2px;}
+.sb-pair .sb-link,.sb-pair .sb-platform-link{font-size:10px;padding:5px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;justify-content:center;text-align:center;width:100%;}
+.sb-pair .sb-link.active::before{display:none;}
 .sb-sep{border:none;border-top:1px solid var(--line);margin:.5rem .6rem;}
 .sb-platform-lbl{
   font-family:var(--mono);font-size:8px;letter-spacing:.1em;
@@ -931,38 +934,46 @@ async function supabaseSaveSimulation(entry) {
 
   <div class="sb-group">
     <div class="sb-group-lbl">RESULTS</div>
-    <button class="sb-link" data-section="dashboard"   onclick="nav('dashboard')">Dashboard</button>
-    <button class="sb-link" data-section="verdict"     onclick="nav('verdict')">Verdict</button>
+    <div class="sb-pair">
+      <button class="sb-link" data-section="dashboard" onclick="nav('dashboard')">Dashboard</button>
+      <button class="sb-link" data-section="verdict"   onclick="nav('verdict')">Verdict</button>
+    </div>
   </div>
 
   <div class="sb-group">
     <div class="sb-group-lbl">ANALYSIS</div>
-    <button class="sb-link" data-section="economy"     onclick="nav('economy')">Economy</button>
-    <button class="sb-link" data-section="customers"   onclick="nav('customers')">Customers &amp; Events</button>
-    <button class="sb-link" data-section="risk"        onclick="nav('risk')">Risk &amp; Monte Carlo</button>
-    <button class="sb-link" data-section="forecast"    onclick="nav('forecast')">Forecast</button>
+    <div class="sb-pair">
+      <button class="sb-link" data-section="economy"   onclick="nav('economy')">Economy</button>
+      <button class="sb-link" data-section="customers" onclick="nav('customers')">Customers</button>
+    </div>
+    <div class="sb-pair">
+      <button class="sb-link" data-section="risk"      onclick="nav('risk')">Risk · MC</button>
+      <button class="sb-link" data-section="forecast"  onclick="nav('forecast')">Forecast</button>
+    </div>
     <button class="sb-link" data-section="sensitivity" onclick="nav('sensitivity')">Sensitivity</button>
   </div>
 
   <div class="sb-group">
-    <div class="sb-group-lbl">SCENARIOS</div>
-    <button class="sb-link" data-section="compare"     onclick="nav('compare')">Compare</button>
-    <button class="sb-link" data-section="history"     onclick="nav('history')">History</button>
-  </div>
-
-  <div class="sb-group">
-    <div class="sb-group-lbl">OUTPUT</div>
-    <button class="sb-link" data-section="report"      onclick="nav('report')">Report</button>
+    <div class="sb-group-lbl">SCENARIOS &amp; OUTPUT</div>
+    <div class="sb-pair">
+      <button class="sb-link" data-section="compare"  onclick="nav('compare')">Compare</button>
+      <button class="sb-link" data-section="history"  onclick="nav('history')">History</button>
+    </div>
+    <button class="sb-link" data-section="report" onclick="nav('report')">Report</button>
   </div>
 
   <hr class="sb-sep">
 
   <div class="sb-platform-lbl">PLATFORM LAYERS</div>
-  <button class="sb-platform-link" data-section="decisions"    onclick="nav('decisions')">AI Decision Intel.</button>
-  <button class="sb-platform-link" data-section="twin"         onclick="nav('twin')">Digital Twin</button>
-  <button class="sb-platform-link" data-section="intelligence" onclick="nav('intelligence')">Business Intel.</button>
-  <button class="sb-platform-link" data-section="operations"   onclick="nav('operations')">Operations</button>
-  <button class="sb-platform-link" data-section="simulation"   onclick="nav('simulation')">Engine Hub</button>
+  <div class="sb-pair" style="padding:0 .6rem;">
+    <button class="sb-platform-link" data-section="decisions"    onclick="nav('decisions')">AI Decisions</button>
+    <button class="sb-platform-link" data-section="twin"         onclick="nav('twin')">Digital Twin</button>
+  </div>
+  <div class="sb-pair" style="padding:0 .6rem;">
+    <button class="sb-platform-link" data-section="intelligence" onclick="nav('intelligence')">Biz Intel.</button>
+    <button class="sb-platform-link" data-section="operations"   onclick="nav('operations')">Operations</button>
+  </div>
+  <button class="sb-platform-link" style="padding-left:1.2rem;" data-section="simulation" onclick="nav('simulation')">Engine Hub</button>
 </aside>
 
 <!-- overlay for mobile sidebar -->
