@@ -1,0 +1,10 @@
+{
+  "name": "infinicus-dt-05-business-entity-relationship-graph-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/entity-graph.test.mjs",
+    "validate": "node tests/entity-graph.test.mjs"
+  }
+}
