@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-da-12-schema-detection-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/da-12.test.mjs"
+  }
+}

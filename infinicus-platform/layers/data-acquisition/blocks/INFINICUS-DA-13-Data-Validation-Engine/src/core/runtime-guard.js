@@ -1,0 +1,1 @@
+(function(g){"use strict";if(!g.INFINICUS?.DA?.runtime)throw new Error("DA-01 must be loaded before DA-13.");if(!g.INFINICUS.DA.schemaDetectionEngine)throw new Error("DA-12 must be loaded before DA-13.");})(window);
