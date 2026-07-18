@@ -1,0 +1,1 @@
+(function(g){"use strict";const D=g.INFINICUS?.DT;if(!D?.runtime)throw new Error("DT-01 required");if(!D?.businessStateSynchronizationEngine)throw new Error("DT-16 required");})(window);

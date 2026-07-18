@@ -1,0 +1,10 @@
+{
+  "name": "infinicus-dt-21-twin-integrity-consistency-confidence-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/twin-integrity.test.mjs",
+    "validate": "node tests/twin-integrity.test.mjs"
+  }
+}
