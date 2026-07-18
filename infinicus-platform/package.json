@@ -8,7 +8,8 @@
     "lint": "turbo run lint",
     "test": "turbo run test",
     "clean": "turbo run clean",
-    "typecheck": "turbo run typecheck"
+    "typecheck": "turbo run typecheck",
+    "workspace:validate": "node scripts/validate-workspace.mjs"
   },
   "devDependencies": {
     "turbo": "^2.1.0",

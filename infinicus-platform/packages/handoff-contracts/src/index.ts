@@ -1,4 +1,7 @@
-// Handoff contracts — one export per layer-to-layer boundary
+// @infinicus/handoff-contracts — typed LayerHandoff schemas per boundary (CLAUDE.md § 8)
+export type { LayerHandoff, HandoffStatus, LineageEntry } from '@infinicus/shared-types';
+
+// One file per adjacent layer boundary — fill in payload types as blocks are imported
 export * from './dal-to-bo';
 export * from './bo-to-bi';
 export * from './bi-to-dt';
