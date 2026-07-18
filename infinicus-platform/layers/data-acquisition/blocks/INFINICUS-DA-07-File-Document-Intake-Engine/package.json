@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-da-07-file-document-intake-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/da-07.test.mjs"
+  }
+}
