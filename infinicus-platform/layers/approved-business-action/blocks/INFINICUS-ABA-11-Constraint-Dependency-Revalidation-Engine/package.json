@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-aba-11-constraint-dependency-revalidation-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/revalidation.test.mjs"
+  }
+}

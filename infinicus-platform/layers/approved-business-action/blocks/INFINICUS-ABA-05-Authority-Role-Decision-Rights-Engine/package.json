@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-aba-05-authority-role-decision-rights-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/authority.test.mjs"
+  }
+}

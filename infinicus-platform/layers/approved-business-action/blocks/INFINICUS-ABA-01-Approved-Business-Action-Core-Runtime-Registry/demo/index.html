@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>INFINICUS ABA-01</title>
+<link rel="stylesheet" href="../src/styles.css">
+</head>
+<body>
+<main>
+<h1>ABA-01 — Approved Business Action Runtime</h1>
+<p>Core registries, lifecycle controls, routes, events, and diagnostics.</p>
+<section class="panel"><pre id="output">Loading...</pre></section>
+</main>
+<script src="../src/runtime.js"></script>
+<script src="../src/manifest.js"></script>
+<script>
+window.addEventListener("DOMContentLoaded", function () {
+  document.querySelector("#output").textContent =
+    JSON.stringify(window.INFINICUS.ABA.runtime.diagnostics().data, null, 2);
+});
+</script>
+</body>
+</html>

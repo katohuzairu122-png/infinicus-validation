@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-aba-01-approved-business-action-core-runtime-registry",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/runtime.test.mjs"
+  }
+}

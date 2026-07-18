@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-aba-22-action-completion-verification-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/completion.test.mjs"
+  }
+}

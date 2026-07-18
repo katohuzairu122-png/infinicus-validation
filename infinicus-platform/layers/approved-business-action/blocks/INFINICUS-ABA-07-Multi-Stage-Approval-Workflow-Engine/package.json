@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-aba-07-multi-stage-approval-workflow-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/workflow.test.mjs"
+  }
+}
