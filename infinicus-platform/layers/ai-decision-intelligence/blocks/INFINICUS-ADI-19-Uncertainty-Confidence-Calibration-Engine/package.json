@@ -1,0 +1,1 @@
+{"name":"infinicus-adi-19-uncertainty-confidence-calibration-engine","version":"1.0.0","type":"module","scripts":{"test":"node --test tests/*.test.mjs"},"engines":{"node":">=20"}}
