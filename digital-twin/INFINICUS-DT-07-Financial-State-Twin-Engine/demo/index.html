@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>INFINICUS DT-07</title>
+  <link rel="stylesheet" href="../src/styles/financial-state.css">
+</head>
+<body>
+<main>
+  <h1>DT-07 — Financial State Twin Engine</h1>
+  <p>Builds the governed financial state of the Business Digital Twin.</p>
+
+  <section class="panel">
+    <pre id="output">Loading...</pre>
+  </section>
+</main>
+
+<script src="../src/core/runtime-guard.js"></script>
+<script src="../src/model/financial-account.js"></script>
+<script src="../src/model/financial-state.js"></script>
+<script src="../src/analysis/financial-profile-builder.js"></script>
+<script src="../src/validation/financial-consistency.js"></script>
+<script src="../src/storage/financial-state-store.js"></script>
+<script src="../src/engine/financial-state-twin-engine.js"></script>
+<script src="../src/ui/demo.js"></script>
+</body>
+</html>
