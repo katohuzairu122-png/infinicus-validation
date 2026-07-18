@@ -1,0 +1,1 @@
+addEventListener("DOMContentLoaded",()=>document.querySelector("#output").textContent=JSON.stringify({block:"BO-25",purpose:"Verify, assemble, diagnose, and deploy the complete Business Operations layer.",routes:["bo.master.diagnose", "bo.master.assemble", "bo.master.deploy", "bo.master.rollback.record"],targetBlock:null},null,2));

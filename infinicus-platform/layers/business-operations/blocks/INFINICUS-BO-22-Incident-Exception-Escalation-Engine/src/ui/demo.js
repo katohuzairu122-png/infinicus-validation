@@ -1,0 +1,1 @@
+addEventListener("DOMContentLoaded",()=>document.querySelector("#output").textContent=JSON.stringify({block:"BO-22",purpose:"Manage incidents, exceptions, failures, severity, escalation, remediation, and closure evidence.",routes:["bo.incident_policy.register", "bo.incidents.manage"],targetBlock:"BO-23"},null,2));

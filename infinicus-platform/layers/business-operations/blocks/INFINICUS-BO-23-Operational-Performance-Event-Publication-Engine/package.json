@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-bo-23-operational-performance-event-publication-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/bo-23.test.mjs"
+  }
+}
