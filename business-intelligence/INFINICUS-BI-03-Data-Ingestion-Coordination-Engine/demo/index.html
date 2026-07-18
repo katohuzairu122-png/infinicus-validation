@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>INFINICUS BI-03</title>
+  <link rel="stylesheet" href="../src/styles/ingestion.css">
+</head>
+<body>
+<main>
+  <h1>BI-03 — Data Ingestion Coordination Engine</h1>
+  <p>Coordinates approved source data into the Business Intelligence pipeline.</p>
+
+  <section class="panel">
+    <form id="ingestionForm">
+      <button type="submit">Show ingestion sequence</button>
+    </form>
+    <pre id="output">Ready.</pre>
+  </section>
+</main>
+
+<script src="../src/core/runtime-guard.js"></script>
+<script src="../src/model/ingestion-job.js"></script>
+<script src="../src/model/ingestion-run.js"></script>
+<script src="../src/mapping/record-mapper.js"></script>
+<script src="../src/idempotency/idempotency-registry.js"></script>
+<script src="../src/storage/ingestion-store.js"></script>
+<script src="../src/engine/data-ingestion-engine.js"></script>
+<script src="../src/ui/demo.js"></script>
+</body>
+</html>

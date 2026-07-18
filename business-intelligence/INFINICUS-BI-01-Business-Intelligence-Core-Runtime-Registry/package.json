@@ -1,0 +1,10 @@
+{
+  "name": "infinicus-bi-01-business-intelligence-core-runtime-registry",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/bi-runtime.test.mjs",
+    "validate": "node tests/bi-runtime.test.mjs"
+  }
+}
