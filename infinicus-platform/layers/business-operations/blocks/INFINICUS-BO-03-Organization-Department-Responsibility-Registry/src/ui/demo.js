@@ -1,0 +1,1 @@
+addEventListener("DOMContentLoaded",()=>document.querySelector("#output").textContent=JSON.stringify({block:"BO-03",purpose:"Register organization units, departments, roles, reporting lines, and responsibility ownership.",routes:["bo.organization_policy.register", "bo.organization_units.register"],targetBlock:"BO-04"},null,2));
