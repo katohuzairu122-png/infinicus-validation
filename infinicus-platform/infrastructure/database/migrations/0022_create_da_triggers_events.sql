@@ -96,7 +96,9 @@ CREATE OR REPLACE FUNCTION data_acquisition.emit_outbox_event(
   p_event_version   text,
   p_correlation_id  uuid,
   p_causation_id    uuid,
-  p_payload         jsonb
+  p_payload         jsonb,
+  p_aggregate_type  text DEFAULT NULL,
+  p_aggregate_id    uuid DEFAULT NULL
 ) RETURNS uuid
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -113,6 +115,8 @@ BEGIN
     payload,
     correlation_id,
     causation_id,
+    aggregate_type,
+    aggregate_id,
     status,
     created_at
   ) VALUES (
@@ -124,6 +128,8 @@ BEGIN
     p_payload,
     p_correlation_id,
     p_causation_id,
+    COALESCE(p_aggregate_type, split_part(p_event_type, '.', 2)),
+    COALESCE(p_aggregate_id, gen_random_uuid()),
     'pending',
     now()
   )
@@ -156,7 +162,8 @@ BEGIN
       'sourceId',   p_source_id,
       'sourceCode', p_source_code,
       'sourceType', p_source_type
-    )
+    ),
+    'data_source', p_source_id
   );
 END;
 $$;
@@ -182,7 +189,8 @@ BEGIN
       'connectorId',   p_connector_id,
       'sourceId',      p_source_id,
       'connectorType', p_connector_type
-    )
+    ),
+    'connector', p_connector_id
   );
 END;
 $$;
@@ -209,7 +217,8 @@ BEGIN
       'collectionRunId', p_collection_run_id,
       'sourceId',        p_source_id,
       'collectionType',  p_collection_type
-    )
+    ),
+    'collection_run', p_collection_run_id
   );
 END;
 $$;
@@ -240,7 +249,8 @@ BEGIN
       'recordsReceived', p_records_received,
       'recordsAccepted', p_records_accepted,
       'recordsRejected', p_records_rejected
-    )
+    ),
+    'collection_run', p_collection_run_id
   );
 END;
 $$;
@@ -267,7 +277,8 @@ BEGIN
       'collectionRunId', p_collection_run_id,
       'sourceId',        p_source_id,
       'errorCode',       p_error_code
-    )
+    ),
+    'collection_run', p_collection_run_id
   );
 END;
 $$;
@@ -298,7 +309,8 @@ BEGIN
       'isValid',            p_is_valid,
       'errorCount',         p_error_count,
       'warningCount',       p_warning_count
-    )
+    ),
+    'validation_result', p_validation_result_id
   );
 END;
 $$;
@@ -325,7 +337,8 @@ BEGIN
       'collectionRunId', p_collection_run_id,
       'recordReference', p_record_reference,
       'reason',          p_reason
-    )
+    ),
+    'collection_run', p_collection_run_id
   );
 END;
 $$;
@@ -352,7 +365,8 @@ BEGIN
       'scoreId',      p_score_id,
       'sourceId',     p_source_id,
       'overallScore', p_overall_score
-    )
+    ),
+    'data_quality_score', p_score_id
   );
 END;
 $$;
@@ -381,7 +395,8 @@ BEGIN
       'targetLayer', p_target_layer,
       'targetBlock', p_target_block,
       'recordCount', p_record_count
-    )
+    ),
+    'publication_package', p_package_id
   );
 END;
 $$;
