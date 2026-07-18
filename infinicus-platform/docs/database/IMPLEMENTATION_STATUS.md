@@ -2,53 +2,74 @@
 
 ## Current stage
 
-**Stage 1 — Foundation** — COMPLETE
+**Stage 2A — Shared Persistence Foundation** — COMPLETE
 
 ---
 
 ## Completed work
 
-### Stage 1 — Foundation
-
-Established PostgreSQL persistence foundation for the INFINICUS platform.
-
-#### Tables created (migration 0001)
+### Stage 1 — Foundation (migration 0001)
 
 | Table              | Purpose                                    |
 |--------------------|--------------------------------------------|
 | `_migrations`      | Migration registry (idempotent)            |
-| `tenants`          | Multi-tenancy root                         |
-| `workspaces`       | Logical grouping within tenant             |
-| `users`            | Platform users (no passwords stored)       |
+| `tenants`          | Multi-tenancy root (superseded by tenancy.tenants) |
+| `workspaces`       | Logical grouping (superseded by tenancy.workspaces) |
+| `users`            | Platform users (superseded by identity.users) |
 | `workspace_members`| User ↔ workspace RBAC join                 |
-| `businesses`       | Core business entity (supersedes D1 schema)|
+| `businesses`       | Core business entity (superseded by platform.businesses) |
 | `audit_log`        | Append-only mutation trail                 |
 | `platform_events`  | Append-only PlatformEvent<T> store         |
 
-#### Design decisions
+### Stage 2A — Shared Persistence Foundation (migrations 0002–0012)
 
-- All tables carry `tenant_id` FK → Row-Level Security enabled on every table
-- `auth_provider_id` links to Supabase / external auth; no credentials stored
-- `lineage` stored as JSONB on `businesses` (matches `BaseRecord.lineage: LineageEntry[]`)
-- `audit_log` records `before_state`/`after_state` as JSONB
-- `platform_events.payload` is JSONB — typed at application layer via `PlatformEvent<T>`
-- `set_updated_at()` trigger function applied to all mutable tables
-- Extensions: `pgcrypto` (UUIDs), `pg_trgm` (future full-text)
-- D1 `decision_memory` table: superseded in Stage 7 (ADI layer)
+#### New PostgreSQL schemas
+
+| Schema    | Tables | Purpose |
+|-----------|--------|---------|
+| `tenancy` | 8      | Canonical multi-tenant registry, RBAC |
+| `identity`| 5      | Global user identity, sessions, API key refs |
+| `platform`| 24     | Core business structures + canonical entities |
+| `audit`   | 3      | Append-only audit trail and access events |
+| `events`  | 5      | Transactional outbox/inbox event backbone |
+| `files`   | 4      | Object storage metadata (no binary blobs) |
+
+**Total Stage 2A tables: 49 across 6 schemas**
+
+#### TypeScript helpers added
+
+- `withTransaction()` — generic transactional client
+- `withTenantTransaction()` — sets `app.tenant_id`, `app.workspace_id`, `app.user_id` before executing
+- `getDatabasePool()` / `closeDatabasePool()` — API-name aliases
+- `TenantContext` interface exported
+
+#### Shared-types additions
+
+- `TenantId`, `WorkspaceId`, `BusinessId`, `CorrelationId` — branded ID types
+
+#### Seed files
+
+- `infrastructure/database/seeds/0001_system_roles.sql` — system roles and sample permissions (dev only)
 
 ---
 
-## Files changed
+## Files changed (Stage 2A)
 
 | File | Change |
 |------|--------|
-| `infrastructure/database/migrations/0001_foundation.sql` | Created — 7 tables, indexes, triggers, RLS |
-| `packages/database/src/client.ts` | Created — pg Pool wrapper with `createPool`, `query`, `closePool` |
-| `packages/database/src/migrate.ts` | Created — sequential migration runner |
-| `packages/database/src/index.ts` | Updated — exports client + migrate |
-| `packages/database/package.json` | Updated — added `pg`, `zod`, `@types/pg`, `vitest` |
-| `packages/database/tests/migration-0001.test.ts` | Created — 6 structural tests |
-| `docs/database/IMPLEMENTATION_STATUS.md` | Created (this file) |
+| `infrastructure/database/migrations/0002–0012.sql` | Created — 11 migration files |
+| `infrastructure/database/seeds/0001_system_roles.sql` | Created — dev seed |
+| `packages/database/src/client.ts` | Updated — `withTransaction`, `withTenantTransaction`, `TenantContext` |
+| `packages/database/src/index.ts` | Updated — exports all new helpers |
+| `packages/database/README.md` | Created |
+| `packages/database/tests/migration-stage2a.test.ts` | Created — structural tests for 0002–0012 |
+| `packages/database/tests/transaction-helpers.test.ts` | Created — unit tests for tx helpers |
+| `packages/shared-types/src/index.ts` | Updated — branded ID types |
+| `docs/database-stage-2a.md` | Created |
+| `docs/database-schema-map.md` | Created |
+| `docs/tenant-isolation.md` | Created |
+| `docs/database-backup-restore.md` | Created |
+| `docs/database/IMPLEMENTATION_STATUS.md` | Updated (this file) |
 
 ---
 
@@ -56,45 +77,36 @@ Established PostgreSQL persistence foundation for the INFINICUS platform.
 
 | File | Status |
 |------|--------|
-| `0001_foundation.sql` | Validated (structural tests pass; requires live PG to apply) |
-
----
-
-## Tests passed
-
-```
-✓ wraps in a transaction
-✓ creates all required tables
-✓ enables RLS on every data table
-✓ every table has tenant_id
-✓ includes updated_at triggers for mutable tables
-✓ registers itself in _migrations
-6 passed, 0 failed
-```
-
----
-
-## Tests failing
-
-None.
+| `0001_foundation.sql` | Validated (structural tests pass) |
+| `0002_create_extensions.sql` | Validated (structural tests pass) |
+| `0003_create_tenancy_schema.sql` | Validated |
+| `0004_create_identity_schema.sql` | Validated |
+| `0005_create_platform_schema.sql` | Validated |
+| `0006_create_audit_schema.sql` | Validated |
+| `0007_create_events_schema.sql` | Validated |
+| `0008_create_files_schema.sql` | Validated |
+| `0009_create_canonical_entities.sql` | Validated |
+| `0010_create_indexes.sql` | Validated |
+| `0011_create_rls_policies.sql` | Validated |
+| `0012_create_updated_at_triggers.sql` | Validated |
 
 ---
 
 ## Known blockers
 
-- No live PostgreSQL instance in the current environment — migration cannot be applied until one is provisioned (Supabase project or local Docker PG).
-- `workspace:validate` script does not yet verify migration files — can be extended later.
+- No live PostgreSQL instance in the current environment — migrations cannot be applied until one is provisioned (Neon project or local Docker PG).
+- Structural tests pass without a live database. Integration/constraint tests require a live database.
 
 ---
 
 ## Exact next task
 
-**Stage 2 — Data Acquisition Layer (DAL) schema**
+**Stage 2B — Data Acquisition Layer (DAL) schema**
 
-Tables to add in `0002_dal.sql`:
-- `data_sources` — registered data source connectors
-- `ingestion_jobs` — scheduled/triggered ingestion runs
-- `ingestion_records` — individual raw records with quality metadata
-- `data_quality_rules` — configurable validation rules per source
+Tables to add:
+- `data_acquisition.data_sources`
+- `data_acquisition.ingestion_jobs`
+- `data_acquisition.ingestion_records`
+- `data_acquisition.data_quality_rules`
 
 Start only when instructed.

@@ -1,15 +1,14 @@
 /**
  * Migration runner.
  * Applies any *.sql files in the migrations directory that are not yet in _migrations.
- * Usage: node --loader ts-node/esm packages/database/src/migrate.ts
+ * Usage: npx tsx packages/database/src/migrate.ts
  */
 import { readdir, readFile } from 'fs/promises';
-import { resolve, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { resolve } from 'path';
 import { getPool } from './client.js';
 
 const MIGRATIONS_DIR = resolve(
-  dirname(fileURLToPath(import.meta.url)),
+  __dirname,
   '../../../infrastructure/database/migrations'
 );
 

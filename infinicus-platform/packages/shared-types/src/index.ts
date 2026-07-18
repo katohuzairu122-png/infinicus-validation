@@ -72,6 +72,16 @@ export type OperationalStatus =
   | 'failed'
   | 'reversed';
 
+// ── Branded ID types ─────────────────────────────────────────────────────────
+
+declare const __brand: unique symbol;
+type Brand<T, B> = T & { readonly [__brand]: B };
+
+export type TenantId      = Brand<string, 'TenantId'>;
+export type WorkspaceId   = Brand<string, 'WorkspaceId'>;
+export type BusinessId    = Brand<string, 'BusinessId'>;
+export type CorrelationId = Brand<string, 'CorrelationId'>;
+
 // ── Utility ──────────────────────────────────────────────────────────────────
 
 export interface LayerResult<T = unknown> {
