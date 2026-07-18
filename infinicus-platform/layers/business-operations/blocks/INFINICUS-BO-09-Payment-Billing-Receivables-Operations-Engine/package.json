@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-bo-09-payment-billing-receivables-operations-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/bo-09.test.mjs"
+  }
+}

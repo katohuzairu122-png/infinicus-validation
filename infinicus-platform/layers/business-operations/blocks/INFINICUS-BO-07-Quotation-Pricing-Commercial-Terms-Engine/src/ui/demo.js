@@ -1,0 +1,1 @@
+addEventListener("DOMContentLoaded",()=>document.querySelector("#output").textContent=JSON.stringify({block:"BO-07",purpose:"Control quotations, pricing, taxes, discounts, promotions, commissions, payment terms, and quote approvals.",routes:["bo.pricing_policy.register", "bo.quotations.create"],targetBlock:"BO-08"},null,2));
