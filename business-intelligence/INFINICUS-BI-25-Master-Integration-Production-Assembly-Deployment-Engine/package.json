@@ -1,0 +1,11 @@
+{
+  "name": "infinicus-bi-25-master-integration-production-assembly-deployment-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/master-integration.test.mjs",
+    "validate:manifest": "node tests/manifest.test.mjs",
+    "validate": "npm run test && npm run validate:manifest"
+  }
+}

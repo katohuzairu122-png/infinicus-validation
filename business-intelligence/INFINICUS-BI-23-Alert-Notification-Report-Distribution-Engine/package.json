@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-bi-23-alert-notification-report-distribution-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/distribution.test.mjs"
+  }
+}
