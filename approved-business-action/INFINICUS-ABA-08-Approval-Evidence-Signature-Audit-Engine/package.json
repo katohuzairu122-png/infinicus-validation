@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-aba-08-approval-evidence-signature-audit-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/evidence.test.mjs"
+  }
+}
