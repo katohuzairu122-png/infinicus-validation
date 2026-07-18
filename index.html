@@ -773,6 +773,8 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
   #sb-overlay.open{display:block;}
 }
 </style>
+<!-- Business Digital Twin Layer — DT-01 through DT-24 -->
+<script src="/digital-twin/dt-bundle.js" defer></script>
 <!-- Supabase JS client -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
@@ -1650,8 +1652,23 @@ async function supabaseSaveSimulation(entry) {
 
 <!-- ══ DIGITAL TWIN ══ -->
 <section class="section" id="sec-twin">
-  <div class="pg-title" style="font-size:22px;margin-bottom:.1rem;">DIGITAL <span class="c">TWIN</span></div>
-  <div class="pg-sub">// LIVE 30-DAY SNAPSHOT · CACHED · AUTO-REFRESHES HOURLY FROM YOUR EVENT STREAM</div>
+  <div class="pg-title" style="font-size:22px;margin-bottom:.1rem;">BUSINESS DIGITAL <span class="c">TWIN</span></div>
+  <div class="pg-sub">// 24-BLOCK DT LAYER · LIVE STATE · FEEDS SIMULATION ENGINE VIA DT-24 HANDOFF</div>
+
+  <!-- DT Layer Runtime Status -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;padding:.6rem .8rem;background:rgba(0,224,96,.04);border:1px solid rgba(0,224,96,.12);border-radius:8px;flex-wrap:wrap;gap:.5rem;">
+    <div style="font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--muted-2);">
+      INFINICUS DT LAYER &nbsp;·&nbsp; DT-01 → DT-24
+    </div>
+    <div id="dt-runtime-status" style="font-family:var(--mono);font-size:10px;">
+      <span style="color:var(--muted-2)">○ LOADING…</span>
+    </div>
+  </div>
+
+  <!-- DT-24 Handoff Status (populated by receiveDigitalTwinPackage) -->
+  <div id="dt-layer-status" style="margin-bottom:.75rem;padding:.6rem .8rem;background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:8px;font-family:var(--mono);font-size:10px;color:var(--muted-2);">
+    ○ AWAITING DT-24 SIMULATION PACKAGE — no package received yet
+  </div>
 
   <!-- Auth gate -->
   <div id="twin-auth-gate" style="display:none;text-align:center;padding:2.5rem 1rem;">
@@ -7002,13 +7019,52 @@ document.addEventListener('DOMContentLoaded',()=>{
 
 window.INFINICUS = window.INFINICUS || {};
 window.INFINICUS.SIMULATION = window.INFINICUS.SIMULATION || {};
+
+/* Last DT-24 package received this session */
+window.INFINICUS.SIMULATION._lastDTPackage = null;
+
 window.INFINICUS.SIMULATION.receiveDigitalTwinPackage = function(packageData) {
-  return {
-    ready: false,
-    message: "Digital Twin connection is prepared but not yet activated.",
-    packageData: packageData
-  };
+  if (!packageData || typeof packageData !== 'object') {
+    return { ready: false, message: 'Invalid package — expected DT-24 handoff object.' };
+  }
+  window.INFINICUS.SIMULATION._lastDTPackage = packageData;
+
+  /* Update sec-twin status panel */
+  const panel = document.getElementById('dt-layer-status');
+  if (panel) {
+    const pid  = packageData?.publication?.simulationPackageId || packageData?.simulationPackageId || '—';
+    const biz  = packageData?.publication?.businessId  || packageData?.businessId  || '—';
+    const twin = packageData?.publication?.twinId      || packageData?.twinId      || '—';
+    const scen = packageData?.publication?.scenarioId  || packageData?.scenarioId  || '—';
+    const ts   = new Date().toLocaleTimeString();
+    panel.innerHTML = `
+      <div style="font-family:var(--mono);font-size:9px;letter-spacing:.12em;color:var(--cyan);margin-bottom:.4rem;">● DT-24 PACKAGE RECEIVED — ${ts}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 1rem;font-family:var(--mono);font-size:10px;color:var(--muted);">
+        <span>PACKAGE</span><span style="color:var(--text)">${pid.slice(-12)}</span>
+        <span>BUSINESS</span><span style="color:var(--text)">${biz.slice(-12)}</span>
+        <span>TWIN</span><span style="color:var(--text)">${twin.slice(-12)}</span>
+        <span>SCENARIO</span><span style="color:var(--text)">${scen.slice(-12)}</span>
+      </div>`;
+  }
+
+  showToast('Digital Twin package received — simulation engine connected ✓');
+  return { ready: true, message: 'Package accepted by simulation engine.', packageData };
 };
+
+/* Initialise DT runtime once DOM + bundle are both ready */
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof window.INFINICUS === 'undefined' || typeof window.INFINICUS.DT === 'undefined') return;
+  const panel = document.getElementById('dt-runtime-status');
+  if (!panel) return;
+  const rt = window.INFINICUS.DT.runtime;
+  if (rt && typeof rt.diagnostics === 'function') {
+    const d = rt.diagnostics();
+    if (d.ok) {
+      panel.innerHTML = `<span style="color:var(--cyan)">● RUNTIME ACTIVE</span>
+        <span style="color:var(--muted-2);margin-left:.75rem;">${d.data.blockCount} blocks · v${d.data.version}</span>`;
+    }
+  }
+});
 </script>
 
 </div><!-- /workspace -->
