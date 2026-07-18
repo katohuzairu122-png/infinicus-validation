@@ -2,7 +2,7 @@
 
 ## Current stage
 
-**Stage 2A — Shared Persistence Foundation** — COMPLETE
+**Stage 2B — Data Acquisition Schema** — COMPLETE
 
 ---
 
@@ -92,6 +92,112 @@
 
 ---
 
+### Stage 2B — Data Acquisition Schema (migrations 0013–0022)
+
+#### New PostgreSQL schema
+
+| Schema | Tables | Purpose |
+|--------|--------|---------|
+| `data_acquisition` | 36 | Full DA pipeline: sources → collection → validation → quality → provenance → publication |
+
+**Total Stage 2B tables: 36 in 1 schema**
+
+#### Table groups
+
+| Group | Tables |
+|-------|--------|
+| Sources & Connectors | `data_sources`, `connectors`, `credential_references`, `collection_schedules` |
+| Collection | `collection_runs`, `webhook_receipts`, `file_intakes`, `api_collection_runs`, `database_collection_runs`, `manual_submissions`, `stream_events` |
+| Schema Detection | `detected_schemas`, `detected_fields` |
+| Validation | `validation_policies`, `validation_results`, `validation_issues` |
+| Cleaning | `cleaning_runs`, `cleaning_actions` |
+| Normalization | `normalization_runs`, `normalization_mappings` |
+| Entity Resolution | `entity_resolution_results`, `entity_match_candidates` |
+| Deduplication | `duplicate_groups`, `duplicate_group_members` |
+| Classification | `data_classifications`, `sensitive_data_actions` |
+| Quality & Reliability | `data_quality_scores`, `missing_data_actions`, `source_reliability_scores` |
+| Provenance | `provenance_records`, `transformation_records` |
+| Publication | `publication_packages`, `publication_deliveries` |
+| Deployment | `layer_assemblies`, `layer_deployments`, `layer_rollbacks` |
+
+#### TypeScript repositories added
+
+- `DataSourceRepository`
+- `ConnectorRepository`
+- `CollectionRunRepository`
+- `ValidationResultRepository`
+- `DataQualityScoreRepository`
+- `ProvenanceRepository`
+- `PublicationPackageRepository`
+
+#### Shared-types additions (Stage 2B)
+
+- `DataSourceId`, `ConnectorId`, `CollectionRunId`, `PublicationPackageId` — branded IDs
+- `CollectionState`, `DataSourceType`, `SensitivityLevel`, `PublicationStatus` — enums
+
+#### Outbox event functions added
+
+9 SQL functions in `data_acquisition` schema emit typed events to `events.outbox_events`:
+`da.source.registered`, `da.connector.registered`, `da.collection.started`,
+`da.collection.completed`, `da.collection.failed`, `da.validation.completed`,
+`da.data.quarantined`, `da.data.quality_scored`, `da.data.published`
+
+#### RLS coverage
+
+27 tables have RLS enabled. 9 detail/deployment tables are protected via parent FK.
+
+#### Test count
+
+270 tests pass (146 Stage 2B structural tests, 114 Stage 2A, 6 migration-0001, 4 transaction helper unit tests).
+
+---
+
+## Files changed (Stage 2B)
+
+| File | Change |
+|------|--------|
+| `infrastructure/database/migrations/0013–0022.sql` | Created — 10 migration files |
+| `packages/database/src/repositories/da/*.ts` | Created — 7 repository classes + barrel index |
+| `packages/database/src/index.ts` | Updated — exports DA repositories and types |
+| `packages/shared-types/src/index.ts` | Updated — DA branded IDs and enum types |
+| `packages/database/tests/migration-stage2b.test.ts` | Created — 146 structural tests |
+| `docs/database-stage-2b-data-acquisition.md` | Created |
+| `docs/data-acquisition-schema-map.md` | Created |
+| `docs/data-acquisition-rls.md` | Created |
+| `docs/data-acquisition-event-outbox.md` | Created |
+| `docs/database/IMPLEMENTATION_STATUS.md` | Updated (this file) |
+
+---
+
+## Migrations created
+
+| File | Status |
+|------|--------|
+| `0001_foundation.sql` | Validated |
+| `0002_create_extensions.sql` | Validated |
+| `0003_create_tenancy_schema.sql` | Validated |
+| `0004_create_identity_schema.sql` | Validated |
+| `0005_create_platform_schema.sql` | Validated |
+| `0006_create_audit_schema.sql` | Validated |
+| `0007_create_events_schema.sql` | Validated |
+| `0008_create_files_schema.sql` | Validated |
+| `0009_create_canonical_entities.sql` | Validated |
+| `0010_create_indexes.sql` | Validated |
+| `0011_create_rls_policies.sql` | Validated |
+| `0012_create_updated_at_triggers.sql` | Validated |
+| `0013_create_da_sources_connectors.sql` | Validated |
+| `0014_create_da_collection_runs.sql` | Validated |
+| `0015_create_da_schema_validation.sql` | Validated |
+| `0016_create_da_cleaning_normalization.sql` | Validated |
+| `0017_create_da_resolution_classification.sql` | Validated |
+| `0018_create_da_quality_provenance.sql` | Validated |
+| `0019_create_da_publication_deployment.sql` | Validated |
+| `0020_create_da_indexes.sql` | Validated |
+| `0021_create_da_rls_policies.sql` | Validated |
+| `0022_create_da_triggers_events.sql` | Validated |
+
+---
+
 ## Known blockers
 
 - No live PostgreSQL instance in the current environment — migrations cannot be applied until one is provisioned (Neon project or local Docker PG).
@@ -101,12 +207,6 @@
 
 ## Exact next task
 
-**Stage 2B — Data Acquisition Layer (DAL) schema**
-
-Tables to add:
-- `data_acquisition.data_sources`
-- `data_acquisition.ingestion_jobs`
-- `data_acquisition.ingestion_records`
-- `data_acquisition.data_quality_rules`
+**Stage 2C — Business Operations schema**
 
 Start only when instructed.

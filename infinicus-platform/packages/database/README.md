@@ -80,13 +80,41 @@ pnpm --filter @infinicus/database test
 
 Tests are structural (file analysis) and do not require a live database.
 
-## Schemas (Stage 2A)
+## Data Acquisition Repositories (Stage 2B)
 
-| Schema    | Purpose                                    |
-|-----------|--------------------------------------------|
-| `tenancy` | Canonical tenant, workspace, RBAC registry |
-| `identity`| Global user, session, API key management   |
-| `platform`| Core business structures and entities      |
-| `audit`   | Append-only audit trail and access events  |
-| `events`  | Outbox/inbox transactional event backbone  |
-| `files`   | Object storage metadata (no binary blobs)  |
+```ts
+import {
+  DataSourceRepository,
+  ConnectorRepository,
+  CollectionRunRepository,
+  ValidationResultRepository,
+  DataQualityScoreRepository,
+  ProvenanceRepository,
+  PublicationPackageRepository,
+  NotFoundError,
+} from '@infinicus/database';
+```
+
+All repository methods require a `TenantContext` and use `withTenantTransaction` internally. Throws `NotFoundError` when a record is not found.
+
+```ts
+const repo = new DataSourceRepository();
+const source = await repo.create(ctx, {
+  name: 'CRM Export',
+  sourceCode: 'crm-export',
+  sourceType: 'api',
+  sensitivityLevel: 'internal',
+});
+```
+
+## Schemas
+
+| Schema | Stage | Tables | Purpose |
+|--------|-------|--------|---------|
+| `tenancy` | 2A | 8 | Canonical tenant, workspace, RBAC registry |
+| `identity` | 2A | 5 | Global user, session, API key management |
+| `platform` | 2A | 24 | Core business structures and entities |
+| `audit` | 2A | 3 | Append-only audit trail and access events |
+| `events` | 2A | 5 | Outbox/inbox transactional event backbone |
+| `files` | 2A | 4 | Object storage metadata (no binary blobs) |
+| `data_acquisition` | 2B | 36 | Full DA pipeline: sources → collection → quality → publication |

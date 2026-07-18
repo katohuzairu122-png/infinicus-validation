@@ -77,10 +77,57 @@ export type OperationalStatus =
 declare const __brand: unique symbol;
 type Brand<T, B> = T & { readonly [__brand]: B };
 
-export type TenantId      = Brand<string, 'TenantId'>;
-export type WorkspaceId   = Brand<string, 'WorkspaceId'>;
-export type BusinessId    = Brand<string, 'BusinessId'>;
-export type CorrelationId = Brand<string, 'CorrelationId'>;
+export type TenantId              = Brand<string, 'TenantId'>;
+export type WorkspaceId           = Brand<string, 'WorkspaceId'>;
+export type BusinessId            = Brand<string, 'BusinessId'>;
+export type CorrelationId         = Brand<string, 'CorrelationId'>;
+
+// ── Data Acquisition branded IDs ─────────────────────────────────────────────
+
+export type DataSourceId          = Brand<string, 'DataSourceId'>;
+export type ConnectorId           = Brand<string, 'ConnectorId'>;
+export type CollectionRunId       = Brand<string, 'CollectionRunId'>;
+export type PublicationPackageId  = Brand<string, 'PublicationPackageId'>;
+
+// ── Data Acquisition enums ────────────────────────────────────────────────────
+
+export type CollectionState =
+  | 'planned'
+  | 'scheduled'
+  | 'collecting'
+  | 'collected'
+  | 'validated'
+  | 'published'
+  | 'failed'
+  | 'quarantined'
+  | 'cancelled';
+
+export type DataSourceType =
+  | 'manual'
+  | 'file'
+  | 'document'
+  | 'api'
+  | 'database'
+  | 'webhook'
+  | 'stream'
+  | 'application'
+  | 'sensor'
+  | 'external_dataset';
+
+export type SensitivityLevel =
+  | 'public'
+  | 'internal'
+  | 'confidential'
+  | 'restricted'
+  | 'highly_restricted';
+
+export type PublicationStatus =
+  | 'draft'
+  | 'ready'
+  | 'published'
+  | 'blocked'
+  | 'failed'
+  | 'revoked';
 
 // ── Utility ──────────────────────────────────────────────────────────────────
 
