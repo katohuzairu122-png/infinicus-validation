@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-om-20-monitoring-exception-missing-data-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/monitoring-exceptions.test.mjs"
+  }
+}
