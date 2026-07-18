@@ -1,0 +1,10 @@
+{
+  "name": "infinicus-bi-07-data-transformation-enrichment-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/data-transformation.test.mjs",
+    "validate": "node tests/data-transformation.test.mjs"
+  }
+}

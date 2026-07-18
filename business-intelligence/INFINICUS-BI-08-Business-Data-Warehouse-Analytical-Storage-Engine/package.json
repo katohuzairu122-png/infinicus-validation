@@ -1,0 +1,10 @@
+{
+  "name": "infinicus-bi-08-business-data-warehouse-analytical-storage-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/data-warehouse.test.mjs",
+    "validate": "node tests/data-warehouse.test.mjs"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "name": "infinicus-bi-10-metric-calculation-aggregation-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/metric-calculation.test.mjs",
+    "validate": "node tests/metric-calculation.test.mjs"
+  }
+}
