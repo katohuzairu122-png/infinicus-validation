@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-om-21-outcome-evidence-audit-trail-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/audit-trail.test.mjs"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-om-22-outcome-evaluation-verdict-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/verdict.test.mjs"
+  }
+}
