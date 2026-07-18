@@ -2610,5 +2610,3691 @@ window.INFINICUS = window.INFINICUS || {};
 })(); // Block3Init
 </script>
 
+<!-- ════════════════════════════════════════════════════════════════
+     BLOCK 4 · Business Workspace + Branch Management
+     Populates: #view-home .content, #view-branches .content
+     Provides: window.INFINICUS.ops.{audit,workspace,branch,
+               homeView,branchesView}
+     Routes: operations.workspace.init/.getContext,
+             operations.branch.create/.update/.select/.list/.get
+════════════════════════════════════════════════════════════════ -->
+
+<!-- ── 4A · Shared ops namespace + Audit helper + Workspace + Branch managers ── -->
+<script>
+'use strict';
+
+window.INFINICUS.ops = window.INFINICUS.ops || {};
+
+/* ── AUDIT HELPER ─────────────────────────────────────────────
+   One write path into infinicus_ops.auditLog, used by every
+   mutating ops.* module from this block onward. The dedicated
+   viewer UI lands in Block 19 — the store and the writes start
+   now because both are cheap and the trail is worthless if it
+   only starts partway through the build. ─────────────────────── */
+(function OpsAuditHelperModule() {
+
+  var bus  = window.INFINICUS.bus;
+  var uuid = window.INFINICUS.uuid;
+
+  function audit(action, entityType, entityId, before, after) {
+    var ctx = (window.INFINICUS.ops.workspace && window.INFINICUS.ops.workspace.getContext()) || {};
+    return bus.call('ops.storage.auditLog.put', {
+      auditId:         uuid(),
+      businessId:      ctx.businessId || null,
+      branchId:        ctx.branchId   || null,
+      actorEmployeeId: null, // no Employee/Shift concept until Blocks 14/16
+      action:          action,
+      entityType:      entityType,
+      entityId:        entityId,
+      before:          before != null ? before : null,
+      after:           after  != null ? after  : null,
+      occurredAt:      new Date().toISOString(),
+      source:          'ops'
+    });
+  }
+
+  window.INFINICUS.ops.audit = audit;
+
+})(); // OpsAuditHelperModule
+
+
+/* ── WORKSPACE MANAGER ────────────────────────────────────────
+   Orchestrates business + branch context together. Business
+   selection itself is DAL's biz.* (Block 2) — this module adds
+   the branch dimension DAL has no concept of, and keeps the two
+   in sync (switching business re-resolves which branch, if any,
+   should become active). ─────────────────────────────────────── */
+(function OperationsWorkspaceModule() {
+
+  var bus        = window.INFINICUS.bus;
+  var biz        = window.INFINICUS.biz;
+  var opsStorage = window.INFINICUS.opsStorage;
+  var esc        = window.INFINICUS.esc;
+
+  var _activeBranchId = null;
+  var _activeBranch   = null;
+
+  function _setActiveBranch(branch) {
+    _activeBranchId = branch ? branch.branchId : null;
+    _activeBranch   = branch || null;
+    opsStorage.setSetting('activeBranchId', _activeBranchId); // 'ops.settings.' prefix — direct call, internal caller
+    bus.emit('ops.branch.selected', { branchId: _activeBranchId, branch: _activeBranch });
+    _updateContextChip();
+  }
+
+  function _updateContextChip() {
+    var bizR       = biz.getActive();
+    var bizName    = (bizR.business && bizR.business.name) || null;
+    var branchName = (_activeBranch && _activeBranch.name) || null;
+    var text;
+    if (!bizName)         text = 'No business selected';
+    else if (!branchName) text = '<b>' + esc(bizName) + '</b> · no branch';
+    else                  text = '<b>' + esc(bizName) + '</b> · ' + esc(branchName);
+    if (window.__OPS && window.__OPS.setContext) window.__OPS.setContext(text);
+  }
+
+  /** If the current branch no longer belongs to the given business,
+   *  auto-select when there's exactly one candidate, otherwise clear
+   *  (forces an explicit choice rather than guessing). */
+  async function _autoResolveBranchForBusiness(businessId) {
+    if (_activeBranchId && _activeBranch && _activeBranch.businessId === businessId) return;
+    var r = await bus.call('ops.storage.branches.list', { indexName: 'by_business', keyVal: businessId });
+    var branches = (r.records || []).filter(function(b) { return b.status !== 'archived'; });
+    if (branches.length === 1) _setActiveBranch(branches[0]);
+    else _setActiveBranch(null);
+  }
+
+  async function restoreActiveBranch() {
+    var savedId = opsStorage.getSetting('activeBranchId');
+    var ctx = biz.getActive();
+    if (!savedId || !ctx.businessId) { _updateContextChip(); return; }
+    var r = await bus.call('ops.storage.branches.get', { id: savedId });
+    if (r.record && r.record.businessId === ctx.businessId && r.record.status !== 'archived') {
+      _activeBranchId = r.record.branchId;
+      _activeBranch   = r.record;
+      bus.emit('ops.branch.selected', { branchId: _activeBranchId, branch: _activeBranch });
+    }
+    _updateContextChip();
+  }
+
+  var workspace = {
+    getContext: function() {
+      var bizR = biz.getActive();
+      return { businessId: bizR.businessId, business: bizR.business, branchId: _activeBranchId, branch: _activeBranch };
+    },
+    setActiveBranch:    _setActiveBranch,
+    getActiveBranchId:  function() { return _activeBranchId; },
+    refreshContextChip: _updateContextChip
+  };
+
+  window.INFINICUS.ops.workspace = workspace;
+
+  bus.register('operations.workspace.init', async function() {
+    await biz.restoreActive();
+    await restoreActiveBranch();
+    return { ok: true, context: workspace.getContext() };
+  });
+  bus.register('operations.workspace.getContext', function() { return { ok: true, context: workspace.getContext() }; });
+
+  // Business changes (from this page's own UI, or restored from shared
+  // localStorage on load) re-resolve branch context automatically.
+  bus.on('dal.business.selected', function(d) {
+    _updateContextChip();
+    if (d.businessId) _autoResolveBranchForBusiness(d.businessId);
+    else _setActiveBranch(null);
+  });
+  bus.on('dal.business.created', function(d) { _autoResolveBranchForBusiness(d.businessId); });
+
+})(); // OperationsWorkspaceModule
+
+
+/* ── BRANCH MANAGER ───────────────────────────────────────────── */
+(function OperationsBranchModule() {
+
+  var bus     = window.INFINICUS.bus;
+  var biz     = window.INFINICUS.biz;
+  var sec     = window.INFINICUS.security;
+  var uuid    = window.INFINICUS.uuid;
+  var schemas = window.INFINICUS.schemas;
+  var audit   = window.INFINICUS.ops.audit;
+
+  var S_CREATE = { type:'object', required:['name'], properties: {
+    name:     { type:'string', minLength:1, maxLength:255 },
+    address:  { type:'string', maxLength:500 },
+    phone:    { type:'string', maxLength:30  },
+    timezone: { type:'string', maxLength:100 }
+  }};
+  var S_UPDATE = { type:'object', required:['branchId'], properties: {
+    branchId: { type:'string', format:'uuid' },
+    name:     { type:'string', minLength:1, maxLength:255 },
+    address:  { type:'string', maxLength:500 },
+    phone:    { type:'string', maxLength:30  },
+    timezone: { type:'string', maxLength:100 },
+    status:   { type:'string', enum:['active','archived'] }
+  }};
+  var S_SELECT = { type:'object', required:['branchId'], properties: { branchId: { type:'string', format:'uuid' } } };
+
+  schemas.register('branch.create', S_CREATE);
+  schemas.register('branch.update', S_UPDATE);
+  schemas.register('branch.select', S_SELECT);
+
+  var branchApi = {
+
+    create: async function(fields) {
+      var businessId = biz.getActiveId();
+      if (!businessId) return { ok:false, error:'No active business — select a business first.', code:'NO_BUSINESS' };
+      try {
+        var name = sec.sanitizeString(fields.name || '', 255);
+        if (!name) return { ok:false, error:'Branch name is required', code:'VALIDATION_FAILED' };
+
+        var record = {
+          branchId: uuid(), businessId: businessId, name: name,
+          address:  fields.address  ? sec.sanitizeString(fields.address, 500) : '',
+          phone:    fields.phone    ? sec.sanitizeString(fields.phone,   30)  : '',
+          timezone: fields.timezone ? sec.sanitizeString(fields.timezone, 100)
+                                     : (Intl.DateTimeFormat().resolvedOptions().timeZone || ''),
+          status: 'active'
+        };
+        var r = await bus.call('ops.storage.branches.put', record);
+        if (!r.ok) return r;
+
+        audit('create', 'branch', r.record.branchId, null, r.record);
+        window.INFINICUS.ops.workspace.setActiveBranch(r.record);
+        bus.emit('ops.branch.created', { branchId: r.record.branchId });
+        return { ok:true, branch: r.record };
+      } catch(err) { return { ok:false, error: err.message || String(err), code: err.name || 'BRANCH_ERROR' }; }
+    },
+
+    update: async function(fields) {
+      if (!sec.isUUID(fields.branchId)) return { ok:false, error:'Invalid branchId', code:'VALIDATION_FAILED' };
+
+      var activeBizId = biz.getActiveId();
+      var before = await bus.call('ops.storage.branches.get', { id: fields.branchId });
+      if (!before.record) return { ok:false, error:'Branch not found', code:'NOT_FOUND' };
+      // Branch ownership check — reject cross-tenant writes even if a
+      // stale/incorrect branchId reaches this handler from elsewhere.
+      if (before.record.businessId !== activeBizId) {
+        return { ok:false, error:'Branch does not belong to the active business', code:'OWNERSHIP_MISMATCH' };
+      }
+
+      try {
+        var patch = { branchId: fields.branchId };
+        if (fields.name     !== undefined) patch.name     = sec.sanitizeString(fields.name,     255);
+        if (fields.address  !== undefined) patch.address  = sec.sanitizeString(fields.address,  500);
+        if (fields.phone    !== undefined) patch.phone    = sec.sanitizeString(fields.phone,     30);
+        if (fields.timezone !== undefined) patch.timezone = sec.sanitizeString(fields.timezone, 100);
+        if (fields.status   !== undefined && sec.validateEnum(fields.status, ['active','archived'])) patch.status = fields.status;
+
+        var r = await bus.call('ops.storage.branches.put', patch);
+        if (!r.ok) return r;
+
+        audit('update', 'branch', fields.branchId, before.record, r.record);
+
+        var wctx = window.INFINICUS.ops.workspace.getContext();
+        if (wctx.branchId === fields.branchId) window.INFINICUS.ops.workspace.setActiveBranch(r.record);
+        bus.emit('ops.branch.updated', { branchId: fields.branchId });
+        return { ok:true, branch: r.record };
+      } catch(err) { return { ok:false, error: err.message || String(err), code: err.name || 'BRANCH_ERROR' }; }
+    },
+
+    select: async function(branchId) {
+      if (!sec.isUUID(branchId)) return { ok:false, error:'Invalid branchId', code:'VALIDATION_FAILED' };
+      var r = await bus.call('ops.storage.branches.get', { id: branchId });
+      if (!r.ok) return r;
+      if (!r.record) return { ok:false, error:'Branch not found', code:'NOT_FOUND' };
+      if (r.record.businessId !== biz.getActiveId()) {
+        return { ok:false, error:'Branch does not belong to the active business', code:'OWNERSHIP_MISMATCH' };
+      }
+      window.INFINICUS.ops.workspace.setActiveBranch(r.record);
+      return { ok:true, branch: r.record };
+    },
+
+    list: async function(businessId) {
+      var id = businessId || biz.getActiveId();
+      if (!id) return { ok:true, branches: [] };
+      var r = await bus.call('ops.storage.branches.list', { indexName:'by_business', keyVal:id });
+      var branches = (r.records || []).sort(function(a,b){ return (b.createdAt||'') > (a.createdAt||'') ? 1 : -1; });
+      return { ok:true, branches: branches };
+    },
+
+    get: async function(branchId) {
+      var r = await bus.call('ops.storage.branches.get', { id: branchId });
+      return { ok: r.ok, branch: r.record };
+    }
+  };
+
+  window.INFINICUS.ops.branch = branchApi;
+
+  bus.register('operations.branch.create', function(p) { return branchApi.create(p); }, S_CREATE);
+  bus.register('operations.branch.update', function(p) { return branchApi.update(p); }, S_UPDATE);
+  bus.register('operations.branch.select', function(p) { return branchApi.select(p.branchId); }, S_SELECT);
+  bus.register('operations.branch.list',   function(p) { return branchApi.list(p && p.businessId); });
+  bus.register('operations.branch.get',    function(p) { return branchApi.get(p.branchId); });
+
+})(); // OperationsBranchModule
+</script>
+
+<!-- ── 4B · Home view + Branches view (UI) ─────────────────────── -->
+<script>
+'use strict';
+
+/* ── HOME VIEW ────────────────────────────────────────────────── */
+(function HomeViewModule() {
+
+  var bus = window.INFINICUS.bus;
+  var esc = window.INFINICUS.esc;
+  var biz = window.INFINICUS.biz;
+
+  function _mount() {
+    var content = document.querySelector('#view-home .content');
+    if (!content) return;
+
+    content.innerHTML =
+      '<div class="card" style="margin-bottom:14px">' +
+        '<div class="card-body">' +
+          '<div class="form-row-2">' +
+            '<div class="form-group" style="margin-bottom:0">' +
+              '<label class="form-label">BUSINESS</label>' +
+              '<select class="form-control" id="home-biz-select"><option value="">— Select —</option></select>' +
+            '</div>' +
+            '<div class="form-group" style="margin-bottom:0">' +
+              '<label class="form-label">BRANCH</label>' +
+              '<select class="form-control" id="home-branch-select" disabled><option value="">— Select business first —</option></select>' +
+            '</div>' +
+          '</div>' +
+          '<div id="home-new-biz" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">' +
+            '<div class="form-row-2">' +
+              '<div class="form-group" style="margin-bottom:0"><input class="form-control" id="home-new-biz-name" placeholder="Business name" maxlength="255"></div>' +
+              '<div class="form-group" style="margin-bottom:0"><input class="form-control" id="home-new-biz-currency" placeholder="Currency (USD)" maxlength="3"></div>' +
+            '</div>' +
+            '<div style="margin-top:10px;display:flex;align-items:center;gap:10px">' +
+              '<button class="btn btn-primary btn-sm" id="home-new-biz-save">CREATE BUSINESS</button>' +
+              '<span id="home-new-biz-fb" style="font-family:var(--mono);font-size:10px"></span>' +
+            '</div>' +
+          '</div>' +
+          '<button class="btn btn-ghost btn-sm" id="home-new-biz-toggle" style="margin-top:10px">+ NEW BUSINESS</button>' +
+        '</div>' +
+      '</div>' +
+
+      '<div id="home-no-branch" style="display:none">' +
+        '<div class="alert alert-warn">This business has no branches yet. Create one to start operating.</div>' +
+        '<div class="card" style="margin-bottom:14px"><div class="card-body">' +
+          '<div class="form-row-2">' +
+            '<input class="form-control" id="home-quick-branch-name" placeholder="Branch name (e.g. Main Street)" maxlength="255">' +
+            '<button class="btn btn-primary btn-sm" id="home-quick-branch-save">CREATE BRANCH</button>' +
+          '</div>' +
+          '<div id="home-quick-branch-fb" style="font-family:var(--mono);font-size:10px;margin-top:8px"></div>' +
+        '</div></div>' +
+      '</div>' +
+
+      '<div id="home-main" style="display:none">' +
+        '<div class="stat-grid" id="home-stats"></div>' +
+        '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:6px">' +
+          '<button class="btn btn-primary" data-view="sell">+ NEW SALE</button>' +
+          '<button class="btn btn-secondary" data-view="expenses">+ EXPENSE</button>' +
+          '<button class="btn btn-secondary" data-view="orders">VIEW ORDERS</button>' +
+        '</div>' +
+      '</div>';
+  }
+
+  async function _loadBizSelect() {
+    var sel = document.getElementById('home-biz-select');
+    if (!sel) return;
+    var r = await bus.call('data.business.list', {});
+    var list = (r && r.businesses) || [];
+    var activeId = biz.getActiveId();
+    sel.innerHTML = '<option value="">— Select —</option>' +
+      list.map(function(b) {
+        return '<option value="' + esc(b.businessId) + '"' + (b.businessId === activeId ? ' selected' : '') + '>' + esc(b.name) + '</option>';
+      }).join('');
+  }
+
+  async function _loadBranchSelect() {
+    var sel = document.getElementById('home-branch-select');
+    if (!sel) return;
+    var activeId = biz.getActiveId();
+    if (!activeId) { sel.disabled = true; sel.innerHTML = '<option value="">— Select business first —</option>'; return; }
+
+    var r = await window.INFINICUS.ops.branch.list(activeId);
+    var list = (r.branches || []).filter(function(b) { return b.status !== 'archived'; });
+    var activeBranchId = window.INFINICUS.ops.workspace.getActiveBranchId();
+
+    sel.disabled = false;
+    sel.innerHTML = (list.length ? '' : '<option value="">— No branches —</option>') +
+      list.map(function(b) {
+        return '<option value="' + esc(b.branchId) + '"' + (b.branchId === activeBranchId ? ' selected' : '') + '>' + esc(b.name) + '</option>';
+      }).join('');
+  }
+
+  async function _loadStats() {
+    var ctx = window.INFINICUS.ops.workspace.getContext();
+    var statsEl = document.getElementById('home-stats');
+    if (!statsEl || !ctx.businessId) return;
+
+    var startOfDay = new Date(); startOfDay.setHours(0, 0, 0, 0);
+    var r = await bus.call('storage.event.query', {
+      businessId: ctx.businessId, from: startOfDay.toISOString(), to: new Date().toISOString(), limit: 999
+    });
+    var events = (r && r.events) || [];
+    var sales = 0, expenses = 0, ordersCompleted = 0;
+    events.forEach(function(ev) {
+      if (ev.eventType === 'sale.created')     sales    += +(ev.payload && ev.payload.amount) || 0;
+      if (ev.eventType === 'expense.recorded') expenses += +(ev.payload && ev.payload.amount) || 0;
+      if (ev.eventType === 'order.completed')  ordersCompleted++;
+    });
+
+    // Wired for real in Block 9 — was a hardcoded 0 until Inventory
+    // Operations added reorderPoint + the stock-level computation this
+    // calls. Guarded in case this ever runs before Block 9 has loaded.
+    var lowStockCount = 0;
+    if (window.INFINICUS.ops.inventory && typeof window.INFINICUS.ops.inventory.getLowStockCount === 'function') {
+      lowStockCount = await window.INFINICUS.ops.inventory.getLowStockCount(ctx.businessId);
+    }
+
+    var cur = (ctx.business && ctx.business.currency) || 'USD';
+    var tiles = [
+      { l: 'TODAY’S SALES',    v: cur + ' ' + sales.toFixed(2),    c: 'c-acc'   },
+      { l: 'ORDERS COMPLETED',      v: ordersCompleted,                 c: 'c-blue'  },
+      { l: 'TODAY’S EXPENSES', v: cur + ' ' + expenses.toFixed(2), c: 'c-red'   },
+      { l: 'ACTIVE SHIFT',          v: 'None',                          c: ''        },
+      { l: 'LOW STOCK ITEMS',       v: lowStockCount,                   c: lowStockCount > 0 ? 'c-amber' : '' }
+    ];
+    statsEl.innerHTML = tiles.map(function(t) {
+      return '<div class="stat-tile"><div class="stat-label">' + esc(t.l) + '</div>' +
+        '<div class="stat-value ' + t.c + '">' + esc(String(t.v)) + '</div></div>';
+    }).join('');
+  }
+
+  function _syncState() {
+    var ctx = window.INFINICUS.ops.workspace.getContext();
+    var noBranchEl = document.getElementById('home-no-branch');
+    var mainEl     = document.getElementById('home-main');
+
+    if (!ctx.businessId) { if (noBranchEl) noBranchEl.style.display = 'none'; if (mainEl) mainEl.style.display = 'none'; return; }
+    if (!ctx.branchId)   { if (noBranchEl) noBranchEl.style.display = 'block'; if (mainEl) mainEl.style.display = 'none'; return; }
+    if (noBranchEl) noBranchEl.style.display = 'none';
+    if (mainEl)     mainEl.style.display     = 'block';
+    _loadStats();
+  }
+
+  function _wire() {
+    var bizSel = document.getElementById('home-biz-select');
+    if (bizSel) bizSel.addEventListener('change', function() {
+      if (bizSel.value) bus.call('data.business.select', { businessId: bizSel.value });
+    });
+
+    var branchSel = document.getElementById('home-branch-select');
+    if (branchSel) branchSel.addEventListener('change', function() {
+      if (branchSel.value) window.INFINICUS.ops.branch.select(branchSel.value);
+    });
+
+    var toggleBtn = document.getElementById('home-new-biz-toggle');
+    var newBizEl  = document.getElementById('home-new-biz');
+    if (toggleBtn) toggleBtn.addEventListener('click', function() {
+      var open = newBizEl.style.display !== 'none';
+      newBizEl.style.display = open ? 'none' : 'block';
+      toggleBtn.textContent = open ? '+ NEW BUSINESS' : '− CANCEL';
+    });
+
+    var saveBizBtn = document.getElementById('home-new-biz-save');
+    if (saveBizBtn) saveBizBtn.addEventListener('click', async function() {
+      var fb = document.getElementById('home-new-biz-fb');
+      var name = (document.getElementById('home-new-biz-name') || {}).value || '';
+      var curr = (document.getElementById('home-new-biz-currency') || {}).value || '';
+      var r = await bus.call('data.business.create', curr ? { name: name, currency: curr } : { name: name });
+      if (r.ok) {
+        document.getElementById('home-new-biz-name').value = '';
+        document.getElementById('home-new-biz-currency').value = '';
+        newBizEl.style.display = 'none';
+        toggleBtn.textContent = '+ NEW BUSINESS';
+        if (fb) fb.textContent = '';
+      } else if (fb) { fb.style.color = 'var(--red)'; fb.textContent = r.error || 'Could not create business'; }
+    });
+
+    var quickBranchBtn = document.getElementById('home-quick-branch-save');
+    if (quickBranchBtn) quickBranchBtn.addEventListener('click', async function() {
+      var fb = document.getElementById('home-quick-branch-fb');
+      var name = (document.getElementById('home-quick-branch-name') || {}).value || '';
+      var r = await window.INFINICUS.ops.branch.create({ name: name });
+      if (r.ok) { document.getElementById('home-quick-branch-name').value = ''; if (fb) fb.textContent = ''; }
+      else if (fb) { fb.style.color = 'var(--red)'; fb.textContent = r.error || 'Could not create branch'; }
+    });
+  }
+
+  bus.on('dal.business.selected', function() { _loadBizSelect(); _loadBranchSelect(); _syncState(); });
+  bus.on('dal.business.created',  function() { _loadBizSelect(); });
+  bus.on('ops.branch.selected',   function() { _loadBranchSelect(); _syncState(); });
+  bus.on('ops.branch.created',    function() { _loadBranchSelect(); _syncState(); });
+  bus.on('ops.branch.updated',    function() { _loadBranchSelect(); });
+  bus.on('dal.event.ingested',    function() { _loadStats(); });
+
+  window.INFINICUS.ops.homeView = { refresh: function() { _loadBizSelect(); _loadBranchSelect(); _syncState(); } };
+  window.__opsHomeInit = function() { _mount(); _wire(); _loadBizSelect(); _loadBranchSelect(); _syncState(); };
+
+})(); // HomeViewModule
+
+
+/* ── BRANCHES VIEW ────────────────────────────────────────────── */
+(function BranchesViewModule() {
+
+  var bus = window.INFINICUS.bus;
+  var esc = window.INFINICUS.esc;
+  var biz = window.INFINICUS.biz;
+
+  var _editingId = null;
+
+  function _mount() {
+    var content = document.querySelector('#view-branches .content');
+    if (!content) return;
+
+    content.innerHTML =
+      '<div id="br-no-biz" style="display:none">' +
+        '<div class="placeholder"><div class="placeholder-icon">⌂</div>' +
+          '<div class="placeholder-title">NO BUSINESS SELECTED</div>' +
+          '<div class="placeholder-sub">Select or create a business on the Home screen first.</div>' +
+        '</div>' +
+      '</div>' +
+
+      '<div id="br-main">' +
+        '<div class="card" style="margin-bottom:16px">' +
+          '<div class="card-hd"><div class="card-title">BRANCHES</div>' +
+            '<button class="btn btn-ghost btn-sm" id="br-create-toggle">+ NEW BRANCH</button>' +
+          '</div>' +
+          '<div id="br-create-body" style="display:none"><div class="card-body">' +
+            '<div class="form-row-2">' +
+              '<div class="form-group"><label class="form-label">NAME <span class="req">*</span></label>' +
+                '<input class="form-control" id="br-f-name" maxlength="255" placeholder="e.g. Main Street"></div>' +
+              '<div class="form-group"><label class="form-label">PHONE</label>' +
+                '<input class="form-control" id="br-f-phone" maxlength="30" placeholder="Optional"></div>' +
+            '</div>' +
+            '<div class="form-group"><label class="form-label">ADDRESS</label>' +
+              '<input class="form-control" id="br-f-address" maxlength="500" placeholder="Optional"></div>' +
+            '<div class="form-group"><label class="form-label">TIMEZONE</label>' +
+              '<input class="form-control" id="br-f-timezone" maxlength="100" placeholder="Auto-detected"></div>' +
+            '<div style="display:flex;align-items:center;gap:10px">' +
+              '<button class="btn btn-primary btn-sm" id="br-f-save">CREATE BRANCH</button>' +
+              '<span id="br-f-fb" style="font-family:var(--mono);font-size:10px"></span>' +
+            '</div>' +
+          '</div></div>' +
+        '</div>' +
+
+        '<div id="br-list"></div>' +
+        '<div id="br-empty" style="display:none">' +
+          '<div class="placeholder"><div class="placeholder-icon">⌂</div>' +
+            '<div class="placeholder-title">NO BRANCHES YET</div>' +
+            '<div class="placeholder-sub">Create your first branch to start recording sales and inventory.</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+  }
+
+  function _openForm(prefill) {
+    var body = document.getElementById('br-create-body');
+    var toggleBtn = document.getElementById('br-create-toggle');
+    var saveBtn = document.getElementById('br-f-save');
+    body.style.display = 'block';
+    toggleBtn.textContent = '− CANCEL';
+    document.getElementById('br-f-name').value     = prefill ? (prefill.name     || '') : '';
+    document.getElementById('br-f-phone').value    = prefill ? (prefill.phone    || '') : '';
+    document.getElementById('br-f-address').value  = prefill ? (prefill.address  || '') : '';
+    document.getElementById('br-f-timezone').value = prefill ? (prefill.timezone || '') : '';
+    saveBtn.textContent = prefill ? 'SAVE CHANGES' : 'CREATE BRANCH';
+    _editingId = prefill ? prefill.branchId : null;
+  }
+
+  function _closeForm() {
+    document.getElementById('br-create-body').style.display = 'none';
+    document.getElementById('br-create-toggle').textContent = '+ NEW BRANCH';
+    _editingId = null;
+  }
+
+  function _card(b, activeId) {
+    var isActive   = b.branchId === activeId;
+    var isArchived = b.status === 'archived';
+    var d = b.createdAt ? new Date(b.createdAt).toLocaleDateString() : '';
+    return '<div class="card" style="margin-bottom:10px' + (isActive ? ';border-color:rgba(0,255,65,.35)' : '') + '">' +
+      '<div class="card-body" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">' +
+        '<div style="flex:1;min-width:160px">' +
+          '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">' +
+            '<span style="font-weight:600">' + esc(b.name) + '</span>' +
+            (isActive   ? '<span class="badge badge-green"><span class="badge-dot"></span>ACTIVE</span>' : '') +
+            (isArchived ? '<span class="badge badge-muted">ARCHIVED</span>' : '') +
+          '</div>' +
+          '<div style="font-family:var(--mono);font-size:10.5px;color:var(--text-3);margin-top:4px">' +
+            (b.address ? esc(b.address) + ' · ' : '') + (b.phone ? esc(b.phone) + ' · ' : '') + 'Created ' + esc(d) +
+          '</div>' +
+        '</div>' +
+        '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
+          (!isActive && !isArchived ? '<button class="btn btn-primary btn-sm br-select" data-id="' + esc(b.branchId) + '">SELECT</button>' : '') +
+          '<button class="btn btn-secondary btn-sm br-edit" data-id="' + esc(b.branchId) + '">EDIT</button>' +
+          '<button class="btn btn-ghost btn-sm br-archive" data-id="' + esc(b.branchId) + '" data-archived="' + isArchived + '">' +
+            (isArchived ? 'REACTIVATE' : 'ARCHIVE') + '</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  async function _renderList() {
+    var listEl  = document.getElementById('br-list');
+    var emptyEl = document.getElementById('br-empty');
+    if (!listEl) return;
+    var activeId = biz.getActiveId();
+    if (!activeId) return;
+
+    var r = await window.INFINICUS.ops.branch.list(activeId);
+    var branches = r.branches || [];
+    var activeBranchId = window.INFINICUS.ops.workspace.getActiveBranchId();
+
+    if (emptyEl) emptyEl.style.display = branches.length ? 'none' : 'block';
+    listEl.innerHTML = branches.map(function(b) { return _card(b, activeBranchId); }).join('');
+  }
+
+  function _syncBiz() {
+    var active = biz.getActiveId();
+    var noBiz = document.getElementById('br-no-biz');
+    var main  = document.getElementById('br-main');
+    if (noBiz) noBiz.style.display = active ? 'none'  : 'block';
+    if (main)  main.style.display  = active ? 'block' : 'none';
+    if (active) _renderList();
+  }
+
+  function _wire() {
+    var toggleBtn = document.getElementById('br-create-toggle');
+    if (toggleBtn) toggleBtn.addEventListener('click', function() {
+      var open = document.getElementById('br-create-body').style.display !== 'none';
+      if (open) _closeForm(); else _openForm(null);
+    });
+
+    var saveBtn = document.getElementById('br-f-save');
+    if (saveBtn) saveBtn.addEventListener('click', async function() {
+      var fb = document.getElementById('br-f-fb');
+      var fields = {
+        name:     (document.getElementById('br-f-name')     || {}).value || '',
+        phone:    (document.getElementById('br-f-phone')    || {}).value || '',
+        address:  (document.getElementById('br-f-address')  || {}).value || '',
+        timezone: (document.getElementById('br-f-timezone') || {}).value || ''
+      };
+      var r = _editingId
+        ? await window.INFINICUS.ops.branch.update(Object.assign({ branchId: _editingId }, fields))
+        : await window.INFINICUS.ops.branch.create(fields);
+      if (r.ok) { _closeForm(); if (fb) fb.textContent = ''; }
+      else if (fb) { fb.style.color = 'var(--red)'; fb.textContent = r.error || 'Could not save branch'; }
+    });
+
+    var listEl = document.getElementById('br-list');
+    if (listEl) listEl.addEventListener('click', async function(e) {
+      var selBtn = e.target.closest('.br-select');
+      if (selBtn) { await window.INFINICUS.ops.branch.select(selBtn.dataset.id); return; }
+
+      var archBtn = e.target.closest('.br-archive');
+      if (archBtn) {
+        var wasArchived = archBtn.dataset.archived === 'true';
+        await window.INFINICUS.ops.branch.update({ branchId: archBtn.dataset.id, status: wasArchived ? 'active' : 'archived' });
+        return;
+      }
+
+      var editBtn = e.target.closest('.br-edit');
+      if (editBtn) {
+        var r = await window.INFINICUS.ops.branch.get(editBtn.dataset.id);
+        if (r.branch) _openForm(r.branch);
+      }
+    });
+  }
+
+  bus.on('dal.business.selected', _syncBiz);
+  bus.on('dal.business.created',  _syncBiz);
+  bus.on('ops.branch.created',    _renderList);
+  bus.on('ops.branch.updated',    _renderList);
+  bus.on('ops.branch.selected',   _renderList);
+
+  window.INFINICUS.ops.branchesView = { refresh: _renderList };
+  window.__opsBranchesInit = function() { _mount(); _wire(); _syncBiz(); };
+
+})(); // BranchesViewModule
+</script>
+
+<!-- ── BLOCK 4 — INIT ───────────────────────────────────────────── -->
+<script>
+(function Block4Init() {
+  'use strict';
+
+  window.__opsHomeInit();
+  window.__opsBranchesInit();
+
+  window.INFINICUS.bus.call('operations.workspace.init', {}).then(function(r) {
+    var ctx = r.context || {};
+    var label = 'Workspace ready' +
+      (ctx.business ? ' · ' + ctx.business.name : '') +
+      (ctx.branch   ? ' · ' + ctx.branch.name   : '');
+
+    if (window.__OPS && typeof window.__OPS.setStatus === 'function') {
+      window.__OPS.setStatus('ready', label);
+    }
+
+    window.INFINICUS.ops.homeView.refresh();
+    window.INFINICUS.ops.branchesView.refresh();
+
+    console.info(
+      '[BOL] Block 4 ready' +
+      ' | routes: ' + window.INFINICUS.bus.listRoutes().length +
+      ' | businessId: ' + (ctx.businessId || 'none') +
+      ' | branchId: '   + (ctx.branchId   || 'none')
+    );
+
+    window.INFINICUS.bus.emit('ops.workspace.ready', { block: 4, context: ctx });
+  });
+
+})(); // Block4Init
+</script>
+
+<!-- ════════════════════════════════════════════════════════════════
+     BLOCK 5 · PRODUCT & SERVICE CATALOG
+     Product Manager (domain logic + SKU soft-dedup) and the Catalog
+     view UI. Products are pure ops-local configuration — DAL has no
+     canonical "product" event type, so nothing here calls
+     data.event.ingest (per the architecture doc's event map).
+     Depends on: Block 2 (bus/security/uuid/schemas), Block 3
+     (ops.storage.products.* + by_business_sku index), Block 4
+     (ops.audit, biz, workspace).
+════════════════════════════════════════════════════════════════ -->
+
+<!-- ── 5A · Product Manager ─────────────────────────────────────── -->
+<script>
+'use strict';
+
+(function OperationsProductModule() {
+
+  var bus     = window.INFINICUS.bus;
+  var biz     = window.INFINICUS.biz;
+  var sec     = window.INFINICUS.security;
+  var uuid    = window.INFINICUS.uuid;
+  var schemas = window.INFINICUS.schemas;
+  var audit   = window.INFINICUS.ops.audit;
+
+  var S_CREATE = { type: 'object', required: ['name', 'sellingPrice'], properties: {
+    name:         { type: 'string',  minLength: 1, maxLength: 255 },
+    type:         { type: 'string',  enum: ['product', 'service'] },
+    sku:          { type: 'string',  maxLength: 60 },
+    category:     { type: 'string',  maxLength: 100 },
+    sellingPrice: { type: 'number',  minimum: 0 },
+    costPrice:    { type: 'number',  minimum: 0 },
+    stockTracked: { type: 'boolean' },
+    taxRate:      { type: 'number',  minimum: 0, maximum: 100 },
+    reorderPoint: { type: 'number',  minimum: 0 } // added in Block 9 — low-stock alert threshold
+  } };
+
+  var S_UPDATE = { type: 'object', required: ['productId'], properties: {
+    productId:    { type: 'string',  format: 'uuid' },
+    name:         { type: 'string',  minLength: 1, maxLength: 255 },
+    type:         { type: 'string',  enum: ['product', 'service'] },
+    sku:          { type: 'string',  maxLength: 60 },
+    category:     { type: 'string',  maxLength: 100 },
+    sellingPrice: { type: 'number',  minimum: 0 },
+    costPrice:    { type: 'number',  minimum: 0 },
+    stockTracked: { type: 'boolean' },
+    taxRate:      { type: 'number',  minimum: 0, maximum: 100 },
+    reorderPoint: { type: 'number',  minimum: 0 }, // added in Block 9
+    status:       { type: 'string',  enum: ['active', 'archived'] }
+  } };
+
+  schemas.register('product.create', S_CREATE);
+  schemas.register('product.update', S_UPDATE);
+
+  /** Case-sensitive-free SKU lookup within a business via the
+   *  by_business_sku compound index — soft-dedup only (warns, does
+   *  not hard-block) since SKU is optional and real catalogs are
+   *  often messy. */
+  async function _findBySku(businessId, sku, excludeId) {
+    if (!sku) return null;
+    var r = await bus.call('ops.storage.products.list', { indexName: 'by_business_sku', keyVal: [businessId, sku] });
+    var match = (r.records || []).filter(function(p) { return p.productId !== excludeId; })[0];
+    return match || null;
+  }
+
+  var productApi = {
+
+    create: async function(fields) {
+      fields = fields || {};
+      var businessId = biz.getActiveId();
+      if (!businessId) return { ok: false, error: 'No active business', code: 'NO_BUSINESS' };
+
+      try {
+        var name = sec.sanitizeString(fields.name || '', 255);
+        if (!name) return { ok: false, error: 'Product name is required', code: 'VALIDATION_FAILED' };
+
+        var sellingPrice = sec.sanitizeNumber(fields.sellingPrice, { min: 0, decimals: 2 });
+        var sku = fields.sku ? sec.sanitizeString(fields.sku, 60) : '';
+
+        if (sku) {
+          var dupe = await _findBySku(businessId, sku);
+          if (dupe) return { ok: false, error: 'SKU "' + sku + '" is already used by "' + dupe.name + '"', code: 'DUPLICATE_SKU' };
+        }
+
+        var bizR = biz.getActive();
+        var record = {
+          productId:    uuid(),
+          businessId:   businessId,
+          name:         name,
+          type:         sec.validateEnum(fields.type, ['product', 'service']) ? fields.type : 'product',
+          sku:          sku,
+          category:     fields.category ? sec.sanitizeString(fields.category, 100) : '',
+          sellingPrice: sellingPrice,
+          costPrice:    fields.costPrice != null ? sec.sanitizeNumber(fields.costPrice, { min: 0, decimals: 2 }) : 0,
+          currency:     (bizR.business && bizR.business.currency) || 'USD',
+          stockTracked: !!fields.stockTracked,
+          taxRate:      fields.taxRate != null ? sec.sanitizeNumber(fields.taxRate, { min: 0, max: 100, decimals: 2 }) : 0,
+          reorderPoint: fields.reorderPoint != null ? sec.sanitizeNumber(fields.reorderPoint, { min: 0, decimals: 2 }) : 0, // added in Block 9
+          status:       'active'
+        };
+
+        var r = await bus.call('ops.storage.products.put', record);
+        if (!r.ok) return r;
+
+        audit('create', 'product', r.record.productId, null, r.record);
+        bus.emit('ops.product.created', { productId: r.record.productId });
+        return { ok: true, product: r.record };
+
+      } catch (err) {
+        return { ok: false, error: err.message || String(err), code: err.name || 'PRODUCT_ERROR' };
+      }
+    },
+
+    update: async function(fields) {
+      fields = fields || {};
+      if (!sec.isUUID(fields.productId)) return { ok: false, error: 'Invalid productId', code: 'VALIDATION_FAILED' };
+
+      var activeBizId = biz.getActiveId();
+      var before = await bus.call('ops.storage.products.get', { id: fields.productId });
+      if (!before.record) return { ok: false, error: 'Product not found', code: 'NOT_FOUND' };
+      if (before.record.businessId !== activeBizId) return { ok: false, error: 'Product does not belong to the active business', code: 'OWNERSHIP_MISMATCH' };
+
+      try {
+        var patch = { productId: fields.productId };
+
+        if (fields.name !== undefined) {
+          var nm = sec.sanitizeString(fields.name, 255);
+          if (!nm) return { ok: false, error: 'Product name is required', code: 'VALIDATION_FAILED' };
+          patch.name = nm;
+        }
+        if (fields.type !== undefined && sec.validateEnum(fields.type, ['product', 'service'])) patch.type = fields.type;
+        if (fields.sku !== undefined) {
+          var sku2 = sec.sanitizeString(fields.sku, 60);
+          if (sku2) {
+            var dupe2 = await _findBySku(activeBizId, sku2, fields.productId);
+            if (dupe2) return { ok: false, error: 'SKU "' + sku2 + '" is already used by "' + dupe2.name + '"', code: 'DUPLICATE_SKU' };
+          }
+          patch.sku = sku2;
+        }
+        if (fields.category     !== undefined) patch.category     = sec.sanitizeString(fields.category, 100);
+        if (fields.sellingPrice !== undefined) patch.sellingPrice = sec.sanitizeNumber(fields.sellingPrice, { min: 0, decimals: 2 });
+        if (fields.costPrice    !== undefined) patch.costPrice    = sec.sanitizeNumber(fields.costPrice, { min: 0, decimals: 2 });
+        if (fields.stockTracked !== undefined) patch.stockTracked = !!fields.stockTracked;
+        if (fields.taxRate      !== undefined) patch.taxRate      = sec.sanitizeNumber(fields.taxRate, { min: 0, max: 100, decimals: 2 });
+        if (fields.reorderPoint !== undefined) patch.reorderPoint = sec.sanitizeNumber(fields.reorderPoint, { min: 0, decimals: 2 }); // added in Block 9
+        if (fields.status       !== undefined && sec.validateEnum(fields.status, ['active', 'archived'])) patch.status = fields.status;
+
+        var r = await bus.call('ops.storage.products.put', patch);
+        if (!r.ok) return r;
+
+        audit('update', 'product', fields.productId, before.record, r.record);
+        bus.emit('ops.product.updated', { productId: fields.productId });
+        return { ok: true, product: r.record };
+
+      } catch (err) {
+        return { ok: false, error: err.message || String(err), code: err.name || 'PRODUCT_ERROR' };
+      }
+    },
+
+    list: async function(businessId) {
+      var id = businessId || biz.getActiveId();
+      if (!id) return { ok: true, products: [] };
+      var r = await bus.call('ops.storage.products.list', { indexName: 'by_business', keyVal: id });
+      var products = (r.records || []).sort(function(a, b) { return (a.name || '').localeCompare(b.name || ''); });
+      return { ok: true, products: products };
+    },
+
+    get: async function(productId) {
+      var r = await bus.call('ops.storage.products.get', { id: productId });
+      return { ok: r.ok, product: r.record };
+    },
+
+    search: async function(businessId, query) {
+      var r = await productApi.list(businessId);
+      var q = (query || '').trim().toLowerCase();
+      var filtered = !q ? r.products : r.products.filter(function(p) {
+        return (p.name || '').toLowerCase().indexOf(q) !== -1 || (p.sku || '').toLowerCase().indexOf(q) !== -1;
+      });
+      return { ok: true, products: filtered };
+    },
+
+    archive: function(productId) { return productApi.update({ productId: productId, status: 'archived' }); }
+  };
+
+  window.INFINICUS.ops.product = productApi;
+
+  bus.register('operations.product.create',  function(p) { return productApi.create(p); }, S_CREATE);
+  bus.register('operations.product.update',  function(p) { return productApi.update(p); }, S_UPDATE);
+  bus.register('operations.product.list',    function(p) { return productApi.list(p && p.businessId); });
+  bus.register('operations.product.get',     function(p) { return productApi.get(p.productId); });
+  bus.register('operations.product.archive', function(p) { return productApi.archive(p.productId); });
+  bus.register('operations.product.search',  function(p) { return productApi.search(p && p.businessId, p && p.query); });
+
+})(); // OperationsProductModule
+</script>
+
+<!-- ── 5B · Catalog View ────────────────────────────────────────── -->
+<script>
+'use strict';
+
+(function CatalogViewModule() {
+
+  var bus = window.INFINICUS.bus;
+  var esc = window.INFINICUS.esc;
+  var biz = window.INFINICUS.biz;
+
+  var _editingId = null;
+  var _search = '';
+
+  function _mount() {
+    var content = document.querySelector('#view-catalog .content');
+    if (!content) return;
+    content.innerHTML =
+      '<div id="cat-no-biz" style="display:none">' +
+        '<div class="placeholder"><div class="placeholder-icon">▤</div>' +
+          '<div class="placeholder-title">NO BUSINESS SELECTED</div>' +
+          '<div class="placeholder-sub">Select a business on the Home screen first.</div>' +
+        '</div>' +
+      '</div>' +
+      '<div id="cat-main">' +
+        '<div class="card" style="margin-bottom:16px">' +
+          '<div class="card-hd"><div class="card-title">CATALOG</div>' +
+            '<button class="btn btn-ghost btn-sm" id="cat-create-toggle">+ NEW PRODUCT</button>' +
+          '</div>' +
+          '<div id="cat-form-body" style="display:none"><div class="card-body">' +
+            '<div class="form-row-2">' +
+              '<div class="form-group"><label class="form-label">NAME <span class="req">*</span></label>' +
+                '<input class="form-control" id="cat-f-name" maxlength="255"></div>' +
+              '<div class="form-group"><label class="form-label">TYPE</label>' +
+                '<select class="form-control" id="cat-f-type"><option value="product">Product</option><option value="service">Service</option></select></div>' +
+            '</div>' +
+            '<div class="form-row-2">' +
+              '<div class="form-group"><label class="form-label">SKU</label>' +
+                '<input class="form-control" id="cat-f-sku" maxlength="60" placeholder="Optional"></div>' +
+              '<div class="form-group"><label class="form-label">CATEGORY</label>' +
+                '<input class="form-control" id="cat-f-category" maxlength="100" placeholder="Optional"></div>' +
+            '</div>' +
+            '<div class="form-row-2">' +
+              '<div class="form-group"><label class="form-label">SELLING PRICE <span class="req">*</span></label>' +
+                '<input class="form-control" id="cat-f-price" type="number" min="0" step="0.01"></div>' +
+              '<div class="form-group"><label class="form-label">COST PRICE</label>' +
+                '<input class="form-control" id="cat-f-cost" type="number" min="0" step="0.01" placeholder="0.00"></div>' +
+            '</div>' +
+            '<div class="form-row-2">' +
+              '<div class="form-group"><label class="form-label">TAX RATE %</label>' +
+                '<input class="form-control" id="cat-f-tax" type="number" min="0" max="100" step="0.1" placeholder="0"></div>' +
+              '<div class="form-group" style="display:flex;align-items:flex-end;padding-bottom:9px">' +
+                '<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-family:var(--mono);font-size:11px;color:var(--text-2)">' +
+                  '<input type="checkbox" id="cat-f-stock" style="accent-color:var(--accent)" checked> Track stock quantity' +
+                '</label>' +
+              '</div>' +
+            '</div>' +
+            '<div class="form-row-2">' +
+              '<div class="form-group"><label class="form-label">REORDER POINT</label>' +
+                '<input class="form-control" id="cat-f-reorder" type="number" min="0" step="1" placeholder="0"></div>' +
+              '<div class="form-group"><div class="form-hint" style="margin-top:26px">Added in Block 9 — flagged low on Inventory once stock falls to or below this.</div></div>' +
+            '</div>' +
+            '<div style="display:flex;align-items:center;gap:10px">' +
+              '<button class="btn btn-primary btn-sm" id="cat-f-save">CREATE PRODUCT</button>' +
+              '<span id="cat-f-fb" style="font-family:var(--mono);font-size:10px"></span>' +
+            '</div>' +
+          '</div></div>' +
+        '</div>' +
+        '<input class="form-control" id="cat-search" placeholder="Search catalog…" style="margin-bottom:12px">' +
+        '<div id="cat-list"></div>' +
+        '<div id="cat-empty" style="display:none"><div class="placeholder"><div class="placeholder-icon">▤</div>' +
+          '<div class="placeholder-title">NO PRODUCTS YET</div>' +
+          '<div class="placeholder-sub">Add your first product or service to start selling.</div>' +
+        '</div></div>' +
+      '</div>';
+  }
+
+  function _openForm(prefill) {
+    document.getElementById('cat-form-body').style.display = 'block';
+    document.getElementById('cat-create-toggle').textContent = '− CANCEL';
+    document.getElementById('cat-f-name').value      = prefill ? prefill.name || '' : '';
+    document.getElementById('cat-f-type').value      = prefill ? prefill.type || 'product' : 'product';
+    document.getElementById('cat-f-sku').value       = prefill ? prefill.sku || '' : '';
+    document.getElementById('cat-f-category').value  = prefill ? prefill.category || '' : '';
+    document.getElementById('cat-f-price').value     = prefill ? prefill.sellingPrice : '';
+    document.getElementById('cat-f-cost').value      = prefill ? prefill.costPrice : '';
+    document.getElementById('cat-f-tax').value       = prefill ? prefill.taxRate : '';
+    document.getElementById('cat-f-stock').checked   = prefill ? !!prefill.stockTracked : true;
+    document.getElementById('cat-f-reorder').value   = prefill ? prefill.reorderPoint : ''; // added in Block 9
+    document.getElementById('cat-f-save').textContent = prefill ? 'SAVE CHANGES' : 'CREATE PRODUCT';
+    _editingId = prefill ? prefill.productId : null;
+  }
+  function _closeForm() {
+    document.getElementById('cat-form-body').style.display = 'none';
+    document.getElementById('cat-create-toggle').textContent = '+ NEW PRODUCT';
+    _editingId = null;
+  }
+
+  function _row(p) {
+    var isArchived = p.status === 'archived';
+    return '<div class="card" style="margin-bottom:8px' + (isArchived ? ';opacity:.55' : '') + '"><div class="card-body" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:12px 16px">' +
+      '<div style="flex:1;min-width:160px">' +
+        '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">' +
+          '<span style="font-weight:600">' + esc(p.name) + '</span>' +
+          '<span class="badge badge-' + (p.type === 'service' ? 'purple' : 'blue') + '">' + esc(p.type) + '</span>' +
+          (isArchived ? '<span class="badge badge-muted">ARCHIVED</span>' : '') +
+          (p.stockTracked ? '<span class="badge badge-muted">STOCK TRACKED</span>' : '') +
+        '</div>' +
+        '<div style="font-family:var(--mono);font-size:10.5px;color:var(--text-3);margin-top:4px">' +
+          (p.sku ? 'SKU ' + esc(p.sku) + ' · ' : '') + (p.category ? esc(p.category) + ' · ' : '') + 'Cost ' + (+p.costPrice || 0).toFixed(2) +
+          (p.taxRate ? ' · Tax ' + p.taxRate + '%' : '') +
+        '</div>' +
+      '</div>' +
+      '<div style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--accent)">' + esc(p.currency || '') + ' ' + (+p.sellingPrice).toFixed(2) + '</div>' +
+      '<div style="display:flex;gap:8px">' +
+        '<button class="btn btn-secondary btn-sm cat-edit" data-id="' + esc(p.productId) + '">EDIT</button>' +
+        '<button class="btn btn-ghost btn-sm cat-archive" data-id="' + esc(p.productId) + '" data-archived="' + isArchived + '">' + (isArchived ? 'REACTIVATE' : 'ARCHIVE') + '</button>' +
+      '</div>' +
+    '</div></div>';
+  }
+
+  async function _renderList() {
+    var listEl = document.getElementById('cat-list');
+    var emptyEl = document.getElementById('cat-empty');
+    if (!listEl) return;
+    var r = await window.INFINICUS.ops.product.search(biz.getActiveId(), _search);
+    var products = r.products || [];
+    if (emptyEl) emptyEl.style.display = products.length ? 'none' : 'block';
+    listEl.innerHTML = products.map(_row).join('');
+  }
+
+  function _syncBiz() {
+    var active = biz.getActiveId();
+    var noBiz = document.getElementById('cat-no-biz');
+    var main = document.getElementById('cat-main');
+    if (noBiz) noBiz.style.display = active ? 'none' : 'block';
+    if (main) main.style.display = active ? 'block' : 'none';
+    if (active) _renderList();
+  }
+
+  function _wire() {
+    var toggleBtn = document.getElementById('cat-create-toggle');
+    if (toggleBtn) toggleBtn.addEventListener('click', function() {
+      var open = document.getElementById('cat-form-body').style.display !== 'none';
+      if (open) _closeForm(); else _openForm(null);
+    });
+
+    var saveBtn = document.getElementById('cat-f-save');
+    if (saveBtn) saveBtn.addEventListener('click', async function() {
+      var fb = document.getElementById('cat-f-fb');
+      var fields = {
+        name:         (document.getElementById('cat-f-name')     || {}).value || '',
+        type:         (document.getElementById('cat-f-type')     || {}).value || 'product',
+        sku:          (document.getElementById('cat-f-sku')      || {}).value || '',
+        category:     (document.getElementById('cat-f-category') || {}).value || '',
+        sellingPrice: (document.getElementById('cat-f-price')    || {}).value || 0,
+        costPrice:    (document.getElementById('cat-f-cost')     || {}).value || 0,
+        taxRate:      (document.getElementById('cat-f-tax')      || {}).value || 0,
+        stockTracked: (document.getElementById('cat-f-stock')    || {}).checked,
+        reorderPoint: (document.getElementById('cat-f-reorder')  || {}).value || 0 // added in Block 9
+      };
+      var r = _editingId
+        ? await window.INFINICUS.ops.product.update(Object.assign({ productId: _editingId }, fields))
+        : await window.INFINICUS.ops.product.create(fields);
+      if (r.ok) { _closeForm(); if (fb) fb.textContent = ''; }
+      else if (fb) { fb.style.color = 'var(--red)'; fb.textContent = r.error || 'Could not save product'; }
+    });
+
+    var searchEl = document.getElementById('cat-search');
+    if (searchEl) searchEl.addEventListener('input', function() { _search = searchEl.value; _renderList(); });
+
+    var listEl = document.getElementById('cat-list');
+    if (listEl) listEl.addEventListener('click', async function(e) {
+      var editBtn = e.target.closest('.cat-edit');
+      if (editBtn) { var r = await window.INFINICUS.ops.product.get(editBtn.dataset.id); if (r.product) _openForm(r.product); return; }
+
+      var archBtn = e.target.closest('.cat-archive');
+      if (archBtn) {
+        var wasArchived = archBtn.dataset.archived === 'true';
+        await window.INFINICUS.ops.product.update({ productId: archBtn.dataset.id, status: wasArchived ? 'active' : 'archived' });
+      }
+    });
+  }
+
+  bus.on('dal.business.selected', _syncBiz);
+  bus.on('ops.product.created',   _renderList);
+  bus.on('ops.product.updated',   _renderList);
+
+  window.INFINICUS.ops.catalogView = { refresh: _renderList };
+  window.__opsCatalogInit = function() { _mount(); _wire(); _syncBiz(); };
+
+})(); // CatalogViewModule
+</script>
+
+<!-- ── BLOCK 5 — INIT ───────────────────────────────────────────── -->
+<script>
+(function Block5Init() {
+  'use strict';
+
+  window.__opsCatalogInit();
+
+  console.info(
+    '[BOL] Block 5 ready | routes: ' + window.INFINICUS.bus.listRoutes().length +
+    ' | Catalog: create/update/list/get/search/archive · SKU soft-dedup via by_business_sku index'
+  );
+
+  window.INFINICUS.bus.emit('ops.catalog.ready', { block: 5 });
+
+})(); // Block5Init
+</script>
+
+<!-- ════════════════════════════════════════════════════════════════
+     BLOCK 6 · SALES & ORDER MANAGEMENT
+     The core sales flow: business → branch → order → line items →
+     customer → totals → payment → complete → inventory reduced →
+     customer history bumped → cash register updated → DAL events
+     emitted.
+
+     SCOPE NOTE (flagged, not silently decided): the core flow touches
+     three modules not yet built — Payment Records (Block 7), Cash
+     Register (Block 8), Inventory Operations (Block 9). Rather than
+     fake the flow or block on those blocks existing first, this block
+     front-loads the minimum REAL capability each one needs so
+     completion is genuinely correct today, not a stub:
+       • Inventory → a signed-quantity movement ledger + getStock()
+         (operations.inventory.recordMovement / .getStock). Block 9
+         adds the dedicated view, low-stock thresholds, and the
+         remaining movement UIs (waste/damage/transfer/adjust) ON TOP
+         of this ledger — it does not replace it.
+       • Payment   → completion writes a real payment record and
+         emits payment.completed/.refunded against the SAME
+         'payments' store Block 7's dedicated view will browse.
+       • Cash      → completion writes a cash movement ONLY if an
+         open cash session already exists for the branch (it won't,
+         until Block 8 exists to open one) — degrades gracefully,
+         never blocks a sale.
+     Customer selection in Sell is a name-only quick-match/quick-create
+     (full Customer CRUD, search, and profiles are Block 11).
+
+     Depends on: Block 2 (bus/security/uuid/schemas/data.event.ingest,
+     the order.*/payment.*/inventory.* payload schemas already
+     registered there), Block 3 (ops.storage.* + multiStoreTx), Block 4
+     (workspace/audit), Block 5 (ops.product).
+════════════════════════════════════════════════════════════════ -->
+
+<!-- ── 6A · Inventory Movement Writer + Order Manager ──────────── -->
+<script>
+'use strict';
+
+/* ── INVENTORY MOVEMENT WRITER (front-loaded from Block 9) ──────
+   One ledger, one rule: quantity is always SIGNED (+ = stock in,
+   − = stock out). getStock() is a plain sum with no type-based
+   branching, so it can never drift out of sync with how movements
+   are written. 'type' is a descriptive label only — used by Block 9's
+   ledger UI and to pick the right DAL inventory.* event. ─────────── */
+(function OperationsInventoryModule() {
+
+  var bus  = window.INFINICUS.bus;
+  var uuid = window.INFINICUS.uuid;
+
+  function ingestOps(eventType, businessId, payload) {
+    return bus.call('data.event.ingest', {
+      eventType: eventType, businessId: businessId, source: 'ops',
+      occurredAt: new Date().toISOString(), payload: payload
+    });
+  }
+
+  /** Maps one ops movement to its canonical DAL event. 'transferred'
+   *  is intentionally not pushed to DAL — it nets to zero business-
+   *  wide (see the architecture doc's event-mapping table). */
+  function _ingestMovementToDal(m) {
+    var absQty = Math.abs(m.quantity);
+    if (m.type === 'received' || m.type === 'returned') {
+      var recPayload = { itemId: m.productId, itemName: m.productName, quantity: absQty, reason: (m.type === 'returned' ? 'return' : 'purchase') };
+      if (m.unitCost != null) recPayload.unitCost = m.unitCost;
+      ingestOps('inventory.received', m.businessId, recPayload);
+    } else if (m.type === 'adjusted') {
+      var adjPayload = { itemId: m.productId, itemName: m.productName, adjustedQuantity: m.quantity };
+      if (m.reason) adjPayload.reason = m.reason;
+      ingestOps('inventory.adjusted', m.businessId, adjPayload);
+    } else if (m.type !== 'transferred') {
+      var reasonMap = { sold: 'sale', consumed: 'other', wasted: 'waste', damaged: 'damage' };
+      ingestOps('inventory.consumed', m.businessId, { itemId: m.productId, itemName: m.productName, quantity: absQty, reason: reasonMap[m.type] || 'other' });
+    }
+  }
+
+  var inventoryApi = {
+
+    /** Sum every movement for a product within a business, optionally
+     *  scoped to one branch. Uses the by_product compound index
+     *  [businessId, productId] — branch filtering happens client-side
+     *  rather than via a new compound IDB index, to avoid a schema
+     *  migration on infinicus_ops for what's a modest record count
+     *  locally. Omit branchId for a business-wide total (e.g. a future
+     *  company-wide report); pass it for "what's actually on the shelf
+     *  at THIS branch," which is what stock checks should use.
+     *
+     *  FIX (Block 9): before this, every caller got the business-wide
+     *  total, including Block 6's stock check before completing a sale
+     *  — meaning a sale at Branch B could succeed off stock that only
+     *  physically exists at Branch A. That call site now passes
+     *  order.branchId (see the Order Manager patch note). */
+    getStock: async function(productId, businessId, branchId) {
+      var ctx = window.INFINICUS.ops.workspace.getContext();
+      var bizId = businessId || ctx.businessId;
+      if (!bizId) return 0;
+      var r = await bus.call('ops.storage.inventoryMovements.list', { indexName: 'by_product', keyVal: [bizId, productId] });
+      var records = r.records || [];
+      if (branchId) records = records.filter(function(m) { return m.branchId === branchId; });
+      var total = 0;
+      records.forEach(function(m) { total += (+m.quantity || 0); });
+      return total;
+    },
+
+    /** Standalone movement write (Block 9's entry point; also usable
+     *  today outside an order-completion transaction). Caller supplies
+     *  the SIGNED quantity — this does not infer direction from type. */
+    recordMovement: async function(fields) {
+      fields = fields || {};
+      var ctx = window.INFINICUS.ops.workspace.getContext();
+      if (!ctx.businessId) return { ok: false, error: 'No active business', code: 'NO_BUSINESS' };
+      if (!fields.productId) return { ok: false, error: 'productId is required', code: 'VALIDATION_FAILED' };
+
+      var qty = +fields.quantity;
+      if (!isFinite(qty) || qty === 0) return { ok: false, error: 'quantity must be a non-zero number', code: 'VALIDATION_FAILED' };
+
+      var movement = {
+        movementId: uuid(), businessId: ctx.businessId, branchId: ctx.branchId || null,
+        productId: fields.productId, productName: fields.productName || '',
+        type: fields.type || 'adjusted', quantity: qty,
+        reason: fields.reason || '', orderId: fields.orderId || null,
+        unitCost: fields.unitCost != null ? +fields.unitCost : null,
+        occurredAt: new Date().toISOString()
+      };
+
+      var r = await bus.call('ops.storage.inventoryMovements.put', movement);
+      if (!r.ok) return r;
+
+      _ingestMovementToDal(movement);
+      bus.emit('operation.inventory.' + (qty >= 0 ? 'received' : 'consumed'), { movementId: movement.movementId, productId: movement.productId });
+      return { ok: true, movement: r.record };
+    }
+  };
+
+  window.INFINICUS.ops.inventory = inventoryApi;
+  window.INFINICUS.ops._ingestMovementToDal = _ingestMovementToDal; // reused by Order Manager's post-commit DAL phase below
+
+  bus.register('operations.inventory.recordMovement', function(p) { return inventoryApi.recordMovement(p); });
+  bus.register('operations.inventory.getStock', async function(p) { return { ok: true, stock: await inventoryApi.getStock(p.productId, p.businessId) }; });
+
+})(); // OperationsInventoryModule
+
+
+/* ── ORDER MANAGER ────────────────────────────────────────────── */
+(function OperationsOrderModule() {
+
+  var bus   = window.INFINICUS.bus;
+  var sec   = window.INFINICUS.security;
+  var uuid  = window.INFINICUS.uuid;
+  var audit = window.INFINICUS.ops.audit;
+  var idb   = window.INFINICUS._opsIdb;
+
+  function round2(n) { return Math.round(((+n || 0) + Number.EPSILON) * 100) / 100; }
+
+  function ingestOps(eventType, businessId, payload) {
+    return bus.call('data.event.ingest', {
+      eventType: eventType, businessId: businessId, source: 'ops',
+      occurredAt: new Date().toISOString(), payload: payload
+    });
+  }
+
+  function calcTotals(items, discount) {
+    var subtotal = 0, tax = 0;
+    (items || []).forEach(function(it) { subtotal += (+it.lineSubtotal || 0); tax += (+it.lineTax || 0); });
+    var disc = Math.min(Math.max(0, +discount || 0), subtotal);
+    return { subtotal: round2(subtotal), discount: round2(disc), tax: round2(tax), total: round2(Math.max(0, subtotal - disc + tax)) };
+  }
+
+  function _recalc(order) {
+    var t = calcTotals(order.items, order.discount);
+    order.subtotal = t.subtotal; order.discount = t.discount; order.tax = t.tax; order.total = t.total;
+    return order;
+  }
+
+  async function _getOwned(orderId) {
+    var r = await bus.call('ops.storage.orders.get', { id: orderId });
+    if (!r.record) return { ok: false, error: 'Order not found', code: 'NOT_FOUND' };
+    var ctx = window.INFINICUS.ops.workspace.getContext();
+    if (r.record.businessId !== ctx.businessId) return { ok: false, error: 'Order does not belong to the active business', code: 'OWNERSHIP_MISMATCH' };
+    return { ok: true, order: r.record };
+  }
+
+  async function _getDraftOwned(orderId) {
+    var g = await _getOwned(orderId);
+    if (!g.ok) return g;
+    if (g.order.status !== 'draft') return { ok: false, error: 'Order is not editable (status: ' + g.order.status + ')', code: 'ORDER_NOT_DRAFT' };
+    return g;
+  }
+
+  async function _saveDraft(order) {
+    var r = await bus.call('ops.storage.orders.put', order);
+    if (!r.ok) return r;
+    bus.emit('operation.order.updated', { orderId: order.orderId }); // local-only UI reactivity, not a DAL event
+    return { ok: true, order: r.record };
+  }
+
+  async function _resolveOrCreateCustomer(businessId, name) {
+    var cleanName = sec.sanitizeString(name || '', 255);
+    if (!cleanName) return { customerId: null, isNew: false };
+
+    var r = await bus.call('ops.storage.customers.list', { indexName: 'by_business', keyVal: businessId });
+    var match = (r.records || []).filter(function(c) { return c.name && c.name.toLowerCase() === cleanName.toLowerCase(); })[0];
+    if (match) return { customerId: match.customerId, isNew: false };
+
+    var newCust = { customerId: uuid(), businessId: businessId, name: cleanName, email: '', phone: '', totalSpend: 0, orderCount: 0, lastPurchaseAt: null };
+    var putR = await bus.call('ops.storage.customers.put', newCust);
+    return { customerId: putR.record.customerId, isNew: true };
+  }
+
+  /** Atomic multi-store commit for order completion — either every
+   *  store's write lands, or none do. Uses the multiStoreTx helper
+   *  built in Block 3 specifically for this call site. */
+  async function _atomicCompleteWrite(order, payment, movements, cashMovement, customerPatch) {
+    var stores = ['orders', 'payments', 'inventoryMovements'];
+    if (cashMovement)  stores.push('cashMovements');
+    if (customerPatch) stores.push('customers');
+
+    var tx = await idb.multiStoreTx(stores, 'readwrite');
+    return new Promise(function(resolve, reject) {
+      try {
+        tx.objectStore('orders').put(order);
+        tx.objectStore('payments').put(payment);
+        movements.forEach(function(m) { tx.objectStore('inventoryMovements').put(m); });
+        if (cashMovement)  tx.objectStore('cashMovements').put(cashMovement);
+        if (customerPatch) tx.objectStore('customers').put(customerPatch);
+      } catch (err) { reject(err); return; }
+      tx.oncomplete = function() { resolve(true); };
+      tx.onerror    = function() { reject(tx.error); };
+      tx.onabort    = function() { reject(tx.error || new Error('Transaction aborted')); };
+    });
+  }
+
+  // In-page mutex — closes the double-submit race (a stray second call
+  // while the first is still awaiting) without a real distributed lock.
+  // Cross-tab races on the SAME order are a known, accepted limitation
+  // of a local-first app — see the Block 6 security review.
+  var _completingIds = Object.create(null);
+
+  var orderApi = {
+
+    create: async function() {
+      var ctx = window.INFINICUS.ops.workspace.getContext();
+      if (!ctx.businessId) return { ok: false, error: 'No active business', code: 'NO_BUSINESS' };
+      if (!ctx.branchId)   return { ok: false, error: 'No active branch', code: 'NO_BRANCH' };
+
+      var record = {
+        orderId: uuid(), businessId: ctx.businessId, branchId: ctx.branchId,
+        customerId: null, customerName: '', status: 'draft', items: [],
+        subtotal: 0, discount: 0, tax: 0, total: 0,
+        currency: (ctx.business && ctx.business.currency) || 'USD',
+        paymentStatus: 'unpaid', createdAt: new Date().toISOString()
+      };
+      var r = await bus.call('ops.storage.orders.put', record);
+      if (!r.ok) return r;
+
+      ingestOps('order.created', ctx.businessId, { orderId: record.orderId, branchId: ctx.branchId, itemCount: 0, status: 'draft' });
+      bus.emit('operation.order.created', { orderId: record.orderId });
+      return { ok: true, order: r.record };
+    },
+
+    addItem: async function(orderId, product, quantity) {
+      var g = await _getDraftOwned(orderId);
+      if (!g.ok) return g;
+      var order = g.order;
+      if (!product || !product.productId) return { ok: false, error: 'A valid product is required', code: 'VALIDATION_FAILED' };
+
+      var qty = Math.max(1, Math.floor(+quantity) || 1);
+      var unitPrice = +product.sellingPrice || 0;
+      var taxRate = +product.taxRate || 0;
+
+      var existing = order.items.filter(function(it) { return it.productId === product.productId; })[0];
+      if (existing) {
+        existing.quantity     += qty;
+        existing.lineSubtotal  = round2(existing.unitPrice * existing.quantity);
+        existing.lineTax       = round2(existing.lineSubtotal * (existing.taxRate / 100));
+        existing.lineTotal     = round2(existing.lineSubtotal + existing.lineTax);
+      } else {
+        var lineSubtotal = round2(unitPrice * qty);
+        var lineTax = round2(lineSubtotal * (taxRate / 100));
+        order.items.push({
+          productId: product.productId, name: product.name, type: product.type || 'product',
+          unitPrice: unitPrice, quantity: qty, taxRate: taxRate,
+          lineSubtotal: lineSubtotal, lineTax: lineTax, lineTotal: round2(lineSubtotal + lineTax)
+        });
+      }
+      _recalc(order);
+      return _saveDraft(order);
+    },
+
+    removeItem: async function(orderId, productId) {
+      var g = await _getDraftOwned(orderId);
+      if (!g.ok) return g;
+      var order = g.order;
+      order.items = order.items.filter(function(it) { return it.productId !== productId; });
+      _recalc(order);
+      return _saveDraft(order);
+    },
+
+    updateItemQty: async function(orderId, productId, quantity) {
+      var g = await _getDraftOwned(orderId);
+      if (!g.ok) return g;
+      var order = g.order;
+      var item = order.items.filter(function(it) { return it.productId === productId; })[0];
+      if (!item) return { ok: false, error: 'Line item not found', code: 'NOT_FOUND' };
+
+      var qty = Math.floor(+quantity) || 0;
+      if (qty <= 0) {
+        order.items = order.items.filter(function(it) { return it.productId !== productId; });
+      } else {
+        item.quantity = qty;
+        item.lineSubtotal = round2(item.unitPrice * qty);
+        item.lineTax = round2(item.lineSubtotal * (item.taxRate / 100));
+        item.lineTotal = round2(item.lineSubtotal + item.lineTax);
+      }
+      _recalc(order);
+      return _saveDraft(order);
+    },
+
+    setCustomer: async function(orderId, customerName) {
+      var g = await _getDraftOwned(orderId);
+      if (!g.ok) return g;
+      var order = g.order;
+      order.customerName = sec.sanitizeString(customerName || '', 255);
+      return _saveDraft(order);
+    },
+
+    applyDiscount: async function(orderId, discountAmount) {
+      var g = await _getDraftOwned(orderId);
+      if (!g.ok) return g;
+      var order = g.order;
+      order.discount = Math.max(0, +discountAmount || 0);
+      _recalc(order);
+      return _saveDraft(order);
+    },
+
+    complete: async function(orderId, paymentInfo) {
+      if (_completingIds[orderId]) return { ok: false, error: 'This order is already being completed', code: 'ORDER_COMPLETING' };
+      _completingIds[orderId] = true;
+      try {
+        return await _completeInner(orderId, paymentInfo || {});
+      } finally {
+        delete _completingIds[orderId];
+      }
+    },
+
+    cancel: async function(orderId, reason) {
+      var g = await _getDraftOwned(orderId);
+      if (!g.ok) return g;
+      var order = g.order;
+
+      var updated = Object.assign({}, order, {
+        status: 'cancelled', cancelledAt: new Date().toISOString(),
+        cancelReason: reason ? sec.sanitizeString(reason, 255) : ''
+      });
+      var r = await bus.call('ops.storage.orders.put', updated);
+      if (!r.ok) return r;
+
+      audit('cancel', 'order', orderId, order, r.record);
+      ingestOps('order.cancelled', order.businessId, { orderId: orderId, branchId: order.branchId, reason: updated.cancelReason });
+      bus.emit('operation.order.cancelled', { orderId: orderId });
+      return { ok: true, order: r.record };
+    },
+
+    refund: async function(orderId, reason, amount) {
+      var g = await _getOwned(orderId);
+      if (!g.ok) return g;
+      var order = g.order;
+      if (order.status !== 'completed') return { ok: false, error: 'Only completed orders can be refunded', code: 'INVALID_STATUS' };
+
+      var refundAmount = amount != null ? Math.min(Math.max(0, +amount || 0), order.total) : order.total;
+      var now = new Date().toISOString();
+      var refundId = uuid();
+      // Fixed in Block 7: this used to generate a SECOND, different uuid
+      // for the DAL-facing payload than the one written to ops.storage.
+      // payments — the two "same refund" records didn't share an ID.
+      // One id now, used consistently on both sides.
+      var refundPaymentId = uuid();
+      var refundReason = reason ? sec.sanitizeString(reason, 255) : '';
+
+      var updated = Object.assign({}, order, {
+        status: 'refunded', refundedAt: now, refundReason: refundReason,
+        refundAmount: refundAmount, paymentStatus: 'refunded'
+      });
+      var r = await bus.call('ops.storage.orders.put', updated);
+      if (!r.ok) return r;
+
+      await bus.call('ops.storage.payments.put', {
+        paymentId: refundPaymentId, orderId: orderId, businessId: order.businessId,
+        amount: -refundAmount, method: 'refund', isRefund: true, occurredAt: now
+      });
+
+      // Added in Block 8: if the order was originally paid in cash, cash
+      // is physically leaving the till — record it against whichever
+      // session is open NOW (never the original sale's session, which
+      // may already be closed and reconciled). Skips gracefully if the
+      // original payment wasn't cash, or no session is open — same
+      // degrade-gracefully rule Block 6 already applies to sales.
+      var origPayR = await bus.call('ops.storage.payments.list', { indexName: 'by_order', keyVal: orderId });
+      var origPayment = (origPayR.records || []).filter(function(p) { return !p.isRefund; })[0];
+      if (origPayment && origPayment.method === 'cash') {
+        var refSessR = await bus.call('ops.storage.cashSessions.list', { indexName: 'by_branch', keyVal: order.branchId });
+        var refOpenSession = (refSessR.records || []).filter(function(s) { return s.status === 'open'; })[0];
+        if (refOpenSession) {
+          await bus.call('ops.storage.cashMovements.put', {
+            movementId: uuid(), sessionId: refOpenSession.sessionId, businessId: order.businessId,
+            branchId: order.branchId, type: 'refund', amount: -refundAmount, orderId: orderId,
+            occurredAt: now
+          });
+        }
+      }
+
+      audit('refund', 'order', orderId, order, r.record);
+      ingestOps('order.refunded', order.businessId, { orderId: orderId, refundId: refundId, amount: refundAmount, reason: refundReason });
+
+      var payPayload = { paymentId: refundPaymentId, orderId: orderId, amount: refundAmount, method: 'other' };
+      if (refundReason) payPayload.reason = refundReason;
+      ingestOps('payment.refunded', order.businessId, payPayload);
+
+      bus.emit('operation.order.refunded', { orderId: orderId });
+      // Added in Block 7: see the operation.payment.completed note above.
+      bus.emit('operation.payment.refunded', { paymentId: refundPaymentId, orderId: orderId, amount: refundAmount });
+      return { ok: true, order: r.record };
+    },
+
+    get: async function(orderId) {
+      var r = await bus.call('ops.storage.orders.get', { id: orderId });
+      return { ok: r.ok, order: r.record };
+    },
+
+    list: async function(opts) {
+      opts = opts || {};
+      var ctx = window.INFINICUS.ops.workspace.getContext();
+      var businessId = opts.businessId || ctx.businessId;
+      if (!businessId) return { ok: true, orders: [] };
+
+      var r = opts.status
+        ? await bus.call('ops.storage.orders.list', { indexName: 'by_business_status', keyVal: [businessId, opts.status] })
+        : await bus.call('ops.storage.orders.list', { indexName: 'by_business', keyVal: businessId });
+
+      var orders = r.records || [];
+      if (opts.branchId) orders = orders.filter(function(o) { return o.branchId === opts.branchId; });
+      orders.sort(function(a, b) { return (b.createdAt || '') > (a.createdAt || '') ? 1 : -1; });
+      return { ok: true, orders: orders };
+    }
+  };
+
+  /** The actual completion logic, split out from complete() so the
+   *  mutex wrapper above stays trivial to read. */
+  async function _completeInner(orderId, paymentInfo) {
+    var g = await _getDraftOwned(orderId);
+    if (!g.ok) return g;
+    var order = g.order;
+
+    if (!order.items.length) return { ok: false, error: 'Cannot complete an empty order', code: 'EMPTY_ORDER' };
+
+    // ── Stock validation — fail before any side effects ───────────
+    for (var i = 0; i < order.items.length; i++) {
+      var li = order.items[i];
+      var pr = await bus.call('ops.storage.products.get', { id: li.productId });
+      if (pr.record && pr.record.stockTracked) {
+        // Branch-scoped as of Block 9 — was business-wide before, which
+        // could let a sale at this branch succeed off stock that only
+        // physically exists at a different branch. See the getStock
+        // comment in the Inventory Movement Writer for the full note.
+        var stock = await window.INFINICUS.ops.inventory.getStock(li.productId, order.businessId, order.branchId);
+        if (stock < li.quantity) {
+          return { ok: false, error: 'Insufficient stock for "' + li.name + '" (have ' + stock + ' at this branch, need ' + li.quantity + ')', code: 'INSUFFICIENT_STOCK' };
+        }
+      }
+    }
+
+    // ── Resolve or quick-create the customer (name-only v1) ───────
+    var customerId = order.customerId;
+    var customerIsNew = false;
+    if (!customerId && order.customerName) {
+      var custR = await _resolveOrCreateCustomer(order.businessId, order.customerName);
+      customerId = custR.customerId;
+      customerIsNew = custR.isNew;
+    }
+
+    // ── Payment reconciliation ─────────────────────────────────────
+    var method = sec.validateEnum(paymentInfo.method, ['cash', 'card', 'mobile', 'bank_transfer', 'store_credit', 'other']) ? paymentInfo.method : 'cash';
+    var tendered = paymentInfo.tenderedAmount != null ? +paymentInfo.tenderedAmount : order.total;
+    if (!isFinite(tendered) || tendered < 0) tendered = order.total;
+    var paidAmount = tendered >= order.total ? order.total : round2(tendered);
+    var changeGiven = (method === 'cash') ? Math.max(0, round2(tendered - order.total)) : 0;
+    var paymentStatus = paidAmount >= order.total ? 'paid' : (paidAmount > 0 ? 'partial' : 'unpaid');
+
+    var now = new Date().toISOString();
+    var paymentId = uuid();
+
+    var updatedOrder = Object.assign({}, order, {
+      status: 'completed', completedAt: now, updatedAt: now,
+      paymentStatus: paymentStatus, customerId: customerId || null
+    });
+
+    var paymentRecord = {
+      paymentId: paymentId, orderId: orderId, businessId: order.businessId,
+      amount: paidAmount, method: method, tenderedAmount: tendered, changeGiven: changeGiven,
+      occurredAt: now, createdAt: now, updatedAt: now
+    };
+
+    // ── Inventory movements — signed, negative = stock out ────────
+    var movements = [];
+    for (var j = 0; j < order.items.length; j++) {
+      var it = order.items[j];
+      var pr2 = await bus.call('ops.storage.products.get', { id: it.productId });
+      if (pr2.record && pr2.record.stockTracked) {
+        movements.push({
+          movementId: uuid(), businessId: order.businessId, branchId: order.branchId,
+          productId: it.productId, productName: it.name, type: 'sold',
+          quantity: -it.quantity, reason: 'sale', orderId: orderId,
+          occurredAt: now, createdAt: now, updatedAt: now
+        });
+      }
+    }
+
+    // ── Cash movement — only if a cash session is already open;
+    //    Cash Register itself (opening/closing tills) is Block 8 ────
+    var cashMovement = null;
+    if (method === 'cash') {
+      var sessR = await bus.call('ops.storage.cashSessions.list', { indexName: 'by_branch', keyVal: order.branchId });
+      var openSession = (sessR.records || []).filter(function(s) { return s.status === 'open'; })[0];
+      if (openSession) {
+        cashMovement = {
+          movementId: uuid(), sessionId: openSession.sessionId, businessId: order.businessId,
+          type: 'sale', amount: paidAmount, orderId: orderId,
+          occurredAt: now, createdAt: now, updatedAt: now
+        };
+      }
+    }
+
+    // ── Customer purchase-history bump (local projection) ─────────
+    var customerPatch = null;
+    if (customerId) {
+      var custRec = await bus.call('ops.storage.customers.get', { id: customerId });
+      if (custRec.record) {
+        customerPatch = Object.assign({}, custRec.record, {
+          totalSpend: round2((custRec.record.totalSpend || 0) + paidAmount),
+          orderCount: (custRec.record.orderCount || 0) + 1,
+          lastPurchaseAt: now, updatedAt: now
+        });
+      }
+    }
+
+    // ── Atomic commit across every ops store this transaction touches
+    try {
+      await _atomicCompleteWrite(updatedOrder, paymentRecord, movements, cashMovement, customerPatch);
+    } catch (err) {
+      console.error('[BOL] order completion transaction failed:', err);
+      return { ok: false, error: 'Could not save the completed order: ' + (err.message || err), code: 'TX_FAILED' };
+    }
+
+    audit('complete', 'order', orderId, order, updatedOrder);
+
+    // ── Propagate to DAL — sequential, best-effort. The atomic step
+    //    above is a true IndexedDB transaction (all-or-nothing) inside
+    //    infinicus_ops; DAL ingestion below writes to a SEPARATE
+    //    database (infinicus_dal) and cannot join that transaction —
+    //    IndexedDB has no cross-database transactions. Each ingest
+    //    call is itself checksum-deduped and safe to retry, but a
+    //    crash between these calls could leave the order 'completed'
+    //    with a partial DAL trail. Accepted limitation of a
+    //    local-first, two-database design — see the security review. ──
+    var completedPayload = {
+      orderId: orderId, branchId: order.branchId,
+      items: order.items.map(function(it) { return { productId: it.productId, name: it.name, quantity: it.quantity, unitPrice: it.unitPrice, lineTotal: it.lineTotal }; }),
+      subtotal: order.subtotal, discount: order.discount, tax: order.tax, total: order.total,
+      paymentStatus: paymentStatus
+    };
+    if (customerId) completedPayload.customerId = customerId;
+    ingestOps('order.completed', order.businessId, completedPayload);
+
+    order.items.forEach(function(it) {
+      var salePayload = { amount: it.lineTotal, quantity: it.quantity, productId: it.productId, productName: it.name, channel: 'pos', orderId: orderId };
+      if (customerId) salePayload.customerId = customerId;
+      ingestOps('sale.created', order.businessId, salePayload);
+    });
+
+    ingestOps('payment.completed', order.businessId, {
+      paymentId: paymentId, orderId: orderId, amount: paidAmount, method: method,
+      tenderedAmount: tendered, changeGiven: changeGiven
+    });
+
+    movements.forEach(function(m) { window.INFINICUS.ops._ingestMovementToDal(m); });
+
+    if (customerIsNew) ingestOps('customer.created', order.businessId, { name: order.customerName });
+
+    bus.emit('operation.order.completed', { orderId: orderId, total: order.total });
+    // Added in Block 7: this local event was missing — the spec lists
+    // operation.payment.completed as its own required event, separate
+    // from operation.order.completed. Payments view listens for it.
+    bus.emit('operation.payment.completed', { paymentId: paymentId, orderId: orderId, amount: paidAmount, method: method });
+
+    return { ok: true, order: updatedOrder, payment: paymentRecord };
+  }
+
+  window.INFINICUS.ops.order = orderApi;
+
+  bus.register('operations.order.create',          function()  { return orderApi.create(); });
+  bus.register('operations.order.addItem',         function(p) { return orderApi.addItem(p.orderId, p.product, p.quantity); });
+  bus.register('operations.order.removeItem',      function(p) { return orderApi.removeItem(p.orderId, p.productId); });
+  bus.register('operations.order.updateItem',      function(p) { return orderApi.updateItemQty(p.orderId, p.productId, p.quantity); });
+  bus.register('operations.order.setCustomer',     function(p) { return orderApi.setCustomer(p.orderId, p.customerName); });
+  bus.register('operations.order.applyDiscount',   function(p) { return orderApi.applyDiscount(p.orderId, p.discount); });
+  bus.register('operations.order.calculateTotals', function(p) { return { ok: true, totals: calcTotals(p.items, p.discount) }; });
+  bus.register('operations.order.complete',        function(p) { return orderApi.complete(p.orderId, p.payment); });
+  bus.register('operations.order.cancel',          function(p) { return orderApi.cancel(p.orderId, p.reason); });
+  bus.register('operations.order.refund',          function(p) { return orderApi.refund(p.orderId, p.reason, p.amount); });
+  bus.register('operations.order.get',             function(p) { return orderApi.get(p.orderId); });
+  bus.register('operations.order.list',            function(p) { return orderApi.list(p); });
+
+})(); // OperationsOrderModule
+</script>
+
+<!-- ── 6B · Sell View + Orders View ────────────────────────────── -->
+<script>
+'use strict';
+
+/* ── SELL VIEW — fast cart-based order entry ─────────────────── */
+(function SellViewModule() {
+
+  var bus = window.INFINICUS.bus;
+  var esc = window.INFINICUS.esc;
+
+  var _currentOrderId = null;
+  var _search = '';
+  var _category = '';
+  var _lastOrder = null;
+
+  function _mount() {
+    var content = document.querySelector('#view-sell .content');
+    if (!content) return;
+
+    content.innerHTML =
+      '<style>@media (min-width:820px){ #sell-grid-wrap{ display:grid; grid-template-columns:1fr 380px; gap:18px; align-items:start; } #sell-cart{ position:sticky; top:14px; } }</style>' +
+
+      '<div id="sell-no-branch" style="display:none">' +
+        '<div class="placeholder"><div class="placeholder-icon">$</div>' +
+          '<div class="placeholder-title">NO BRANCH SELECTED</div>' +
+          '<div class="placeholder-sub">Select a business and branch on the Home screen first.</div>' +
+        '</div>' +
+      '</div>' +
+
+      '<div id="sell-main" style="display:none">' +
+        '<div id="sell-grid-wrap">' +
+
+          '<div id="sell-products">' +
+            '<input class="form-control" id="sell-search" placeholder="Search products…" style="margin-bottom:10px">' +
+            '<div id="sell-cat-chips" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px"></div>' +
+            '<div id="sell-product-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px"></div>' +
+            '<div id="sell-empty-products" style="display:none" class="placeholder">' +
+              '<div class="placeholder-icon">▤</div><div class="placeholder-title">NO PRODUCTS YET</div>' +
+              '<div class="placeholder-sub">Add products in the Catalog before selling.</div>' +
+            '</div>' +
+          '</div>' +
+
+          '<div id="sell-cart" class="card">' +
+            '<div class="card-hd"><div class="card-title">CURRENT SALE</div>' +
+              '<button class="btn btn-ghost btn-sm" id="sell-clear-cart">CLEAR</button>' +
+            '</div>' +
+            '<div class="card-body">' +
+              '<div id="sell-cart-items" style="margin-bottom:6px"></div>' +
+              '<div id="sell-cart-empty" style="display:none;font-family:var(--mono);font-size:11px;color:var(--text-3);padding:16px 0;text-align:center">Cart is empty — tap a product to add it.</div>' +
+
+              '<div class="form-group" style="margin-bottom:10px;margin-top:12px">' +
+                '<label class="form-label">CUSTOMER (OPTIONAL)</label>' +
+                '<input class="form-control" id="sell-customer" placeholder="Walk-in" maxlength="255">' +
+              '</div>' +
+
+              '<div class="form-row-2" style="margin-bottom:10px">' +
+                '<div class="form-group" style="margin-bottom:0">' +
+                  '<label class="form-label">DISCOUNT</label>' +
+                  '<input class="form-control" id="sell-discount" type="number" min="0" step="0.01" value="0">' +
+                '</div>' +
+                '<div class="form-group" style="margin-bottom:0">' +
+                  '<label class="form-label">PAYMENT METHOD</label>' +
+                  '<select class="form-control" id="sell-method">' +
+                    '<option value="cash">Cash</option><option value="card">Card</option>' +
+                    '<option value="mobile">Mobile</option><option value="bank_transfer">Bank Transfer</option>' +
+                    '<option value="store_credit">Store Credit</option><option value="other">Other</option>' +
+                  '</select>' +
+                '</div>' +
+              '</div>' +
+
+              '<div class="form-group" id="sell-tendered-wrap" style="margin-bottom:10px">' +
+                '<label class="form-label">AMOUNT TENDERED</label>' +
+                '<input class="form-control" id="sell-tendered" type="number" min="0" step="0.01" placeholder="Defaults to total">' +
+              '</div>' +
+
+              '<div style="border-top:1px solid var(--border);padding-top:10px;margin-bottom:14px;font-family:var(--mono);font-size:12px">' +
+                '<div style="display:flex;justify-content:space-between;color:var(--text-2);margin-bottom:3px"><span>Subtotal</span><span id="sell-t-subtotal">0.00</span></div>' +
+                '<div style="display:flex;justify-content:space-between;color:var(--text-2);margin-bottom:3px"><span>Discount</span><span id="sell-t-discount">−0.00</span></div>' +
+                '<div style="display:flex;justify-content:space-between;color:var(--text-2);margin-bottom:8px"><span>Tax</span><span id="sell-t-tax">0.00</span></div>' +
+                '<div style="display:flex;justify-content:space-between;font-size:18px;font-weight:700;color:var(--accent)"><span>TOTAL</span><span id="sell-t-total">0.00</span></div>' +
+                '<div id="sell-t-change" style="display:none;justify-content:space-between;color:var(--amber);margin-top:6px"><span>Change due</span><span id="sell-t-change-val">0.00</span></div>' +
+              '</div>' +
+
+              '<button class="btn btn-primary btn-lg" id="sell-complete" style="width:100%" disabled>COMPLETE SALE</button>' +
+              '<div id="sell-fb" style="font-family:var(--mono);font-size:10.5px;margin-top:8px;min-height:14px"></div>' +
+            '</div>' +
+          '</div>' +
+
+        '</div>' +
+      '</div>';
+  }
+
+  async function _ensureDraft() {
+    var ctx = window.INFINICUS.ops.workspace.getContext();
+    if (!ctx.branchId) return null;
+
+    if (_currentOrderId) {
+      var g = await window.INFINICUS.ops.order.get(_currentOrderId);
+      if (g.order && g.order.status === 'draft' && g.order.branchId === ctx.branchId) return g.order;
+      _currentOrderId = null;
+    }
+    var listR = await window.INFINICUS.ops.order.list({ status: 'draft', branchId: ctx.branchId });
+    if (listR.orders && listR.orders.length) {
+      _currentOrderId = listR.orders[0].orderId;
+      return listR.orders[0];
+    }
+    var createR = await window.INFINICUS.ops.order.create();
+    if (createR.ok) { _currentOrderId = createR.order.orderId; return createR.order; }
+    return null;
+  }
+
+  async function _loadProducts() {
+    var ctx = window.INFINICUS.ops.workspace.getContext();
+    var gridEl = document.getElementById('sell-product-grid');
+    var emptyEl = document.getElementById('sell-empty-products');
+    var chipsEl = document.getElementById('sell-cat-chips');
+    if (!gridEl || !ctx.businessId) return;
+
+    var r = await window.INFINICUS.ops.product.list(ctx.businessId);
+    var all = (r.products || []).filter(function(p) { return p.status !== 'archived'; });
+
+    var cats = [];
+    all.forEach(function(p) { if (p.category && cats.indexOf(p.category) === -1) cats.push(p.category); });
+    chipsEl.innerHTML = ['<button class="btn btn-sm ' + (!_category ? 'btn-accent' : 'btn-ghost') + ' sell-cat-chip" data-cat="">ALL</button>']
+      .concat(cats.map(function(c) {
+        return '<button class="btn btn-sm ' + (_category === c ? 'btn-accent' : 'btn-ghost') + ' sell-cat-chip" data-cat="' + esc(c) + '">' + esc(c) + '</button>';
+      })).join('');
+
+    var q = _search.toLowerCase();
+    var filtered = all.filter(function(p) {
+      var matchesCat = !_category || p.category === _category;
+      var matchesSearch = !q || (p.name || '').toLowerCase().indexOf(q) !== -1 || (p.sku || '').toLowerCase().indexOf(q) !== -1;
+      return matchesCat && matchesSearch;
+    });
+
+    if (emptyEl) emptyEl.style.display = all.length ? 'none' : 'block';
+    var cur = (ctx.business && ctx.business.currency) || '';
+
+    gridEl.innerHTML = filtered.map(function(p) {
+      return '<button class="card sell-product-btn" data-id="' + esc(p.productId) + '" style="text-align:left;padding:12px;cursor:pointer">' +
+        '<div style="font-weight:600;font-size:12.5px;margin-bottom:6px;line-height:1.3">' + esc(p.name) + '</div>' +
+        '<div style="font-family:var(--mono);font-size:13px;color:var(--accent);font-weight:700">' + esc(cur) + ' ' + (+p.sellingPrice).toFixed(2) + '</div>' +
+        (p.category ? '<div style="font-family:var(--mono);font-size:9px;color:var(--text-3);margin-top:4px">' + esc(p.category) + '</div>' : '') +
+      '</button>';
+    }).join('');
+  }
+
+  function _renderCart(order) {
+    _lastOrder = order;
+    var itemsEl = document.getElementById('sell-cart-items');
+    var emptyEl = document.getElementById('sell-cart-empty');
+    var completeBtn = document.getElementById('sell-complete');
+    if (!itemsEl) return;
+
+    var hasItems = !!(order && order.items && order.items.length);
+    if (emptyEl) emptyEl.style.display = hasItems ? 'none' : 'block';
+    if (completeBtn) completeBtn.disabled = !hasItems;
+
+    itemsEl.innerHTML = !hasItems ? '' : order.items.map(function(it) {
+      return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border)">' +
+        '<div style="flex:1;min-width:0">' +
+          '<div style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(it.name) + '</div>' +
+          '<div style="font-family:var(--mono);font-size:10px;color:var(--text-3)">' + it.unitPrice.toFixed(2) + ' each</div>' +
+        '</div>' +
+        '<div style="display:flex;align-items:center;gap:6px">' +
+          '<button class="btn btn-ghost btn-sm sell-qty-dec" data-id="' + esc(it.productId) + '">−</button>' +
+          '<span style="font-family:var(--mono);font-size:12px;min-width:18px;text-align:center">' + it.quantity + '</span>' +
+          '<button class="btn btn-ghost btn-sm sell-qty-inc" data-id="' + esc(it.productId) + '">+</button>' +
+        '</div>' +
+        '<div style="font-family:var(--mono);font-size:12px;color:var(--accent);min-width:56px;text-align:right">' + it.lineTotal.toFixed(2) + '</div>' +
+      '</div>';
+    }).join('');
+
+    document.getElementById('sell-t-subtotal').textContent = (order ? order.subtotal : 0).toFixed(2);
+    document.getElementById('sell-t-discount').textContent = '−' + (order ? order.discount : 0).toFixed(2);
+    document.getElementById('sell-t-tax').textContent = (order ? order.tax : 0).toFixed(2);
+    document.getElementById('sell-t-total').textContent = (order ? order.total : 0).toFixed(2);
+
+    _updateChangeDisplay();
+  }
+
+  function _updateChangeDisplay() {
+    var methodEl = document.getElementById('sell-method');
+    var tenderedEl = document.getElementById('sell-tendered');
+    var wrapEl = document.getElementById('sell-tendered-wrap');
+    var changeRow = document.getElementById('sell-t-change');
+    if (!methodEl) return;
+    var method = methodEl.value;
+    if (wrapEl) wrapEl.style.display = method === 'cash' ? 'block' : 'none';
+    if (method !== 'cash') { if (changeRow) changeRow.style.display = 'none'; return; }
+
+    var tendered = tenderedEl ? (+tenderedEl.value || 0) : 0;
+    var total = _lastOrder ? _lastOrder.total : 0;
+    var change = Math.max(0, tendered - total);
+    if (changeRow) {
+      changeRow.style.display = tendered > 0 ? 'flex' : 'none';
+      document.getElementById('sell-t-change-val').textContent = change.toFixed(2);
+    }
+  }
+
+  async function _sync() {
+    var ctx = window.INFINICUS.ops.workspace.getContext();
+    var noBranchEl = document.getElementById('sell-no-branch');
+    var mainEl = document.getElementById('sell-main');
+    if (!ctx.branchId) { if (noBranchEl) noBranchEl.style.display = 'block'; if (mainEl) mainEl.style.display = 'none'; return; }
+    if (noBranchEl) noBranchEl.style.display = 'none';
+    if (mainEl) mainEl.style.display = 'block';
+    await _loadProducts();
+    var order = await _ensureDraft();
+    _renderCart(order);
+  }
+
+  function _resetSaleForm() {
+    var t = document.getElementById('sell-tendered'); if (t) t.value = '';
+    var d = document.getElementById('sell-discount'); if (d) d.value = '0';
+    var c = document.getElementById('sell-customer'); if (c) c.value = '';
+  }
+
+  function _wire() {
+    var searchEl = document.getElementById('sell-search');
+    if (searchEl) searchEl.addEventListener('input', function() { _search = searchEl.value; _loadProducts(); });
+
+    var chipsEl = document.getElementById('sell-cat-chips');
+    if (chipsEl) chipsEl.addEventListener('click', function(e) {
+      var chip = e.target.closest('.sell-cat-chip');
+      if (chip) { _category = chip.dataset.cat || ''; _loadProducts(); }
+    });
+
+    var gridEl = document.getElementById('sell-product-grid');
+    if (gridEl) gridEl.addEventListener('click', async function(e) {
+      var btn = e.target.closest('.sell-product-btn');
+      if (!btn) return;
+      var prodR = await window.INFINICUS.ops.product.get(btn.dataset.id);
+      if (!prodR.product) return;
+      var order = await _ensureDraft();
+      if (!order) return;
+      var r = await window.INFINICUS.ops.order.addItem(order.orderId, prodR.product, 1);
+      if (r.ok) _renderCart(r.order);
+    });
+
+    var cartItemsEl = document.getElementById('sell-cart-items');
+    if (cartItemsEl) cartItemsEl.addEventListener('click', async function(e) {
+      var incBtn = e.target.closest('.sell-qty-inc');
+      var decBtn = e.target.closest('.sell-qty-dec');
+      if (!incBtn && !decBtn) return;
+      if (!_currentOrderId || !_lastOrder) return;
+      var pid = (incBtn || decBtn).dataset.id;
+      var item = _lastOrder.items.filter(function(it) { return it.productId === pid; })[0];
+      if (!item) return;
+      var newQty = item.quantity + (incBtn ? 1 : -1);
+      var r = await window.INFINICUS.ops.order.updateItemQty(_currentOrderId, pid, newQty);
+      if (r.ok) _renderCart(r.order);
+    });
+
+    var clearBtn = document.getElementById('sell-clear-cart');
+    if (clearBtn) clearBtn.addEventListener('click', async function() {
+      if (!_currentOrderId) return;
+      if (!confirm('Clear the current sale?')) return;
+      await window.INFINICUS.ops.order.cancel(_currentOrderId, 'cleared by cashier');
+      _currentOrderId = null;
+      _resetSaleForm();
+      var order = await _ensureDraft();
+      _renderCart(order);
+    });
+
+    var customerEl = document.getElementById('sell-customer');
+    if (customerEl) customerEl.addEventListener('change', async function() {
+      if (!_currentOrderId) return;
+      await window.INFINICUS.ops.order.setCustomer(_currentOrderId, customerEl.value);
+    });
+
+    var discountEl = document.getElementById('sell-discount');
+    if (discountEl) discountEl.addEventListener('change', async function() {
+      if (!_currentOrderId) return;
+      var r = await window.INFINICUS.ops.order.applyDiscount(_currentOrderId, discountEl.value);
+      if (r.ok) _renderCart(r.order);
+    });
+
+    var methodEl = document.getElementById('sell-method');
+    if (methodEl) methodEl.addEventListener('change', _updateChangeDisplay);
+
+    var tenderedEl = document.getElementById('sell-tendered');
+    if (tenderedEl) tenderedEl.addEventListener('input', _updateChangeDisplay);
+
+    var completeBtn = document.getElementById('sell-complete');
+    if (completeBtn) completeBtn.addEventListener('click', async function() {
+      if (!_currentOrderId) return;
+      var fb = document.getElementById('sell-fb');
+      completeBtn.disabled = true;
+      var method = (document.getElementById('sell-method') || {}).value || 'cash';
+      var tenderedRaw = (document.getElementById('sell-tendered') || {}).value;
+      var payload = { method: method };
+      if (tenderedRaw !== '' && tenderedRaw != null) payload.tenderedAmount = +tenderedRaw;
+
+      var r = await window.INFINICUS.ops.order.complete(_currentOrderId, payload);
+      if (r.ok) {
+        if (fb) { fb.style.color = 'var(--accent)'; fb.textContent = '✓ Sale complete — ' + r.order.currency + ' ' + r.order.total.toFixed(2) + (r.payment.changeGiven ? ' · change ' + r.payment.changeGiven.toFixed(2) : ''); }
+        _currentOrderId = null;
+        _resetSaleForm();
+        setTimeout(async function() {
+          var order = await _ensureDraft();
+          _renderCart(order);
+          if (fb) fb.textContent = '';
+        }, 2200);
+      } else {
+        if (fb) { fb.style.color = 'var(--red)'; fb.textContent = r.error || 'Could not complete sale'; }
+        completeBtn.disabled = false;
+      }
+    });
+  }
+
+  bus.on('dal.business.selected', function() { _currentOrderId = null; _sync(); });
+  bus.on('ops.branch.selected',   function() { _currentOrderId = null; _sync(); });
+  bus.on('ops.product.created',   _loadProducts);
+  bus.on('ops.product.updated',   _loadProducts);
+
+  window.INFINICUS.ops.sellView = { refresh: _sync };
+  window.__opsSellInit = function() { _mount(); _wire(); _sync(); };
+
+})(); // SellViewModule
+
+
+/* ── ORDERS VIEW — history, detail, cancel/refund ────────────── */
+(function OrdersViewModule() {
+
+  var bus = window.INFINICUS.bus;
+  var esc = window.INFINICUS.esc;
+  var biz = window.INFINICUS.biz;
+
+  var _filterStatus = '';
+  var _expandedId = null;
+
+  var STATUS_COLOR = { draft: 'var(--text-3)', completed: 'var(--accent)', cancelled: 'var(--red)', refunded: 'var(--amber)' };
+
+  function _mount() {
+    var content = document.querySelector('#view-orders .content');
+    if (!content) return;
+    content.innerHTML =
+      '<div id="ord-no-biz" style="display:none">' +
+        '<div class="placeholder"><div class="placeholder-icon">▤</div>' +
+          '<div class="placeholder-title">NO BUSINESS SELECTED</div>' +
+          '<div class="placeholder-sub">Select a business on the Home screen first.</div>' +
+        '</div>' +
+      '</div>' +
+      '<div id="ord-main">' +
+        '<div style="display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap">' +
+          '<select class="form-control" id="ord-f-status" style="max-width:180px">' +
+            '<option value="">— All statuses —</option>' +
+            '<option value="draft">Draft</option><option value="completed">Completed</option>' +
+            '<option value="cancelled">Cancelled</option><option value="refunded">Refunded</option>' +
+          '</select>' +
+          '<div style="flex:1"></div>' +
+          '<button class="btn btn-ghost btn-sm" id="ord-refresh">↻ REFRESH</button>' +
+        '</div>' +
+        '<div id="ord-summary" style="font-family:var(--mono);font-size:10.5px;color:var(--text-3);margin-bottom:10px"></div>' +
+        '<div id="ord-list"></div>' +
+        '<div id="ord-empty" style="display:none"><div class="placeholder"><div class="placeholder-icon">▤</div>' +
+          '<div class="placeholder-title">NO ORDERS YET</div>' +
+          '<div class="placeholder-sub">Completed sales appear here. Start selling from the Sell screen.</div>' +
+        '</div></div>' +
+      '</div>';
+  }
+
+  function _detailHTML(o) {
+    var itemsHTML = (o.items || []).map(function(it) {
+      return '<div style="display:flex;justify-content:space-between;padding:4px 0;font-family:var(--mono);font-size:11px">' +
+        '<span style="color:var(--text-2)">' + it.quantity + '× ' + esc(it.name) + '</span>' +
+        '<span style="color:var(--text-2)">' + it.lineTotal.toFixed(2) + '</span>' +
+      '</div>';
+    }).join('');
+    var actions = '';
+    if (o.status === 'draft') actions = '<button class="btn btn-danger btn-sm ord-cancel" data-id="' + esc(o.orderId) + '">CANCEL DRAFT</button>';
+    else if (o.status === 'completed') actions = '<button class="btn btn-danger btn-sm ord-refund" data-id="' + esc(o.orderId) + '">REFUND IN FULL</button>';
+
+    return itemsHTML +
+      '<div style="border-top:1px solid var(--border);margin-top:8px;padding-top:8px;font-family:var(--mono);font-size:10.5px;color:var(--text-3)">' +
+        'Subtotal ' + (o.subtotal || 0).toFixed(2) + ' · Discount ' + (o.discount || 0).toFixed(2) + ' · Tax ' + (o.tax || 0).toFixed(2) +
+        '<br>Payment: ' + esc(o.paymentStatus || '') +
+        (o.refundAmount ? '<br>Refunded: ' + o.refundAmount.toFixed(2) + (o.refundReason ? ' — ' + esc(o.refundReason) : '') : '') +
+      '</div>' +
+      (actions ? '<div style="margin-top:10px">' + actions + '</div>' : '');
+  }
+
+  function _rowHTML(o) {
+    var color = STATUS_COLOR[o.status] || 'var(--text-3)';
+    var d = o.createdAt ? new Date(o.createdAt) : null;
+    var dateStr = d ? d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+    var isOpen = _expandedId === o.orderId;
+
+    return '<div class="ord-row" data-id="' + esc(o.orderId) + '" style="border:1px solid var(--border);border-radius:var(--r);background:var(--bg-surface);margin-bottom:7px">' +
+      '<div class="ord-row-hd" style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer">' +
+        '<div style="width:7px;height:7px;border-radius:50%;background:' + color + ';flex-shrink:0"></div>' +
+        '<span style="font-family:var(--mono);font-size:9px;font-weight:700;color:' + color + ';text-transform:uppercase;min-width:70px">' + esc(o.status) + '</span>' +
+        '<span style="font-family:var(--mono);font-size:11px;color:var(--text-2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (o.items ? o.items.length : 0) + ' item' + ((o.items && o.items.length !== 1) ? 's' : '') + (o.customerName ? ' · ' + esc(o.customerName) : '') + '</span>' +
+        '<span style="font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:700;white-space:nowrap">' + esc(o.currency || '') + ' ' + (o.total || 0).toFixed(2) + '</span>' +
+        '<span style="font-family:var(--mono);font-size:9.5px;color:var(--text-3);white-space:nowrap">' + esc(dateStr) + '</span>' +
+      '</div>' +
+      (isOpen ? '<div class="ord-detail" style="border-top:1px solid var(--border);padding:12px 14px">' + _detailHTML(o) + '</div>' : '') +
+    '</div>';
+  }
+
+  async function _load() {
+    var listEl = document.getElementById('ord-list');
+    var emptyEl = document.getElementById('ord-empty');
+    var sumEl = document.getElementById('ord-summary');
+    if (!listEl) return;
+    var r = await window.INFINICUS.ops.order.list({ status: _filterStatus || undefined });
+    var orders = r.orders || [];
+    if (emptyEl) emptyEl.style.display = orders.length ? 'none' : 'block';
+    listEl.innerHTML = orders.map(_rowHTML).join('');
+    if (sumEl) sumEl.textContent = orders.length + ' order' + (orders.length !== 1 ? 's' : '') + (_filterStatus ? ' · filtered by ' + _filterStatus : '');
+  }
+
+  function _syncBiz() {
+    var active = biz.getActiveId();
+    var noBiz = document.getElementById('ord-no-biz');
+    var main = document.getElementById('ord-main');
+    if (noBiz) noBiz.style.display = active ? 'none' : 'block';
+    if (main) main.style.display = active ? 'block' : 'none';
+    if (active) _load();
+  }
+
+  function _wire() {
+    var statusEl = document.getElementById('ord-f-status');
+    if (statusEl) statusEl.addEventListener('change', function() { _filterStatus = statusEl.value; _load(); });
+
+    var rf = document.getElementById('ord-refresh');
+    if (rf) rf.addEventListener('click', _load);
+
+    var listEl = document.getElementById('ord-list');
+    if (listEl) listEl.addEventListener('click', async function(e) {
+      var cancelBtn = e.target.closest('.ord-cancel');
+      if (cancelBtn) { await window.INFINICUS.ops.order.cancel(cancelBtn.dataset.id, 'cancelled from Orders view'); _load(); return; }
+
+      var refundBtn = e.target.closest('.ord-refund');
+      if (refundBtn) {
+        if (!confirm('Refund this order in full? This cannot be undone.')) return;
+        await window.INFINICUS.ops.order.refund(refundBtn.dataset.id, 'refunded from Orders view');
+        _load();
+        return;
+      }
+
+      var hd = e.target.closest('.ord-row-hd');
+      if (hd) {
+        var row = hd.closest('.ord-row');
+        _expandedId = (_expandedId === row.dataset.id) ? null : row.dataset.id;
+        _load();
+      }
+    });
+  }
+
+  bus.on('dal.business.selected',     _syncBiz);
+  bus.on('operation.order.completed', _load);
+  bus.on('operation.order.cancelled', _load);
+  bus.on('operation.order.refunded',  _load);
+  bus.on('operation.order.created',   _load);
+
+  window.INFINICUS.ops.ordersView = { refresh: _load };
+  window.__opsOrdersInit = function() { _mount(); _wire(); _syncBiz(); };
+
+})(); // OrdersViewModule
+</script>
+
+<!-- ── BLOCK 6 — INIT ───────────────────────────────────────────── -->
+<script>
+(function Block6Init() {
+  'use strict';
+
+  window.__opsSellInit();
+  window.__opsOrdersInit();
+
+  console.info(
+    '[BOL] Block 6 ready | routes: ' + window.INFINICUS.bus.listRoutes().length +
+    ' | Orders: create/addItem/removeItem/updateItem/setCustomer/applyDiscount/calculateTotals/complete/cancel/refund/get/list' +
+    ' | Inventory (front-loaded from Block 9): recordMovement/getStock'
+  );
+
+  window.INFINICUS.bus.emit('ops.sales.ready', { block: 6 });
+
+})(); // Block6Init
+</script>
+
+<!-- ════════════════════════════════════════════════════════════════
+     BLOCK 7 · PAYMENT RECORDS
+     A read-only ledger over the 'payments' store Block 6 already
+     writes to at order completion and refund — Payment Manager
+     (list/get/getByOrder/summarize) + the Payments view. No new
+     write paths: per the NAV_ITEMS description written back in
+     Block 1 ("Payment records per order"), this module browses what
+     Sell already created rather than creating payments of its own.
+
+     Two small fixes to Block 6's Order Manager land alongside this
+     block (see inline comments at both call sites) — not a rewrite,
+     two additive lines plus one id-consistency fix:
+       • operation.payment.completed / .refunded were never emitted
+         as LOCAL bus events (only ingested to DAL) — the spec lists
+         them as their own required events, separate from
+         operation.order.*. Now emitted; this view listens for them.
+       • refund() generated two different uuids for what should be
+         one payment record (one written to ops.storage.payments, a
+         different one sent to the DAL payload) — now a single
+         refundPaymentId used consistently in both places.
+
+     Depends on: Block 2 (bus), Block 3 (ops.storage.payments.* +
+     by_order/by_business indexes), Block 4 (workspace/biz), Block 6
+     (the payment records themselves, and the two events above).
+════════════════════════════════════════════════════════════════ -->
+
+<!-- ── 7A · Payment Manager ─────────────────────────────────────── -->
+<script>
+'use strict';
+
+(function OperationsPaymentModule() {
+
+  var bus = window.INFINICUS.bus;
+
+  function round2(n) { return Math.round(((+n || 0) + Number.EPSILON) * 100) / 100; }
+
+  var paymentApi = {
+
+    list: async function(opts) {
+      opts = opts || {};
+      var ctx = window.INFINICUS.ops.workspace.getContext();
+      var businessId = opts.businessId || ctx.businessId;
+      if (!businessId) return { ok: true, payments: [] };
+
+      var r = await bus.call('ops.storage.payments.list', { indexName: 'by_business', keyVal: businessId });
+      var payments = r.records || [];
+      if (opts.method)  payments = payments.filter(function(p) { return p.method === opts.method; });
+      if (opts.orderId) payments = payments.filter(function(p) { return p.orderId === opts.orderId; });
+      payments.sort(function(a, b) { return (b.occurredAt || b.createdAt || '') > (a.occurredAt || a.createdAt || '') ? 1 : -1; });
+      return { ok: true, payments: payments };
+    },
+
+    get: async function(paymentId) {
+      var r = await bus.call('ops.storage.payments.get', { id: paymentId });
+      return { ok: r.ok, payment: r.record };
+    },
+
+    /** All payment records tied to one order — the original completion
+     *  payment plus any later refund record(s), oldest first. */
+    getByOrder: async function(orderId) {
+      var r = await bus.call('ops.storage.payments.list', { indexName: 'by_order', keyVal: orderId });
+      var payments = (r.records || []).sort(function(a, b) { return (a.occurredAt || '') > (b.occurredAt || '') ? 1 : -1; });
+      return { ok: true, payments: payments };
+    },
+
+    /** Aggregate for the Payments view's stat tiles — collected
+     *  (positive, non-refund) vs refunded, plus a per-method split. */
+    summarize: async function(businessId) {
+      var r = await paymentApi.list({ businessId: businessId });
+      var collected = 0, refunded = 0, byMethod = {};
+      (r.payments || []).forEach(function(p) {
+        var amt = +p.amount || 0;
+        if (p.isRefund || amt < 0) { refunded += Math.abs(amt); }
+        else { collected += amt; byMethod[p.method] = round2((byMethod[p.method] || 0) + amt); }
+      });
+      return { ok: true, collected: round2(collected), refunded: round2(refunded), byMethod: byMethod, count: (r.payments || []).length };
+    }
+  };
+
+  window.INFINICUS.ops.payment = paymentApi;
+
+  bus.register('operations.payment.list',       function(p) { return paymentApi.list(p); });
+  bus.register('operations.payment.get',        function(p) { return paymentApi.get(p.paymentId); });
+  bus.register('operations.payment.getByOrder', function(p) { return paymentApi.getByOrder(p.orderId); });
+
+})(); // OperationsPaymentModule
+</script>
+
+<!-- ── 7B · Payments View ───────────────────────────────────────── -->
+<script>
+'use strict';
+
+(function PaymentsViewModule() {
+
+  var bus = window.INFINICUS.bus;
+  var esc = window.INFINICUS.esc;
+  var biz = window.INFINICUS.biz;
+
+  var _filterMethod = '';
+  var _search = '';
+
+  var METHOD_LABEL = { cash: 'Cash', card: 'Card', mobile: 'Mobile', bank_transfer: 'Bank Transfer', store_credit: 'Store Credit', other: 'Other', refund: 'Refund' };
+
+  function _mount() {
+    var content = document.querySelector('#view-payments .content');
+    if (!content) return;
+    content.innerHTML =
+      '<div id="pay-no-biz" style="display:none">' +
+        '<div class="placeholder"><div class="placeholder-icon">▤</div>' +
+          '<div class="placeholder-title">NO BUSINESS SELECTED</div>' +
+          '<div class="placeholder-sub">Select a business on the Home screen first.</div>' +
+        '</div>' +
+      '</div>' +
+      '<div id="pay-main">' +
+        '<div class="stat-grid" id="pay-stats"></div>' +
+        '<div style="display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap">' +
+          '<input class="form-control" id="pay-search" placeholder="Search by order ID…" style="max-width:220px">' +
+          '<select class="form-control" id="pay-f-method" style="max-width:180px">' +
+            '<option value="">— All methods —</option>' +
+            '<option value="cash">Cash</option><option value="card">Card</option><option value="mobile">Mobile</option>' +
+            '<option value="bank_transfer">Bank Transfer</option><option value="store_credit">Store Credit</option>' +
+            '<option value="other">Other</option><option value="refund">Refunds only</option>' +
+          '</select>' +
+          '<div style="flex:1"></div>' +
+          '<button class="btn btn-ghost btn-sm" id="pay-refresh">↻ REFRESH</button>' +
+        '</div>' +
+        '<div class="tbl-wrap"><table class="data-tbl"><thead><tr>' +
+          '<th>DATE</th><th>METHOD</th><th>ORDER</th><th>TENDERED</th><th>CHANGE</th><th style="text-align:right">AMOUNT</th><th></th>' +
+        '</tr></thead><tbody id="pay-tbody"></tbody></table></div>' +
+        '<div id="pay-empty" style="display:none"><div class="placeholder"><div class="placeholder-icon">▤</div>' +
+          '<div class="placeholder-title">NO PAYMENTS YET</div>' +
+          '<div class="placeholder-sub">Payment records appear here automatically when a sale is completed.</div>' +
+        '</div></div>' +
+      '</div>';
+  }
+
+  function _rowHTML(p) {
+    var isRefund = p.isRefund || (+p.amount) < 0;
+    var d = p.occurredAt ? new Date(p.occurredAt) : null;
+    var dateStr = d ? d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+    return '<tr>' +
+      '<td class="c-muted">' + esc(dateStr) + '</td>' +
+      '<td><span class="badge ' + (isRefund ? 'badge-red' : 'badge-blue') + '">' + esc(METHOD_LABEL[p.method] || p.method || '') + '</span></td>' +
+      '<td class="c-muted" style="font-family:var(--mono);font-size:10.5px">' + esc((p.orderId || '').slice(0, 8)) + '…</td>' +
+      '<td class="c-muted">' + (p.tenderedAmount != null ? (+p.tenderedAmount).toFixed(2) : '—') + '</td>' +
+      '<td class="c-muted">' + (p.changeGiven ? (+p.changeGiven).toFixed(2) : '—') + '</td>' +
+      '<td style="text-align:right;color:' + (isRefund ? 'var(--red)' : 'var(--accent)') + ';font-weight:600">' + (isRefund ? '−' : '') + Math.abs(+p.amount || 0).toFixed(2) + '</td>' +
+      '<td><button class="btn btn-ghost btn-sm pay-view-order" data-id="' + esc(p.orderId || '') + '">VIEW ORDER</button></td>' +
+    '</tr>';
+  }
+
+  async function _load() {
+    var ctx = window.INFINICUS.ops.workspace.getContext();
+    var tbody = document.getElementById('pay-tbody');
+    var emptyEl = document.getElementById('pay-empty');
+    var statsEl = document.getElementById('pay-stats');
+    if (!tbody || !ctx.businessId) return;
+
+    var opts = {};
+    if (_filterMethod && _filterMethod !== 'refund') opts.method = _filterMethod;
+
+    var r = await window.INFINICUS.ops.payment.list(opts);
+    var payments = r.payments || [];
+    if (_filterMethod === 'refund') payments = payments.filter(function(p) { return p.isRefund || (+p.amount) < 0; });
+    if (_search) {
+      var q = _search.toLowerCase();
+      payments = payments.filter(function(p) { return (p.orderId || '').toLowerCase().indexOf(q) !== -1; });
+    }
+
+    if (emptyEl) emptyEl.style.display = payments.length ? 'none' : 'block';
+    tbody.innerHTML = payments.map(_rowHTML).join('');
+
+    var s = await window.INFINICUS.ops.payment.summarize(ctx.businessId);
+    var cur = (ctx.business && ctx.business.currency) || '';
+    statsEl.innerHTML = [
+      { l: 'TOTAL COLLECTED', v: cur + ' ' + s.collected.toFixed(2), c: 'c-acc' },
+      { l: 'TOTAL REFUNDED',  v: cur + ' ' + s.refunded.toFixed(2),  c: 'c-red' },
+      { l: 'PAYMENT RECORDS', v: s.count, c: 'c-blue' }
+    ].map(function(t) {
+      return '<div class="stat-tile"><div class="stat-label">' + esc(t.l) + '</div><div class="stat-value ' + t.c + '">' + esc(String(t.v)) + '</div></div>';
+    }).join('');
+  }
+
+  function _syncBiz() {
+    var active = biz.getActiveId();
+    var noBiz = document.getElementById('pay-no-biz');
+    var main = document.getElementById('pay-main');
+    if (noBiz) noBiz.style.display = active ? 'none' : 'block';
+    if (main) main.style.display = active ? 'block' : 'none';
+    if (active) _load();
+  }
+
+  function _wire() {
+    var searchEl = document.getElementById('pay-search');
+    if (searchEl) searchEl.addEventListener('input', function() { _search = searchEl.value; _load(); });
+
+    var methodEl = document.getElementById('pay-f-method');
+    if (methodEl) methodEl.addEventListener('change', function() { _filterMethod = methodEl.value; _load(); });
+
+    var rf = document.getElementById('pay-refresh');
+    if (rf) rf.addEventListener('click', _load);
+
+    var tbody = document.getElementById('pay-tbody');
+    if (tbody) tbody.addEventListener('click', function(e) {
+      var btn = e.target.closest('.pay-view-order');
+      if (btn && window.__OPS) window.__OPS.nav('orders');
+    });
+  }
+
+  bus.on('dal.business.selected',       _syncBiz);
+  bus.on('operation.payment.completed', _load);
+  bus.on('operation.payment.refunded',  _load);
+
+  window.INFINICUS.ops.paymentsView = { refresh: _load };
+  window.__opsPaymentsInit = function() { _mount(); _wire(); _syncBiz(); };
+
+})(); // PaymentsViewModule
+</script>
+
+<!-- ── BLOCK 7 — INIT ───────────────────────────────────────────── -->
+<script>
+(function Block7Init() {
+  'use strict';
+
+  window.__opsPaymentsInit();
+
+  console.info(
+    '[BOL] Block 7 ready | routes: ' + window.INFINICUS.bus.listRoutes().length +
+    ' | Payments: list/get/getByOrder/summarize (read-only ledger over records Block 6 writes)'
+  );
+
+  window.INFINICUS.bus.emit('ops.payments.ready', { block: 7 });
+
+})(); // Block7Init
+</script>
+
+<!-- ════════════════════════════════════════════════════════════════
+     BLOCK 8 · CASH REGISTER
+     Open/close till sessions per branch, cash movements (sale/refund
+     written by the Order Manager; payout/pay-in written here),
+     expected-vs-counted reconciliation at close. Per the NAV_ITEMS
+     description from Block 1: "Open/close till sessions, cash
+     movements, expected-vs-counted reconciliation."
+
+     Deliberately NOT tied to Employee/Shift (Block 14/16) — a till
+     session belongs to a branch, not a person, since neither Employee
+     nor Shift exist yet and the spec treats "Cash register" and
+     "Shift management" as two separate modules. When Block 16 lands,
+     a shift can reference an open session; this module doesn't need
+     to know that in advance.
+
+     No DAL event is emitted for session open/close — none of the 21
+     required operation.* events cover it. The closed session's
+     `variance` field is what Block 18 (Daily Closing) will read for
+     its own `cashVariance` field — storing it here is enough to make
+     it queryable later; no event needed.
+
+     One small addition to Block 6's refund() lands alongside this
+     block (see inline comment at the call site): a cash refund now
+     writes a matching cash-out movement against whichever session is
+     open NOW, if the original payment was cash and a session happens
+     to be open. Additive only — nothing removed or rewritten.
+
+     Depends on: Block 2 (bus/security/uuid), Block 3 (ops.storage.
+     cashSessions.* / cashMovements.* + by_branch/by_business/by_status/
+     by_session indexes), Block 4 (workspace/audit), Block 6 (writes
+     'sale' movements already; the refund patch above), Block 7
+     (payments.by_order, used by the refund patch to check the
+     original payment method).
+════════════════════════════════════════════════════════════════ -->
+
+<!-- ── 8A · Cash Register Manager ───────────────────────────────── -->
+<script>
+'use strict';
+
+(function OperationsCashModule() {
+
+  var bus   = window.INFINICUS.bus;
+  var sec   = window.INFINICUS.security;
+  var uuid  = window.INFINICUS.uuid;
+  var audit = window.INFINICUS.ops.audit;
+
+  function round2(n) { return Math.round(((+n || 0) + Number.EPSILON) * 100) / 100; }
+
+  var cashApi = {
+
+    getOpenSession: async function(branchId) {
+      var ctx = window.INFINICUS.ops.workspace.getContext();
+      var bId = branchId || ctx.branchId;
+      if (!bId) return null;
+      var r = await bus.call('ops.storage.cashSessions.list', { indexName: 'by_branch', keyVal: bId });
+      return (r.records || []).filter(function(s) { return s.status === 'open'; })[0] || null;
+    },
+
+    openSession: async function(openingAmount, note) {
+      var ctx = window.INFINICUS.ops.workspace.getContext();
+      if (!ctx.businessId) return { ok: false, error: 'No active business', code: 'NO_BUSINESS' };
+      if (!ctx.branchId)   return { ok: false, error: 'No active branch', code: 'NO_BRANCH' };
+
+      var existing = await cashApi.getOpenSession(ctx.branchId);
+      if (existing) return { ok: false, error: 'A till session is already open for this branch', code: 'SESSION_ALREADY_OPEN' };
+
+      var opening;
+      try { opening = sec.sanitizeNumber(openingAmount, { min: 0, decimals: 2 }); }
+      catch (err) { return { ok: false, error: err.message, code: 'VALIDATION_FAILED' }; }
+
+      var record = {
+        sessionId: uuid(), businessId: ctx.businessId, branchId: ctx.branchId,
+        status: 'open', openedAt: new Date().toISOString(), closedAt: null,
+        openingCashAmount: opening, expectedCashAmount: null, countedCashAmount: null, variance: null,
+        note: note ? sec.sanitizeString(note, 255) : ''
+      };
+      var r = await bus.call('ops.storage.cashSessions.put', record);
+      if (!r.ok) return r;
+
+      audit('open', 'cashSession', r.record.sessionId, null, r.record);
+      bus.emit('operation.cash.session.opened', { sessionId: r.record.sessionId, branchId: ctx.branchId });
+      return { ok: true, session: r.record };
+    },
+
+    getMovements: async function(sessionId) {
+      var r = await bus.call('ops.storage.cashMovements.list', { indexName: 'by_session', keyVal: sessionId });
+      var movements = (r.records || []).sort(function(a, b) { return (a.occurredAt || '') > (b.occurredAt || '') ? 1 : -1; });
+      return { ok: true, movements: movements };
+    },
+
+    computeExpected: async function(session) {
+      var mv = await cashApi.getMovements(session.sessionId);
+      var total = (+session.openingCashAmount || 0);
+      (mv.movements || []).forEach(function(m) { total += (+m.amount || 0); });
+      return round2(total);
+    },
+
+    /** Manual drawer adjustments only (payout/pay-in). Sale and refund
+     *  movements are written directly by the Order Manager (Block 6)
+     *  as part of its own completion/refund logic — this function is
+     *  intentionally not the only path into cashMovements. */
+    recordMovement: async function(type, amount, reason) {
+      if (['payout', 'payin'].indexOf(type) === -1) return { ok: false, error: 'type must be "payout" or "payin"', code: 'VALIDATION_FAILED' };
+      var ctx = window.INFINICUS.ops.workspace.getContext();
+      if (!ctx.branchId) return { ok: false, error: 'No active branch', code: 'NO_BRANCH' };
+
+      var session = await cashApi.getOpenSession(ctx.branchId);
+      if (!session) return { ok: false, error: 'No open till session for this branch', code: 'NO_OPEN_SESSION' };
+
+      var amt;
+      try { amt = sec.sanitizeNumber(amount, { min: 0.01, decimals: 2 }); }
+      catch (err) { return { ok: false, error: err.message, code: 'VALIDATION_FAILED' }; }
+
+      var movement = {
+        movementId: uuid(), sessionId: session.sessionId, businessId: ctx.businessId,
+        branchId: ctx.branchId, type: type, amount: type === 'payout' ? -amt : amt,
+        reason: reason ? sec.sanitizeString(reason, 255) : '', orderId: null,
+        occurredAt: new Date().toISOString()
+      };
+      var r = await bus.call('ops.storage.cashMovements.put', movement);
+      if (!r.ok) return r;
+
+      audit(type, 'cashMovement', r.record.movementId, null, r.record);
+      bus.emit('operation.cash.movement.recorded', { movementId: r.record.movementId, sessionId: session.sessionId });
+      return { ok: true, movement: r.record };
+    },
+
+    closeSession: async function(sessionId, countedAmount, note) {
+      var g = await bus.call('ops.storage.cashSessions.get', { id: sessionId });
+      if (!g.record) return { ok: false, error: 'Session not found', code: 'NOT_FOUND' };
+      var session = g.record;
+      if (session.status !== 'open') return { ok: false, error: 'Session is not open', code: 'SESSION_NOT_OPEN' };
+
+      var ctx = window.INFINICUS.ops.workspace.getContext();
+      if (session.businessId !== ctx.businessId) return { ok: false, error: 'Session does not belong to the active business', code: 'OWNERSHIP_MISMATCH' };
+
+      var counted;
+      try { counted = sec.sanitizeNumber(countedAmount, { min: 0, decimals: 2 }); }
+      catch (err) { return { ok: false, error: err.message, code: 'VALIDATION_FAILED' }; }
+
+      var expected = await cashApi.computeExpected(session);
+      var variance = round2(counted - expected);
+
+      var updated = Object.assign({}, session, {
+        status: 'closed', closedAt: new Date().toISOString(),
+        expectedCashAmount: expected, countedCashAmount: counted, variance: variance,
+        closeNote: note ? sec.sanitizeString(note, 255) : ''
+      });
+      var r = await bus.call('ops.storage.cashSessions.put', updated);
+      if (!r.ok) return r;
+
+      audit('close', 'cashSession', sessionId, session, r.record);
+      bus.emit('operation.cash.session.closed', { sessionId: sessionId, variance: variance });
+      return { ok: true, session: r.record };
+    },
+
+    listSessions: async function(opts) {
+      opts = opts || {};
+      var ctx = window.INFINICUS.ops.workspace.getContext();
+      var businessId = opts.businessId || ctx.businessId;
+      if (!businessId) return { ok: true, sessions: [] };
+      var r = await bus.call('ops.storage.cashSessions.list', { indexName: 'by_business', keyVal: businessId });
+      var sessions = r.records || [];
+      if (opts.branchId) sessions = sessions.filter(function(s) { return s.branchId === opts.branchId; });
+      sessions.sort(function(a, b) { return (b.openedAt || '') > (a.openedAt || '') ? 1 : -1; });
+      return { ok: true, sessions: sessions };
+    }
+  };
+
+  window.INFINICUS.ops.cash = cashApi;
+
+  bus.register('operations.cash.open',           function(p) { return cashApi.openSession(p.openingAmount, p.note); });
+  bus.register('operations.cash.close',          function(p) { return cashApi.closeSession(p.sessionId, p.countedAmount, p.note); });
+  bus.register('operations.cash.recordMovement', function(p) { return cashApi.recordMovement(p.type, p.amount, p.reason); });
+  bus.register('operations.cash.getOpenSession', async function(p) { return { ok: true, session: await cashApi.getOpenSession(p && p.branchId) }; });
+  bus.register('operations.cash.getMovements',   function(p) { return cashApi.getMovements(p.sessionId); });
+  bus.register('operations.cash.listSessions',   function(p) { return cashApi.listSessions(p); });
+
+})(); // OperationsCashModule
+</script>
+
+<!-- ── 8B · Cash Register View ──────────────────────────────────── -->
+<script>
+'use strict';
+
+(function CashViewModule() {
+
+  var bus = window.INFINICUS.bus;
+  var esc = window.INFINICUS.esc;
+
+  var _closingMode = false;
+
+  var TYPE_LABEL = { sale: 'Sale', refund: 'Refund', payout: 'Payout', payin: 'Pay-in' };
+
+  function _mount() {
+    var content = document.querySelector('#view-cash .content');
+    if (!content) return;
+    content.innerHTML =
+      '<div id="cash-no-branch" style="display:none">' +
+        '<div class="placeholder"><div class="placeholder-icon">$</div>' +
+          '<div class="placeholder-title">NO BRANCH SELECTED</div>' +
+          '<div class="placeholder-sub">Select a business and branch on the Home screen first.</div>' +
+        '</div>' +
+      '</div>' +
+      '<div id="cash-main" style="display:none">' +
+        '<div class="card" id="cash-session-card" style="margin-bottom:16px"></div>' +
+        '<div class="card">' +
+          '<div class="card-hd"><div class="card-title">SESSION HISTORY</div></div>' +
+          '<div class="card-body">' +
+            '<div class="tbl-wrap"><table class="data-tbl"><thead><tr>' +
+              '<th>OPENED</th><th>CLOSED</th><th>OPENING</th><th>EXPECTED</th><th>COUNTED</th><th style="text-align:right">VARIANCE</th>' +
+            '</tr></thead><tbody id="cash-history-tbody"></tbody></table></div>' +
+            '<div id="cash-history-empty" style="display:none;font-family:var(--mono);font-size:11px;color:var(--text-3);padding:16px 0;text-align:center">No closed sessions yet.</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+  }
+
+  function _openFormHTML() {
+    return '<div class="card-hd"><div class="card-title">TILL — NO SESSION OPEN</div></div>' +
+      '<div class="card-body">' +
+        '<div class="form-group"><label class="form-label">OPENING CASH AMOUNT <span class="req">*</span></label>' +
+          '<input class="form-control" id="cash-open-amount" type="number" min="0" step="0.01" placeholder="0.00"></div>' +
+        '<div class="form-group"><label class="form-label">NOTE</label>' +
+          '<input class="form-control" id="cash-open-note" maxlength="255" placeholder="Optional"></div>' +
+        '<button class="btn btn-primary" id="cash-open-btn">OPEN TILL</button>' +
+        '<div id="cash-open-fb" style="font-family:var(--mono);font-size:10.5px;margin-top:8px"></div>' +
+      '</div>';
+  }
+
+  function _sessionCardHTML(session, movements, expected) {
+    var opened = new Date(session.openedAt);
+    var openedStr = opened.toLocaleDateString() + ' ' + opened.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    var ctx = window.INFINICUS.ops.workspace.getContext();
+    var cur = (ctx.business && ctx.business.currency) || '';
+
+    var movesHTML = movements.length ? movements.map(function(m) {
+      var t = new Date(m.occurredAt);
+      var isNeg = (+m.amount) < 0;
+      return '<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:11px">' +
+        '<span style="color:var(--text-3)">' + t.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + '</span>' +
+        '<span style="color:var(--text-2)">' + esc(TYPE_LABEL[m.type] || m.type) + (m.reason ? ' — ' + esc(m.reason) : '') + '</span>' +
+        '<span style="color:' + (isNeg ? 'var(--red)' : 'var(--accent)') + '">' + (isNeg ? '−' : '+') + Math.abs(+m.amount).toFixed(2) + '</span>' +
+      '</div>';
+    }).join('') : '<div style="font-family:var(--mono);font-size:10.5px;color:var(--text-3);padding:8px 0">No movements yet this session.</div>';
+
+    var closeHTML = _closingMode
+      ? '<div style="border-top:1px solid var(--border);margin-top:12px;padding-top:12px">' +
+          '<div class="form-group"><label class="form-label">COUNTED CASH AMOUNT <span class="req">*</span></label>' +
+            '<input class="form-control" id="cash-counted-amount" type="number" min="0" step="0.01" placeholder="0.00"></div>' +
+          '<div id="cash-variance-preview" style="font-family:var(--mono);font-size:11px;color:var(--text-3);margin-bottom:12px">Expected ' + esc(cur) + ' ' + expected.toFixed(2) + '</div>' +
+          '<div style="display:flex;gap:8px">' +
+            '<button class="btn btn-danger btn-sm" id="cash-confirm-close">CONFIRM CLOSE</button>' +
+            '<button class="btn btn-ghost btn-sm" id="cash-cancel-close">CANCEL</button>' +
+          '</div>' +
+          '<div id="cash-close-fb" style="font-family:var(--mono);font-size:10.5px;margin-top:8px"></div>' +
+        '</div>'
+      : '';
+
+    return '<div class="card-hd"><div class="card-title">TILL OPEN</div><span class="badge badge-green"><span class="badge-dot"></span>SINCE ' + esc(openedStr) + '</span></div>' +
+      '<div class="card-body">' +
+        '<div class="stat-grid" style="margin-bottom:16px">' +
+          '<div class="stat-tile"><div class="stat-label">OPENING</div><div class="stat-value">' + esc(cur) + ' ' + (+session.openingCashAmount).toFixed(2) + '</div></div>' +
+          '<div class="stat-tile"><div class="stat-label">EXPECTED NOW</div><div class="stat-value c-acc">' + esc(cur) + ' ' + expected.toFixed(2) + '</div></div>' +
+        '</div>' +
+        '<div style="margin-bottom:14px">' + movesHTML + '</div>' +
+        (_closingMode ? '' :
+          '<div class="form-row-2" style="margin-bottom:10px">' +
+            '<div class="form-group" style="margin-bottom:0"><input class="form-control" id="cash-move-amount" type="number" min="0.01" step="0.01" placeholder="Amount"></div>' +
+            '<div class="form-group" style="margin-bottom:0"><input class="form-control" id="cash-move-reason" maxlength="255" placeholder="Reason (optional)"></div>' +
+          '</div>' +
+          '<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">' +
+            '<button class="btn btn-secondary btn-sm" id="cash-payout-btn">− PAYOUT</button>' +
+            '<button class="btn btn-secondary btn-sm" id="cash-payin-btn">+ PAY-IN</button>' +
+            '<div style="flex:1"></div>' +
+            '<button class="btn btn-danger btn-sm" id="cash-close-btn">CLOSE TILL</button>' +
+          '</div>' +
+          '<div id="cash-move-fb" style="font-family:var(--mono);font-size:10.5px"></div>'
+        ) +
+        closeHTML +
+      '</div>';
+  }
+
+  async function _render() {
+    var ctx = window.INFINICUS.ops.workspace.getContext();
+    var cardEl = document.getElementById('cash-session-card');
+    if (!cardEl || !ctx.branchId) return;
+
+    var session = await window.INFINICUS.ops.cash.getOpenSession(ctx.branchId);
+    if (!session) {
+      _closingMode = false;
+      cardEl.innerHTML = _openFormHTML();
+    } else {
+      var mv = await window.INFINICUS.ops.cash.getMovements(session.sessionId);
+      var expected = await window.INFINICUS.ops.cash.computeExpected(session);
+      cardEl.innerHTML = _sessionCardHTML(session, mv.movements || [], expected);
+    }
+    _wireCard(session);
+    await _loadHistory();
+  }
+
+  async function _loadHistory() {
+    var ctx = window.INFINICUS.ops.workspace.getContext();
+    var tbody = document.getElementById('cash-history-tbody');
+    var emptyEl = document.getElementById('cash-history-empty');
+    if (!tbody) return;
+    var r = await window.INFINICUS.ops.cash.listSessions({ branchId: ctx.branchId });
+    var closed = (r.sessions || []).filter(function(s) { return s.status === 'closed'; }).slice(0, 15);
+    var cur = (ctx.business && ctx.business.currency) || '';
+
+    if (emptyEl) emptyEl.style.display = closed.length ? 'none' : 'block';
+    tbody.innerHTML = closed.map(function(s) {
+      var o = new Date(s.openedAt), c = new Date(s.closedAt);
+      var varColor = Math.abs(s.variance) < 0.01 ? 'var(--accent)' : (s.variance < 0 ? 'var(--red)' : 'var(--amber)');
+      return '<tr>' +
+        '<td class="c-muted">' + esc(o.toLocaleDateString()) + ' ' + esc(o.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })) + '</td>' +
+        '<td class="c-muted">' + esc(c.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })) + '</td>' +
+        '<td class="c-muted">' + (+s.openingCashAmount).toFixed(2) + '</td>' +
+        '<td class="c-muted">' + (+s.expectedCashAmount).toFixed(2) + '</td>' +
+        '<td class="c-muted">' + (+s.countedCashAmount).toFixed(2) + '</td>' +
+        '<td style="text-align:right;color:' + varColor + ';font-weight:600">' + (s.variance > 0 ? '+' : '') + (+s.variance).toFixed(2) + '</td>' +
+      '</tr>';
+    }).join('');
+  }
+
+  function _wireCard(session) {
+    var openBtn = document.getElementById('cash-open-btn');
+    if (openBtn) openBtn.addEventListener('click', async function() {
+      var fb = document.getElementById('cash-open-fb');
+      var amount = (document.getElementById('cash-open-amount') || {}).value || 0;
+      var note = (document.getElementById('cash-open-note') || {}).value || '';
+      var r = await window.INFINICUS.ops.cash.openSession(amount, note);
+      if (r.ok) _render(); else if (fb) { fb.style.color = 'var(--red)'; fb.textContent = r.error; }
+    });
+
+    var payoutBtn = document.getElementById('cash-payout-btn');
+    if (payoutBtn) payoutBtn.addEventListener('click', function() { _submitMovement('payout'); });
+    var payinBtn = document.getElementById('cash-payin-btn');
+    if (payinBtn) payinBtn.addEventListener('click', function() { _submitMovement('payin'); });
+
+    var closeBtn = document.getElementById('cash-close-btn');
+    if (closeBtn) closeBtn.addEventListener('click', function() { _closingMode = true; _render(); });
+
+    var cancelCloseBtn = document.getElementById('cash-cancel-close');
+    if (cancelCloseBtn) cancelCloseBtn.addEventListener('click', function() { _closingMode = false; _render(); });
+
+    var countedEl = document.getElementById('cash-counted-amount');
+    if (countedEl) countedEl.addEventListener('input', async function() {
+      var previewEl = document.getElementById('cash-variance-preview');
+      if (!previewEl || !session) return;
+      var expected = await window.INFINICUS.ops.cash.computeExpected(session);
+      var counted = +countedEl.value || 0;
+      var variance = Math.round(((counted - expected) + Number.EPSILON) * 100) / 100;
+      var ctx = window.INFINICUS.ops.workspace.getContext();
+      var cur = (ctx.business && ctx.business.currency) || '';
+      previewEl.innerHTML = 'Expected ' + esc(cur) + ' ' + expected.toFixed(2) +
+        (countedEl.value !== '' ? ' · Variance <span style="color:' + (Math.abs(variance) < 0.01 ? 'var(--accent)' : 'var(--red)') + '">' + (variance > 0 ? '+' : '') + variance.toFixed(2) + '</span>' : '');
+    });
+
+    var confirmCloseBtn = document.getElementById('cash-confirm-close');
+    if (confirmCloseBtn) confirmCloseBtn.addEventListener('click', async function() {
+      var fb = document.getElementById('cash-close-fb');
+      var counted = (document.getElementById('cash-counted-amount') || {}).value;
+      if (counted === '' || counted == null) { if (fb) { fb.style.color = 'var(--red)'; fb.textContent = 'Enter the counted amount first'; } return; }
+      var r = await window.INFINICUS.ops.cash.closeSession(session.sessionId, counted, '');
+      if (r.ok) { _closingMode = false; _render(); }
+      else if (fb) { fb.style.color = 'var(--red)'; fb.textContent = r.error; }
+    });
+  }
+
+  async function _submitMovement(type) {
+    var fb = document.getElementById('cash-move-fb');
+    var amountEl = document.getElementById('cash-move-amount');
+    var reasonEl = document.getElementById('cash-move-reason');
+    var r = await window.INFINICUS.ops.cash.recordMovement(type, (amountEl || {}).value, (reasonEl || {}).value);
+    if (r.ok) {
+      if (amountEl) amountEl.value = '';
+      if (reasonEl) reasonEl.value = '';
+      _render();
+    } else if (fb) { fb.style.color = 'var(--red)'; fb.textContent = r.error; }
+  }
+
+  function _sync() {
+    var ctx = window.INFINICUS.ops.workspace.getContext();
+    var noBranchEl = document.getElementById('cash-no-branch');
+    var mainEl = document.getElementById('cash-main');
+    if (!ctx.branchId) { if (noBranchEl) noBranchEl.style.display = 'block'; if (mainEl) mainEl.style.display = 'none'; return; }
+    if (noBranchEl) noBranchEl.style.display = 'none';
+    if (mainEl) mainEl.style.display = 'block';
+    _render();
+  }
+
+  bus.on('dal.business.selected',     _sync);
+  bus.on('ops.branch.selected',       _sync);
+  bus.on('operation.order.completed', function() { if (window.INFINICUS.ops.workspace.getContext().branchId) _render(); });
+  bus.on('operation.order.refunded',  function() { if (window.INFINICUS.ops.workspace.getContext().branchId) _render(); });
+
+  window.INFINICUS.ops.cashView = { refresh: _sync };
+  window.__opsCashInit = function() { _mount(); _sync(); };
+
+})(); // CashViewModule
+</script>
+
+<!-- ── BLOCK 8 — INIT ───────────────────────────────────────────── -->
+<script>
+(function Block8Init() {
+  'use strict';
+
+  window.__opsCashInit();
+
+  console.info(
+    '[BOL] Block 8 ready | routes: ' + window.INFINICUS.bus.listRoutes().length +
+    ' | Cash: open/close/recordMovement(payout,payin)/getOpenSession/getMovements/listSessions'
+  );
+
+  window.INFINICUS.bus.emit('ops.cash.ready', { block: 8 });
+
+})(); // Block8Init
+</script>
+
+<!-- ════════════════════════════════════════════════════════════════
+     BLOCK 9 · INVENTORY OPERATIONS
+     Stock levels, the full 8-type movement ledger, low-stock alerts —
+     per the NAV_ITEMS description from Block 1. Extends the ledger
+     writer Block 6 front-loaded (getStock/recordMovement) rather than
+     replacing it: this block adds browsing (listMovements), reporting
+     (getStockLevels/getLowStockCount), and the manual-entry UI for the
+     7 movement types Sell doesn't create on its own (only 'sold' is
+     Sell-only/automatic).
+
+     THREE small patches land alongside this block, all disclosed:
+       • Product gets a new optional `reorderPoint` field (Block 5's
+         S_CREATE/S_UPDATE schemas, create()/update(), and the Catalog
+         form) — the threshold "low stock" checks against. Defaults to
+         0 (flag only at a true stockout) for existing products.
+       • getStock(productId, businessId, branchId) — REAL BUG FIX, not
+         just an addition: stock was being summed business-wide with
+         no way to scope it, so a sale at Branch B could pass its stock
+         check off inventory that only physically exists at Branch A.
+         Now takes an optional branchId; omit it for a business-wide
+         total (Home's tile does), pass it for "what's on the shelf at
+         THIS branch" (the Order Manager's stock check now does, and
+         so does this block's own Stock Levels table).
+       • Home's LOW STOCK ITEMS tile — was a hardcoded 0 since Block 4
+         with a note that Block 9 would wire it for real. Now calls
+         getLowStockCount(businessId), business-wide (Home's sibling
+         tiles — sales/expenses — are business-wide too; the branch-
+         scoped, actionable view is this block's own Stock Levels tab).
+
+     KNOWN LIMITATION, not solved here: 'transferred' only records an
+     OUT movement at the source branch. There's no automatic matching
+     IN movement at a destination branch — the spec's 8 movement types
+     don't include a branch-to-branch transfer object, and building
+     one is out of this block's scope. A real transfer today means a
+     manual 'transferred' out here, then switching branch context and
+     manually recording a 'received' in there.
+
+     Depends on: Block 2 (bus/security/uuid), Block 3 (inventoryMovements
+     store + indexes), Block 4 (workspace/audit), Block 5 (ops.product,
+     the reorderPoint patch), Block 6 (ops.inventory itself, the two
+     fixes above).
+════════════════════════════════════════════════════════════════ -->
+
+<!-- ── 9A · Inventory Manager extensions ────────────────────────── -->
+<script>
+'use strict';
+
+(function OperationsInventoryExtensionModule() {
+
+  // Extends window.INFINICUS.ops.inventory (created in Block 6) —
+  // getStock/recordMovement stay exactly as Block 6 built them (aside
+  // from getStock's branchId patch above); nothing here replaces them.
+  var bus = window.INFINICUS.bus;
+  var inventoryApi = window.INFINICUS.ops.inventory;
+
+  inventoryApi.listMovements = async function(opts) {
+    opts = opts || {};
+    var ctx = window.INFINICUS.ops.workspace.getContext();
+    var businessId = opts.businessId || ctx.businessId;
+    if (!businessId) return { ok: true, movements: [] };
+
+    var r;
+    if (opts.productId) r = await bus.call('ops.storage.inventoryMovements.list', { indexName: 'by_product', keyVal: [businessId, opts.productId] });
+    else if (opts.branchId) r = await bus.call('ops.storage.inventoryMovements.list', { indexName: 'by_branch', keyVal: opts.branchId });
+    else r = await bus.call('ops.storage.inventoryMovements.list', { indexName: 'by_business', keyVal: businessId });
+
+    var movements = r.records || [];
+    if (opts.type) movements = movements.filter(function(m) { return m.type === opts.type; });
+    movements.sort(function(a, b) { return (b.occurredAt || '') > (a.occurredAt || '') ? 1 : -1; });
+    return { ok: true, movements: movements };
+  };
+
+  /** Stock + reorder status for every stock-tracked, non-archived
+   *  product — the shared source for both this block's Stock Levels
+   *  table and Home's LOW STOCK ITEMS tile. branchId omitted =
+   *  business-wide (matches getStock's own contract exactly). */
+  inventoryApi.getStockLevels = async function(businessId, branchId) {
+    var ctx = window.INFINICUS.ops.workspace.getContext();
+    var bizId = businessId || ctx.businessId;
+    if (!bizId) return { ok: true, levels: [] };
+
+    var prodR = await window.INFINICUS.ops.product.list(bizId);
+    var tracked = (prodR.products || []).filter(function(p) { return p.stockTracked && p.status !== 'archived'; });
+
+    var levels = [];
+    for (var i = 0; i < tracked.length; i++) {
+      var p = tracked[i];
+      var stock = await inventoryApi.getStock(p.productId, bizId, branchId);
+      var reorderPoint = +p.reorderPoint || 0;
+      levels.push({ productId: p.productId, name: p.name, sku: p.sku, category: p.category, stock: stock, reorderPoint: reorderPoint, isLow: stock <= reorderPoint });
+    }
+    levels.sort(function(a, b) { return a.name.localeCompare(b.name); });
+    return { ok: true, levels: levels };
+  };
+
+  inventoryApi.getLowStockCount = async function(businessId, branchId) {
+    var r = await inventoryApi.getStockLevels(businessId, branchId);
+    return (r.levels || []).filter(function(l) { return l.isLow; }).length;
+  };
+
+  bus.register('operations.inventory.listMovements',  function(p) { return inventoryApi.listMovements(p); });
+  bus.register('operations.inventory.getStockLevels', function(p) { return inventoryApi.getStockLevels(p && p.businessId, p && p.branchId); });
+
+})(); // OperationsInventoryExtensionModule
+</script>
+
+<!-- ── 9B · Inventory View ──────────────────────────────────────── -->
+<script>
+'use strict';
+
+(function InventoryViewModule() {
+
+  var bus = window.INFINICUS.bus;
+  var esc = window.INFINICUS.esc;
+
+  var _levelsSearch = '';
+  var _ledgerType = '';
+
+  var TYPE_SIGN  = { received: 1, returned: 1, consumed: -1, wasted: -1, damaged: -1, transferred: -1 };
+  var TYPE_BADGE = { received: 'blue', sold: 'green', consumed: 'muted', wasted: 'red', damaged: 'red', transferred: 'purple', returned: 'amber', adjusted: 'muted' };
+
+  function _mount() {
+    var content = document.querySelector('#view-inventory .content');
+    if (!content) return;
+    content.innerHTML =
+      '<div id="inv-no-branch" style="display:none">' +
+        '<div class="placeholder"><div class="placeholder-icon">▤</div>' +
+          '<div class="placeholder-title">NO BRANCH SELECTED</div>' +
+          '<div class="placeholder-sub">Select a business and branch on the Home screen first.</div>' +
+        '</div>' +
+      '</div>' +
+      '<div id="inv-main" style="display:none">' +
+        '<div class="stat-grid" id="inv-stats"></div>' +
+
+        '<div class="card" style="margin-bottom:16px">' +
+          '<div class="card-hd"><div class="card-title">RECORD MOVEMENT</div>' +
+            '<button class="btn btn-ghost btn-sm" id="inv-entry-toggle">+ NEW MOVEMENT</button>' +
+          '</div>' +
+          '<div id="inv-entry-body" style="display:none"><div class="card-body">' +
+            '<div class="form-row-2">' +
+              '<div class="form-group"><label class="form-label">PRODUCT <span class="req">*</span></label>' +
+                '<select class="form-control" id="inv-e-product"><option value="">— Select —</option></select></div>' +
+              '<div class="form-group"><label class="form-label">TYPE <span class="req">*</span></label>' +
+                '<select class="form-control" id="inv-e-type">' +
+                  '<option value="received">Received (stock in)</option>' +
+                  '<option value="returned">Returned by customer (stock in)</option>' +
+                  '<option value="consumed">Consumed / used internally (stock out)</option>' +
+                  '<option value="wasted">Wasted (stock out)</option>' +
+                  '<option value="damaged">Damaged (stock out)</option>' +
+                  '<option value="transferred">Transferred out (stock out)</option>' +
+                  '<option value="adjusted">Stock count correction</option>' +
+                '</select></div>' +
+            '</div>' +
+            '<div class="form-group">' +
+              '<label class="form-label" id="inv-e-qty-label">QUANTITY <span class="req">*</span></label>' +
+              '<input class="form-control" id="inv-e-qty" type="number" min="0" step="1" placeholder="0">' +
+              '<div class="form-hint" id="inv-e-qty-hint"></div>' +
+            '</div>' +
+            '<div class="form-group"><label class="form-label">REASON / NOTE</label>' +
+              '<input class="form-control" id="inv-e-reason" maxlength="255" placeholder="Optional"></div>' +
+            '<button class="btn btn-primary btn-sm" id="inv-e-save">SAVE MOVEMENT</button>' +
+            '<div id="inv-e-fb" style="font-family:var(--mono);font-size:10.5px;margin-top:8px"></div>' +
+          '</div></div>' +
+        '</div>' +
+
+        '<div class="tab-bar">' +
+          '<button class="tab-btn active" data-tab="levels">STOCK LEVELS</button>' +
+          '<button class="tab-btn" data-tab="ledger">MOVEMENT LEDGER</button>' +
+        '</div>' +
+
+        '<div class="tab-panel active" id="inv-tab-levels">' +
+          '<input class="form-control" id="inv-levels-search" placeholder="Search products…" style="margin-bottom:12px">' +
+          '<div class="tbl-wrap"><table class="data-tbl"><thead><tr>' +
+            '<th>PRODUCT</th><th>SKU</th><th>CATEGORY</th><th>REORDER AT</th><th style="text-align:right">STOCK</th><th></th>' +
+          '</tr></thead><tbody id="inv-levels-tbody"></tbody></table></div>' +
+          '<div id="inv-levels-empty" style="display:none;font-family:var(--mono);font-size:11px;color:var(--text-3);padding:16px 0;text-align:center">No stock-tracked products. Enable "Track stock quantity" on a product in the Catalog.</div>' +
+        '</div>' +
+
+        '<div class="tab-panel" id="inv-tab-ledger">' +
+          '<div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap">' +
+            '<select class="form-control" id="inv-ledger-type" style="max-width:200px">' +
+              '<option value="">— All movement types —</option>' +
+              '<option value="received">Received</option><option value="sold">Sold</option>' +
+              '<option value="consumed">Consumed</option><option value="wasted">Wasted</option>' +
+              '<option value="damaged">Damaged</option><option value="transferred">Transferred</option>' +
+              '<option value="returned">Returned</option><option value="adjusted">Adjusted</option>' +
+            '</select>' +
+            '<div style="flex:1"></div>' +
+            '<button class="btn btn-ghost btn-sm" id="inv-ledger-refresh">↻ REFRESH</button>' +
+          '</div>' +
+          '<div class="tbl-wrap"><table class="data-tbl"><thead><tr>' +
+            '<th>DATE</th><th>PRODUCT</th><th>TYPE</th><th>REASON</th><th style="text-align:right">QUANTITY</th>' +
+          '</tr></thead><tbody id="inv-ledger-tbody"></tbody></table></div>' +
+          '<div id="inv-ledger-empty" style="display:none;font-family:var(--mono);font-size:11px;color:var(--text-3);padding:16px 0;text-align:center">No movements yet.</div>' +
+        '</div>' +
+      '</div>';
+  }
+
+  async function _loadProductOptions() {
+    var ctx = window.INFINICUS.ops.workspace.getContext();
+    var sel = document.getElementById('inv-e-product');
+    if (!sel || !ctx.businessId) return;
+    var r = await window.INFINICUS.ops.product.list(ctx.businessId);
+    var tracked = (r.products || []).filter(function(p) { return p.stockTracked && p.status !== 'archived'; });
+    sel.innerHTML = '<option value="">— Select —</option>' + tracked.map(function(p) {
+      return '<option value="' + esc(p.productId) + '">' + esc(p.name) + (p.sku ? ' (' + esc(p.sku) + ')' : '') + '</option>';
+    }).join('');
+  }
+
+  async function _updateQtyLabel() {
+    var typeEl = document.getElementById('inv-e-type');
+    var prodEl = document.getElementById('inv-e-product');
+    var labelEl = document.getElementById('inv-e-qty-label');
+    var hintEl = document.getElementById('inv-e-qty-hint');
+    if (!typeEl || !labelEl) return;
+    var ctx = window.INFINICUS.ops.workspace.getContext();
+
+    if (typeEl.value === 'adjusted') {
+      labelEl.innerHTML = 'NEW COUNTED STOCK <span class="req">*</span>';
+      if (prodEl.value) {
+        var current = await window.INFINICUS.ops.inventory.getStock(prodEl.value, ctx.businessId, ctx.branchId);
+        hintEl.textContent = 'Current stock at this branch: ' + current + ' — enter what you actually counted, not the delta.';
+      } else {
+        hintEl.textContent = 'Select a product to see current stock.';
+      }
+    } else {
+      labelEl.innerHTML = 'QUANTITY <span class="req">*</span>';
+      hintEl.textContent = '';
+    }
+  }
+
+  function _levelRow(l) {
+    return '<tr>' +
+      '<td class="c-text">' + esc(l.name) + '</td>' +
+      '<td class="c-muted">' + esc(l.sku || '—') + '</td>' +
+      '<td class="c-muted">' + esc(l.category || '—') + '</td>' +
+      '<td class="c-muted">' + l.reorderPoint + '</td>' +
+      '<td style="text-align:right;font-weight:600;color:' + (l.isLow ? 'var(--red)' : 'var(--text)') + '">' + l.stock + '</td>' +
+      '<td>' + (l.isLow ? '<span class="badge badge-red">LOW</span>' : '') + '</td>' +
+    '</tr>';
+  }
+
+  async function _loadStockLevels() {
+    var ctx = window.INFINICUS.ops.workspace.getContext();
+    var tbody = document.getElementById('inv-levels-tbody');
+    var emptyEl = document.getElementById('inv-levels-empty');
+    var statsEl = document.getElementById('inv-stats');
+    if (!tbody || !ctx.businessId) return;
+
+    var r = await window.INFINICUS.ops.inventory.getStockLevels(ctx.businessId, ctx.branchId);
+    var all = r.levels || [];
+    var q = _levelsSearch.toLowerCase();
+    var filtered = !q ? all : all.filter(function(l) { return l.name.toLowerCase().indexOf(q) !== -1 || (l.sku || '').toLowerCase().indexOf(q) !== -1; });
+
+    if (emptyEl) emptyEl.style.display = all.length ? 'none' : 'block';
+    tbody.innerHTML = filtered.map(_levelRow).join('');
+
+    if (statsEl) {
+      var lowCount = all.filter(function(l) { return l.isLow; }).length;
+      statsEl.innerHTML = [
+        { l: 'TRACKED PRODUCTS', v: all.length, c: 'c-blue' },
+        { l: 'LOW STOCK',        v: lowCount,   c: lowCount > 0 ? 'c-red' : 'c-acc' }
+      ].map(function(t) {
+        return '<div class="stat-tile"><div class="stat-label">' + esc(t.l) + '</div><div class="stat-value ' + t.c + '">' + esc(String(t.v)) + '</div></div>';
+      }).join('');
+    }
+  }
+
+  function _ledgerRow(m) {
+    var d = m.occurredAt ? new Date(m.occurredAt) : null;
+    var dateStr = d ? d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+    var isNeg = (+m.quantity) < 0;
+    return '<tr>' +
+      '<td class="c-muted">' + esc(dateStr) + '</td>' +
+      '<td class="c-text">' + esc(m.productName || '') + '</td>' +
+      '<td><span class="badge badge-' + (TYPE_BADGE[m.type] || 'muted') + '">' + esc(m.type || '') + '</span></td>' +
+      '<td class="c-muted">' + esc(m.reason || '—') + '</td>' +
+      '<td style="text-align:right;color:' + (isNeg ? 'var(--red)' : 'var(--accent)') + ';font-weight:600">' + (isNeg ? '' : '+') + m.quantity + '</td>' +
+    '</tr>';
+  }
+
+  async function _loadLedger() {
+    var ctx = window.INFINICUS.ops.workspace.getContext();
+    var tbody = document.getElementById('inv-ledger-tbody');
+    var emptyEl = document.getElementById('inv-ledger-empty');
+    if (!tbody || !ctx.branchId) return;
+
+    var r = await window.INFINICUS.ops.inventory.listMovements({ branchId: ctx.branchId, type: _ledgerType || undefined });
+    var movements = r.movements || [];
+    if (emptyEl) emptyEl.style.display = movements.length ? 'none' : 'block';
+    tbody.innerHTML = movements.slice(0, 100).map(_ledgerRow).join('');
+  }
+
+  function _wireTabs() {
+    var bar = document.querySelector('#view-inventory .tab-bar');
+    if (!bar) return;
+    bar.addEventListener('click', function(e) {
+      var btn = e.target.closest('.tab-btn');
+      if (!btn) return;
+      bar.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      document.querySelectorAll('#view-inventory .tab-panel').forEach(function(p) { p.classList.remove('active'); });
+      var panel = document.getElementById('inv-tab-' + btn.dataset.tab);
+      if (panel) panel.classList.add('active');
+    });
+  }
+
+  function _wireEntry() {
+    var toggleBtn = document.getElementById('inv-entry-toggle');
+    if (toggleBtn) toggleBtn.addEventListener('click', async function() {
+      var body = document.getElementById('inv-entry-body');
+      var open = body.style.display !== 'none';
+      if (open) { body.style.display = 'none'; toggleBtn.textContent = '+ NEW MOVEMENT'; }
+      else { body.style.display = 'block'; toggleBtn.textContent = '− CANCEL'; await _loadProductOptions(); _updateQtyLabel(); }
+    });
+
+    var typeEl = document.getElementById('inv-e-type');
+    if (typeEl) typeEl.addEventListener('change', _updateQtyLabel);
+    var prodEl = document.getElementById('inv-e-product');
+    if (prodEl) prodEl.addEventListener('change', _updateQtyLabel);
+
+    var saveBtn = document.getElementById('inv-e-save');
+    if (saveBtn) saveBtn.addEventListener('click', async function() {
+      var fb = document.getElementById('inv-e-fb');
+      var productId = (document.getElementById('inv-e-product') || {}).value;
+      var type = (document.getElementById('inv-e-type') || {}).value;
+      var qtyRaw = (document.getElementById('inv-e-qty') || {}).value;
+      var reason = (document.getElementById('inv-e-reason') || {}).value;
+
+      if (!productId) { fb.style.color = 'var(--red)'; fb.textContent = 'Select a product'; return; }
+      if (qtyRaw === '' || qtyRaw == null) { fb.style.color = 'var(--red)'; fb.textContent = 'Enter a value'; return; }
+
+      var prodR = await window.INFINICUS.ops.product.get(productId);
+      if (!prodR.product) { fb.style.color = 'var(--red)'; fb.textContent = 'Product not found'; return; }
+
+      var signedQty;
+      if (type === 'adjusted') {
+        var ctx = window.INFINICUS.ops.workspace.getContext();
+        var current = await window.INFINICUS.ops.inventory.getStock(productId, ctx.businessId, ctx.branchId);
+        signedQty = (+qtyRaw) - current;
+        if (signedQty === 0) { fb.style.color = 'var(--amber)'; fb.textContent = 'No change — counted stock already matches'; return; }
+      } else {
+        signedQty = (TYPE_SIGN[type] || 1) * Math.abs(+qtyRaw || 0);
+        if (signedQty === 0) { fb.style.color = 'var(--red)'; fb.textContent = 'Quantity must be non-zero'; return; }
+      }
+
+      var r = await window.INFINICUS.ops.inventory.recordMovement({
+        productId: productId, productName: prodR.product.name, type: type, quantity: signedQty, reason: reason
+      });
+      if (r.ok) {
+        fb.style.color = 'var(--accent)'; fb.textContent = '✓ Movement recorded';
+        document.getElementById('inv-e-qty').value = '';
+        document.getElementById('inv-e-reason').value = '';
+        _loadStockLevels();
+        _loadLedger();
+      } else {
+        fb.style.color = 'var(--red)'; fb.textContent = r.error || 'Could not record movement';
+      }
+    });
+  }
+
+  function _wire() {
+    _wireTabs();
+    _wireEntry();
+
+    var searchEl = document.getElementById('inv-levels-search');
+    if (searchEl) searchEl.addEventListener('input', function() { _levelsSearch = searchEl.value; _loadStockLevels(); });
+
+    var ledgerTypeEl = document.getElementById('inv-ledger-type');
+    if (ledgerTypeEl) ledgerTypeEl.addEventListener('change', function() { _ledgerType = ledgerTypeEl.value; _loadLedger(); });
+
+    var refreshBtn = document.getElementById('inv-ledger-refresh');
+    if (refreshBtn) refreshBtn.addEventListener('click', _loadLedger);
+  }
+
+  function _sync() {
+    var ctx = window.INFINICUS.ops.workspace.getContext();
+    var noBranchEl = document.getElementById('inv-no-branch');
+    var mainEl = document.getElementById('inv-main');
+    if (!ctx.branchId) { if (noBranchEl) noBranchEl.style.display = 'block'; if (mainEl) mainEl.style.display = 'none'; return; }
+    if (noBranchEl) noBranchEl.style.display = 'none';
+    if (mainEl) mainEl.style.display = 'block';
+    _loadStockLevels();
+    _loadLedger();
+  }
+
+  bus.on('dal.business.selected',       _sync);
+  bus.on('ops.branch.selected',         _sync);
+  bus.on('ops.product.created',         _loadStockLevels);
+  bus.on('ops.product.updated',         _loadStockLevels);
+  bus.on('operation.order.completed',   _sync);
+  bus.on('operation.inventory.received',_sync);
+  bus.on('operation.inventory.consumed',_sync);
+
+  window.INFINICUS.ops.inventoryView = { refresh: _sync };
+  window.__opsInventoryInit = function() { _mount(); _wire(); _sync(); };
+
+})(); // InventoryViewModule
+</script>
+
+<!-- ── BLOCK 9 — INIT ───────────────────────────────────────────── -->
+<script>
+(function Block9Init() {
+  'use strict';
+
+  window.__opsInventoryInit();
+
+  console.info(
+    '[BOL] Block 9 ready | routes: ' + window.INFINICUS.bus.listRoutes().length +
+    ' | Inventory: listMovements/getStockLevels/getLowStockCount added to Block 6\'s getStock/recordMovement' +
+    ' | Home\'s low-stock tile and Product\'s reorderPoint field now wired end-to-end'
+  );
+
+  window.INFINICUS.bus.emit('ops.inventory.ready', { block: 9 });
+
+})(); // Block9Init
+</script>
+
+<!-- ════════════════════════════════════════════════════════════════
+     BLOCK 10 · EXPENSE MANAGEMENT
+     Expense entry with category, vendor, and an approval workflow —
+     per the NAV_ITEMS description from Block 1. "Approval" is a UX/
+     operational-discipline gate, not a real security boundary — same
+     honest framing as the permission model in the architecture doc,
+     since there's no Employee/Role/auth yet (Blocks 14/15) to enforce
+     who's allowed to approve.
+
+     DAL wiring: expense.recorded fires at CREATION (matches Home's
+     existing TODAY'S EXPENSES tile, which has summed expense.recorded
+     since Block 4 — a pending expense should already count as spend,
+     not wait on an approval nobody can meaningfully perform yet).
+     expense.approved fires at approval, referencing the original
+     event via `originalEventId` — this requires capturing the eventId
+     that data.event.ingest returns at creation time and storing it on
+     the ops-side record; approve() reads it back. Reject has no DAL
+     event — it's not in the spec's 21-event list, so it stays
+     ops-local (status + audit trail only), matching how cash-session
+     open/close and order-draft edits were already handled.
+
+     Depends on: Block 2 (bus/security/uuid, the expense.recorded and
+     expense.approved DAL schemas — the latter registered back in
+     Block 2C), Block 3 (ops.storage.expenses.* + by_business/by_branch/
+     by_status indexes), Block 4 (workspace/audit/biz).
+════════════════════════════════════════════════════════════════ -->
+
+<!-- ── 10A · Expense Manager ────────────────────────────────────── -->
+<script>
+'use strict';
+
+(function OperationsExpenseModule() {
+
+  var bus   = window.INFINICUS.bus;
+  var sec   = window.INFINICUS.security;
+  var uuid  = window.INFINICUS.uuid;
+  var audit = window.INFINICUS.ops.audit;
+
+  function ingestOps(eventType, businessId, payload) {
+    return bus.call('data.event.ingest', {
+      eventType: eventType, businessId: businessId, source: 'ops',
+      occurredAt: new Date().toISOString(), payload: payload
+    });
+  }
+
+  async function _getOwned(expenseId) {
+    var r = await bus.call('ops.storage.expenses.get', { id: expenseId });
+    if (!r.record) return { ok: false, error: 'Expense not found', code: 'NOT_FOUND' };
+    var ctx = window.INFINICUS.ops.workspace.getContext();
+    if (r.record.businessId !== ctx.businessId) return { ok: false, error: 'Expense does not belong to the active business', code: 'OWNERSHIP_MISMATCH' };
+    return { ok: true, expense: r.record };
+  }
+
+  var expenseApi = {
+
+    create: async function(fields) {
+      fields = fields || {};
+      var ctx = window.INFINICUS.ops.workspace.getContext();
+      if (!ctx.businessId) return { ok: false, error: 'No active business', code: 'NO_BUSINESS' };
+
+      try {
+        var category = sec.sanitizeString(fields.category || '', 100);
+        if (!category) return { ok: false, error: 'Category is required', code: 'VALIDATION_FAILED' };
+        var amount = sec.sanitizeNumber(fields.amount, { min: 0.01, decimals: 2 });
+        var vendorName = fields.vendorName ? sec.sanitizeString(fields.vendorName, 255) : '';
+        var description = fields.description ? sec.sanitizeString(fields.description, 500) : '';
+        var isRecurring = !!fields.isRecurring;
+
+        var payload = { amount: amount, category: category };
+        if (description) payload.description = description;
+        if (vendorName)   payload.vendorName = vendorName;
+        if (isRecurring)  payload.isRecurring = true;
+
+        // Capture the DAL event id now — expense.approved needs to
+        // reference it later via originalEventId.
+        var ingestResult = await ingestOps('expense.recorded', ctx.businessId, payload);
+        var dalEventId = (ingestResult.ok && ingestResult.event) ? ingestResult.event.eventId : null;
+
+        var record = {
+          expenseId: uuid(), businessId: ctx.businessId, branchId: ctx.branchId || null,
+          category: category, vendorName: vendorName, description: description,
+          amount: amount, currency: (ctx.business && ctx.business.currency) || 'USD',
+          status: 'pending', isRecurring: isRecurring, dalEventId: dalEventId,
+          createdAt: new Date().toISOString()
+        };
+        var r = await bus.call('ops.storage.expenses.put', record);
+        if (!r.ok) return r;
+
+        audit('create', 'expense', r.record.expenseId, null, r.record);
+        bus.emit('operation.expense.created', { expenseId: r.record.expenseId });
+        return { ok: true, expense: r.record };
+
+      } catch (err) {
+        return { ok: false, error: err.message || String(err), code: err.name || 'EXPENSE_ERROR' };
+      }
+    },
+
+    /** Editing is only allowed while pending — once approved or
+     *  rejected, the record is treated as settled, same philosophy
+     *  used for completed orders/payments elsewhere in this file. */
+    update: async function(fields) {
+      fields = fields || {};
+      var g = await _getOwned(fields.expenseId);
+      if (!g.ok) return g;
+      if (g.expense.status !== 'pending') return { ok: false, error: 'Only pending expenses can be edited', code: 'NOT_EDITABLE' };
+
+      try {
+        var patch = { expenseId: fields.expenseId };
+        if (fields.category !== undefined) {
+          var c = sec.sanitizeString(fields.category, 100);
+          if (!c) return { ok: false, error: 'Category is required', code: 'VALIDATION_FAILED' };
+          patch.category = c;
+        }
+        if (fields.amount      !== undefined) patch.amount = sec.sanitizeNumber(fields.amount, { min: 0.01, decimals: 2 });
+        if (fields.vendorName  !== undefined) patch.vendorName = sec.sanitizeString(fields.vendorName, 255);
+        if (fields.description !== undefined) patch.description = sec.sanitizeString(fields.description, 500);
+        if (fields.isRecurring !== undefined) patch.isRecurring = !!fields.isRecurring;
+
+        var r = await bus.call('ops.storage.expenses.put', patch);
+        if (!r.ok) return r;
+        audit('update', 'expense', fields.expenseId, g.expense, r.record);
+        bus.emit('operation.expense.updated', { expenseId: fields.expenseId });
+        return { ok: true, expense: r.record };
+      } catch (err) {
+        return { ok: false, error: err.message || String(err), code: err.name || 'EXPENSE_ERROR' };
+      }
+    },
+
+    approve: async function(expenseId, approvedBy) {
+      var g = await _getOwned(expenseId);
+      if (!g.ok) return g;
+      if (g.expense.status === 'approved') return { ok: false, error: 'Already approved', code: 'ALREADY_APPROVED' };
+
+      var updated = Object.assign({}, g.expense, {
+        status: 'approved', approvedAt: new Date().toISOString(),
+        approvedBy: approvedBy ? sec.sanitizeString(approvedBy, 100) : ''
+      });
+      var r = await bus.call('ops.storage.expenses.put', updated);
+      if (!r.ok) return r;
+
+      audit('approve', 'expense', expenseId, g.expense, r.record);
+
+      if (g.expense.dalEventId) {
+        var payload = { originalEventId: g.expense.dalEventId, amount: g.expense.amount };
+        if (updated.approvedBy) payload.approvedBy = updated.approvedBy;
+        ingestOps('expense.approved', g.expense.businessId, payload);
+      } else {
+        console.warn('[BOL] expense.approved not sent to DAL — original expense.recorded event id is missing for', expenseId);
+      }
+
+      bus.emit('operation.expense.approved', { expenseId: expenseId });
+      return { ok: true, expense: r.record };
+    },
+
+    /** Ops-local only — not one of the spec's 21 required events. */
+    reject: async function(expenseId, reason) {
+      var g = await _getOwned(expenseId);
+      if (!g.ok) return g;
+      if (g.expense.status === 'approved') return { ok: false, error: 'Cannot reject an already-approved expense', code: 'ALREADY_APPROVED' };
+
+      var updated = Object.assign({}, g.expense, {
+        status: 'rejected', rejectedAt: new Date().toISOString(),
+        rejectReason: reason ? sec.sanitizeString(reason, 255) : ''
+      });
+      var r = await bus.call('ops.storage.expenses.put', updated);
+      if (!r.ok) return r;
+
+      audit('reject', 'expense', expenseId, g.expense, r.record);
+      bus.emit('operation.expense.rejected', { expenseId: expenseId });
+      return { ok: true, expense: r.record };
+    },
+
+    get: async function(expenseId) {
+      var r = await bus.call('ops.storage.expenses.get', { id: expenseId });
+      return { ok: r.ok, expense: r.record };
+    },
+
+    list: async function(opts) {
+      opts = opts || {};
+      var ctx = window.INFINICUS.ops.workspace.getContext();
+      var businessId = opts.businessId || ctx.businessId;
+      if (!businessId) return { ok: true, expenses: [] };
+
+      // by_status is NOT business-scoped (single-field index) — always
+      // re-filter by businessId after fetching, regardless of which
+      // index was used, so a status-filtered query can never leak
+      // another business's expenses into the result.
+      var r = opts.status
+        ? await bus.call('ops.storage.expenses.list', { indexName: 'by_status', keyVal: opts.status })
+        : await bus.call('ops.storage.expenses.list', { indexName: 'by_business', keyVal: businessId });
+
+      var expenses = (r.records || []).filter(function(e) { return e.businessId === businessId; });
+      if (opts.branchId) expenses = expenses.filter(function(e) { return e.branchId === opts.branchId; });
+      expenses.sort(function(a, b) { return (b.createdAt || '') > (a.createdAt || '') ? 1 : -1; });
+      return { ok: true, expenses: expenses };
+    }
+  };
+
+  window.INFINICUS.ops.expense = expenseApi;
+
+  bus.register('operations.expense.create',  function(p) { return expenseApi.create(p); });
+  bus.register('operations.expense.update',  function(p) { return expenseApi.update(p); });
+  bus.register('operations.expense.approve', function(p) { return expenseApi.approve(p.expenseId, p.approvedBy); });
+  bus.register('operations.expense.reject',  function(p) { return expenseApi.reject(p.expenseId, p.reason); });
+  bus.register('operations.expense.get',     function(p) { return expenseApi.get(p.expenseId); });
+  bus.register('operations.expense.list',    function(p) { return expenseApi.list(p); });
+
+})(); // OperationsExpenseModule
+</script>
+
+<!-- ── 10B · Expenses View ──────────────────────────────────────── -->
+<script>
+'use strict';
+
+(function ExpensesViewModule() {
+
+  var bus = window.INFINICUS.bus;
+  var esc = window.INFINICUS.esc;
+  var biz = window.INFINICUS.biz;
+
+  var _editingId = null;
+  var _filterStatus = '';
+
+  var CATEGORIES = ['Rent', 'Utilities', 'Supplies', 'Payroll', 'Marketing', 'Software & Subscriptions', 'Travel', 'Maintenance', 'Professional Services', 'Other'];
+  var STATUS_BADGE = { pending: 'badge-amber', approved: 'badge-green', rejected: 'badge-red' };
+
+  function _mount() {
+    var content = document.querySelector('#view-expenses .content');
+    if (!content) return;
+    content.innerHTML =
+      '<div id="exp-no-biz" style="display:none">' +
+        '<div class="placeholder"><div class="placeholder-icon">▤</div>' +
+          '<div class="placeholder-title">NO BUSINESS SELECTED</div>' +
+          '<div class="placeholder-sub">Select a business on the Home screen first.</div>' +
+        '</div>' +
+      '</div>' +
+      '<div id="exp-main">' +
+        '<div class="stat-grid" id="exp-stats"></div>' +
+
+        '<div class="card" style="margin-bottom:16px">' +
+          '<div class="card-hd"><div class="card-title">EXPENSES</div>' +
+            '<button class="btn btn-ghost btn-sm" id="exp-create-toggle">+ NEW EXPENSE</button>' +
+          '</div>' +
+          '<div id="exp-form-body" style="display:none"><div class="card-body">' +
+            '<div class="form-row-2">' +
+              '<div class="form-group"><label class="form-label">CATEGORY <span class="req">*</span></label>' +
+                '<select class="form-control" id="exp-f-category">' + CATEGORIES.map(function(c) { return '<option value="' + esc(c) + '">' + esc(c) + '</option>'; }).join('') + '</select></div>' +
+              '<div class="form-group"><label class="form-label">AMOUNT <span class="req">*</span></label>' +
+                '<input class="form-control" id="exp-f-amount" type="number" min="0.01" step="0.01" placeholder="0.00"></div>' +
+            '</div>' +
+            '<div class="form-row-2">' +
+              '<div class="form-group"><label class="form-label">VENDOR</label>' +
+                '<input class="form-control" id="exp-f-vendor" maxlength="255" placeholder="Optional"></div>' +
+              '<div class="form-group" style="display:flex;align-items:flex-end;padding-bottom:9px">' +
+                '<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-family:var(--mono);font-size:11px;color:var(--text-2)">' +
+                  '<input type="checkbox" id="exp-f-recurring" style="accent-color:var(--accent)"> Recurring expense' +
+                '</label>' +
+              '</div>' +
+            '</div>' +
+            '<div class="form-group"><label class="form-label">DESCRIPTION</label>' +
+              '<input class="form-control" id="exp-f-desc" maxlength="500" placeholder="Optional"></div>' +
+            '<div style="display:flex;align-items:center;gap:10px">' +
+              '<button class="btn btn-primary btn-sm" id="exp-f-save">RECORD EXPENSE</button>' +
+              '<span id="exp-f-fb" style="font-family:var(--mono);font-size:10px"></span>' +
+            '</div>' +
+          '</div></div>' +
+        '</div>' +
+
+        '<div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap">' +
+          '<select class="form-control" id="exp-f-status" style="max-width:180px">' +
+            '<option value="">— All statuses —</option>' +
+            '<option value="pending">Pending</option><option value="approved">Approved</option><option value="rejected">Rejected</option>' +
+          '</select>' +
+          '<div style="flex:1"></div>' +
+        '</div>' +
+        '<div id="exp-list"></div>' +
+        '<div id="exp-empty" style="display:none"><div class="placeholder"><div class="placeholder-icon">▤</div>' +
+          '<div class="placeholder-title">NO EXPENSES YET</div>' +
+          '<div class="placeholder-sub">Record your first expense above.</div>' +
+        '</div></div>' +
+      '</div>';
+  }
+
+  function _openForm(prefill) {
+    document.getElementById('exp-form-body').style.display = 'block';
+    document.getElementById('exp-create-toggle').textContent = '− CANCEL';
+    document.getElementById('exp-f-category').value = prefill ? prefill.category : CATEGORIES[0];
+    document.getElementById('exp-f-amount').value = prefill ? prefill.amount : '';
+    document.getElementById('exp-f-vendor').value = prefill ? prefill.vendorName || '' : '';
+    document.getElementById('exp-f-recurring').checked = prefill ? !!prefill.isRecurring : false;
+    document.getElementById('exp-f-desc').value = prefill ? prefill.description || '' : '';
+    document.getElementById('exp-f-save').textContent = prefill ? 'SAVE CHANGES' : 'RECORD EXPENSE';
+    _editingId = prefill ? prefill.expenseId : null;
+  }
+  function _closeForm() {
+    document.getElementById('exp-form-body').style.display = 'none';
+    document.getElementById('exp-create-toggle').textContent = '+ NEW EXPENSE';
+    _editingId = null;
+  }
+
+  function _row(e) {
+    var d = e.createdAt ? new Date(e.createdAt) : null;
+    var dateStr = d ? d.toLocaleDateString() : '';
+    var actions = '';
+    if (e.status === 'pending') {
+      actions = '<button class="btn btn-secondary btn-sm exp-edit" data-id="' + esc(e.expenseId) + '">EDIT</button>' +
+        '<button class="btn btn-accent btn-sm exp-approve" data-id="' + esc(e.expenseId) + '">APPROVE</button>' +
+        '<button class="btn btn-danger btn-sm exp-reject" data-id="' + esc(e.expenseId) + '">REJECT</button>';
+    }
+    return '<div class="card" style="margin-bottom:8px"><div class="card-body" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:12px 16px">' +
+      '<div style="flex:1;min-width:180px">' +
+        '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">' +
+          '<span style="font-weight:600">' + esc(e.category) + '</span>' +
+          '<span class="badge ' + (STATUS_BADGE[e.status] || 'badge-muted') + '">' + esc((e.status || '').toUpperCase()) + '</span>' +
+          (e.isRecurring ? '<span class="badge badge-muted">RECURRING</span>' : '') +
+        '</div>' +
+        '<div style="font-family:var(--mono);font-size:10.5px;color:var(--text-3);margin-top:4px">' +
+          (e.vendorName ? esc(e.vendorName) + ' · ' : '') + esc(dateStr) +
+          (e.description ? ' · ' + esc(e.description) : '') +
+          (e.status === 'rejected' && e.rejectReason ? ' · ' + esc(e.rejectReason) : '') +
+        '</div>' +
+      '</div>' +
+      '<div style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--text)">' + esc(e.currency || '') + ' ' + (+e.amount).toFixed(2) + '</div>' +
+      (actions ? '<div style="display:flex;gap:8px;flex-wrap:wrap">' + actions + '</div>' : '') +
+    '</div></div>';
+  }
+
+  async function _renderList() {
+    var listEl = document.getElementById('exp-list');
+    var emptyEl = document.getElementById('exp-empty');
+    var statsEl = document.getElementById('exp-stats');
+    if (!listEl) return;
+
+    var r = await window.INFINICUS.ops.expense.list({ status: _filterStatus || undefined });
+    var expenses = r.expenses || [];
+    if (emptyEl) emptyEl.style.display = expenses.length ? 'none' : 'block';
+    listEl.innerHTML = expenses.map(_row).join('');
+
+    if (statsEl) {
+      var pending = expenses.filter(function(e) { return e.status === 'pending'; });
+      var thirtyDaysAgo = Date.now() - 30 * 86400000;
+      var recorded30 = expenses.filter(function(e) { return e.status !== 'rejected' && new Date(e.createdAt).getTime() >= thirtyDaysAgo; });
+      var ctx = window.INFINICUS.ops.workspace.getContext();
+      var cur = (ctx.business && ctx.business.currency) || '';
+      var pendingTotal = pending.reduce(function(s, e) { return s + (+e.amount || 0); }, 0);
+      var total30 = recorded30.reduce(function(s, e) { return s + (+e.amount || 0); }, 0);
+      statsEl.innerHTML = [
+        { l: 'PENDING APPROVAL', v: pending.length + ' · ' + cur + ' ' + pendingTotal.toFixed(2), c: 'c-amber' },
+        { l: 'RECORDED (30D)',   v: cur + ' ' + total30.toFixed(2), c: 'c-blue' }
+      ].map(function(t) { return '<div class="stat-tile"><div class="stat-label">' + esc(t.l) + '</div><div class="stat-value ' + t.c + '">' + esc(String(t.v)) + '</div></div>'; }).join('');
+    }
+  }
+
+  function _syncBiz() {
+    var active = biz.getActiveId();
+    var noBiz = document.getElementById('exp-no-biz');
+    var main = document.getElementById('exp-main');
+    if (noBiz) noBiz.style.display = active ? 'none' : 'block';
+    if (main) main.style.display = active ? 'block' : 'none';
+    if (active) _renderList();
+  }
+
+  function _wire() {
+    var toggleBtn = document.getElementById('exp-create-toggle');
+    if (toggleBtn) toggleBtn.addEventListener('click', function() {
+      var open = document.getElementById('exp-form-body').style.display !== 'none';
+      if (open) _closeForm(); else _openForm(null);
+    });
+
+    var saveBtn = document.getElementById('exp-f-save');
+    if (saveBtn) saveBtn.addEventListener('click', async function() {
+      var fb = document.getElementById('exp-f-fb');
+      var fields = {
+        category:    (document.getElementById('exp-f-category')  || {}).value || '',
+        amount:      (document.getElementById('exp-f-amount')    || {}).value || 0,
+        vendorName:  (document.getElementById('exp-f-vendor')    || {}).value || '',
+        isRecurring: (document.getElementById('exp-f-recurring') || {}).checked,
+        description: (document.getElementById('exp-f-desc')      || {}).value || ''
+      };
+      var r = _editingId
+        ? await window.INFINICUS.ops.expense.update(Object.assign({ expenseId: _editingId }, fields))
+        : await window.INFINICUS.ops.expense.create(fields);
+      if (r.ok) { _closeForm(); if (fb) fb.textContent = ''; _renderList(); }
+      else if (fb) { fb.style.color = 'var(--red)'; fb.textContent = r.error || 'Could not save expense'; }
+    });
+
+    var statusEl = document.getElementById('exp-f-status');
+    if (statusEl) statusEl.addEventListener('change', function() { _filterStatus = statusEl.value; _renderList(); });
+
+    var listEl = document.getElementById('exp-list');
+    if (listEl) listEl.addEventListener('click', async function(e) {
+      var editBtn = e.target.closest('.exp-edit');
+      if (editBtn) { var r = await window.INFINICUS.ops.expense.get(editBtn.dataset.id); if (r.expense) _openForm(r.expense); return; }
+
+      var approveBtn = e.target.closest('.exp-approve');
+      if (approveBtn) { await window.INFINICUS.ops.expense.approve(approveBtn.dataset.id, ''); _renderList(); return; }
+
+      var rejectBtn = e.target.closest('.exp-reject');
+      if (rejectBtn) {
+        if (!confirm('Reject this expense?')) return;
+        await window.INFINICUS.ops.expense.reject(rejectBtn.dataset.id, '');
+        _renderList();
+      }
+    });
+  }
+
+  bus.on('dal.business.selected',      _syncBiz);
+  bus.on('operation.expense.created',  _renderList);
+  bus.on('operation.expense.approved', _renderList);
+  bus.on('operation.expense.rejected', _renderList);
+
+  window.INFINICUS.ops.expensesView = { refresh: _renderList };
+  window.__opsExpensesInit = function() { _mount(); _wire(); _syncBiz(); };
+
+})(); // ExpensesViewModule
+</script>
+
+<!-- ── BLOCK 10 — INIT ──────────────────────────────────────────── -->
+<script>
+(function Block10Init() {
+  'use strict';
+
+  window.__opsExpensesInit();
+
+  console.info(
+    '[BOL] Block 10 ready | routes: ' + window.INFINICUS.bus.listRoutes().length +
+    ' | Expenses: create/update/approve/reject/get/list — approval is a UX gate, not real auth'
+  );
+
+  window.INFINICUS.bus.emit('ops.expenses.ready', { block: 10 });
+
+})(); // Block10Init
+</script>
+
 </body>
 </html>
