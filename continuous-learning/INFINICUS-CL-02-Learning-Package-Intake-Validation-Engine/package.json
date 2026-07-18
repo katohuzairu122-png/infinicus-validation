@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-cl-02-learning-package-intake-validation-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/intake.test.mjs"
+  }
+}
