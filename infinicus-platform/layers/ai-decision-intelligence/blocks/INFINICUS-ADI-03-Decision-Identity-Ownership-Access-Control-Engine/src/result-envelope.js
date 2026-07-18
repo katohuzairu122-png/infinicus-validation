@@ -1,0 +1,4 @@
+export const success = (data = null, meta = {}) => Object.freeze({ ok:true, data, error:null, meta:Object.freeze({...meta}) });
+export const failure = (code, message, details = null, meta = {}) => Object.freeze({
+  ok:false, data:null, error:Object.freeze({code,message,details}), meta:Object.freeze({...meta})
+});

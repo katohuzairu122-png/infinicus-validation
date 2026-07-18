@@ -1,0 +1,7 @@
+{
+  "name": "infinicus-adi-03-decision-identity-ownership-access-control-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": { "test": "node --test tests/*.test.mjs", "validate": "npm test" }
+}
