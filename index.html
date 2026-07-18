@@ -775,6 +775,14 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
 </style>
 <!-- Business Digital Twin Layer — DT-01 through DT-24 -->
 <script src="/digital-twin/dt-bundle.js" defer></script>
+<!-- Business Intelligence Layer — BI-01 through BI-25 -->
+<script src="/business-intelligence/bi-bundle.js" defer></script>
+<!-- Approved Business Action Layer — ABA-01 through ABA-25 -->
+<script src="/approved-business-action/aba-bundle.js" defer></script>
+<!-- Outcome Monitoring Layer — OM-01 through OM-25 -->
+<script src="/outcome-monitoring/om-bundle.js" defer></script>
+<!-- Continuous Learning Layer — CL-01 through CL-25 -->
+<script src="/continuous-learning/cl-bundle.js" defer></script>
 <!-- Supabase JS client -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
@@ -1668,6 +1676,22 @@ async function supabaseSaveSimulation(entry) {
   <!-- DT-24 Handoff Status (populated by receiveDigitalTwinPackage) -->
   <div id="dt-layer-status" style="margin-bottom:.75rem;padding:.6rem .8rem;background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:8px;font-family:var(--mono);font-size:10px;color:var(--muted-2);">
     ○ AWAITING DT-24 SIMULATION PACKAGE — no package received yet
+  </div>
+
+  <!-- Layer Integration Wire Status -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:.75rem;">
+    <div id="bi-layer-status" style="padding:.5rem .7rem;background:rgba(255,255,255,.02);border:1px solid var(--line);border-radius:6px;font-family:var(--mono);font-size:9px;color:var(--muted-2);">
+      ○ BI LAYER — LOADING
+    </div>
+    <div id="aba-layer-status" style="padding:.5rem .7rem;background:rgba(255,255,255,.02);border:1px solid var(--line);border-radius:6px;font-family:var(--mono);font-size:9px;color:var(--muted-2);">
+      ○ ABA LAYER — LOADING
+    </div>
+    <div id="om-layer-status" style="padding:.5rem .7rem;background:rgba(255,255,255,.02);border:1px solid var(--line);border-radius:6px;font-family:var(--mono);font-size:9px;color:var(--muted-2);">
+      ○ OM LAYER — LOADING
+    </div>
+    <div id="cl-layer-status" style="padding:.5rem .7rem;background:rgba(255,255,255,.02);border:1px solid var(--line);border-radius:6px;font-family:var(--mono);font-size:9px;color:var(--muted-2);">
+      ○ CL LAYER — LOADING
+    </div>
   </div>
 
   <!-- Auth gate -->
@@ -7064,6 +7088,199 @@ document.addEventListener('DOMContentLoaded', function() {
         <span style="color:var(--muted-2);margin-left:.75rem;">${d.data.blockCount} blocks · v${d.data.version}</span>`;
     }
   }
+});
+</script>
+
+<script>
+/* ──────────────────────────────────────────────────────────────
+   LAYER INTEGRATION WIRE HOOKS
+   Prepares the engine to receive handoffs from BI, ABA, OM, CL.
+   Bundles must already be loaded (script tags above).
+   ────────────────────────────────────────────────────────────── */
+
+window.INFINICUS = window.INFINICUS || {};
+window.INFINICUS.SIMULATION = window.INFINICUS.SIMULATION || {};
+
+/* Last package received from each layer this session */
+window.INFINICUS.SIMULATION._lastBIPackage          = null;
+window.INFINICUS.SIMULATION._lastABAContract        = null;
+window.INFINICUS.SIMULATION._lastOMPackage          = null;
+window.INFINICUS.SIMULATION._lastCLIntelligence     = null;
+
+/* BI-24 → Engine: receive Business State Package */
+window.INFINICUS.SIMULATION.receiveBIPackage = function(packageData) {
+  if (!packageData || typeof packageData !== 'object') {
+    return { ready: false, message: 'Invalid package — expected BI-24 business state object.' };
+  }
+  window.INFINICUS.SIMULATION._lastBIPackage = packageData;
+  var panel = document.getElementById('bi-layer-status');
+  if (panel) {
+    var ts  = new Date().toLocaleTimeString();
+    var cid = (packageData.correlationId || packageData.biIntegrationHandoffId || '—').slice(-12);
+    panel.innerHTML = '<span style="color:var(--cyan)">● BI-24 PACKAGE RECEIVED — ' + ts + '</span>' +
+                      '<span style="color:var(--muted-2);margin-left:.5rem;">ID ' + cid + '</span>';
+  }
+  return { ready: true, message: 'BI business state package accepted.', packageData: packageData };
+};
+
+/* ABA-24 → Engine: receive Outcome Monitoring Contract */
+window.INFINICUS.SIMULATION.receiveABAContract = function(packageData) {
+  if (!packageData || typeof packageData !== 'object') {
+    return { ready: false, message: 'Invalid contract — expected ABA-24 outcome monitoring object.' };
+  }
+  window.INFINICUS.SIMULATION._lastABAContract = packageData;
+  var panel = document.getElementById('aba-layer-status');
+  if (panel) {
+    var ts  = new Date().toLocaleTimeString();
+    var cid = (packageData.correlationId || packageData.outcomeMonitoringContractId || '—').slice(-12);
+    panel.innerHTML = '<span style="color:var(--cyan)">● ABA-24 CONTRACT RECEIVED — ' + ts + '</span>' +
+                      '<span style="color:var(--muted-2);margin-left:.5rem;">ID ' + cid + '</span>';
+  }
+  return { ready: true, message: 'ABA outcome monitoring contract accepted.', packageData: packageData };
+};
+
+/* OM-24 → Engine: receive Learning Package */
+window.INFINICUS.SIMULATION.receiveOMPackage = function(packageData) {
+  if (!packageData || typeof packageData !== 'object') {
+    return { ready: false, message: 'Invalid package — expected OM-24 learning package object.' };
+  }
+  window.INFINICUS.SIMULATION._lastOMPackage = packageData;
+  var panel = document.getElementById('om-layer-status');
+  if (panel) {
+    var ts  = new Date().toLocaleTimeString();
+    var cid = (packageData.correlationId || packageData.outcomeLearningPackageId || '—').slice(-12);
+    panel.innerHTML = '<span style="color:var(--cyan)">● OM-24 PACKAGE RECEIVED — ' + ts + '</span>' +
+                      '<span style="color:var(--muted-2);margin-left:.5rem;">ID ' + cid + '</span>';
+  }
+  return { ready: true, message: 'OM learning package accepted.', packageData: packageData };
+};
+
+/* CL-24 → Engine: receive Updated Intelligence */
+window.INFINICUS.SIMULATION.receiveCLIntelligence = function(payload) {
+  if (!payload || typeof payload !== 'object') {
+    return { ready: false, message: 'Invalid payload — expected CL-24 intelligence object.' };
+  }
+  window.INFINICUS.SIMULATION._lastCLIntelligence = payload;
+  var panel = document.getElementById('cl-layer-status');
+  if (panel) {
+    var ts  = new Date().toLocaleTimeString();
+    var cid = (payload.correlationId || payload.continuousLearningAssemblyHandoffId || '—').slice(-12);
+    panel.innerHTML = '<span style="color:var(--cyan)">● CL-24 INTELLIGENCE RECEIVED — ' + ts + '</span>' +
+                      '<span style="color:var(--muted-2);margin-left:.5rem;">ID ' + cid + '</span>';
+  }
+  return { ready: true, message: 'CL updated intelligence accepted.', payload: payload };
+};
+
+/* Register publisher hooks once all deferred bundles have loaded */
+document.addEventListener('DOMContentLoaded', function() {
+
+  /* ── BI layer status ── */
+  (function() {
+    var panel = document.getElementById('bi-layer-status');
+    if (!panel) return;
+    if (typeof window.INFINICUS === 'undefined' || typeof window.INFINICUS.BI === 'undefined') {
+      panel.innerHTML = '<span style="color:var(--muted-2)">○ BI LAYER — NOT LOADED</span>';
+      return;
+    }
+    var rt = window.INFINICUS.BI.runtime;
+    if (rt && typeof rt.diagnostics === 'function') {
+      var d = rt.diagnostics();
+      panel.innerHTML = d.ok
+        ? '<span style="color:var(--cyan)">● BI RUNTIME ACTIVE</span><span style="color:var(--muted-2);margin-left:.5rem;">' + d.data.blockCount + ' blocks</span>'
+        : '<span style="color:var(--muted-2)">○ BI RUNTIME ERROR</span>';
+    } else {
+      panel.innerHTML = '<span style="color:var(--muted-2)">○ BI LAYER READY</span>';
+    }
+
+    /* Wire BI-24 publisher so BI → engine handoff is live */
+    var bi24 = window.INFINICUS.BI.digitalTwinPublicationEngine;
+    if (bi24 && typeof bi24.registerPublisher === 'function') {
+      bi24.registerPublisher('SIMULATION_ENGINE', function(statePackage) {
+        return window.INFINICUS.SIMULATION.receiveBIPackage(statePackage);
+      });
+    }
+  })();
+
+  /* ── ABA layer status ── */
+  (function() {
+    var panel = document.getElementById('aba-layer-status');
+    if (!panel) return;
+    if (typeof window.INFINICUS === 'undefined' || typeof window.INFINICUS.ABA === 'undefined') {
+      panel.innerHTML = '<span style="color:var(--muted-2)">○ ABA LAYER — NOT LOADED</span>';
+      return;
+    }
+    var rt = window.INFINICUS.ABA.runtime;
+    if (rt && typeof rt.diagnostics === 'function') {
+      var d = rt.diagnostics();
+      panel.innerHTML = d.ok
+        ? '<span style="color:var(--cyan)">● ABA RUNTIME ACTIVE</span><span style="color:var(--muted-2);margin-left:.5rem;">' + d.data.blockCount + ' blocks</span>'
+        : '<span style="color:var(--muted-2)">○ ABA RUNTIME ERROR</span>';
+    } else {
+      panel.innerHTML = '<span style="color:var(--muted-2)">○ ABA LAYER READY</span>';
+    }
+
+    /* Wire ABA-24 publisher so ABA → OM handoff is live */
+    var aba24 = window.INFINICUS.ABA.outcomeMonitoringPublicationEngine;
+    if (aba24 && typeof aba24.registerPublisher === 'function') {
+      aba24.registerPublisher('OUTCOME_MONITORING', function(contract) {
+        return window.INFINICUS.SIMULATION.receiveABAContract(contract);
+      });
+    }
+  })();
+
+  /* ── OM layer status ── */
+  (function() {
+    var panel = document.getElementById('om-layer-status');
+    if (!panel) return;
+    if (typeof window.INFINICUS === 'undefined' || typeof window.INFINICUS.OM === 'undefined') {
+      panel.innerHTML = '<span style="color:var(--muted-2)">○ OM LAYER — NOT LOADED</span>';
+      return;
+    }
+    var rt = window.INFINICUS.OM.runtime;
+    if (rt && typeof rt.diagnostics === 'function') {
+      var d = rt.diagnostics();
+      panel.innerHTML = d.ok
+        ? '<span style="color:var(--cyan)">● OM RUNTIME ACTIVE</span><span style="color:var(--muted-2);margin-left:.5rem;">' + d.data.blockCount + ' blocks</span>'
+        : '<span style="color:var(--muted-2)">○ OM RUNTIME ERROR</span>';
+    } else {
+      panel.innerHTML = '<span style="color:var(--muted-2)">○ OM LAYER READY</span>';
+    }
+
+    /* Wire OM-24 publisher so OM → CL handoff is live */
+    var om24 = window.INFINICUS.OM.continuousLearningPublicationEngine;
+    if (om24 && typeof om24.registerPublisher === 'function') {
+      om24.registerPublisher('CONTINUOUS_LEARNING', function(learningPackage) {
+        return window.INFINICUS.SIMULATION.receiveOMPackage(learningPackage);
+      });
+    }
+  })();
+
+  /* ── CL layer status + event listener ── */
+  (function() {
+    var panel = document.getElementById('cl-layer-status');
+    if (!panel) return;
+    if (typeof window.INFINICUS === 'undefined' || typeof window.INFINICUS.CL === 'undefined') {
+      panel.innerHTML = '<span style="color:var(--muted-2)">○ CL LAYER — NOT LOADED</span>';
+      return;
+    }
+    var rt = window.INFINICUS.CL.runtime;
+    if (rt && typeof rt.diagnostics === 'function') {
+      var d = rt.diagnostics();
+      panel.innerHTML = d.ok
+        ? '<span style="color:var(--cyan)">● CL RUNTIME ACTIVE</span><span style="color:var(--muted-2);margin-left:.5rem;">' + d.data.blockCount + ' blocks</span>'
+        : '<span style="color:var(--muted-2)">○ CL RUNTIME ERROR</span>';
+    } else {
+      panel.innerHTML = '<span style="color:var(--muted-2)">○ CL LAYER READY</span>';
+    }
+
+    /* Listen for CL-24 publish events (CL uses event-bus pattern, not registerPublisher) */
+    if (rt && typeof rt.on === 'function') {
+      rt.on('cl.updated_intelligence.publish.completed', function(payload) {
+        window.INFINICUS.SIMULATION.receiveCLIntelligence(payload || {});
+      });
+    }
+  })();
+
 });
 </script>
 
