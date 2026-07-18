@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-om-10-outcome-progress-calculation-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/progress.test.mjs"
+  }
+}

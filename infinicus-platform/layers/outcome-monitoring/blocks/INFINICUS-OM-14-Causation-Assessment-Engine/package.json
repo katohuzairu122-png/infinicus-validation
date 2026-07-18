@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-om-14-causation-assessment-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/causation.test.mjs"
+  }
+}

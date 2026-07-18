@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-om-06-data-quality-evidence-validation-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/quality-validation.test.mjs"
+  }
+}

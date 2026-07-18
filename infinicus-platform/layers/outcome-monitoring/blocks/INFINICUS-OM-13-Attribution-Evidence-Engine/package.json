@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-om-13-attribution-evidence-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/attribution.test.mjs"
+  }
+}

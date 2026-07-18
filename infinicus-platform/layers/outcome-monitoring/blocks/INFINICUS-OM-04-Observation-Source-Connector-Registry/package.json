@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-om-04-observation-source-connector-registry",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/source-registry.test.mjs"
+  }
+}

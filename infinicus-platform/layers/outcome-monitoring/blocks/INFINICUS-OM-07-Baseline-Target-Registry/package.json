@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-om-07-baseline-target-registry",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/baseline-target.test.mjs"
+  }
+}
