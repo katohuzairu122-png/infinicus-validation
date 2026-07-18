@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import type { QueryResult } from 'pg';
 import type { TenantContext } from '../../client.js';
 import { withTenantTransaction } from '../../client.js';
@@ -121,7 +122,7 @@ export class ValidationResultRepository {
           input.errorCount,
           input.warningCount,
           JSON.stringify(input.resultDetails ?? {}),
-          input.correlationId      ?? null,
+          input.correlationId      ?? randomUUID(),
         ]
       );
       const result = rowToValidationResult(resultRow.rows[0]);

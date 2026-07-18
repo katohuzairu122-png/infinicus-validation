@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import type { QueryResult } from 'pg';
 import type { TenantContext } from '../../client.js';
 import { withTenantTransaction } from '../../client.js';
@@ -98,7 +99,7 @@ export class PublicationPackageRepository {
           JSON.stringify(input.provenanceReferenceIds   ?? []),
           JSON.stringify(input.limitations              ?? []),
           input.status                  ?? 'draft',
-          input.correlationId           ?? null,
+          input.correlationId           ?? randomUUID(),
           input.createdBy               ?? null,
         ]
       );

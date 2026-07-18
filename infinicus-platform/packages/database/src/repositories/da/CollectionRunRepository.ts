@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import type { QueryResult } from 'pg';
 import type { TenantContext } from '../../client.js';
 import { withTenantTransaction } from '../../client.js';
@@ -99,7 +100,7 @@ export class CollectionRunRepository {
           input.connectorId  ?? null,
           input.scheduleId   ?? null,
           input.collectionType,
-          input.correlationId ?? null,
+          input.correlationId ?? randomUUID(),
           input.causationId   ?? null,
           input.createdBy     ?? null,
         ]

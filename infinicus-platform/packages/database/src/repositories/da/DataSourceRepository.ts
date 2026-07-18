@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import type { PoolClient, QueryResult } from 'pg';
 import type { TenantContext } from '../../client.js';
 import { withTenantTransaction } from '../../client.js';
@@ -105,7 +106,7 @@ export class DataSourceRepository {
           input.description      ?? null,
           JSON.stringify(input.configuration ?? {}),
           input.status           ?? 'draft',
-          input.correlationId    ?? null,
+          input.correlationId    ?? randomUUID(),
           input.createdBy        ?? null,
         ]
       );

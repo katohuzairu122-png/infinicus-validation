@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import type { QueryResult } from 'pg';
 import type { TenantContext } from '../../client.js';
 import { withTenantTransaction } from '../../client.js';
@@ -83,7 +84,7 @@ export class ConnectorRepository {
           JSON.stringify(input.capabilities ?? {}),
           input.configurationReference ?? null,
           input.status                ?? 'draft',
-          input.correlationId         ?? null,
+          input.correlationId         ?? randomUUID(),
           input.createdBy             ?? null,
         ]
       );

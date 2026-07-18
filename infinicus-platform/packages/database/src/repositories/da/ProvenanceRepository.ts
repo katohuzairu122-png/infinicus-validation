@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import type { QueryResult } from 'pg';
 import type { TenantContext } from '../../client.js';
 import { withTenantTransaction } from '../../client.js';
@@ -126,7 +127,7 @@ export class ProvenanceRepository {
           JSON.stringify(input.evidenceReferences  ?? []),
           input.parentProvenanceId  ?? null,
           parentDepth + 1,
-          input.correlationId       ?? null,
+          input.correlationId       ?? randomUUID(),
         ]
       );
       const provenance = rowToProvenance(result.rows[0]);

@@ -15,7 +15,9 @@
     "build": "tsc --project tsconfig.json",
     "dev": "tsc --watch",
     "lint": "eslint src/",
+    "typecheck": "tsc --project tsconfig.json --noEmit",
     "test": "vitest run",
+    "test:integration": "vitest run --reporter=verbose tests/da-repositories.integration.test.ts",
     "clean": "rm -rf dist"
   },
   "dependencies": {

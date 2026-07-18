@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import type { QueryResult } from 'pg';
 import type { TenantContext } from '../../client.js';
 import { withTenantTransaction } from '../../client.js';
@@ -97,7 +98,7 @@ export class DataQualityScoreRepository {
           input.overallScore,
           JSON.stringify(input.weights      ?? {}),
           JSON.stringify(input.scoreDetails ?? {}),
-          input.correlationId   ?? null,
+          input.correlationId   ?? randomUUID(),
         ]
       );
       return rowToScore(result.rows[0]);
