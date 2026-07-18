@@ -1,0 +1,1 @@
+addEventListener("DOMContentLoaded",()=>document.querySelector("#output").textContent=JSON.stringify({block:"DA-20",purpose:"Score completeness, validity, consistency, timeliness and uniqueness.",routes:["da.quality_policy.register", "da.data_quality.score"],targetBlock:"DA-21"},null,2));
