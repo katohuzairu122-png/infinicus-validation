@@ -1,0 +1,1 @@
+addEventListener("DOMContentLoaded",()=>document.querySelector("#output").textContent=JSON.stringify({block:"DA-22",purpose:"Rate source reliability using quality and failure history.",routes:["da.source_reliability_policy.register", "da.sources.rate_reliability"],targetBlock:"DA-23"},null,2));
