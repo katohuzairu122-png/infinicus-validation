@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-cl-06-learning-confidence-reliability-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/confidence-reliability.test.mjs"
+  }
+}
