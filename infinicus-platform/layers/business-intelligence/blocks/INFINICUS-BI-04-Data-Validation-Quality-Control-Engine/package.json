@@ -1,0 +1,10 @@
+{
+  "name": "infinicus-bi-04-data-validation-quality-control-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/data-quality.test.mjs",
+    "validate": "node tests/data-quality.test.mjs"
+  }
+}
