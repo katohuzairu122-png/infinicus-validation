@@ -691,6 +691,84 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
 #feedback-close{position:absolute;top:9px;right:12px;background:none;border:none;color:var(--muted-2);font-size:21px;cursor:pointer;line-height:1;padding:0;}
 #feedback-thanks{display:none;text-align:center;padding:12px 0 4px;}
 #feedback-thanks p{color:var(--cyan);font-family:var(--mono);font-size:14px;margin:0;letter-spacing:.05em;}
+
+/* ── APP SHELL: sidebar + workspace ─────────────────────────────────────── */
+.app-shell{display:flex;align-items:flex-start;min-height:100vh;}
+#app-sidebar{
+  width:210px;flex-shrink:0;
+  background:#070a12;
+  border-right:1px solid var(--line);
+  position:sticky;top:0;
+  height:100vh;overflow-y:auto;
+  padding:.75rem 0 2rem;
+  scrollbar-width:none;
+  z-index:100;
+}
+#app-sidebar::-webkit-scrollbar{display:none;}
+.workspace{flex:1;min-width:0;}
+.sb-engine-label{
+  font-family:var(--mono);font-size:9px;letter-spacing:.14em;
+  color:var(--muted-2);padding:.4rem 1rem .6rem;
+  border-bottom:1px solid var(--line);margin-bottom:.6rem;
+}
+.sb-mode-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  font-family:var(--mono);font-size:9px;font-weight:700;
+  letter-spacing:.1em;padding:3px 8px;border-radius:4px;
+  background:rgba(0,224,96,.1);color:var(--cyan);
+  border:1px solid rgba(0,224,96,.2);margin:0 1rem .75rem;
+}
+.sb-mode-badge .sb-dot{width:5px;height:5px;border-radius:50%;background:var(--cyan);flex-shrink:0;}
+.sb-group{margin-bottom:.1rem;padding:0 .6rem;}
+.sb-group-lbl{
+  font-family:var(--mono);font-size:8px;letter-spacing:.14em;
+  color:var(--muted-2);padding:.55rem .6rem .2rem;
+  text-transform:uppercase;
+}
+.sb-link{
+  display:flex;align-items:center;width:100%;
+  font-family:var(--mono);font-size:12px;letter-spacing:.04em;
+  padding:6px 10px;border-radius:6px;
+  border:none;background:none;
+  color:var(--muted);cursor:pointer;
+  transition:color .15s,background .15s;
+  text-align:left;
+}
+.sb-link:hover{color:var(--text);background:rgba(255,255,255,.05);}
+.sb-link.active{color:var(--cyan);background:rgba(0,224,96,.08);}
+.sb-link.active::before{content:'▸';margin-right:5px;font-size:10px;}
+.sb-sep{border:none;border-top:1px solid var(--line);margin:.5rem .6rem;}
+.sb-platform-lbl{
+  font-family:var(--mono);font-size:8px;letter-spacing:.1em;
+  color:rgba(255,255,255,.15);padding:.55rem .6rem .2rem;
+}
+.sb-platform-link{
+  display:flex;align-items:center;width:100%;
+  font-family:var(--mono);font-size:10px;letter-spacing:.04em;
+  padding:4px 10px;border-radius:6px;
+  border:none;background:none;
+  color:rgba(255,255,255,.2);cursor:pointer;
+  transition:color .15s;text-align:left;
+}
+.sb-platform-link:hover{color:var(--muted);}
+.sb-platform-link.active{color:var(--muted);}
+/* MOBILE: sidebar becomes off-canvas drawer */
+@media(max-width:820px){
+  #app-sidebar{
+    position:fixed;left:-220px;top:0;
+    width:210px;height:100vh;
+    transition:left .28s cubic-bezier(.22,1,.36,1);
+    z-index:450;border-right:1px solid var(--line-2);
+    box-shadow:4px 0 24px rgba(0,0,0,.4);
+  }
+  #app-sidebar.open{left:0;}
+  #sb-overlay{
+    display:none;position:fixed;inset:0;
+    background:rgba(0,0,0,.55);z-index:449;
+  }
+  #app-sidebar.open~#sb-overlay,
+  #sb-overlay.open{display:block;}
+}
 </style>
 <!-- Supabase JS client -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -783,14 +861,11 @@ async function supabaseSaveSimulation(entry) {
     INFIN<span class="c">ICUS</span><span class="logo-ver">ENGINE v3</span>
   </div>
   <button class="ham-btn" id="ham-btn" onclick="toggleNav()" aria-label="Menu">☰</button>
-  <nav class="nav" id="main-nav">
-    <button class="nb active" data-section="data"         onclick="nav('data')"        >DATA ACQ</button>
-    <button class="nb"        data-section="operations"   onclick="nav('operations')"  >OPERATIONS</button>
-    <button class="nb"        data-section="intelligence" onclick="nav('intelligence')">INTEL</button>
-    <button class="nb"        data-section="twin"         onclick="nav('twin')"        >TWIN</button>
-    <button class="nb"        data-section="simulation"   onclick="nav('simulation')"  >SIMULATE</button>
-    <button class="nb"        data-section="decisions"    onclick="nav('decisions')"   >AI DECISIONS</button>
-  </nav>
+  <nav class="nav" id="main-nav" style="display:none!important;"></nav>
+  <div style="display:flex;align-items:center;gap:8px;flex:1;">
+    <span style="font-family:var(--mono);font-size:9px;letter-spacing:.12em;color:var(--muted-2);border:1px solid var(--line);border-radius:4px;padding:3px 8px;white-space:nowrap;">SIMULATION ENGINE</span>
+    <span id="hdr-mode-badge" style="font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--cyan);background:rgba(0,224,96,.08);border:1px solid rgba(0,224,96,.2);border-radius:4px;padding:3px 8px;white-space:nowrap;">● PUBLIC IDEA MODE</span>
+  </div>
   <div class="hdr-right">
     <button id="signin-btn" class="nb" onclick="openRegModal()" style="display:none;border-color:rgba(0,224,96,.25);color:var(--cyan);" title="Sign in or create account">SIGN IN</button>
     <div id="user-badge-wrap" class="user-badge-wrap">
@@ -841,10 +916,65 @@ async function supabaseSaveSimulation(entry) {
   </div>
 </header>
 
+<!-- ══ APP SHELL ══ -->
+<div class="app-shell">
+
+<!-- ── SIDEBAR ── -->
+<aside id="app-sidebar">
+  <div class="sb-engine-label">INFINICUS ENGINE v3</div>
+  <div class="sb-mode-badge" id="sb-mode-badge"><span class="sb-dot"></span>PUBLIC IDEA MODE</div>
+
+  <div class="sb-group">
+    <div class="sb-group-lbl">SETUP</div>
+    <button class="sb-link active" data-section="data"        onclick="nav('data')">Input</button>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-lbl">RESULTS</div>
+    <button class="sb-link" data-section="dashboard"   onclick="nav('dashboard')">Dashboard</button>
+    <button class="sb-link" data-section="verdict"     onclick="nav('verdict')">Verdict</button>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-lbl">ANALYSIS</div>
+    <button class="sb-link" data-section="economy"     onclick="nav('economy')">Economy</button>
+    <button class="sb-link" data-section="customers"   onclick="nav('customers')">Customers &amp; Events</button>
+    <button class="sb-link" data-section="risk"        onclick="nav('risk')">Risk &amp; Monte Carlo</button>
+    <button class="sb-link" data-section="forecast"    onclick="nav('forecast')">Forecast</button>
+    <button class="sb-link" data-section="sensitivity" onclick="nav('sensitivity')">Sensitivity</button>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-lbl">SCENARIOS</div>
+    <button class="sb-link" data-section="compare"     onclick="nav('compare')">Compare</button>
+    <button class="sb-link" data-section="history"     onclick="nav('history')">History</button>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-lbl">OUTPUT</div>
+    <button class="sb-link" data-section="report"      onclick="nav('report')">Report</button>
+  </div>
+
+  <hr class="sb-sep">
+
+  <div class="sb-platform-lbl">PLATFORM LAYERS</div>
+  <button class="sb-platform-link" data-section="decisions"    onclick="nav('decisions')">AI Decision Intel.</button>
+  <button class="sb-platform-link" data-section="twin"         onclick="nav('twin')">Digital Twin</button>
+  <button class="sb-platform-link" data-section="intelligence" onclick="nav('intelligence')">Business Intel.</button>
+  <button class="sb-platform-link" data-section="operations"   onclick="nav('operations')">Operations</button>
+  <button class="sb-platform-link" data-section="simulation"   onclick="nav('simulation')">Engine Hub</button>
+</aside>
+
+<!-- overlay for mobile sidebar -->
+<div id="sb-overlay" onclick="closeSidebar()"></div>
+
+<!-- ── WORKSPACE ── -->
+<div class="workspace">
+
 <!-- ══ INPUT ══ -->
 <section class="section active" id="sec-data">
-  <div class="pg-title"><span class="c">DATA</span> ACQUISITION<br>LAYER</div>
-  <div class="pg-sub">// FEED THE ENGINE — BUSINESS PARAMETERS · MARKET CONDITIONS · FINANCIAL INPUTS</div>
+  <div class="pg-title">SIMULATION <span class="c">SETUP</span></div>
+  <div class="pg-sub">// ENTER YOUR BUSINESS IDEA — PARAMETERS · MARKET · FINANCIALS</div>
   <!-- 5-STEP PROGRESS INDICATOR -->
   <div class="inp-progress" id="inp-progress">
     <div class="inp-step ip-active" id="ip-1">
@@ -1263,7 +1393,7 @@ async function supabaseSaveSimulation(entry) {
 <!-- ══ VERDICT ══ -->
 <section class="section" id="sec-verdict">
   <div class="pg-title" style="font-size:22px;margin-bottom:.1rem;">VERDICT</div>
-  <div class="pg-sub">// FINAL ASSESSMENT</div>
+  <div class="pg-sub">// SIMULATION ENGINE VERDICT · MATHEMATICAL RESULT · GO / MODIFY / STOP</div>
   <div class="action-row">
     <button class="btn-action" onclick="shareLink()">⎋ SHARE LINK</button>
     <button class="btn-action" onclick="downloadVerdictCard()">🖼 SHARE CARD</button>
@@ -2794,13 +2924,15 @@ function isGrowthPlus(){ return U&&['growth','professional'].includes(U.plan); }
 
 // ─── NAVIGATION ──────────────────────────────────────────────────────────────
 function nav(id) {
-  // Gating removed — all sections open during early access
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.sb-link,.sb-platform-link').forEach(b=>b.classList.remove('active'));
   $('sec-'+id).classList.add('active');
   const btn=document.querySelector(`.nb[data-section="${id}"]`);
   if (btn) btn.classList.add('active');
-  $('main-nav').classList.remove('open');
+  const sbLink=document.querySelector(`.sb-link[data-section="${id}"],.sb-platform-link[data-section="${id}"]`);
+  if (sbLink) sbLink.classList.add('active');
+  closeSidebar();
   window.scrollTo(0,0);
   if (id==='sensitivity'&&S.done) updateSensitivity();
   if (id==='compare'){renderScenarioSlots();renderComparisonTable();}
@@ -3633,8 +3765,17 @@ function updatePriceLabel(ind) {
 }
 
 function toggleNav() {
-  const nav=$('main-nav');
-  nav.classList.toggle('open');
+  const sb=document.getElementById('app-sidebar');
+  const ov=document.getElementById('sb-overlay');
+  if(sb) sb.classList.toggle('open');
+  if(ov) ov.classList.toggle('open');
+}
+
+function closeSidebar() {
+  const sb=document.getElementById('app-sidebar');
+  const ov=document.getElementById('sb-overlay');
+  if(sb) sb.classList.remove('open');
+  if(ov) ov.classList.remove('open');
 }
 
 function showToast(msg,dur=2800) {
@@ -6847,7 +6988,20 @@ document.addEventListener('DOMContentLoaded',()=>{
     s.addEventListener('mouseout',()=>stars.forEach(x=>x.classList.toggle('fb-on',parseInt(x.dataset.v)<=_fbRating)));
   });
 });
+
+window.INFINICUS = window.INFINICUS || {};
+window.INFINICUS.SIMULATION = window.INFINICUS.SIMULATION || {};
+window.INFINICUS.SIMULATION.receiveDigitalTwinPackage = function(packageData) {
+  return {
+    ready: false,
+    message: "Digital Twin connection is prepared but not yet activated.",
+    packageData: packageData
+  };
+};
 </script>
+
+</div><!-- /workspace -->
+</div><!-- /app-shell -->
 
 <!-- FEEDBACK SLIDE-IN CARD -->
 <div id="feedback-card">
