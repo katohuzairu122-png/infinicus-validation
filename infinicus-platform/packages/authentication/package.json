@@ -1,0 +1,28 @@
+{
+  "name": "@infinicus/authentication",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Auth adapter \u2014 Supabase session management",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "dev": "tsc --watch",
+    "lint": "eslint src/",
+    "test": "vitest run",
+    "clean": "rm -rf dist"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  },
+  "dependencies": {
+    "@infinicus/shared-types": "workspace:*",
+    "@infinicus/configuration": "workspace:*"
+  }
+}

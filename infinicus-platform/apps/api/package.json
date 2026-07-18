@@ -1,0 +1,26 @@
+{
+  "name": "@infinicus/api",
+  "version": "0.0.1",
+  "private": true,
+  "description": "INFINICUS API server \u2014 platform layer orchestration",
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "dev": "tsc --watch",
+    "lint": "eslint src/",
+    "test": "vitest run",
+    "clean": "rm -rf dist"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  },
+  "dependencies": {
+    "@infinicus/shared-types": "workspace:*",
+    "@infinicus/database": "workspace:*",
+    "@infinicus/event-contracts": "workspace:*",
+    "@infinicus/handoff-contracts": "workspace:*",
+    "@infinicus/authentication": "workspace:*",
+    "@infinicus/authorization": "workspace:*",
+    "@infinicus/configuration": "workspace:*",
+    "@infinicus/observability": "workspace:*"
+  }
+}
