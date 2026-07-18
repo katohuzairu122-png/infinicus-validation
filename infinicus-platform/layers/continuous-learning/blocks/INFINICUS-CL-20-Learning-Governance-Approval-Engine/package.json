@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-cl-20-learning-governance-approval-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/cl-20.test.mjs"
+  }
+}

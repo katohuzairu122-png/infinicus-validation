@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-cl-22-model-rule-policy-deployment-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/cl-22.test.mjs"
+  }
+}
