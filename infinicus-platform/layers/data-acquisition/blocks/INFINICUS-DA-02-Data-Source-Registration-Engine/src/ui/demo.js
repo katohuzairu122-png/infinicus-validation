@@ -1,0 +1,1 @@
+addEventListener("DOMContentLoaded",()=>document.querySelector("#output").textContent=JSON.stringify({block:"DA-02",purpose:"Register governed data sources.",routes:["da.source_policy.register", "da.sources.register"],targetBlock:"DA-03"},null,2));
