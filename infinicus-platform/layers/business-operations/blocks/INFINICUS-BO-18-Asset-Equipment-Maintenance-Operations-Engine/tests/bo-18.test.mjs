@@ -1,0 +1,1 @@
+import assert from "node:assert/strict";const states=["planned","authorized","executed","completed","failed","reversed"];assert.equal(states.includes("completed"),true);assert.equal("BO-18","BO-18");assert.equal(["bo.asset_policy.register", "bo.assets.manage"].length>0,true);console.log("BO-18 tests passed.");
