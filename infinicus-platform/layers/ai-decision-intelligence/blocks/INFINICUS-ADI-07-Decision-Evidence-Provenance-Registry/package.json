@@ -1,0 +1,7 @@
+{
+  "name":"infinicus-adi-07-decision-evidence-provenance-registry",
+  "version":"1.0.0",
+  "private":true,
+  "type":"module",
+  "scripts":{"test":"node --test tests/*.test.mjs","validate":"npm test"}
+}
