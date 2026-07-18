@@ -1,0 +1,1 @@
+{"name":"infinicus-adi-23-decision-gate-escalation-human-review-engine","version":"1.0.0","type":"module","scripts":{"test":"node --test tests/*.test.mjs"},"engines":{"node":">=20"}}
