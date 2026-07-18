@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-aba-02-decision-package-intake-validation-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/decision-package.test.mjs"
+  }
+}
