@@ -1,0 +1,10 @@
+{
+  "name": "infinicus-bi-14-marketing-intelligence-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/marketing-intelligence.test.mjs",
+    "validate": "node tests/marketing-intelligence.test.mjs"
+  }
+}

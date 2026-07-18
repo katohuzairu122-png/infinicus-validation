@@ -1,0 +1,10 @@
+{
+  "name": "infinicus-bi-12-sales-revenue-intelligence-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/sales-revenue-intelligence.test.mjs",
+    "validate": "node tests/sales-revenue-intelligence.test.mjs"
+  }
+}

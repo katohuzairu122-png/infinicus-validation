@@ -1,0 +1,10 @@
+{
+  "name": "infinicus-bi-13-customer-intelligence-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/customer-intelligence.test.mjs",
+    "validate": "node tests/customer-intelligence.test.mjs"
+  }
+}
