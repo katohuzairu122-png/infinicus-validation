@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-bo-14-fulfilment-delivery-logistics-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/bo-14.test.mjs"
+  }
+}
