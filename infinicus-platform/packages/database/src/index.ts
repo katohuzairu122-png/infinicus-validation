@@ -44,3 +44,23 @@ export type {
   PublicationPackage,
   CreatePublicationPackageInput,
 } from './repositories/da/index.js';
+
+// ── Business Operations repositories ──────────────────────────────────────────
+export {
+  LeadRepository,
+  OpportunityRepository,
+  PurchaseOrderRepository,
+  SupportCaseRepository,
+  IncidentRepository,
+  TaskRepository,
+  InventoryBalanceRepository,
+} from './repositories/bo/index.js';
+export type {
+  Lead, CreateLeadInput,
+  Opportunity, CreateOpportunityInput,
+  PurchaseOrder, CreatePurchaseOrderInput,
+  SupportCase, CreateSupportCaseInput,
+  Incident, CreateIncidentInput,
+  Task, CreateTaskInput,
+  InventoryBalance, CreateInventoryBalanceInput,
+} from './repositories/bo/index.js';

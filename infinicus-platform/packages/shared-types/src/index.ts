@@ -47,6 +47,8 @@ export interface LayerHandoff<TPayload = unknown> {
   createdAt:     string;
 }
 
+export type HandoffEnvelope<TPayload = unknown> = LayerHandoff<TPayload>;
+
 // ── § 9 — Event contract ─────────────────────────────────────────────────────
 
 export interface PlatformEvent<TPayload = unknown> {

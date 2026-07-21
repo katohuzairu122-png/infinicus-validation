@@ -9,10 +9,13 @@ export function mockHandoff<T>(
   return {
     handoffId:     `test-handoff-${Date.now()}`,
     sourceLayer:   source,
+    sourceBlock:   'test',
     targetLayer:   target,
+    targetBlock:   'test',
     correlationId: `test-correlation-${Date.now()}`,
     payload,
-    timestamp:     new Date().toISOString(),
-    status:        'ready'
+    lineage:       [],
+    createdAt:     new Date().toISOString(),
+    status:        'ready',
   };
 }
