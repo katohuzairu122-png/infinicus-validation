@@ -2,7 +2,9 @@
 
 ## Current stage
 
-**Stage 2B — Data Acquisition Schema** — COMPLETE
+**Stage 2C — Business Operations Schema** — COMPLETE — FROZEN
+
+Frozen migration range: **0001–0036**
 
 ---
 
@@ -198,15 +200,121 @@
 
 ---
 
+### Stage 2C — Business Operations Schema (migrations 0023–0036)
+
+#### New PostgreSQL schema
+
+| Schema | Tables | Purpose |
+|--------|--------|---------|
+| `business_operations` | 48 | Operational records: pipeline → orders → billing → procurement → inventory → fulfilment → workforce → assets → finance → risk → publication |
+
+**Total Stage 2C tables: 48 in 1 schema** (canonical entities reused from `platform`; no duplication)
+
+#### Table groups
+
+| Group | Tables |
+|-------|--------|
+| Core profile | `business_profile_extensions`, `department_responsibilities`, `role_assignments` |
+| Customer pipeline | `leads`, `opportunities`, `opportunity_activities`, `customer_accounts` |
+| Quotations & orders | `quotations`, `quotation_line_items`, `order_line_items`, `order_events` |
+| Billing & procurement | `invoice_line_items`, `payment_allocations`, `credit_notes`, `purchase_orders`, `purchase_order_line_items`, `purchase_receipts` |
+| Supplier & inventory | `supplier_agreements`, `supplier_performance_scores`, `inventory_balances`, `inventory_movements` |
+| Warehouse & fulfilment | `warehouse_zones`, `storage_locations`, `fulfilment_orders`, `fulfilment_items`, `delivery_notes` |
+| Workforce & tasks | `employee_assignments`, `work_schedules`, `tasks`, `task_assignments`, `workflow_instances` |
+| Scheduling & assets | `resource_bookings`, `maintenance_schedules`, `maintenance_records`, `asset_inspections` |
+| Finance & support | `expense_claims`, `expense_items`, `support_cases`, `case_activities` |
+| Risk & incidents | `compliance_controls`, `risk_assessments`, `incidents`, `incident_escalations` |
+| Performance & publication | `operational_performance_records`, `bo_publication_packages`, `bo_handoff_records`, `bo_layer_assemblies`, `bo_layer_deployments` |
+
+#### TypeScript repositories added (`repositories/bo/`)
+
+- `LeadRepository`, `OpportunityRepository`, `PurchaseOrderRepository`,
+  `SupportCaseRepository`, `IncidentRepository`, `TaskRepository`,
+  `InventoryBalanceRepository` (+ typed errors `NotFoundError`, `InvalidTransitionError`)
+
+#### Outbox event functions added
+
+16 SECURITY DEFINER functions in `business_operations` emit typed events to `events.outbox_events`:
+`bo.lead.created`, `bo.lead.converted`, `bo.opportunity.stage_changed`,
+`bo.quotation.sent`, `bo.order.authorized`, `bo.order.completed`,
+`bo.invoice.issued`, `bo.payment.received`, `bo.purchase_order.approved`,
+`bo.inventory.movement_recorded`, `bo.fulfilment.dispatched`,
+`bo.support_case.opened`, `bo.support_case.resolved`, `bo.incident.raised`,
+`bo.incident.resolved`, `bo.data.published`
+
+#### RLS coverage
+
+All 48 tables RLS-enabled with 48 null-safe tenant+workspace isolation policies.
+
+#### Objects (live-verified)
+
+193 explicit indexes (275 total), 33 `updated_at` triggers, 17 functions.
+
+#### Test count
+
+456 tests pass: 97 Stage 2C structural + 36 BO live integration
+(tenant isolation, cross-tenant rejection, outbox, idempotency,
+invalid-transition rejection) + 323 prior-stage regression.
+
+Validation at freeze (2026-07-21): `pnpm --filter @infinicus/database test`
+456/456 · `pnpm lint` 21/21 · `pnpm typecheck` clean · `pnpm build` 21/21 ·
+all 36 migrations applied cleanly to empty PostgreSQL 16 database.
+
+---
+
+## Files changed (Stage 2C)
+
+| File | Change |
+|------|--------|
+| `infrastructure/database/migrations/0023–0036.sql` | Created — 14 migration files |
+| `packages/database/src/repositories/bo/*.ts` | Created — 7 repository classes + errors + barrel index |
+| `packages/database/src/index.ts` | Updated — exports BO repositories |
+| `packages/database/tests/migration-stage2c.test.ts` | Created — 97 structural tests |
+| `packages/database/tests/bo-repositories.integration.test.ts` | Created — 36 live integration tests |
+| `packages/database/tests/helpers/integration.ts` | Created — shared live-test harness |
+| `packages/shared-types/src/index.ts` | Updated — `HandoffEnvelope` alias (fixed pre-existing build break) |
+| `packages/testing/src/mock-handoff.ts` | Updated — mock aligned to `LayerHandoff` shape |
+| `docs/database-stage-2c-business-operations.md` | Created |
+| `docs/database/IMPLEMENTATION_STATUS.md` | Updated (this file) |
+
+---
+
+## Frozen migrations (0001–0036)
+
+| File | Status |
+|------|--------|
+| `0001`–`0012` | Validated — FROZEN (Stage 1 + 2A) |
+| `0013`–`0022` | Validated — FROZEN (Stage 2B) |
+| `0023_create_bo_core_profile.sql` | Validated — FROZEN |
+| `0024_create_bo_customer_pipeline.sql` | Validated — FROZEN |
+| `0025_create_bo_quotations_orders.sql` | Validated — FROZEN |
+| `0026_create_bo_billing_procurement.sql` | Validated — FROZEN |
+| `0027_create_bo_supplier_inventory.sql` | Validated — FROZEN |
+| `0028_create_bo_warehouse_fulfilment.sql` | Validated — FROZEN |
+| `0029_create_bo_workforce_tasks.sql` | Validated — FROZEN |
+| `0030_create_bo_scheduling_assets.sql` | Validated — FROZEN |
+| `0031_create_bo_finance_support.sql` | Validated — FROZEN |
+| `0032_create_bo_risk_incidents.sql` | Validated — FROZEN |
+| `0033_create_bo_performance_publication.sql` | Validated — FROZEN |
+| `0034_create_bo_indexes.sql` | Validated — FROZEN |
+| `0035_create_bo_rls_policies.sql` | Validated — FROZEN |
+| `0036_create_bo_triggers_events.sql` | Validated — FROZEN |
+
+---
+
 ## Known blockers
 
-- No live PostgreSQL instance in the current environment — migrations cannot be applied until one is provisioned (Neon project or local Docker PG).
-- Structural tests pass without a live database. Integration/constraint tests require a live database.
+- None for Stages 1–2C. Live validation runs against a local PostgreSQL 16
+  instance (`infinicus_test`) with roles `app_test_user` (RLS enforced) and
+  `infinicus_test_admin` (BYPASSRLS); connection strings are supplied via
+  `DATABASE_URL` / `ADMIN_DATABASE_URL` environment variables only.
+- Integration tests are skipped automatically when `DATABASE_URL` is unset
+  (structural tests still run).
 
 ---
 
 ## Exact next task
 
-**Stage 2C — Business Operations schema**
+**Stage 2D / Stage 3 — Business Intelligence schema**
 
 Start only when instructed.
