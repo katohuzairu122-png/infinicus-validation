@@ -94,3 +94,26 @@ done
 - All block tests pass
 - `index.html` loads adi-bundle.js
 - All existing layer tests still pass (regression)
+
+---
+
+## BUILD-07 Specification: SIM Layer Integration Cleanup
+
+**Authoritative specification:** [BUILD-07-SIM-SPECIFICATION.md](./BUILD-07-SIM-SPECIFICATION.md)
+(frozen 2026-07-21; BUILD-07 remains `ready` — implementation not started).
+
+### Objective (summary)
+
+Integrate the existing INFINICUS Engine v3 Simulation capability
+(`window.INFINICUS.SIMULATION.*` in root `index.html`) with the modular
+architecture and the completed ADI layer through typed ports, a narrow
+browser adapter, and a complete SIM-to-ADI handoff contract — replacing the
+"not connected" ADI-06/ADI-16 stub adapters. BUILD-07 must not create or
+rewrite the Simulation engine; established Monte Carlo behaviour (500 runs,
+90-day horizon) is preserved. Simulation produces evidence; ADI evaluates it.
+No recommendation or approval authority moves into SIM. No database schema or
+migrations.
+
+See the dedicated specification for the full scope, architecture boundary,
+port and contract requirements, characterization/parity requirements,
+validation gates, and success criteria.

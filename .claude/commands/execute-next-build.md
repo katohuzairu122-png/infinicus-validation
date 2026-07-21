@@ -1,80 +1,77 @@
 # EXECUTE NEXT BUILD
 
+This command is build-agnostic. It executes whichever single build is marked
+`ready` in the queue, following that build's authoritative specification.
+
 ## Step 1 — Identify the current ready build
 
-Read `.claude/state/implementation-status.json`. Find the build with `"status": "ready"`.
+Read `.claude/state/implementation-status.json`. Find the single build with
+`"status": "ready"` (it must match `currentReadyBuild`). If zero or more than
+one build is `ready`, stop and report the inconsistency.
 
-## Step 2 — Read the build spec
+## Step 2 — Read the authoritative specification
 
-Open `docs/implementation-queue/00-IMPLEMENTATION-MANIFEST.md` and read the spec
-for the current ready build ID.
+Open `docs/implementation-queue/00-IMPLEMENTATION-MANIFEST.md` and locate the
+`## BUILD-NN Specification` section for the ready build. If that section
+links to a dedicated specification document (e.g.
+`docs/implementation-queue/BUILD-07-SIM-SPECIFICATION.md`), read the linked
+document completely — it is the authoritative scope.
+
+If no specification section or linked document exists for the ready build,
+STOP and report the missing definition. Do not invent the scope.
+
+Current ready build: **BUILD-07 (SIM)** →
+[BUILD-07-SIM-SPECIFICATION.md](../../docs/implementation-queue/BUILD-07-SIM-SPECIFICATION.md)
 
 ## Step 3 — Inspect the repository
 
 Before writing any code:
-- Verify what already exists in the target output directory.
-- Read CLAUDE.md files in the relevant source blocks.
-- Confirm source tests pass: `node {block}/tests/*.mjs`
-- Confirm no regressions in existing layers.
+
+- Re-verify the specification's current-state baseline against the actual
+  repository (the repository is the source of truth).
+- Read the CLAUDE.md files relevant to the touched areas.
+- Confirm existing tests pass in the areas the build touches.
+- Confirm no regressions exist in completed layers before starting.
+- Preserve unrelated user changes; work only on the designated branch.
 
 ## Step 4 — Execute the build
 
-For BUILD-06 (ADI):
-
-1. For each ADI block ADI-01 through ADI-25:
-   a. Create `ai-decision-intelligence/INFINICUS-ADI-{NN}-{Name}/` directory
-   b. Write `src/` files in browser-global IIFE pattern
-   c. Write `tests/` files using Node.js assert (not TAP)
-   d. Write `CLAUDE.md`, `README.md`, `package.json`, `docs/`, `demo/`
-
-2. Create `ai-decision-intelligence/adi-bundle.js`:
-   - Concatenate all IIFE src files in dependency order
-   - ADI-01 first (runtime), ADI-25 last (master integration)
-   - Single file, no external imports
-   - Exposes `INFINICUS.ADI` on `window`
-
-3. Update `index.html`:
-   - Add `<script src="/ai-decision-intelligence/adi-bundle.js"></script>`
-   - Place after the existing layer bundles, before closing `</body>`
+Implement exactly the specification's in-scope work. Respect its
+out-of-scope list, architecture boundaries and safety requirements. Keep
+changes to the smallest coherent implementation. Do not begin any later
+build.
 
 ## Step 5 — Validate
 
-Run in order:
-```bash
-node --check ai-decision-intelligence/adi-bundle.js
-for dir in ai-decision-intelligence/INFINICUS-ADI-*/; do
-  for test in "$dir/tests/"*.mjs; do node "$test"; done
-done
-# Regression: all other layer tests
-for layer in approved-business-action business-intelligence digital-twin outcome-monitoring continuous-learning; do
-  for dir in "$layer"/INFINICUS-*/; do
-    for test in "$dir/tests/"*.mjs; do node "$test"; done
-  done
-done
-```
+Run every validation gate listed in the build's specification. Discover the
+real commands from `package.json` and workspace configuration — never
+fabricate command names or results. Include regression runs for all
+completed layers and, when the build touches the monorepo, `pnpm lint`,
+`pnpm typecheck`, `pnpm build` and the relevant test filters.
 
-## Step 6 — Write completion report
+## Step 6 — Write the completion report
 
-Create `.claude/state/reports/BUILD-06-ADI-completion.md` with:
-- Build ID and date
-- Files created (count)
-- Tests: pass/fail totals
-- Validation results
-- index.html integration confirmation
-- Any defects found and fixed
+Create `.claude/state/reports/BUILD-NN-<LAYER>-completion.md` following the
+format of the existing reports (build ID and date, files created/modified,
+tests pass/fail totals, validation results, integration confirmation,
+defects found and fixed).
 
 ## Step 7 — Update queue state
 
-In `.claude/state/implementation-status.json`:
-- Set BUILD-06 status to `"completed"`, add `"completedAt"` timestamp
-- Set BUILD-07 status to `"ready"`
+Only after all gates pass, in `.claude/state/implementation-status.json`:
+
+- Set the completed build's status to `"completed"` with a `"completedAt"`
+  timestamp.
+- Set the next build's status to `"ready"` only if all of its declared
+  prerequisites are complete, and update `currentReadyBuild`.
+- Mirror the transition in `00-IMPLEMENTATION-MANIFEST.md`'s status tables.
 
 ## Step 8 — Commit and push
 
-Stage only the new files. Do not stage unrelated changes.
-Commit message: `feat(adi): BUILD-06 — AI Decision Intelligence layer (25 blocks + bundle)`
-Push to the current branch.
+Stage only the files belonging to this build. Use a focused conventional
+commit message naming the build ID. Push to the designated branch and update
+the tracking PR with the build summary and validation evidence.
 
 ## Step 9 — Stop
 
-Do not begin BUILD-07. Report the completion summary and stop.
+Do not begin the next build. Report the completion summary and stop.
