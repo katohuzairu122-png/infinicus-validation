@@ -12,18 +12,19 @@ All builds in strict execution order. Execute one at a time.
 | BUILD-04 | OM | Outcome Monitoring — 25 blocks + om-bundle.js | completed |
 | BUILD-05 | CL | Continuous Learning — 25 blocks + cl-bundle.js | completed |
 | BUILD-06 | ADI | AI Decision Intelligence — 25 blocks + adi-bundle.js | completed |
+| BUILD-07 | SIM | Simulation layer integration cleanup | completed |
 
 ## Current Ready Build
 
-| ID | Layer | Description | Status |
-|---|---|---|---|
-| BUILD-07 | SIM | Simulation layer integration cleanup | ready |
+None. BUILD-08 is the next build in order but lacks an authoritative
+specification — author a `## BUILD-08 Specification` (or linked document)
+before marking it ready.
 
 ## Pending Builds
 
 | ID | Layer | Description | Status |
 |---|---|---|---|
-| BUILD-08 | DAL | Data Acquisition Layer root blocks | pending |
+| BUILD-08 | DAL | Data Acquisition Layer root blocks | pending — awaiting specification |
 | BUILD-09 | DB-BI | Database Stage 3 — Business Intelligence schema | pending |
 | BUILD-10 | PLATFORM | Platform assembly — all layers wired and validated | pending |
 
@@ -100,7 +101,8 @@ done
 ## BUILD-07 Specification: SIM Layer Integration Cleanup
 
 **Authoritative specification:** [BUILD-07-SIM-SPECIFICATION.md](./BUILD-07-SIM-SPECIFICATION.md)
-(frozen 2026-07-21; BUILD-07 remains `ready` — implementation not started).
+(frozen 2026-07-21; implemented and completed 2026-07-21 — see
+`.claude/state/reports/BUILD-07-SIM-completion.md`).
 
 ### Objective (summary)
 

@@ -7173,6 +7173,107 @@ window.INFINICUS.SIMULATION.receiveCLIntelligence = function(payload) {
   return { ready: true, message: 'CL updated intelligence accepted.', payload: payload };
 };
 
+/* ─── BUILD-07 — SIM execution/read facade ─────────────────────────────────
+   Minimal namespaced facade authorized by BUILD-07-SIM-SPECIFICATION.md.
+   Delegates to the existing Engine v3 core (simulate + monteCarlo) without
+   altering the Monte Carlo mathematics. 500 runs / 90 days remain fixed by
+   the engine (SIM_DAYS, monteCarlo loop). Seeding is not supported by the
+   engine — randomSeed is reported as null, never fabricated.
+   Evidence only: this facade never produces recommendations or approvals. */
+window.INFINICUS.SIMULATION.engineVersion = 'infinicus-engine-v3';
+window.INFINICUS.SIMULATION.capabilities = Object.freeze({
+  runs: 500, horizonDays: SIM_DAYS, seedSupported: false
+});
+window.INFINICUS.SIMULATION._completedRuns = {};
+window.INFINICUS.SIMULATION._runsByIdempotencyKey = {};
+
+window.INFINICUS.SIMULATION.executeScenario = function(request) {
+  var fail = function(code, message) { return { ok: false, error: { code: code, message: message } }; };
+  if (!request || typeof request !== 'object') return fail('SIM_REQUEST_INVALID', 'Request object is required.');
+  if (!request.tenantId || !request.businessId) return fail('SIM_REQUEST_INVALID', 'tenantId and businessId are required.');
+  var p = request.parameters;
+  if (!p || typeof p !== 'object') return fail('SIM_REQUEST_INVALID', 'parameters object is required.');
+  if (!p.industry || !PROFILES[p.industry]) return fail('SIM_REQUEST_INVALID', 'parameters.industry must be a known industry profile.');
+  if (!(p.capital > 0)) return fail('SIM_REQUEST_INVALID', 'parameters.capital must be greater than 0.');
+  if (!(p.price > 0)) return fail('SIM_REQUEST_INVALID', 'parameters.price must be greater than 0.');
+
+  /* Established idempotency mechanism: same key replays the same run. */
+  var reg = window.INFINICUS.SIMULATION._completedRuns;
+  var byKey = window.INFINICUS.SIMULATION._runsByIdempotencyKey;
+  if (request.idempotencyKey && byKey[request.idempotencyKey]) {
+    var existing = reg[byKey[request.idempotencyKey]];
+    if (existing && existing.tenantId === request.tenantId && existing.businessId === request.businessId) {
+      return { ok: true, run: Object.assign({}, existing, { idempotentReplay: true }) };
+    }
+  }
+
+  var params = {
+    idea: String(p.idea || 'ADI scenario execution'),
+    capital: Number(p.capital), price: Number(p.price),
+    mktBud: Number(p.mktBud) || 0, team: parseInt(p.team, 10) || 1,
+    industry: String(p.industry), loc: String(p.loc || ''), mkt: '',
+    exp: String(p.exp || 'some'), comp: String(p.comp || 'medium'),
+    engMode: String(p.engMode || 'balanced'),
+    extraDailyRev: Number(p.extraDailyRev) || 0
+  };
+
+  var base, mc;
+  try {
+    base = simulate(params);          /* existing engine, unchanged */
+    mc = monteCarlo(params);          /* existing engine, 500 runs, unchanged */
+  } catch (error) {
+    return fail('SIM_EXECUTION_FAILED', 'Engine v3 execution failed: ' + String(error && error.message));
+  }
+
+  var runId = 'simrun_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 10);
+  var sortedKeys = Object.keys(params).sort();
+  var fingerprintParts = [];
+  for (var i = 0; i < sortedKeys.length; i++) fingerprintParts.push(sortedKeys[i] + '=' + String(params[sortedKeys[i]]));
+  var run = {
+    runId: runId,
+    tenantId: String(request.tenantId),
+    businessId: String(request.businessId),
+    decisionId: request.decisionId ? String(request.decisionId) : undefined,
+    scenarioId: request.scenarioId ? String(request.scenarioId) : undefined,
+    correlationId: request.correlationId ? String(request.correlationId) : undefined,
+    engineVersion: 'infinicus-engine-v3',
+    modelVersion: 'v3-montecarlo-500x90',
+    schemaVersion: '1.0.0',
+    status: 'completed',
+    completedAt: new Date().toISOString(),
+    sampleSize: mc.runs.length,
+    horizonDays: SIM_DAYS,
+    randomSeed: null, /* engine does not support seeding — not fabricated */
+    inputFingerprint: 'params:' + fingerprintParts.join('|'),
+    scenarios: [request.scenarioId ? String(request.scenarioId) : 'baseline'],
+    assumptions: sortedKeys.map(function(k) { return { name: k, value: params[k] }; }),
+    outputs: {
+      finalCashPercentiles: { p10: mc.p10, p25: mc.p25, p50: mc.p50, p75: mc.p75, p90: mc.p90 },
+      survivalRate: mc.survivalRate,
+      finalCashBasePath: base.days.length ? base.days[base.days.length - 1].cash : null,
+      currencyCode: 'USD', /* engine params are USD-normalized */
+      eventCount: base.events.length
+    },
+    sourceResultRef: 'sim://engine-v3/' + runId
+  };
+  reg[runId] = run;
+  if (request.idempotencyKey) byKey[request.idempotencyKey] = runId;
+  return { ok: true, run: Object.assign({}, run, { idempotentReplay: false }) };
+};
+
+window.INFINICUS.SIMULATION.getCompletedRun = function(query) {
+  var fail = function(code, message) { return { ok: false, error: { code: code, message: message } }; };
+  if (!query || typeof query !== 'object' || !query.runId) return fail('SIM_REQUEST_INVALID', 'runId is required.');
+  if (!query.tenantId || !query.businessId) return fail('SIM_REQUEST_INVALID', 'tenantId and businessId are required.');
+  var run = window.INFINICUS.SIMULATION._completedRuns[query.runId];
+  if (!run) return fail('SIM_RUN_NOT_FOUND', 'No completed run with runId ' + String(query.runId) + '.');
+  if (run.tenantId !== query.tenantId || run.businessId !== query.businessId) {
+    return fail('SIM_RUN_TENANT_MISMATCH', 'Run does not belong to the requesting tenant/business.');
+  }
+  if (run.status !== 'completed') return fail('SIM_RUN_NOT_COMPLETED', 'Run ' + String(query.runId) + ' is not completed.');
+  return { ok: true, run: run };
+};
+
 /* Register publisher hooks once all deferred bundles have loaded */
 document.addEventListener('DOMContentLoaded', function() {
 

@@ -3893,10 +3893,87 @@ if (!blocks["ADI-01"] || typeof blocks["ADI-01"].installGlobal !== "function") {
 }
 var runtime = blocks["ADI-01"].installGlobal(global);
 ADI.handoffOutbox = ADI.handoffOutbox || [];
+
+/* BUILD-07 — SIM integration: typed port adapters over the Engine v3 facade
+   (window.INFINICUS.SIMULATION). Direct window access is isolated here; ADI
+   domain logic receives injected ports only. Deterministic failures remain
+   when no engine/facade is configured. */
+function resolveSimulationEngine(operation) {
+  var sim = global.INFINICUS && global.INFINICUS.SIMULATION;
+  if (!sim || typeof sim !== "object") {
+    throw new Error("SIM_ENGINE_UNAVAILABLE: window.INFINICUS.SIMULATION is not available.");
+  }
+  if (typeof sim[operation] !== "function") {
+    throw new Error("SIM_ENGINE_OPERATION_UNAVAILABLE: window.INFINICUS.SIMULATION." + operation + " is not available.");
+  }
+  return sim;
+}
+
+/* ExecuteSimulationScenarioPort adapter for ADI-16. Engine parameters must
+   arrive via simulationPolicy.engineParameters — never fabricated here. */
+function executeSimulationScenario(query) {
+  var sim = resolveSimulationEngine("executeScenario");
+  var policy = query.simulationPolicy || {};
+  var parameters = policy.engineParameters;
+  if (!parameters || typeof parameters !== "object") {
+    throw new Error("SIM_ENGINE_PARAMETERS_REQUIRED: simulationPolicy.engineParameters is required for scenario execution.");
+  }
+  var result = sim.executeScenario({
+    tenantId: query.tenantId,
+    businessId: query.businessId,
+    correlationId: policy.correlationId || query.decisionId,
+    decisionId: query.decisionId,
+    scenarioId: query.alternative && query.alternative.alternativeId,
+    idempotencyKey: policy.idempotencyKey ||
+      (query.decisionId + "::" + (query.alternative && query.alternative.alternativeId)),
+    parameters: parameters
+  });
+  if (!result || result.ok !== true) {
+    var err = (result && result.error) || { code: "SIM_EXECUTION_FAILED", message: "Unknown engine failure." };
+    throw new Error(err.code + ": " + err.message);
+  }
+  return result.run;
+}
+
+/* ReadCompletedSimulationRunPort adapter for ADI-06. Returns only completed
+   runs inside the caller's tenant/business boundary. */
+function readCompletedSimulationRuns(query) {
+  var sim = resolveSimulationEngine("getCompletedRun");
+  var runIds = (query && query.runIds) || [];
+  if (!runIds.length) {
+    throw new Error("SIM_RUN_IDS_REQUIRED: at least one runId is required to read completed simulation runs.");
+  }
+  var runs = [];
+  var failures = [];
+  for (var r = 0; r < runIds.length; r++) {
+    var result = sim.getCompletedRun({
+      tenantId: query.tenantId,
+      businessId: query.businessId,
+      runId: runIds[r],
+      decisionId: query.decisionId
+    });
+    if (result && result.ok === true) {
+      runs.push(result.run);
+    } else {
+      var failure = (result && result.error) || { code: "SIM_READ_FAILED", message: "Unknown engine failure." };
+      failures.push(runIds[r] + " (" + failure.code + ")");
+    }
+  }
+  if (!runs.length) {
+    throw new Error("SIM_RUNS_UNAVAILABLE: no completed simulation runs could be read: " + failures.join(", "));
+  }
+  return runs;
+}
+
+ADI.simulationPorts = Object.freeze({
+  executeScenario: executeSimulationScenario,
+  readCompletedRun: readCompletedSimulationRuns
+});
+
 var attachOptions = {
   "ADI-05": { readSnapshot: async function () { return null; } },
-  "ADI-06": { readCompletedRun: async function () { return null; } },
-  "ADI-16": { executeScenario: async function () { throw new Error("Simulation engine adapter is not connected."); } },
+  "ADI-06": { readCompletedRun: async function (query) { return readCompletedSimulationRuns(query); } },
+  "ADI-16": { executeScenario: async function (query) { return executeSimulationScenario(query); } },
   "ADI-24": { publisher: { publish: async function (pkg) {
     var publicationId = "aba_publication_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 10);
     ADI.handoffOutbox.push({ publicationId: publicationId, decisionPackageId: pkg.decisionPackageId, payloadDigest: pkg.payloadDigest, publishedAt: new Date().toISOString() });

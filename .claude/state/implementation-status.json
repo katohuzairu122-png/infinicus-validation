@@ -73,13 +73,18 @@
       "id": "BUILD-07",
       "layer": "SIM",
       "name": "Simulation layer integration cleanup",
-      "status": "ready"
+      "status": "completed",
+      "completedAt": "2026-07-21T19:00:00.000Z",
+      "specification": "docs/implementation-queue/BUILD-07-SIM-SPECIFICATION.md",
+      "report": ".claude/state/reports/BUILD-07-SIM-completion.md",
+      "testsPass": true
     },
     {
       "id": "BUILD-08",
       "layer": "DAL",
       "name": "Data Acquisition Layer root blocks",
-      "status": "pending"
+      "status": "pending",
+      "notes": "Not marked ready: no authoritative BUILD-08 specification exists in the manifest. Author the specification before execution."
     },
     {
       "id": "BUILD-09",
@@ -94,5 +99,5 @@
       "status": "pending"
     }
   ],
-  "currentReadyBuild": "BUILD-07"
+  "currentReadyBuild": null
 }
