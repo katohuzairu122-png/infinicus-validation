@@ -27,7 +27,7 @@ DAL → BO → BI → DT → SIM → ADI → ABA → OM → CL
 |-------|--------------|---------------------------|
 | DAL   | `da.*`       | `da.data.published`       |
 | BO    | `bo.*`       | `bo.order.completed`      |
-| BI    | `bi.*`       | `bi.insight.generated`    |
+| BI    | `bi.*`       | `bi.insight.published`    |
 | DT    | `dt.*`       | `dt.state.updated`        |
 | SIM   | `simulation.*`| `simulation.completed`   |
 | ADI   | `adi.*`      | `adi.decision.generated`  |

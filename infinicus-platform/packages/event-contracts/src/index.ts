@@ -10,8 +10,18 @@ export type LayerEventType =
   | 'da.data.published'
   // BO
   | 'bo.order.completed'
-  // BI
-  | 'bi.insight.generated'
+  // BI — Stage 2D (BUILD-09). 'bi.insight.generated' is superseded by
+  // 'bi.insight.published' (the insight package's actual dispatch point).
+  | 'bi.metric.calculated'
+  | 'bi.kpi.updated'
+  | 'bi.analysis.started'
+  | 'bi.analysis.completed'
+  | 'bi.analysis.failed'
+  | 'bi.anomaly.detected'
+  | 'bi.forecast.generated'
+  | 'bi.forecast.accuracy_recorded'
+  | 'bi.insight.published'
+  | 'bi.data.published'
   // DT
   | 'dt.state.updated'
   // SIM

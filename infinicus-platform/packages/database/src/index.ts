@@ -64,3 +64,29 @@ export type {
   Task, CreateTaskInput,
   InventoryBalance, CreateInventoryBalanceInput,
 } from './repositories/bo/index.js';
+
+// ── Business Intelligence repositories (Stage 2D) ───────────────────────────────
+export {
+  IntelligenceIntakeRepository,
+  MetricDefinitionRepository,
+  MetricCalculationRepository,
+  AnalysisRunRepository,
+  AnalysisResultRepository,
+  ForecastRepository,
+  AnomalyRepository,
+  RiskAssessmentRepository,
+  InsightPackageRepository,
+  BIPublicationPackageRepository,
+} from './repositories/bi/index.js';
+export type {
+  IntakePackage, CreateIntakePackageInput, AnalyticalDataset, DatasetVersion,
+  MetricDefinition, MetricDefinitionVersion, CreateMetricDefinitionInput,
+  MetricCalculatedValue, RecordCalculationInput, TimeSeriesPoint,
+  AnalysisRequest, AnalysisRun, CreateAnalysisRequestInput,
+  Finding, FindingVersion, Trend, TrendObservation, CreateFindingInput,
+  ForecastModel, ForecastRun, ForecastPoint, ForecastAccuracyRecord,
+  AnomalyRule, AnomalyRuleVersion, AnomalyDetection,
+  RiskModel, RiskAssessment, BenchmarkDefinition, ComparisonResult,
+  InsightPackage, InsightPackageVersion, CreateInsightPackageVersionInput,
+  BIPublicationPackage, ComponentDeployment, TargetLayer,
+} from './repositories/bi/index.js';

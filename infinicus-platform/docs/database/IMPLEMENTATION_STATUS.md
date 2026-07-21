@@ -2,9 +2,90 @@
 
 ## Current stage
 
-**Stage 2C — Business Operations Schema** — COMPLETE — FROZEN
+**Stage 2D — Business Intelligence Schema** — COMPLETE — FROZEN
 
-Frozen migration range: **0001–0036**
+Frozen migration range: **0001–0049**
+
+---
+
+### Stage 2D — Business Intelligence Schema (migrations 0037–0049)
+
+#### New PostgreSQL schema
+
+| Schema | Tables | Purpose |
+|--------|--------|---------|
+| `business_intelligence` | 48 | Intake/lineage, analytical datasets, metrics/KPIs, analysis lifecycle, findings, trends, forecasts, anomalies, benchmarks, risk intelligence, publication, component registry/deployment |
+
+**Total Stage 2D tables: 48 in 1 schema** (canonical tenant/workspace/business/user identity reused from Stage 2A; BO publication packages reused from Stage 2C — no duplication)
+
+#### TypeScript repositories added (`repositories/bi/`)
+
+`IntelligenceIntakeRepository`, `MetricDefinitionRepository`, `MetricCalculationRepository`, `AnalysisRunRepository`, `AnalysisResultRepository`, `ForecastRepository`, `AnomalyRepository`, `RiskAssessmentRepository`, `InsightPackageRepository`, `BIPublicationPackageRepository` (+ typed errors `NotFoundError`, `ConflictError`, `ValidationError`, `InvalidTransitionError`)
+
+#### RLS coverage
+
+All 48 tables RLS-enabled **and forced** (first use of `FORCE ROW LEVEL SECURITY` in this repository — strengthens the Stage 2A–2C null-safe fail-closed pattern, which only enabled RLS).
+
+#### Append-only enforcement
+
+29 evidence/history tables reject UPDATE/DELETE unconditionally via a shared `forbid_mutation()` trigger, enforced even for the BYPASSRLS admin role. `forecast_runs` and `bi_publication_packages` have dedicated immutability/lifecycle-transition guard triggers.
+
+#### Outbox event functions added
+
+10 required `bi.*` events (`bi.metric.calculated`, `bi.kpi.updated`, `bi.analysis.started/completed/failed`, `bi.anomaly.detected`, `bi.forecast.generated`, `bi.forecast.accuracy_recorded`, `bi.insight.published`, `bi.data.published`), each backed by a `SECURITY DEFINER` function via the established `emit_outbox_event` helper pattern.
+
+#### BO→BI handoff contract
+
+`packages/handoff-contracts/src/bo-to-bi.ts` completed: strict versioned contract, accepts only `ready`/`dispatched` BO publication packages.
+
+#### Objects (live-verified)
+
+314 indexes, 79 triggers, 14 functions.
+
+#### Test count
+
+703 tests in the database package (702 pass, 1 intentional skip-guard): 135 Stage 2D structural + 111 Stage 2D live integration + 349 prior-stage regression (Stage 2A 114, Stage 2B 146 + 53 live DA, Stage 2C 97 + 36 live BO) + 6 migration-0001 + 4 tx helpers. Plus 45 handoff-contracts tests (15 new bo-to-bi + 16 dal-to-bo + 14 sim-to-adi regression).
+
+Validation at freeze (2026-07-21): full database suite 702/703 (run twice against the same DB, identical results — confirms rerun/idempotency); empty-database installation of 0001→0049 clean; frozen 0001–0036 byte-identical (SHA-256 verified); `pnpm lint` 21/21; `pnpm typecheck` clean; `pnpm build` 21/21; root layer regression 180/180; monorepo ADI regression 106/106.
+
+---
+
+## Files changed (Stage 2D)
+
+| File | Change |
+|------|--------|
+| `infrastructure/database/migrations/0037–0049.sql` | Created — 13 migration files |
+| `packages/database/src/repositories/bi/*.ts` | Created — 10 repository classes + errors + barrel index |
+| `packages/database/src/index.ts` | Updated — exports BI repositories |
+| `packages/database/tests/migration-stage2d.test.ts` | Created — 135 structural tests |
+| `packages/database/tests/bi-repositories.integration.test.ts` | Created — 112 live integration tests (111 pass + 1 skip-guard) |
+| `packages/handoff-contracts/src/bo-to-bi.ts` | Updated — placeholder replaced with strict contract |
+| `packages/handoff-contracts/tests/bo-to-bi.contract.test.ts` | Created — 15 contract tests |
+| `packages/event-contracts/src/index.ts` | Updated — 10 `bi.*` event types |
+| `docs/database-stage-2d-business-intelligence.md` | Created |
+| `docs/database/IMPLEMENTATION_STATUS.md` | Updated (this file) |
+
+---
+
+## Frozen migrations (0001–0049)
+
+Stage 1 + 2A (0001–0012), Stage 2B (0013–0022), Stage 2C (0023–0036): Validated — FROZEN (unchanged, byte-identical, SHA-256 verified).
+
+| File | Status |
+|------|--------|
+| `0037_create_bi_schema_intake.sql` | Validated — FROZEN |
+| `0038_create_bi_datasets.sql` | Validated — FROZEN |
+| `0039_create_bi_metrics.sql` | Validated — FROZEN |
+| `0040_create_bi_analysis.sql` | Validated — FROZEN |
+| `0041_create_bi_findings_trends.sql` | Validated — FROZEN |
+| `0042_create_bi_forecasts.sql` | Validated — FROZEN |
+| `0043_create_bi_anomalies.sql` | Validated — FROZEN |
+| `0044_create_bi_benchmarks_risk.sql` | Validated — FROZEN |
+| `0045_create_bi_publication.sql` | Validated — FROZEN |
+| `0046_create_bi_registry.sql` | Validated — FROZEN |
+| `0047_create_bi_indexes.sql` | Validated — FROZEN |
+| `0048_create_bi_rls_policies.sql` | Validated — FROZEN |
+| `0049_create_bi_triggers_events.sql` | Validated — FROZEN |
 
 ---
 
@@ -304,17 +385,25 @@ all 36 migrations applied cleanly to empty PostgreSQL 16 database.
 
 ## Known blockers
 
-- None for Stages 1–2C. Live validation runs against a local PostgreSQL 16
+- None for Stages 1–2D. Live validation runs against a local PostgreSQL 16
   instance (`infinicus_test`) with roles `app_test_user` (RLS enforced) and
   `infinicus_test_admin` (BYPASSRLS); connection strings are supplied via
   `DATABASE_URL` / `ADMIN_DATABASE_URL` environment variables only.
 - Integration tests are skipped automatically when `DATABASE_URL` is unset
   (structural tests still run).
+- Stage 2D's 29 append-only tables reject DELETE unconditionally (even for
+  the BYPASSRLS admin role) and cascade `ON DELETE RESTRICT` up through
+  their parent rows. Test teardown does not attempt to delete
+  `business_intelligence` rows for this reason — the disposable test
+  database is the reset mechanism between full validation runs, not
+  per-suite cleanup. This is by design (analytical evidence is permanent),
+  not a defect.
 
 ---
 
 ## Exact next task
 
-**Stage 2D / Stage 3 — Business Intelligence schema**
+**Stage 2E or later Database work, or BUILD-10 (Platform assembly)**
 
-Start only when instructed.
+No authoritative specification exists yet for the next database or platform
+build. Author one before starting. Start only when instructed.

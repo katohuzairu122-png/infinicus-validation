@@ -14,18 +14,19 @@ All builds in strict execution order. Execute one at a time.
 | BUILD-06 | ADI | AI Decision Intelligence — 25 blocks + adi-bundle.js | completed |
 | BUILD-07 | SIM | Simulation layer integration cleanup | completed |
 | BUILD-08 | DAL | Data Acquisition Layer root blocks | completed |
+| BUILD-09 | DB-BI | Database Stage 2D — Business Intelligence schema | completed |
 
 ## Current Ready Build
 
-| ID | Layer | Description | Status |
-|---|---|---|---|
-| BUILD-09 | DB-BI | Database Stage 2D — Business Intelligence schema | ready |
+None. BUILD-10 (PLATFORM) is the next build in order but lacks an
+authoritative specification — author a `## BUILD-10 Specification` (or
+linked document) before marking it ready.
 
 ## Pending Builds
 
 | ID | Layer | Description | Status |
 |---|---|---|---|
-| BUILD-10 | PLATFORM | Platform assembly — all layers wired and validated | pending |
+| BUILD-10 | PLATFORM | Platform assembly — all layers wired and validated | pending — awaiting specification |
 
 ---
 
@@ -145,7 +146,8 @@ feedback, no BUILD-09.
 ## BUILD-09 Specification: DB-BI Database Stage 2D
 
 **Authoritative specification:** [BUILD-09-DB-BI-SPECIFICATION.md](./BUILD-09-DB-BI-SPECIFICATION.md)
-(frozen 2026-07-21; BUILD-09 is `ready` — implementation not started).
+(frozen 2026-07-21; implemented and completed 2026-07-21 — see
+`.claude/state/reports/BUILD-09-DB-BI-completion.md`).
 
 ### Objective (summary)
 
