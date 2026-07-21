@@ -16,15 +16,14 @@ All builds in strict execution order. Execute one at a time.
 
 ## Current Ready Build
 
-None. BUILD-08 is the next build in order but lacks an authoritative
-specification — author a `## BUILD-08 Specification` (or linked document)
-before marking it ready.
+| ID | Layer | Description | Status |
+|---|---|---|---|
+| BUILD-08 | DAL | Data Acquisition Layer root blocks | ready |
 
 ## Pending Builds
 
 | ID | Layer | Description | Status |
 |---|---|---|---|
-| BUILD-08 | DAL | Data Acquisition Layer root blocks | pending — awaiting specification |
 | BUILD-09 | DB-BI | Database Stage 3 — Business Intelligence schema | pending |
 | BUILD-10 | PLATFORM | Platform assembly — all layers wired and validated | pending |
 
@@ -119,3 +118,23 @@ migrations.
 See the dedicated specification for the full scope, architecture boundary,
 port and contract requirements, characterization/parity requirements,
 validation gates, and success criteria.
+
+---
+
+## BUILD-08 Specification: DAL Root Blocks
+
+**Authoritative specification:** [BUILD-08-DAL-SPECIFICATION.md](./BUILD-08-DAL-SPECIFICATION.md)
+(frozen 2026-07-21; BUILD-08 is `ready` — implementation not started).
+
+### Objective (summary)
+
+Assemble the 25 completed Data Acquisition browser-runtime blocks
+(`infinicus-platform/layers/data-acquisition/blocks/INFINICUS-DA-01…25`,
+already browser-global IIFEs, all source tests passing) into a root-level
+`data-acquisition/` layer with `da-bundle.js` exposing `window.INFINICUS.DA`,
+wired into `index.html` before `dt-bundle.js`, and complete the strict
+versioned DAL-to-BO handoff contract (`dal-to-bo.ts`), aligned with
+`da.data.published` and Stage 2B `publication_packages`. DAL means
+Data Acquisition Layer (settled by the 2026-07-21 audit). No DA algorithm
+changes, no database changes, no Stage 2B duplication, no CL-to-DAL
+feedback, no BUILD-09.

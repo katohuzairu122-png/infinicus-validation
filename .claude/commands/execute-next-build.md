@@ -20,9 +20,8 @@ document completely — it is the authoritative scope.
 If no specification section or linked document exists for the ready build,
 STOP and report the missing definition. Do not invent the scope.
 
-Current ready build: **none** — BUILD-07 completed 2026-07-21. BUILD-08
-(DAL) is next in order but has no authoritative specification yet; author
-one before marking it ready.
+Current ready build: **BUILD-08 (DAL)** →
+[BUILD-08-DAL-SPECIFICATION.md](../../docs/implementation-queue/BUILD-08-DAL-SPECIFICATION.md)
 
 ## Step 3 — Inspect the repository
 

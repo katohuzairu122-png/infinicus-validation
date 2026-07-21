@@ -83,8 +83,9 @@
       "id": "BUILD-08",
       "layer": "DAL",
       "name": "Data Acquisition Layer root blocks",
-      "status": "pending",
-      "notes": "Not marked ready: no authoritative BUILD-08 specification exists in the manifest. Author the specification before execution."
+      "status": "ready",
+      "specification": "docs/implementation-queue/BUILD-08-DAL-SPECIFICATION.md",
+      "notes": "DAL = Data Acquisition Layer (audit 2026-07-21). Source: 25 IIFE blocks in infinicus-platform/layers/data-acquisition/blocks/, all tests passing. Includes dal-to-bo.ts completion; excludes cl-feedback.ts."
     },
     {
       "id": "BUILD-09",
@@ -99,5 +100,5 @@
       "status": "pending"
     }
   ],
-  "currentReadyBuild": null
+  "currentReadyBuild": "BUILD-08"
 }
