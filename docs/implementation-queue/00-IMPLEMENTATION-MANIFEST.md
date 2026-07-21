@@ -18,15 +18,15 @@ All builds in strict execution order. Execute one at a time.
 
 ## Current Ready Build
 
-None. BUILD-10 (PLATFORM) is the next build in order but lacks an
-authoritative specification — author a `## BUILD-10 Specification` (or
-linked document) before marking it ready.
+**BUILD-10** (PLATFORM). Authoritative specification frozen at
+[BUILD-10-PLATFORM-SPECIFICATION.md](./BUILD-10-PLATFORM-SPECIFICATION.md)
+(SHA-256 `878ff02a4f3865fb2a06ffc33b71d7c614ec65e810f92926a0cd27f0abc081c7`).
+Not yet implemented.
 
 ## Pending Builds
 
-| ID | Layer | Description | Status |
-|---|---|---|---|
-| BUILD-10 | PLATFORM | Platform assembly — all layers wired and validated | pending — awaiting specification |
+None currently pending beyond BUILD-10 (ready). BUILD-11 does not exist and
+must not be authored until BUILD-10 is completed.
 
 ---
 
@@ -163,3 +163,31 @@ only to Digital Twin, Simulation, and ADI (no downstream implementation).
 Requires ≥100 meaningful live PostgreSQL 16 integration tests. This is
 database/repository work only — it does not touch the completed browser BI
 root blocks (BUILD-02) and does not implement analytical algorithms.
+
+---
+
+## BUILD-10 Specification: PLATFORM Assembly
+
+**Authoritative specification:** [BUILD-10-PLATFORM-SPECIFICATION.md](./BUILD-10-PLATFORM-SPECIFICATION.md)
+(frozen 2026-07-21; SHA-256 `878ff02a4f3865fb2a06ffc33b71d7c614ec65e810f92926a0cd27f0abc081c7`;
+status: ready, not yet implemented).
+
+### Objective (summary)
+
+Full browser platform assembly, orchestration, wiring, and end-to-end
+validation of all completed INFINICUS Engine v3 layers. Adds one new file,
+`platform/platform-bootstrap.js` (loaded via one new deferred `<script>` tag
+inserted after the ADI bundle in `index.html`), establishing a
+`window.INFINICUS.PLATFORM` namespace that reports readiness of the 8
+browser-applicable layers (DA, BI, DT, SIM, ADI, ABA, OM, CL) using each
+layer's own existing diagnostic surface, plus a static, verified record of
+the 9 cross-layer handoff boundaries (3 persistence-backed/complete, 1
+functional browser adapter, 3 browser-wired-but-not-contract-validated, 2
+confirmed not wired). Business Operations has no browser layer and is
+explicitly out of the namespace contract. BUILD-10 does not modify any
+completed layer, any existing bundle, any of the 6 placeholder handoff-
+contract files, or any migration (0001–0049 remain frozen). No Stage 2E or
+later persistence, no new event backbone, no external broker, no UI
+redesign, no production deployment. See the dedicated specification for the
+full namespace contract, state machine, handoff map, capability registry,
+test plan, and validation commands.

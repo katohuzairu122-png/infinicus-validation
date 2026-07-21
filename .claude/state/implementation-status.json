@@ -108,8 +108,13 @@
       "id": "BUILD-10",
       "layer": "PLATFORM",
       "name": "Platform assembly \u2014 all layers wired and validated",
-      "status": "pending"
+      "status": "ready",
+      "specification": "docs/implementation-queue/BUILD-10-PLATFORM-SPECIFICATION.md",
+      "specificationSha256": "878ff02a4f3865fb2a06ffc33b71d7c614ec65e810f92926a0cd27f0abc081c7",
+      "notes": "Specification authored and frozen 2026-07-21 (authoring-only task; no implementation). Adds platform/platform-bootstrap.js + one index.html script tag; does not modify any completed layer, bundle, or the 6 placeholder handoff-contract files; does not touch migrations 0001-0049.",
+      "readyAt": "2026-07-21T00:00:00.000Z",
+      "testsPass": null
     }
   ],
-  "currentReadyBuild": null
+  "currentReadyBuild": "BUILD-10"
 }
