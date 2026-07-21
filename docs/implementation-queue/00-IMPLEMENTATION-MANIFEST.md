@@ -11,18 +11,18 @@ All builds in strict execution order. Execute one at a time.
 | BUILD-03 | ABA | Approved Business Action — 25 blocks + aba-bundle.js | completed |
 | BUILD-04 | OM | Outcome Monitoring — 25 blocks + om-bundle.js | completed |
 | BUILD-05 | CL | Continuous Learning — 25 blocks + cl-bundle.js | completed |
+| BUILD-06 | ADI | AI Decision Intelligence — 25 blocks + adi-bundle.js | completed |
 
 ## Current Ready Build
 
 | ID | Layer | Description | Status |
 |---|---|---|---|
-| BUILD-06 | ADI | AI Decision Intelligence — 25 blocks + adi-bundle.js | ready |
+| BUILD-07 | SIM | Simulation layer integration cleanup | ready |
 
 ## Pending Builds
 
 | ID | Layer | Description | Status |
 |---|---|---|---|
-| BUILD-07 | SIM | Simulation layer integration cleanup | pending |
 | BUILD-08 | DAL | Data Acquisition Layer root blocks | pending |
 | BUILD-09 | DB-BI | Database Stage 3 — Business Intelligence schema | pending |
 | BUILD-10 | PLATFORM | Platform assembly — all layers wired and validated | pending |

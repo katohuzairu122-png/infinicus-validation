@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ADI-24 Demo</title>
+</head>
+<body>
+<h1>ADI-24 — Approved Business Action Package Publication Handoff</h1>
+<pre id="out">loading…</pre>
+<script src="../../adi-bundle.js"></script>
+<script>
+(function(){
+  var out = document.getElementById("out");
+  var runtime = window.INFINICUS.ADI.runtime;
+  var service = runtime.getService("adi.aba_handoff");
+  var diagnose = runtime.diagnose();
+  out.textContent = JSON.stringify({
+    serviceRegistered: service.ok,
+    attachResult: window.INFINICUS.ADI.attachResults["ADI-24"] || "bootstrap (ADI-01)",
+    runtime: diagnose.data
+  }, null, 2);
+})();
+</script>
+</body>
+</html>

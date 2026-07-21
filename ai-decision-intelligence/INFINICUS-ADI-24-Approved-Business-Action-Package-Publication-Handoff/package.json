@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-adi-24-approved-business-action-package-publication-handoff",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/adi-24-approved-business-action-package-publication-handoff.test.mjs"
+  }
+}

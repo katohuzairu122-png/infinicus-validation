@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ADI-21 Demo</title>
+</head>
+<body>
+<h1>ADI-21 — Next Best Action Recommendation Generation Engine</h1>
+<pre id="out">loading…</pre>
+<script src="../../adi-bundle.js"></script>
+<script>
+(function(){
+  var out = document.getElementById("out");
+  var runtime = window.INFINICUS.ADI.runtime;
+  var service = runtime.getService("adi.recommendation_generation");
+  var diagnose = runtime.diagnose();
+  out.textContent = JSON.stringify({
+    serviceRegistered: service.ok,
+    attachResult: window.INFINICUS.ADI.attachResults["ADI-21"] || "bootstrap (ADI-01)",
+    runtime: diagnose.data
+  }, null, 2);
+})();
+</script>
+</body>
+</html>

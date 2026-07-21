@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-adi-21-next-best-action-recommendation-generation-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/adi-21-next-best-action-recommendation-generation-engine.test.mjs"
+  }
+}

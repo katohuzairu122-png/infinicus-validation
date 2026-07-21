@@ -57,21 +57,23 @@
       "id": "BUILD-06",
       "layer": "ADI",
       "name": "AI Decision Intelligence — 25 blocks + adi-bundle.js",
-      "status": "ready",
+      "status": "completed",
+      "completedAt": "2026-07-21T00:00:00.000Z",
       "blockCount": 25,
       "bundleFile": "ai-decision-intelligence/adi-bundle.js",
-      "indexHtmlWired": false,
-      "testsPass": null,
+      "indexHtmlWired": true,
+      "testsPass": true,
       "sourceBlocks": "infinicus-platform/layers/ai-decision-intelligence/blocks/",
       "sourceTests": 106,
       "sourceTestsPass": true,
-      "notes": "ES module source in monorepo — convert to browser-global IIFE at root level"
+      "report": ".claude/state/reports/BUILD-06-ADI-completion.md",
+      "notes": "Generated with esbuild from monorepo ES-module source; ADI-24 node:crypto replaced with Web Crypto in browser build"
     },
     {
       "id": "BUILD-07",
       "layer": "SIM",
       "name": "Simulation layer integration cleanup",
-      "status": "pending"
+      "status": "ready"
     },
     {
       "id": "BUILD-08",
@@ -92,5 +94,5 @@
       "status": "pending"
     }
   ],
-  "currentReadyBuild": "BUILD-06"
+  "currentReadyBuild": "BUILD-07"
 }

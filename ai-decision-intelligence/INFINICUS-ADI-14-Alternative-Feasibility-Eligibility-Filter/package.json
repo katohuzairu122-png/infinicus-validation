@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-adi-14-alternative-feasibility-eligibility-filter",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/adi-14-alternative-feasibility-eligibility-filter.test.mjs"
+  }
+}
