@@ -1,0 +1,96 @@
+{
+  "schemaVersion": "1.0.0",
+  "lastUpdated": "2026-07-21T00:00:00.000Z",
+  "platform": "INFINICUS ENGINE v3",
+  "builds": [
+    {
+      "id": "BUILD-01",
+      "layer": "DT",
+      "name": "Digital Twin — 24 blocks + dt-bundle.js",
+      "status": "completed",
+      "blockCount": 24,
+      "bundleFile": "digital-twin/dt-bundle.js",
+      "indexHtmlWired": true,
+      "testsPass": true
+    },
+    {
+      "id": "BUILD-02",
+      "layer": "BI",
+      "name": "Business Intelligence — 25 blocks + bi-bundle.js",
+      "status": "completed",
+      "blockCount": 25,
+      "bundleFile": "business-intelligence/bi-bundle.js",
+      "indexHtmlWired": true,
+      "testsPass": true
+    },
+    {
+      "id": "BUILD-03",
+      "layer": "ABA",
+      "name": "Approved Business Action — 25 blocks + aba-bundle.js",
+      "status": "completed",
+      "blockCount": 25,
+      "bundleFile": "approved-business-action/aba-bundle.js",
+      "indexHtmlWired": true,
+      "testsPass": true
+    },
+    {
+      "id": "BUILD-04",
+      "layer": "OM",
+      "name": "Outcome Monitoring — 25 blocks + om-bundle.js",
+      "status": "completed",
+      "blockCount": 25,
+      "bundleFile": "outcome-monitoring/om-bundle.js",
+      "indexHtmlWired": true,
+      "testsPass": true
+    },
+    {
+      "id": "BUILD-05",
+      "layer": "CL",
+      "name": "Continuous Learning — 25 blocks + cl-bundle.js",
+      "status": "completed",
+      "blockCount": 25,
+      "bundleFile": "continuous-learning/cl-bundle.js",
+      "indexHtmlWired": true,
+      "testsPass": true
+    },
+    {
+      "id": "BUILD-06",
+      "layer": "ADI",
+      "name": "AI Decision Intelligence — 25 blocks + adi-bundle.js",
+      "status": "ready",
+      "blockCount": 25,
+      "bundleFile": "ai-decision-intelligence/adi-bundle.js",
+      "indexHtmlWired": false,
+      "testsPass": null,
+      "sourceBlocks": "infinicus-platform/layers/ai-decision-intelligence/blocks/",
+      "sourceTests": 106,
+      "sourceTestsPass": true,
+      "notes": "ES module source in monorepo — convert to browser-global IIFE at root level"
+    },
+    {
+      "id": "BUILD-07",
+      "layer": "SIM",
+      "name": "Simulation layer integration cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "BUILD-08",
+      "layer": "DAL",
+      "name": "Data Acquisition Layer root blocks",
+      "status": "pending"
+    },
+    {
+      "id": "BUILD-09",
+      "layer": "DB-BI",
+      "name": "Database Stage 3 — Business Intelligence schema",
+      "status": "pending"
+    },
+    {
+      "id": "BUILD-10",
+      "layer": "PLATFORM",
+      "name": "Platform assembly — all layers wired and validated",
+      "status": "pending"
+    }
+  ],
+  "currentReadyBuild": "BUILD-06"
+}
