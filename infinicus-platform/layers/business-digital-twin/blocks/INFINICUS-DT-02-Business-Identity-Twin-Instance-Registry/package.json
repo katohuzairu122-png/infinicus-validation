@@ -1,0 +1,10 @@
+{
+  "name": "infinicus-dt-02-business-identity-twin-instance-registry",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/twin-instance-registry.test.mjs",
+    "validate": "node tests/twin-instance-registry.test.mjs"
+  }
+}

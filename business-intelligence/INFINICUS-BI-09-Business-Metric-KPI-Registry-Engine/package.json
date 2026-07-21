@@ -1,0 +1,10 @@
+{
+  "name": "infinicus-bi-09-business-metric-kpi-registry-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/metric-registry.test.mjs",
+    "validate": "node tests/metric-registry.test.mjs"
+  }
+}

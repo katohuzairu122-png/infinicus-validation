@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-cl-10-business-rule-learning-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/cl-10.test.mjs"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-aba-06-approval-policy-threshold-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/approval-policy.test.mjs"
+  }
+}

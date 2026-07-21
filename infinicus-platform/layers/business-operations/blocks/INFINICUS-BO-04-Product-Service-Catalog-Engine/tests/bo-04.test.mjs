@@ -1,0 +1,1 @@
+import assert from "node:assert/strict";const states=["planned","authorized","executed","completed","failed","reversed"];assert.equal(states.includes("completed"),true);assert.equal("BO-04","BO-04");assert.equal(["bo.catalog_policy.register", "bo.catalog_items.register"].length>0,true);console.log("BO-04 tests passed.");

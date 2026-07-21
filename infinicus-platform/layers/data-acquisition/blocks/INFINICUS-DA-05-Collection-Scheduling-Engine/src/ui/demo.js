@@ -1,0 +1,1 @@
+addEventListener("DOMContentLoaded",()=>document.querySelector("#output").textContent=JSON.stringify({block:"DA-05",purpose:"Create governed collection schedules and retry windows.",routes:["da.collection_schedule_policy.register", "da.collection_schedules.create"],targetBlock:"DA-06"},null,2));

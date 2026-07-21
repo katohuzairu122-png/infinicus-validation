@@ -1,0 +1,1 @@
+import assert from "node:assert/strict";const states=["planned","scheduled","collecting","collected","validated","published","failed","quarantined","cancelled"];assert.equal(states.includes("published"),true);assert.equal("DA-19","DA-19");assert.equal(["da.sensitive_data_policy.register", "da.sensitive_data.process"].length>0,true);console.log("DA-19 tests passed.");

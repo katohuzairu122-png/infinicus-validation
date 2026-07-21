@@ -1,0 +1,1 @@
+(function(g){"use strict";if(!g.INFINICUS?.BO?.runtime)throw new Error("BO-01 must be loaded before BO-05.");if(!g.INFINICUS.BO.productServiceCatalogEngine)throw new Error("BO-04 must be loaded before BO-05.");})(window);

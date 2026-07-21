@@ -1,0 +1,31 @@
+{
+  "name": "@infinicus/layer-business-operations",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Business Operations Layer \u2014 process execution and operational context",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "dev": "tsc --watch",
+    "lint": "eslint src/",
+    "test": "vitest run",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@infinicus/layer-data-acquisition": "workspace:*",
+    "@infinicus/shared-types": "workspace:*",
+    "@infinicus/event-contracts": "workspace:*",
+    "@infinicus/handoff-contracts": "workspace:*",
+    "@infinicus/observability": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}

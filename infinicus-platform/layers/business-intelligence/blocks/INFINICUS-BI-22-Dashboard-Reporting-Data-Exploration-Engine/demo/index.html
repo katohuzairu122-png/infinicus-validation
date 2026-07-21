@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>INFINICUS BI-22</title>
+  <link rel="stylesheet" href="../src/styles/reporting.css">
+</head>
+<body>
+<main>
+  <h1>BI-22 — Dashboard, Reporting and Data Exploration Engine</h1>
+  <p>Converts governed intelligence into dashboards, reports, and drill-down datasets.</p>
+
+  <section class="panel">
+    <pre id="output">Loading...</pre>
+  </section>
+</main>
+
+<script src="../src/core/runtime-guard.js"></script>
+<script src="../src/model/dashboard-definition.js"></script>
+<script src="../src/model/report-definition.js"></script>
+<script src="../src/reporting/executive-summary.js"></script>
+<script src="../src/reporting/widget-renderer.js"></script>
+<script src="../src/reporting/exploration-publisher.js"></script>
+<script src="../src/storage/reporting-store.js"></script>
+<script src="../src/engine/reporting-exploration-engine.js"></script>
+<script src="../src/ui/demo.js"></script>
+</body>
+</html>

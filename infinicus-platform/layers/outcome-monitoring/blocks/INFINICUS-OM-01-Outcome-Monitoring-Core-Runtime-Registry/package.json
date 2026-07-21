@@ -1,0 +1,11 @@
+{
+  "name": "infinicus-om-01-outcome-monitoring-core-runtime-registry",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/runtime.test.mjs",
+    "validate:manifest": "node tests/manifest.test.mjs",
+    "validate": "npm run test && npm run validate:manifest"
+  }
+}

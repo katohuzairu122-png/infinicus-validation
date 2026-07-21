@@ -1,0 +1,1 @@
+addEventListener("DOMContentLoaded",()=>document.querySelector("#output").textContent=JSON.stringify({block:"BO-16",purpose:"Execute tasks, workflow stages, dependencies, approvals, assignments, deadlines, SLAs, and completion evidence.",routes:["bo.workflow_policy.register", "bo.workflows.execute"],targetBlock:"BO-17"},null,2));

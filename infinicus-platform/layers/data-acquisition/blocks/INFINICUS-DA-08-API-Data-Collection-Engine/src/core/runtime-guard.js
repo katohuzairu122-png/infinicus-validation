@@ -1,0 +1,1 @@
+(function(g){"use strict";if(!g.INFINICUS?.DA?.runtime)throw new Error("DA-01 must be loaded before DA-08.");if(!g.INFINICUS.DA.fileDocumentIntakeEngine)throw new Error("DA-07 must be loaded before DA-08.");})(window);

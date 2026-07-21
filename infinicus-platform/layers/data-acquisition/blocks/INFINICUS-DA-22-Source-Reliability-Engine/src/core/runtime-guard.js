@@ -1,0 +1,1 @@
+(function(g){"use strict";if(!g.INFINICUS?.DA?.runtime)throw new Error("DA-01 must be loaded before DA-22.");if(!g.INFINICUS.DA.missingDataManagementEngine)throw new Error("DA-21 must be loaded before DA-22.");})(window);

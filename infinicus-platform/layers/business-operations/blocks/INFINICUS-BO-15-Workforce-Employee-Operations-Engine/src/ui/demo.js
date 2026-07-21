@@ -1,0 +1,1 @@
+addEventListener("DOMContentLoaded",()=>document.querySelector("#output").textContent=JSON.stringify({block:"BO-15",purpose:"Manage employee profiles, contracts, attendance, shifts, leave, skills, certifications, and availability.",routes:["bo.workforce_policy.register", "bo.workforce.manage"],targetBlock:"BO-16"},null,2));

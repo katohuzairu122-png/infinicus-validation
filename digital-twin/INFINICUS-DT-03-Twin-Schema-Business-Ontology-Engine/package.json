@@ -1,0 +1,10 @@
+{
+  "name": "infinicus-dt-03-twin-schema-business-ontology-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/schema-ontology.test.mjs",
+    "validate": "node tests/schema-ontology.test.mjs"
+  }
+}

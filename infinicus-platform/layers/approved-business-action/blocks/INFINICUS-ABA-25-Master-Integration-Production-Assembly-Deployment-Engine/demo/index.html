@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>INFINICUS ABA-25</title>
+<link rel="stylesheet" href="../src/styles.css">
+</head>
+<body>
+<main>
+<h1>ABA-25 — Master Integration, Production Assembly and Deployment Engine</h1>
+<p>Assembles and validates the complete Approved Business Action subsystem.</p>
+<section class="panel">
+<pre id="output">Loading...</pre>
+</section>
+</main>
+
+<!-- Load ABA-01 through ABA-24 before these ABA-25 files. -->
+<script src="../src/manifest/block-manifest.js"></script>
+<script src="../src/validation/config-validator.js"></script>
+<script src="../src/validation/dependency-validator.js"></script>
+<script src="../src/validation/handoff-validator.js"></script>
+<script src="../src/storage/master-store.js"></script>
+<script src="../src/diagnostics/readiness-engine.js"></script>
+<script src="../src/orchestration/pipeline-orchestrator.js"></script>
+<script src="../src/engine/master-integration-engine.js"></script>
+<script src="../src/ui/demo.js"></script>
+</body>
+</html>

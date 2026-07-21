@@ -1,0 +1,22 @@
+{
+  "name": "@infinicus/admin",
+  "version": "0.0.1",
+  "private": true,
+  "description": "INFINICUS admin dashboard",
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "dev": "tsc --watch",
+    "lint": "eslint src/",
+    "test": "vitest run",
+    "clean": "rm -rf dist"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  },
+  "dependencies": {
+    "@infinicus/shared-types": "workspace:*",
+    "@infinicus/authorization": "workspace:*",
+    "@infinicus/configuration": "workspace:*",
+    "@infinicus/observability": "workspace:*"
+  }
+}

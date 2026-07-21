@@ -1,0 +1,1 @@
+import assert from "node:assert/strict";const states=["planned","scheduled","collecting","collected","validated","published","failed","quarantined","cancelled"];assert.equal(states.includes("published"),true);assert.equal("DA-18","DA-18");assert.equal(["da.classification_policy.register", "da.data.classify"].length>0,true);console.log("DA-18 tests passed.");

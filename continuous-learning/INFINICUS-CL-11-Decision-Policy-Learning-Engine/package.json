@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-cl-11-decision-policy-learning-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/cl-11.test.mjs"
+  }
+}

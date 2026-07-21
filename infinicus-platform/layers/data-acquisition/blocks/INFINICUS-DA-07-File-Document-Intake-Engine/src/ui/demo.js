@@ -1,0 +1,1 @@
+addEventListener("DOMContentLoaded",()=>document.querySelector("#output").textContent=JSON.stringify({block:"DA-07",purpose:"Register files and documents with hashes and metadata.",routes:["da.file_intake_policy.register", "da.files.intake"],targetBlock:"DA-08"},null,2));

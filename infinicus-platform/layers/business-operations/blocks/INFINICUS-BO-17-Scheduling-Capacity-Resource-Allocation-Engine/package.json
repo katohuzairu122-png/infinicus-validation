@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-bo-17-scheduling-capacity-resource-allocation-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/bo-17.test.mjs"
+  }
+}

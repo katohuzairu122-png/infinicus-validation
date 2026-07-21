@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-bo-24-business-operations-data-publication-handoff-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/bo-24.test.mjs"
+  }
+}

@@ -1,0 +1,1 @@
+addEventListener("DOMContentLoaded",()=>document.querySelector("#output").textContent=JSON.stringify({block:"BO-19",purpose:"Track expenses, petty cash, operating costs, cost centers, budgets, reimbursements, and cost variance.",routes:["bo.operational_finance_policy.register", "bo.operational_finance.process"],targetBlock:"BO-20"},null,2));

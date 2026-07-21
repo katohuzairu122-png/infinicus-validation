@@ -1,0 +1,1 @@
+addEventListener("DOMContentLoaded",()=>document.querySelector("#output").textContent=JSON.stringify({block:"BO-13",purpose:"Manage warehouses, zones, bins, receiving, put-away, picking, packing, counts, expiry, and storage exceptions.",routes:["bo.warehouse_policy.register", "bo.warehouse.operations.process"],targetBlock:"BO-14"},null,2));

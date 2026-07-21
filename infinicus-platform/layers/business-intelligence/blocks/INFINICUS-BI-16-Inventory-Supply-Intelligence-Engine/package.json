@@ -1,0 +1,10 @@
+{
+  "name": "infinicus-bi-16-inventory-supply-intelligence-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/inventory-supply-intelligence.test.mjs",
+    "validate": "node tests/inventory-supply-intelligence.test.mjs"
+  }
+}

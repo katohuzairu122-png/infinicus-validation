@@ -1,0 +1,1 @@
+addEventListener("DOMContentLoaded",()=>document.querySelector("#output").textContent=JSON.stringify({block:"BO-06",purpose:"Control leads, qualification, opportunities, stages, expected value, ownership, and conversion.",routes:["bo.sales_pipeline_policy.register", "bo.sales_pipeline.process"],targetBlock:"BO-07"},null,2));

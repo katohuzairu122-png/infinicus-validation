@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-cl-25-master-integration-production-assembly-deployment-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/cl-25.test.mjs"
+  }
+}

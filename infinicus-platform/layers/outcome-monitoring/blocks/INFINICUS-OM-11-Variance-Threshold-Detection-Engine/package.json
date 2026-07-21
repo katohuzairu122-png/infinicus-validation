@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-om-11-variance-threshold-detection-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/variance.test.mjs"
+  }
+}

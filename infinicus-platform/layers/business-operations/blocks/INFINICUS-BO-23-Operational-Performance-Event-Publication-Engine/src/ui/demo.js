@@ -1,0 +1,1 @@
+addEventListener("DOMContentLoaded",()=>document.querySelector("#output").textContent=JSON.stringify({block:"BO-23",purpose:"Transform business operations into governed performance metrics and operational event streams.",routes:["bo.performance_policy.register", "bo.operational_events.publish"],targetBlock:"BO-24"},null,2));

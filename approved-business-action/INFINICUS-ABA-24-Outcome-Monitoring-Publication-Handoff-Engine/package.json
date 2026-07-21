@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-aba-24-outcome-monitoring-publication-handoff-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/publication.test.mjs"
+  }
+}

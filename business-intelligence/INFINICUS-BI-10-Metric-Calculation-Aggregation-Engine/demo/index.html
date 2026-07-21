@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>INFINICUS BI-10</title>
+  <link rel="stylesheet" href="../src/styles/calculation.css">
+</head>
+<body>
+<main>
+  <h1>BI-10 — Metric Calculation and Aggregation Engine</h1>
+  <p>Calculates governed metrics from warehouse datasets.</p>
+
+  <section class="panel">
+    <pre id="output">Loading...</pre>
+  </section>
+</main>
+
+<script src="../src/core/runtime-guard.js"></script>
+<script src="../src/calculation/aggregation-engine.js"></script>
+<script src="../src/calculation/filter-engine.js"></script>
+<script src="../src/calculation/grouping-engine.js"></script>
+<script src="../src/calculation/dependency-order.js"></script>
+<script src="../src/calculation/derived-metric-engine.js"></script>
+<script src="../src/scoring/threshold-evaluator.js"></script>
+<script src="../src/storage/calculation-store.js"></script>
+<script src="../src/engine/metric-calculation-engine.js"></script>
+<script src="../src/ui/demo.js"></script>
+</body>
+</html>

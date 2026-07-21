@@ -1,0 +1,1 @@
+{"name":"infinicus-adi-12-decision-objectives-constraints-criteria-engine","version":"1.0.0","private":true,"type":"module","scripts":{"test":"node --test tests/*.test.mjs","validate":"npm test"}}

@@ -1,0 +1,22 @@
+{
+  "name": "infinicus-platform",
+  "version": "0.0.1",
+  "private": true,
+  "packageManager": "pnpm@10.33.0",
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "clean": "turbo run clean",
+    "typecheck": "turbo run typecheck",
+    "workspace:validate": "node scripts/validate-workspace.mjs"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.7.0",
+    "turbo": "^2.1.0",
+    "typescript": "^5.4.0",
+    "typescript-eslint": "^8.64.0"
+  }
+}

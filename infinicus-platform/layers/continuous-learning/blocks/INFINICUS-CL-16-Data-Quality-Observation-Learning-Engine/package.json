@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-cl-16-data-quality-observation-learning-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/cl-16.test.mjs"
+  }
+}

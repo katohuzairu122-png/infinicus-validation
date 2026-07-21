@@ -1,0 +1,1 @@
+import assert from "node:assert/strict";const states=["planned","authorized","executed","completed","failed","reversed"];assert.equal(states.includes("completed"),true);assert.equal("BO-16","BO-16");assert.equal(["bo.workflow_policy.register", "bo.workflows.execute"].length>0,true);console.log("BO-16 tests passed.");

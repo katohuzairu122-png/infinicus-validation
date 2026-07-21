@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-da-19-sensitive-data-handling-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/da-19.test.mjs"
+  }
+}

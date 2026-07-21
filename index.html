@@ -691,7 +691,145 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
 #feedback-close{position:absolute;top:9px;right:12px;background:none;border:none;color:var(--muted-2);font-size:21px;cursor:pointer;line-height:1;padding:0;}
 #feedback-thanks{display:none;text-align:center;padding:12px 0 4px;}
 #feedback-thanks p{color:var(--cyan);font-family:var(--mono);font-size:14px;margin:0;letter-spacing:.05em;}
+
+/* ── APP SHELL: sidebar + workspace ─────────────────────────────────────── */
+.app-shell{display:flex;align-items:flex-start;min-height:100vh;}
+#app-sidebar{
+  width:210px;flex-shrink:0;
+  background:#070a12;
+  border-right:1px solid var(--line);
+  position:sticky;top:0;
+  height:100vh;overflow-y:auto;
+  padding:.75rem 0 2rem;
+  scrollbar-width:none;
+  z-index:100;
+}
+#app-sidebar::-webkit-scrollbar{display:none;}
+.workspace{flex:1;min-width:0;}
+.sb-engine-label{
+  font-family:var(--mono);font-size:9px;letter-spacing:.14em;
+  color:var(--muted-2);padding:.4rem 1rem .6rem;
+  border-bottom:1px solid var(--line);margin-bottom:.6rem;
+}
+.sb-mode-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  font-family:var(--mono);font-size:9px;font-weight:700;
+  letter-spacing:.1em;padding:3px 8px;border-radius:4px;
+  background:rgba(0,224,96,.1);color:var(--cyan);
+  border:1px solid rgba(0,224,96,.2);margin:0 1rem .75rem;
+}
+.sb-mode-badge .sb-dot{width:5px;height:5px;border-radius:50%;background:var(--cyan);flex-shrink:0;}
+.sb-group{margin-bottom:.1rem;padding:0 .6rem;}
+.sb-group-lbl{
+  font-family:var(--mono);font-size:8px;letter-spacing:.14em;
+  color:var(--muted-2);padding:.55rem .6rem .2rem;
+  text-transform:uppercase;
+}
+.sb-link{
+  display:flex;align-items:center;width:100%;
+  font-family:var(--mono);font-size:12px;letter-spacing:.04em;
+  padding:6px 10px;border-radius:6px;
+  border:none;background:none;
+  color:var(--muted);cursor:pointer;
+  transition:color .15s,background .15s;
+  text-align:left;
+}
+.sb-link:hover{color:var(--text);background:rgba(255,255,255,.05);}
+.sb-link.active{color:var(--cyan);background:rgba(0,224,96,.08);}
+.sb-link.active::before{content:'▸';margin-right:5px;font-size:10px;}
+.sb-pair{display:grid;grid-template-columns:1fr 1fr;gap:2px;margin-bottom:2px;}
+.sb-pair .sb-link,.sb-pair .sb-platform-link{font-size:10px;padding:5px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;justify-content:center;text-align:center;width:100%;}
+.sb-pair .sb-link.active::before{display:none;}
+.sb-sep{border:none;border-top:1px solid var(--line);margin:.5rem .6rem;}
+.sb-platform-lbl{
+  font-family:var(--mono);font-size:8px;letter-spacing:.1em;
+  color:rgba(255,255,255,.15);padding:.55rem .6rem .2rem;
+}
+.sb-platform-link{
+  display:flex;align-items:center;width:100%;
+  font-family:var(--mono);font-size:10px;letter-spacing:.04em;
+  padding:4px 10px;border-radius:6px;
+  border:none;background:none;
+  color:rgba(255,255,255,.2);cursor:pointer;
+  transition:color .15s;text-align:left;
+}
+.sb-platform-link:hover{color:var(--muted);}
+.sb-platform-link.active{color:var(--muted);}
+/* MOBILE: sidebar becomes off-canvas drawer */
+@media(max-width:820px){
+  #app-sidebar{
+    position:fixed;left:-220px;top:0;
+    width:210px;height:100vh;
+    transition:left .28s cubic-bezier(.22,1,.36,1);
+    z-index:450;border-right:1px solid var(--line-2);
+    box-shadow:4px 0 24px rgba(0,0,0,.4);
+  }
+  #app-sidebar.open{left:0;}
+  #sb-overlay{
+    display:none;position:fixed;inset:0;
+    background:rgba(0,0,0,.55);z-index:449;
+  }
+  #app-sidebar.open~#sb-overlay,
+  #sb-overlay.open{display:block;}
+}
 </style>
+<!-- Business Digital Twin Layer — DT-01 through DT-24 -->
+<script src="/digital-twin/dt-bundle.js" defer></script>
+<!-- Business Intelligence Layer — BI-01 through BI-25 -->
+<script src="/business-intelligence/bi-bundle.js" defer></script>
+<!-- Approved Business Action Layer — ABA-01 through ABA-25 -->
+<script src="/approved-business-action/aba-bundle.js" defer></script>
+<!-- Outcome Monitoring Layer — OM-01 through OM-25 -->
+<script src="/outcome-monitoring/om-bundle.js" defer></script>
+<!-- Continuous Learning Layer — CL-01 through CL-25 -->
+<script src="/continuous-learning/cl-bundle.js" defer></script>
+<!-- Supabase JS client -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+const SUPA = window.supabase.createClient(
+  'https://dxheognltijswhtpnndk.supabase.co',
+  'sb_publishable_4qESSqE-_s8Wn7Qtjs5qNg_xGaXphch'
+);
+SUPA.auth.onAuthStateChange(async (event, session) => {
+  if (session?.user) {
+    const { data: profile } = await SUPA.from('profiles').select('*').eq('id', session.user.id).single();
+    const prev = U || {};
+    U = {
+      email:      session.user.email,
+      supaId:     session.user.id,
+      plan:       profile?.plan      || prev.plan     || 'free',
+      simCount:   profile?.sim_count || prev.simCount || 0,
+      createdAt:  session.user.created_at || prev.createdAt || Date.now(),
+      verifiedAt: Date.now()
+    };
+    saveUser(); renderUserBadge();
+    if (event === 'SIGNED_IN') {
+      const modal = document.getElementById('reg-modal');
+      if (modal) modal.style.display = 'none';
+      if (typeof _pendingSimAfterReg !== 'undefined' && _pendingSimAfterReg) {
+        _pendingSimAfterReg = false; startSim();
+      }
+    }
+  } else if (event === 'SIGNED_OUT') {
+    U = null;
+    try { localStorage.removeItem('infinicus_user'); } catch(e) {}
+    renderUserBadge();
+  }
+});
+async function supabaseSaveSimulation(entry) {
+  const { data: { session } } = await SUPA.auth.getSession();
+  if (!session) return;
+  try {
+    await SUPA.from('simulations').insert({
+      user_id: session.user.id,
+      params:  entry.params,
+      summary: { verdict:entry.verdict, rev:entry.rev, profit:entry.profit,
+                 cash:entry.cash, surv:entry.surv, capital:entry.capital, profDays:entry.profDays }
+    });
+    await SUPA.rpc('increment_sim_count', { user_id: session.user.id });
+  } catch(e) { console.warn('Supabase save:', e); }
+}
+</script>
 <!-- Google tag (gtag.js) — consent-gated -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=AW-18295551736"></script>
 <script>
@@ -736,14 +874,11 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
     INFIN<span class="c">ICUS</span><span class="logo-ver">ENGINE v3</span>
   </div>
   <button class="ham-btn" id="ham-btn" onclick="toggleNav()" aria-label="Menu">☰</button>
-  <nav class="nav" id="main-nav">
-    <button class="nb active" data-section="data"         onclick="nav('data')"        >DATA ACQ</button>
-    <button class="nb"        data-section="operations"   onclick="nav('operations')"  >OPERATIONS</button>
-    <button class="nb"        data-section="intelligence" onclick="nav('intelligence')">INTEL</button>
-    <button class="nb"        data-section="twin"         onclick="nav('twin')"        >TWIN</button>
-    <button class="nb"        data-section="simulation"   onclick="nav('simulation')"  >SIMULATE</button>
-    <button class="nb"        data-section="decisions"    onclick="nav('decisions')"   >AI DECISIONS</button>
-  </nav>
+  <nav class="nav" id="main-nav" style="display:none!important;"></nav>
+  <div style="display:flex;align-items:center;gap:8px;flex:1;">
+    <span style="font-family:var(--mono);font-size:9px;letter-spacing:.12em;color:var(--muted-2);border:1px solid var(--line);border-radius:4px;padding:3px 8px;white-space:nowrap;">SIMULATION ENGINE</span>
+    <span id="hdr-mode-badge" style="font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--cyan);background:rgba(0,224,96,.08);border:1px solid rgba(0,224,96,.2);border-radius:4px;padding:3px 8px;white-space:nowrap;">● PUBLIC IDEA MODE</span>
+  </div>
   <div class="hdr-right">
     <button id="signin-btn" class="nb" onclick="openRegModal()" style="display:none;border-color:rgba(0,224,96,.25);color:var(--cyan);" title="Sign in or create account">SIGN IN</button>
     <div id="user-badge-wrap" class="user-badge-wrap">
@@ -794,10 +929,73 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
   </div>
 </header>
 
+<!-- ══ APP SHELL ══ -->
+<div class="app-shell">
+
+<!-- ── SIDEBAR ── -->
+<aside id="app-sidebar">
+  <div class="sb-engine-label">INFINICUS ENGINE v3</div>
+  <div class="sb-mode-badge" id="sb-mode-badge"><span class="sb-dot"></span>PUBLIC IDEA MODE</div>
+
+  <div class="sb-group">
+    <div class="sb-group-lbl">SETUP</div>
+    <button class="sb-link active" data-section="data"        onclick="nav('data')">Input</button>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-lbl">RESULTS</div>
+    <div class="sb-pair">
+      <button class="sb-link" data-section="dashboard" onclick="nav('dashboard')">Dashboard</button>
+      <button class="sb-link" data-section="verdict"   onclick="nav('verdict')">Verdict</button>
+    </div>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-lbl">ANALYSIS</div>
+    <div class="sb-pair">
+      <button class="sb-link" data-section="economy"   onclick="nav('economy')">Economy</button>
+      <button class="sb-link" data-section="customers" onclick="nav('customers')">Customers</button>
+    </div>
+    <div class="sb-pair">
+      <button class="sb-link" data-section="risk"      onclick="nav('risk')">Risk · MC</button>
+      <button class="sb-link" data-section="forecast"  onclick="nav('forecast')">Forecast</button>
+    </div>
+    <button class="sb-link" data-section="sensitivity" onclick="nav('sensitivity')">Sensitivity</button>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-lbl">SCENARIOS &amp; OUTPUT</div>
+    <div class="sb-pair">
+      <button class="sb-link" data-section="compare"  onclick="nav('compare')">Compare</button>
+      <button class="sb-link" data-section="history"  onclick="nav('history')">History</button>
+    </div>
+    <button class="sb-link" data-section="report" onclick="nav('report')">Report</button>
+  </div>
+
+  <hr class="sb-sep">
+
+  <div class="sb-platform-lbl">PLATFORM LAYERS</div>
+  <div class="sb-pair" style="padding:0 .6rem;">
+    <button class="sb-platform-link" data-section="decisions"    onclick="nav('decisions')">AI Decisions</button>
+    <button class="sb-platform-link" data-section="twin"         onclick="nav('twin')">Digital Twin</button>
+  </div>
+  <div class="sb-pair" style="padding:0 .6rem;">
+    <button class="sb-platform-link" data-section="intelligence" onclick="nav('intelligence')">Biz Intel.</button>
+    <button class="sb-platform-link" data-section="operations"   onclick="nav('operations')">Operations</button>
+  </div>
+  <button class="sb-platform-link" style="padding-left:1.2rem;" data-section="simulation" onclick="nav('simulation')">Engine Hub</button>
+</aside>
+
+<!-- overlay for mobile sidebar -->
+<div id="sb-overlay" onclick="closeSidebar()"></div>
+
+<!-- ── WORKSPACE ── -->
+<div class="workspace">
+
 <!-- ══ INPUT ══ -->
 <section class="section active" id="sec-data">
-  <div class="pg-title"><span class="c">DATA</span> ACQUISITION<br>LAYER</div>
-  <div class="pg-sub">// FEED THE ENGINE — BUSINESS PARAMETERS · MARKET CONDITIONS · FINANCIAL INPUTS</div>
+  <div class="pg-title">SIMULATION <span class="c">SETUP</span></div>
+  <div class="pg-sub">// ENTER YOUR BUSINESS IDEA — PARAMETERS · MARKET · FINANCIALS</div>
   <!-- 5-STEP PROGRESS INDICATOR -->
   <div class="inp-progress" id="inp-progress">
     <div class="inp-step ip-active" id="ip-1">
@@ -1216,7 +1414,7 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
 <!-- ══ VERDICT ══ -->
 <section class="section" id="sec-verdict">
   <div class="pg-title" style="font-size:22px;margin-bottom:.1rem;">VERDICT</div>
-  <div class="pg-sub">// FINAL ASSESSMENT</div>
+  <div class="pg-sub">// SIMULATION ENGINE VERDICT · MATHEMATICAL RESULT · GO / MODIFY / STOP</div>
   <div class="action-row">
     <button class="btn-action" onclick="shareLink()">⎋ SHARE LINK</button>
     <button class="btn-action" onclick="downloadVerdictCard()">🖼 SHARE CARD</button>
@@ -1462,8 +1660,39 @@ input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;height:4px;
 
 <!-- ══ DIGITAL TWIN ══ -->
 <section class="section" id="sec-twin">
-  <div class="pg-title" style="font-size:22px;margin-bottom:.1rem;">DIGITAL <span class="c">TWIN</span></div>
-  <div class="pg-sub">// LIVE 30-DAY SNAPSHOT · CACHED · AUTO-REFRESHES HOURLY FROM YOUR EVENT STREAM</div>
+  <div class="pg-title" style="font-size:22px;margin-bottom:.1rem;">BUSINESS DIGITAL <span class="c">TWIN</span></div>
+  <div class="pg-sub">// 24-BLOCK DT LAYER · LIVE STATE · FEEDS SIMULATION ENGINE VIA DT-24 HANDOFF</div>
+
+  <!-- DT Layer Runtime Status -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;padding:.6rem .8rem;background:rgba(0,224,96,.04);border:1px solid rgba(0,224,96,.12);border-radius:8px;flex-wrap:wrap;gap:.5rem;">
+    <div style="font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--muted-2);">
+      INFINICUS DT LAYER &nbsp;·&nbsp; DT-01 → DT-24
+    </div>
+    <div id="dt-runtime-status" style="font-family:var(--mono);font-size:10px;">
+      <span style="color:var(--muted-2)">○ LOADING…</span>
+    </div>
+  </div>
+
+  <!-- DT-24 Handoff Status (populated by receiveDigitalTwinPackage) -->
+  <div id="dt-layer-status" style="margin-bottom:.75rem;padding:.6rem .8rem;background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:8px;font-family:var(--mono);font-size:10px;color:var(--muted-2);">
+    ○ AWAITING DT-24 SIMULATION PACKAGE — no package received yet
+  </div>
+
+  <!-- Layer Integration Wire Status -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:.75rem;">
+    <div id="bi-layer-status" style="padding:.5rem .7rem;background:rgba(255,255,255,.02);border:1px solid var(--line);border-radius:6px;font-family:var(--mono);font-size:9px;color:var(--muted-2);">
+      ○ BI LAYER — LOADING
+    </div>
+    <div id="aba-layer-status" style="padding:.5rem .7rem;background:rgba(255,255,255,.02);border:1px solid var(--line);border-radius:6px;font-family:var(--mono);font-size:9px;color:var(--muted-2);">
+      ○ ABA LAYER — LOADING
+    </div>
+    <div id="om-layer-status" style="padding:.5rem .7rem;background:rgba(255,255,255,.02);border:1px solid var(--line);border-radius:6px;font-family:var(--mono);font-size:9px;color:var(--muted-2);">
+      ○ OM LAYER — LOADING
+    </div>
+    <div id="cl-layer-status" style="padding:.5rem .7rem;background:rgba(255,255,255,.02);border:1px solid var(--line);border-radius:6px;font-family:var(--mono);font-size:9px;color:var(--muted-2);">
+      ○ CL LAYER — LOADING
+    </div>
+  </div>
 
   <!-- Auth gate -->
   <div id="twin-auth-gate" style="display:none;text-align:center;padding:2.5rem 1rem;">
@@ -2747,13 +2976,15 @@ function isGrowthPlus(){ return U&&['growth','professional'].includes(U.plan); }
 
 // ─── NAVIGATION ──────────────────────────────────────────────────────────────
 function nav(id) {
-  // Gating removed — all sections open during early access
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.sb-link,.sb-platform-link').forEach(b=>b.classList.remove('active'));
   $('sec-'+id).classList.add('active');
   const btn=document.querySelector(`.nb[data-section="${id}"]`);
   if (btn) btn.classList.add('active');
-  $('main-nav').classList.remove('open');
+  const sbLink=document.querySelector(`.sb-link[data-section="${id}"],.sb-platform-link[data-section="${id}"]`);
+  if (sbLink) sbLink.classList.add('active');
+  closeSidebar();
   window.scrollTo(0,0);
   if (id==='sensitivity'&&S.done) updateSensitivity();
   if (id==='compare'){renderScenarioSlots();renderComparisonTable();}
@@ -3586,8 +3817,17 @@ function updatePriceLabel(ind) {
 }
 
 function toggleNav() {
-  const nav=$('main-nav');
-  nav.classList.toggle('open');
+  const sb=document.getElementById('app-sidebar');
+  const ov=document.getElementById('sb-overlay');
+  if(sb) sb.classList.toggle('open');
+  if(ov) ov.classList.toggle('open');
+}
+
+function closeSidebar() {
+  const sb=document.getElementById('app-sidebar');
+  const ov=document.getElementById('sb-overlay');
+  if(sb) sb.classList.remove('open');
+  if(ov) ov.classList.remove('open');
 }
 
 function showToast(msg,dur=2800) {
@@ -5240,8 +5480,9 @@ function toggleUserMenu(e) {
   m.classList.toggle('open');
 }
 function closeUserMenu() { const m=$('user-menu'); if(m) m.classList.remove('open'); }
-function signOutEngine() {
+async function signOutEngine() {
   closeUserMenu();
+  await SUPA.auth.signOut().catch(()=>{});
   try{localStorage.removeItem('infinicus_user');}catch(e){}
   try{localStorage.removeItem('infinicus_tc_accepted');}catch(e){}
   U=null;
@@ -5281,16 +5522,13 @@ async function doLogin() {
   errEl.style.display='none';
   btn.textContent='Signing in…'; btn.disabled=true;
   try {
-    const res  = await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});
-    const data = await res.json();
-    if(!res.ok||!data.ok){
-      errEl.textContent=data.error||'Sign in failed. Please try again.'; errEl.style.display='block';
+    const { data, error } = await SUPA.auth.signInWithPassword({ email, password });
+    if(error){
+      errEl.textContent=error.message||'Sign in failed. Please try again.'; errEl.style.display='block';
       btn.textContent='Sign In →'; btn.disabled=false; return;
     }
-    U={email:data.email,plan:data.plan||'free',simCount:data.simCount||0,createdAt:data.createdAt||Date.now()};
-    saveUser(); renderUserBadge(); closeRegModal();
-    showToast(`Signed in as ${data.email} ✓`);
-    if(_pendingSimAfterReg){_pendingSimAfterReg=false;startSim();}
+    showToast(`Signed in as ${data.user.email} ✓`);
+    // onAuthStateChange handles U update and renderUserBadge
   } catch(e){
     errEl.textContent='Network error. Please try again.'; errEl.style.display='block';
     btn.textContent='Sign In →'; btn.disabled=false;
@@ -5311,23 +5549,23 @@ async function doRegister() {
   errEl.style.display='none';
   btn.textContent='Creating account…'; btn.disabled=true;
   try {
-    const res  = await fetch('/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});
-    const data = await res.json();
-    if(!res.ok||!data.ok){
-      errEl.textContent=data.error||'Registration failed. Please try again.'; errEl.style.display='block';
+    const { data, error } = await SUPA.auth.signUp({ email, password });
+    if(error){
+      errEl.textContent=error.message||'Registration failed. Please try again.'; errEl.style.display='block';
       btn.textContent='Create Account →'; btn.disabled=false; return;
     }
-    U={email:data.email,plan:'free',simCount:0,createdAt:Date.now()};
-    saveUser(); renderUserBadge(); closeRegModal();
-    showToast(`Account created! Welcome, ${data.email} ✓`);
-    if(_pendingSimAfterReg){_pendingSimAfterReg=false;startSim();}
+    // Supabase may require email confirmation — show toast accordingly
+    const confirmed = data.user?.email_confirmed_at;
+    showToast(confirmed ? `Account created! Welcome, ${email} ✓` : `Check your inbox to confirm your email ✓`);
+    // onAuthStateChange fires and sets U once confirmed
   } catch(e){
     errEl.textContent='Network error. Please try again.'; errEl.style.display='block';
     btn.textContent='Create Account →'; btn.disabled=false;
   }
 }
 
-function signOut() {
+async function signOut() {
+  await SUPA.auth.signOut().catch(()=>{});
   try{localStorage.removeItem('infinicus_user');}catch(e){}
   try{localStorage.removeItem('infinicus_tc_accepted');}catch(e){}
   U=null;
@@ -5477,6 +5715,7 @@ function saveToHistory() {
     hist.unshift(entry);
     if(hist.length>20) hist=hist.slice(0,20);
     localStorage.setItem('infinicus_history',JSON.stringify(hist));
+    supabaseSaveSimulation(entry);
   }catch(e){}
 }
 
@@ -6801,7 +7040,252 @@ document.addEventListener('DOMContentLoaded',()=>{
     s.addEventListener('mouseout',()=>stars.forEach(x=>x.classList.toggle('fb-on',parseInt(x.dataset.v)<=_fbRating)));
   });
 });
+
+window.INFINICUS = window.INFINICUS || {};
+window.INFINICUS.SIMULATION = window.INFINICUS.SIMULATION || {};
+
+/* Last DT-24 package received this session */
+window.INFINICUS.SIMULATION._lastDTPackage = null;
+
+window.INFINICUS.SIMULATION.receiveDigitalTwinPackage = function(packageData) {
+  if (!packageData || typeof packageData !== 'object') {
+    return { ready: false, message: 'Invalid package — expected DT-24 handoff object.' };
+  }
+  window.INFINICUS.SIMULATION._lastDTPackage = packageData;
+
+  /* Update sec-twin status panel */
+  const panel = document.getElementById('dt-layer-status');
+  if (panel) {
+    const pid  = packageData?.publication?.simulationPackageId || packageData?.simulationPackageId || '—';
+    const biz  = packageData?.publication?.businessId  || packageData?.businessId  || '—';
+    const twin = packageData?.publication?.twinId      || packageData?.twinId      || '—';
+    const scen = packageData?.publication?.scenarioId  || packageData?.scenarioId  || '—';
+    const ts   = new Date().toLocaleTimeString();
+    panel.innerHTML = `
+      <div style="font-family:var(--mono);font-size:9px;letter-spacing:.12em;color:var(--cyan);margin-bottom:.4rem;">● DT-24 PACKAGE RECEIVED — ${ts}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 1rem;font-family:var(--mono);font-size:10px;color:var(--muted);">
+        <span>PACKAGE</span><span style="color:var(--text)">${pid.slice(-12)}</span>
+        <span>BUSINESS</span><span style="color:var(--text)">${biz.slice(-12)}</span>
+        <span>TWIN</span><span style="color:var(--text)">${twin.slice(-12)}</span>
+        <span>SCENARIO</span><span style="color:var(--text)">${scen.slice(-12)}</span>
+      </div>`;
+  }
+
+  showToast('Digital Twin package received — simulation engine connected ✓');
+  return { ready: true, message: 'Package accepted by simulation engine.', packageData };
+};
+
+/* Initialise DT runtime once DOM + bundle are both ready */
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof window.INFINICUS === 'undefined' || typeof window.INFINICUS.DT === 'undefined') return;
+  const panel = document.getElementById('dt-runtime-status');
+  if (!panel) return;
+  const rt = window.INFINICUS.DT.runtime;
+  if (rt && typeof rt.diagnostics === 'function') {
+    const d = rt.diagnostics();
+    if (d.ok) {
+      panel.innerHTML = `<span style="color:var(--cyan)">● RUNTIME ACTIVE</span>
+        <span style="color:var(--muted-2);margin-left:.75rem;">${d.data.blockCount} blocks · v${d.data.version}</span>`;
+    }
+  }
+});
 </script>
+
+<script>
+/* ──────────────────────────────────────────────────────────────
+   LAYER INTEGRATION WIRE HOOKS
+   Prepares the engine to receive handoffs from BI, ABA, OM, CL.
+   Bundles must already be loaded (script tags above).
+   ────────────────────────────────────────────────────────────── */
+
+window.INFINICUS = window.INFINICUS || {};
+window.INFINICUS.SIMULATION = window.INFINICUS.SIMULATION || {};
+
+/* Last package received from each layer this session */
+window.INFINICUS.SIMULATION._lastBIPackage          = null;
+window.INFINICUS.SIMULATION._lastABAContract        = null;
+window.INFINICUS.SIMULATION._lastOMPackage          = null;
+window.INFINICUS.SIMULATION._lastCLIntelligence     = null;
+
+/* BI-24 → Engine: receive Business State Package */
+window.INFINICUS.SIMULATION.receiveBIPackage = function(packageData) {
+  if (!packageData || typeof packageData !== 'object') {
+    return { ready: false, message: 'Invalid package — expected BI-24 business state object.' };
+  }
+  window.INFINICUS.SIMULATION._lastBIPackage = packageData;
+  var panel = document.getElementById('bi-layer-status');
+  if (panel) {
+    var ts  = new Date().toLocaleTimeString();
+    var cid = (packageData.correlationId || packageData.biIntegrationHandoffId || '—').slice(-12);
+    panel.innerHTML = '<span style="color:var(--cyan)">● BI-24 PACKAGE RECEIVED — ' + ts + '</span>' +
+                      '<span style="color:var(--muted-2);margin-left:.5rem;">ID ' + cid + '</span>';
+  }
+  return { ready: true, message: 'BI business state package accepted.', packageData: packageData };
+};
+
+/* ABA-24 → Engine: receive Outcome Monitoring Contract */
+window.INFINICUS.SIMULATION.receiveABAContract = function(packageData) {
+  if (!packageData || typeof packageData !== 'object') {
+    return { ready: false, message: 'Invalid contract — expected ABA-24 outcome monitoring object.' };
+  }
+  window.INFINICUS.SIMULATION._lastABAContract = packageData;
+  var panel = document.getElementById('aba-layer-status');
+  if (panel) {
+    var ts  = new Date().toLocaleTimeString();
+    var cid = (packageData.correlationId || packageData.outcomeMonitoringContractId || '—').slice(-12);
+    panel.innerHTML = '<span style="color:var(--cyan)">● ABA-24 CONTRACT RECEIVED — ' + ts + '</span>' +
+                      '<span style="color:var(--muted-2);margin-left:.5rem;">ID ' + cid + '</span>';
+  }
+  return { ready: true, message: 'ABA outcome monitoring contract accepted.', packageData: packageData };
+};
+
+/* OM-24 → Engine: receive Learning Package */
+window.INFINICUS.SIMULATION.receiveOMPackage = function(packageData) {
+  if (!packageData || typeof packageData !== 'object') {
+    return { ready: false, message: 'Invalid package — expected OM-24 learning package object.' };
+  }
+  window.INFINICUS.SIMULATION._lastOMPackage = packageData;
+  var panel = document.getElementById('om-layer-status');
+  if (panel) {
+    var ts  = new Date().toLocaleTimeString();
+    var cid = (packageData.correlationId || packageData.outcomeLearningPackageId || '—').slice(-12);
+    panel.innerHTML = '<span style="color:var(--cyan)">● OM-24 PACKAGE RECEIVED — ' + ts + '</span>' +
+                      '<span style="color:var(--muted-2);margin-left:.5rem;">ID ' + cid + '</span>';
+  }
+  return { ready: true, message: 'OM learning package accepted.', packageData: packageData };
+};
+
+/* CL-24 → Engine: receive Updated Intelligence */
+window.INFINICUS.SIMULATION.receiveCLIntelligence = function(payload) {
+  if (!payload || typeof payload !== 'object') {
+    return { ready: false, message: 'Invalid payload — expected CL-24 intelligence object.' };
+  }
+  window.INFINICUS.SIMULATION._lastCLIntelligence = payload;
+  var panel = document.getElementById('cl-layer-status');
+  if (panel) {
+    var ts  = new Date().toLocaleTimeString();
+    var cid = (payload.correlationId || payload.continuousLearningAssemblyHandoffId || '—').slice(-12);
+    panel.innerHTML = '<span style="color:var(--cyan)">● CL-24 INTELLIGENCE RECEIVED — ' + ts + '</span>' +
+                      '<span style="color:var(--muted-2);margin-left:.5rem;">ID ' + cid + '</span>';
+  }
+  return { ready: true, message: 'CL updated intelligence accepted.', payload: payload };
+};
+
+/* Register publisher hooks once all deferred bundles have loaded */
+document.addEventListener('DOMContentLoaded', function() {
+
+  /* ── BI layer status ── */
+  (function() {
+    var panel = document.getElementById('bi-layer-status');
+    if (!panel) return;
+    if (typeof window.INFINICUS === 'undefined' || typeof window.INFINICUS.BI === 'undefined') {
+      panel.innerHTML = '<span style="color:var(--muted-2)">○ BI LAYER — NOT LOADED</span>';
+      return;
+    }
+    var rt = window.INFINICUS.BI.runtime;
+    if (rt && typeof rt.diagnostics === 'function') {
+      var d = rt.diagnostics();
+      panel.innerHTML = d.ok
+        ? '<span style="color:var(--cyan)">● BI RUNTIME ACTIVE</span><span style="color:var(--muted-2);margin-left:.5rem;">' + d.data.blockCount + ' blocks</span>'
+        : '<span style="color:var(--muted-2)">○ BI RUNTIME ERROR</span>';
+    } else {
+      panel.innerHTML = '<span style="color:var(--muted-2)">○ BI LAYER READY</span>';
+    }
+
+    /* Wire BI-24 publisher so BI → engine handoff is live */
+    var bi24 = window.INFINICUS.BI.digitalTwinPublicationEngine;
+    if (bi24 && typeof bi24.registerPublisher === 'function') {
+      bi24.registerPublisher('SIMULATION_ENGINE', function(statePackage) {
+        return window.INFINICUS.SIMULATION.receiveBIPackage(statePackage);
+      });
+    }
+  })();
+
+  /* ── ABA layer status ── */
+  (function() {
+    var panel = document.getElementById('aba-layer-status');
+    if (!panel) return;
+    if (typeof window.INFINICUS === 'undefined' || typeof window.INFINICUS.ABA === 'undefined') {
+      panel.innerHTML = '<span style="color:var(--muted-2)">○ ABA LAYER — NOT LOADED</span>';
+      return;
+    }
+    var rt = window.INFINICUS.ABA.runtime;
+    if (rt && typeof rt.diagnostics === 'function') {
+      var d = rt.diagnostics();
+      panel.innerHTML = d.ok
+        ? '<span style="color:var(--cyan)">● ABA RUNTIME ACTIVE</span><span style="color:var(--muted-2);margin-left:.5rem;">' + d.data.blockCount + ' blocks</span>'
+        : '<span style="color:var(--muted-2)">○ ABA RUNTIME ERROR</span>';
+    } else {
+      panel.innerHTML = '<span style="color:var(--muted-2)">○ ABA LAYER READY</span>';
+    }
+
+    /* Wire ABA-24 publisher so ABA → OM handoff is live */
+    var aba24 = window.INFINICUS.ABA.outcomeMonitoringPublicationEngine;
+    if (aba24 && typeof aba24.registerPublisher === 'function') {
+      aba24.registerPublisher('OUTCOME_MONITORING', function(contract) {
+        return window.INFINICUS.SIMULATION.receiveABAContract(contract);
+      });
+    }
+  })();
+
+  /* ── OM layer status ── */
+  (function() {
+    var panel = document.getElementById('om-layer-status');
+    if (!panel) return;
+    if (typeof window.INFINICUS === 'undefined' || typeof window.INFINICUS.OM === 'undefined') {
+      panel.innerHTML = '<span style="color:var(--muted-2)">○ OM LAYER — NOT LOADED</span>';
+      return;
+    }
+    var rt = window.INFINICUS.OM.runtime;
+    if (rt && typeof rt.diagnostics === 'function') {
+      var d = rt.diagnostics();
+      panel.innerHTML = d.ok
+        ? '<span style="color:var(--cyan)">● OM RUNTIME ACTIVE</span><span style="color:var(--muted-2);margin-left:.5rem;">' + d.data.blockCount + ' blocks</span>'
+        : '<span style="color:var(--muted-2)">○ OM RUNTIME ERROR</span>';
+    } else {
+      panel.innerHTML = '<span style="color:var(--muted-2)">○ OM LAYER READY</span>';
+    }
+
+    /* Wire OM-24 publisher so OM → CL handoff is live */
+    var om24 = window.INFINICUS.OM.continuousLearningPublicationEngine;
+    if (om24 && typeof om24.registerPublisher === 'function') {
+      om24.registerPublisher('CONTINUOUS_LEARNING', function(learningPackage) {
+        return window.INFINICUS.SIMULATION.receiveOMPackage(learningPackage);
+      });
+    }
+  })();
+
+  /* ── CL layer status + event listener ── */
+  (function() {
+    var panel = document.getElementById('cl-layer-status');
+    if (!panel) return;
+    if (typeof window.INFINICUS === 'undefined' || typeof window.INFINICUS.CL === 'undefined') {
+      panel.innerHTML = '<span style="color:var(--muted-2)">○ CL LAYER — NOT LOADED</span>';
+      return;
+    }
+    var rt = window.INFINICUS.CL.runtime;
+    if (rt && typeof rt.diagnostics === 'function') {
+      var d = rt.diagnostics();
+      panel.innerHTML = d.ok
+        ? '<span style="color:var(--cyan)">● CL RUNTIME ACTIVE</span><span style="color:var(--muted-2);margin-left:.5rem;">' + d.data.blockCount + ' blocks</span>'
+        : '<span style="color:var(--muted-2)">○ CL RUNTIME ERROR</span>';
+    } else {
+      panel.innerHTML = '<span style="color:var(--muted-2)">○ CL LAYER READY</span>';
+    }
+
+    /* Listen for CL-24 publish events (CL uses event-bus pattern, not registerPublisher) */
+    if (rt && typeof rt.on === 'function') {
+      rt.on('cl.updated_intelligence.publish.completed', function(payload) {
+        window.INFINICUS.SIMULATION.receiveCLIntelligence(payload || {});
+      });
+    }
+  })();
+
+});
+</script>
+
+</div><!-- /workspace -->
+</div><!-- /app-shell -->
 
 <!-- FEEDBACK SLIDE-IN CARD -->
 <div id="feedback-card">

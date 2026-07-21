@@ -1,0 +1,1 @@
+(function(g){"use strict";if(!g.INFINICUS?.BO?.runtime)throw new Error("BO-01 must be loaded before BO-04.");if(!g.INFINICUS.BO.organizationDepartmentResponsibilityRegistryEngine)throw new Error("BO-03 must be loaded before BO-04.");})(window);

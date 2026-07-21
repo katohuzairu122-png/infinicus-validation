@@ -1,0 +1,28 @@
+{
+  "name": "@infinicus/observability",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Structured logging, metrics, tracing, and Sentry integration",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "dev": "tsc --watch",
+    "lint": "eslint src/",
+    "test": "vitest run",
+    "clean": "rm -rf dist"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  },
+  "dependencies": {
+    "@infinicus/shared-types": "workspace:*",
+    "@infinicus/configuration": "workspace:*"
+  }
+}

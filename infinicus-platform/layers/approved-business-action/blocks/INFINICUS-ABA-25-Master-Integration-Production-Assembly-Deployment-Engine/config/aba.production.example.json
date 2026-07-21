@@ -1,0 +1,31 @@
+{
+  "environment": "production",
+  "application": {
+    "name": "INFINICUS Approved Business Action",
+    "version": "1.0.0"
+  },
+  "runtime": {
+    "failClosed": true,
+    "diagnosticsEnabled": true,
+    "eventRetentionDays": 365
+  },
+  "storage": {
+    "provider": "indexeddb-development-only",
+    "productionAdapterReference": "replace-with-server-side-storage-adapter"
+  },
+  "security": {
+    "secretManagerReference": "replace-with-secret-manager-reference",
+    "allowBrowserSecrets": false,
+    "requireSignedEvidence": true,
+    "requireChecksums": true
+  },
+  "execution": {
+    "requireDryRun": true,
+    "requireIdempotency": true,
+    "requireQueueLease": true
+  },
+  "handoffs": {
+    "outcomeMonitoringEnabled": true,
+    "continuousLearningEnabled": true
+  }
+}

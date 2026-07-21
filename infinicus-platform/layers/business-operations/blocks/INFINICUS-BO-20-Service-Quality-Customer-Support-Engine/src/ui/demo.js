@@ -1,0 +1,1 @@
+addEventListener("DOMContentLoaded",()=>document.querySelector("#output").textContent=JSON.stringify({block:"BO-20",purpose:"Manage support tickets, complaints, priorities, SLAs, assignments, resolutions, satisfaction, and escalation.",routes:["bo.service_quality_policy.register", "bo.support.process"],targetBlock:"BO-21"},null,2));

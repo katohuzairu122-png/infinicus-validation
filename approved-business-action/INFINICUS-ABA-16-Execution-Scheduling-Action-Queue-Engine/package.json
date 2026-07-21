@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-aba-16-execution-scheduling-action-queue-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/scheduling.test.mjs"
+  }
+}

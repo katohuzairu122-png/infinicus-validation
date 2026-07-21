@@ -1,0 +1,31 @@
+{
+  "name": "@infinicus/layer-outcome-monitoring",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Outcome Monitoring Layer \u2014 real-time outcome tracking",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "dev": "tsc --watch",
+    "lint": "eslint src/",
+    "test": "vitest run",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@infinicus/layer-approved-business-action": "workspace:*",
+    "@infinicus/shared-types": "workspace:*",
+    "@infinicus/event-contracts": "workspace:*",
+    "@infinicus/handoff-contracts": "workspace:*",
+    "@infinicus/observability": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}

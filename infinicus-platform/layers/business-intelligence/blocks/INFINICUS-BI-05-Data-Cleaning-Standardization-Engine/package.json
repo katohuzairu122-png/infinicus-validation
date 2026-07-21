@@ -1,0 +1,10 @@
+{
+  "name": "infinicus-bi-05-data-cleaning-standardization-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/data-cleaning.test.mjs",
+    "validate": "node tests/data-cleaning.test.mjs"
+  }
+}

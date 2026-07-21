@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>INFINICUS BI-21</title>
+  <link rel="stylesheet" href="../src/styles/root-cause.css">
+</head>
+<body>
+<main>
+  <h1>BI-21 — Root-Cause and Driver Analysis Engine</h1>
+  <p>Investigates high-priority business signals and ranks likely drivers.</p>
+
+  <section class="panel">
+    <pre id="output">Loading...</pre>
+  </section>
+</main>
+
+<script src="../src/core/runtime-guard.js"></script>
+<script src="../src/model/investigation-case.js"></script>
+<script src="../src/model/driver-candidate.js"></script>
+<script src="../src/analysis/evidence-scorer.js"></script>
+<script src="../src/analysis/driver-ranker.js"></script>
+<script src="../src/analysis/cause-graph.js"></script>
+<script src="../src/storage/root-cause-store.js"></script>
+<script src="../src/engine/root-cause-driver-analysis-engine.js"></script>
+<script src="../src/ui/demo.js"></script>
+</body>
+</html>
