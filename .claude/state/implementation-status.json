@@ -96,8 +96,10 @@
     {
       "id": "BUILD-09",
       "layer": "DB-BI",
-      "name": "Database Stage 3 \u2014 Business Intelligence schema",
-      "status": "pending"
+      "name": "Database Stage 2D \u2014 Business Intelligence schema",
+      "status": "ready",
+      "specification": "docs/implementation-queue/BUILD-09-DB-BI-SPECIFICATION.md",
+      "notes": "Frozen Stage 2C migration = 0036; first Stage 2D migration = 0037 (verified, not guessed). Persistence/repository work only \u2014 distinct from completed browser BI root blocks (BUILD-02)."
     },
     {
       "id": "BUILD-10",
@@ -106,5 +108,5 @@
       "status": "pending"
     }
   ],
-  "currentReadyBuild": null
+  "currentReadyBuild": "BUILD-09"
 }

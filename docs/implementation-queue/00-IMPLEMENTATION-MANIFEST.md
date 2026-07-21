@@ -17,15 +17,14 @@ All builds in strict execution order. Execute one at a time.
 
 ## Current Ready Build
 
-None. BUILD-09 (DB-BI) is the next build in order but lacks an
-authoritative specification — author a `## BUILD-09 Specification` (or
-linked document) before marking it ready.
+| ID | Layer | Description | Status |
+|---|---|---|---|
+| BUILD-09 | DB-BI | Database Stage 2D — Business Intelligence schema | ready |
 
 ## Pending Builds
 
 | ID | Layer | Description | Status |
 |---|---|---|---|
-| BUILD-09 | DB-BI | Database Stage 3 — Business Intelligence schema | pending |
 | BUILD-10 | PLATFORM | Platform assembly — all layers wired and validated | pending |
 
 ---
@@ -140,3 +139,25 @@ versioned DAL-to-BO handoff contract (`dal-to-bo.ts`), aligned with
 Data Acquisition Layer (settled by the 2026-07-21 audit). No DA algorithm
 changes, no database changes, no Stage 2B duplication, no CL-to-DAL
 feedback, no BUILD-09.
+
+---
+
+## BUILD-09 Specification: DB-BI Database Stage 2D
+
+**Authoritative specification:** [BUILD-09-DB-BI-SPECIFICATION.md](./BUILD-09-DB-BI-SPECIFICATION.md)
+(frozen 2026-07-21; BUILD-09 is `ready` — implementation not started).
+
+### Objective (summary)
+
+Implement Database Stage 2D — Business Intelligence persistence only: a new
+`business_intelligence` PostgreSQL schema (migrations starting at `0037`,
+frozen 0001–0036 untouched), tenant-isolated RLS-enabled-and-forced tables
+for intake/lineage, analytical datasets, metrics/KPIs, analysis lifecycle,
+findings, trends, forecasts, anomalies, benchmarks, risk intelligence, and
+publication/registry — plus strict TypeScript repository adapters and BI
+outbox events. Consumes validated `business_operations.bo_publication_packages`
+via a completed `bo-to-bi.ts` handoff contract; publishes onward declarations
+only to Digital Twin, Simulation, and ADI (no downstream implementation).
+Requires ≥100 meaningful live PostgreSQL 16 integration tests. This is
+database/repository work only — it does not touch the completed browser BI
+root blocks (BUILD-02) and does not implement analytical algorithms.
