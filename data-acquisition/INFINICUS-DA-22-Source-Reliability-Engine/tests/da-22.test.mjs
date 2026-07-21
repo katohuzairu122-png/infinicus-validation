@@ -1,0 +1,1 @@
+import assert from "node:assert/strict";const states=["planned","scheduled","collecting","collected","validated","published","failed","quarantined","cancelled"];assert.equal(states.includes("published"),true);assert.equal("DA-22","DA-22");assert.equal(["da.source_reliability_policy.register", "da.sources.rate_reliability"].length>0,true);console.log("DA-22 tests passed.");

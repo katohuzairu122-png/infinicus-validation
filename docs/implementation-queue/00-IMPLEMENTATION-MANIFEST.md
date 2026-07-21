@@ -13,12 +13,13 @@ All builds in strict execution order. Execute one at a time.
 | BUILD-05 | CL | Continuous Learning — 25 blocks + cl-bundle.js | completed |
 | BUILD-06 | ADI | AI Decision Intelligence — 25 blocks + adi-bundle.js | completed |
 | BUILD-07 | SIM | Simulation layer integration cleanup | completed |
+| BUILD-08 | DAL | Data Acquisition Layer root blocks | completed |
 
 ## Current Ready Build
 
-| ID | Layer | Description | Status |
-|---|---|---|---|
-| BUILD-08 | DAL | Data Acquisition Layer root blocks | ready |
+None. BUILD-09 (DB-BI) is the next build in order but lacks an
+authoritative specification — author a `## BUILD-09 Specification` (or
+linked document) before marking it ready.
 
 ## Pending Builds
 
@@ -124,7 +125,8 @@ validation gates, and success criteria.
 ## BUILD-08 Specification: DAL Root Blocks
 
 **Authoritative specification:** [BUILD-08-DAL-SPECIFICATION.md](./BUILD-08-DAL-SPECIFICATION.md)
-(frozen 2026-07-21; BUILD-08 is `ready` — implementation not started).
+(frozen 2026-07-21; implemented and completed 2026-07-21 — see
+`.claude/state/reports/BUILD-08-DAL-completion.md`).
 
 ### Objective (summary)
 

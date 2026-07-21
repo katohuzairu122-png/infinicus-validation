@@ -1,0 +1,1 @@
+addEventListener("DOMContentLoaded",()=>document.querySelector("#output").textContent=JSON.stringify({block:"DA-15",purpose:"Normalize units, dates, currencies, codes and field names.",routes:["da.normalization_policy.register", "da.data.normalize"],targetBlock:"DA-16"},null,2));

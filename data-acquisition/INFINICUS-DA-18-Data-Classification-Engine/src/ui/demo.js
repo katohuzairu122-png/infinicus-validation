@@ -1,0 +1,1 @@
+addEventListener("DOMContentLoaded",()=>document.querySelector("#output").textContent=JSON.stringify({block:"DA-18",purpose:"Classify data by domain, entity type and sensitivity.",routes:["da.classification_policy.register", "da.data.classify"],targetBlock:"DA-19"},null,2));

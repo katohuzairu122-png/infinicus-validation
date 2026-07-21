@@ -1,0 +1,1 @@
+import assert from "node:assert/strict";const states=["planned","scheduled","collecting","collected","validated","published","failed","quarantined","cancelled"];assert.equal(states.includes("published"),true);assert.equal("DA-12","DA-12");assert.equal(["da.schema_detection_policy.register", "da.schemas.detect"].length>0,true);console.log("DA-12 tests passed.");

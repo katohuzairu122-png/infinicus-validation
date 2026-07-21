@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-da-01-data-acquisition-core-runtime-registry",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/da-01.test.mjs"
+  }
+}

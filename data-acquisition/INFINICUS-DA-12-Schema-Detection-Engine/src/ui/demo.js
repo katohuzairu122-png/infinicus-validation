@@ -1,0 +1,1 @@
+addEventListener("DOMContentLoaded",()=>document.querySelector("#output").textContent=JSON.stringify({block:"DA-12",purpose:"Infer candidate schemas and structural anomalies.",routes:["da.schema_detection_policy.register", "da.schemas.detect"],targetBlock:"DA-13"},null,2));

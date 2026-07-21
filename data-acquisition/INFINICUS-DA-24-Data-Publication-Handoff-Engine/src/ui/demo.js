@@ -1,0 +1,1 @@
+addEventListener("DOMContentLoaded",()=>document.querySelector("#output").textContent=JSON.stringify({block:"DA-24",purpose:"Publish governed data packages to BO and BI.",routes:["da.publication_policy.register", "da.data.publish"],targetBlock:"DA-25"},null,2));
