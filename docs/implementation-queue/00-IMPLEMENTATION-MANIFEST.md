@@ -17,20 +17,66 @@ All builds in strict execution order. Execute one at a time.
 | BUILD-09 | DB-BI | Database Stage 2D — Business Intelligence schema | completed |
 | BUILD-10 | PLATFORM | Platform assembly — all layers wired and validated | completed |
 
+## Superseded Builds
+
+| ID | Layer | Description | Status |
+|---|---|---|---|
+| BUILD-11 | PLATFORM/FUNCTIONAL_PIPELINE | Governed MVP Decision Pipeline | superseded — never executed |
+
+BUILD-11's specification (`BUILD-11-GOVERNED-DECISION-PIPELINE-SPECIFICATION.md`)
+is kept for history only. `CLAUDE-MASTER-EXECUTION-INSTRUCTIONS.md` (repo root)
+explicitly supersedes it: *"BUILD-11 is superseded. Keep its history, but
+never execute it."* The required build route is
+`BUILD-10 → BUILD-12 → BUILD-13 → … → BUILD-30`. Confirmed by user decision
+2026-07-22.
+
 ## Current Ready Build
 
-None. BUILD-10 completed 2026-07-22. BUILD-11 does not exist and must not
-be authored until an authoritative specification is written and frozen.
+**BUILD-12** (DB-DT, Database Stage 2E — Business Digital Twin persistence).
+Authoritative specification frozen at
+[BUILD-12-DB-DT-SPECIFICATION.md](./BUILD-12-DB-DT-SPECIFICATION.md)
+(SHA-256 `571b2aae5bdc68ba8755d8e88b4197a986e519f8cb86ae40a3983c17fe504420`).
+Dependency: BUILD-09 (Stage 2D, completed) — independent of the BUILD-10/11
+browser track per `docs/architecture/PERSISTENCE-STAGE-MAP.md`.
 
 ## Pending Builds
 
-None. Candidate future work (each requires its own authoritative,
-frozen specification before it may be marked ready): fixing the
-`digital-twin/dt-bundle.js` header-comment syntax defect discovered during
-BUILD-10 (`.claude/state/reports/BUILD-10-PLATFORM-completion.md`); adding
+| ID | Layer | Description | Depends on |
+|---|---|---|---|
+| BUILD-13 | DB-SIM | Database Stage 2F — Simulation persistence | BUILD-12 |
+| BUILD-14 | DB-ADI | Database Stage 2G — AI Decision Intelligence persistence | BUILD-13 |
+| BUILD-15 | DB-ABA | Database Stage 2H — Approved Business Action persistence | BUILD-14 |
+| BUILD-16 | DB-OM | Database Stage 2I — Outcome Monitoring persistence | BUILD-15 |
+| BUILD-17 | DB-CL | Database Stage 2J — Continuous Learning persistence | BUILD-16 |
+| BUILD-18 | AUTH | Authentication and authorization | BUILD-17 |
+| BUILD-19 | ONBOARDING | Onboarding | BUILD-18 |
+| BUILD-20 | WORKFLOW | Workflow engine | BUILD-19 |
+| BUILD-21 | API | API layer | BUILD-20 |
+| BUILD-22 | PROD-DB | Production database readiness | BUILD-21 |
+| BUILD-23 | DEPLOY | Deployment | BUILD-22 |
+| BUILD-24 | SECRETS | Secrets management | BUILD-23 |
+| BUILD-25 | OBS | Observability | BUILD-24 |
+| BUILD-26 | SEC-PRIV | Security and privacy | BUILD-25 |
+| BUILD-27 | PERF | Performance | BUILD-26 |
+| BUILD-28 | BILLING | Billing | BUILD-27 |
+| BUILD-29 | INCIDENT | Incident response | BUILD-28 |
+| BUILD-30 | LAUNCH | Launch readiness | BUILD-29 |
+
+All specifications for BUILD-13 through BUILD-30 are staged in this
+directory (frozen, checksum-verified against their source packages) but
+remain `pending` until their dependency completes — only one build is
+`ready` at a time per `CLAUDE-QUEUE-INSTRUCTIONS.md`. See
+`docs/architecture/PERSISTENCE-STAGE-MAP.md`,
+`docs/implementation-queue/MASTER-PRODUCTION-ROUTE.md`, and
+`CLAUDE-MASTER-EXECUTION-INSTRUCTIONS.md` (repo root) for the full route,
+and `docs/architecture/DECISION-LEDGER.md` for frozen architectural
+decisions (AD-001 through AD-027) governing all remaining builds.
+
+Also unresolved from BUILD-10 (candidate future work, no specification
+authored yet): fixing the `digital-twin/dt-bundle.js` header-comment syntax
+defect (`.claude/state/reports/BUILD-10-PLATFORM-completion.md`); adding
 `vitest` to (or removing the unusable `test` script from) the 18 placeholder
-monorepo packages also discovered during BUILD-10; Stage 2E or later
-database persistence; wiring `DT-24`→Simulation and `ADI-24`→ABA; completing
+monorepo packages; wiring `DT-24`→Simulation and `ADI-24`→ABA; completing
 the six placeholder handoff-contract files.
 
 ---
@@ -197,3 +243,42 @@ later persistence, no new event backbone, no external broker, no UI
 redesign, no production deployment. See the dedicated specification for the
 full namespace contract, state machine, handoff map, capability registry,
 test plan, and validation commands.
+
+---
+
+## BUILD-11 (superseded, never executed): Governed MVP Decision Pipeline
+
+**Specification (history only):** [BUILD-11-GOVERNED-DECISION-PIPELINE-SPECIFICATION.md](./BUILD-11-GOVERNED-DECISION-PIPELINE-SPECIFICATION.md)
+(SHA-256 `142d260faeeef43582a5645e1bdcbbce84732691d7be4304839eb38c7c61e2c7`;
+superseded 2026-07-22 — see `CLAUDE-MASTER-EXECUTION-INSTRUCTIONS.md`).
+
+Would have completed the `BI→DT`, `DT→SIM`, and `ADI→ABA` placeholder
+handoff contracts and wired a browser vertical slice
+`BI→DT→SIM→ADI→ABA`. Explicitly excluded from the required build route by
+`CLAUDE-MASTER-EXECUTION-INSTRUCTIONS.md`, which routes directly from
+BUILD-10 to BUILD-12 (database persistence). Do not mark ready. Do not
+implement.
+
+---
+
+## BUILD-12 Specification: DB-DT Database Stage 2E
+
+**Authoritative specification:** [BUILD-12-DB-DT-SPECIFICATION.md](./BUILD-12-DB-DT-SPECIFICATION.md)
+(frozen; SHA-256 `571b2aae5bdc68ba8755d8e88b4197a986e519f8cb86ae40a3983c17fe504420`;
+status: ready, not yet implemented).
+
+### Objective (summary)
+
+Implement Database Stage 2E — Business Digital Twin persistence: a new
+`business_digital_twin` PostgreSQL schema (migration numbers to be
+determined by directory inspection at implementation time, not guessed;
+frozen `0001`–`0049` untouched) persisting twin definitions/versions,
+state snapshots, state variables, entities/relationships, assumptions and
+constraints, calibration/validation, uncertainty/confidence, scenario
+baselines, evidence/lineage, publication, and registry/deployment. Depends
+only on BUILD-09 (Stage 2D, completed) — explicitly independent of the
+BUILD-10/BUILD-11 browser track. Completes the `bi-to-dt.ts` handoff
+contract (currently a placeholder) and publishes onward via a `dt-to-sim.ts`
+completion for Simulation to consume in a later build. 12 named
+repositories required. Does not implement Simulation persistence (BUILD-13)
+or any browser wiring.

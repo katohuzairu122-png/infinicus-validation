@@ -117,7 +117,177 @@
       "completedAt": "2026-07-22T00:00:00.000Z",
       "report": ".claude/state/reports/BUILD-10-PLATFORM-completion.md",
       "testsPass": true
+    },
+    {
+      "id": "BUILD-11",
+      "layer": "PLATFORM/FUNCTIONAL_PIPELINE",
+      "name": "Governed MVP Decision Pipeline",
+      "status": "superseded",
+      "specification": "docs/implementation-queue/BUILD-11-GOVERNED-DECISION-PIPELINE-SPECIFICATION.md",
+      "specificationSha256": "142d260faeeef43582a5645e1bdcbbce84732691d7be4304839eb38c7c61e2c7",
+      "notes": "Superseded by CLAUDE-MASTER-EXECUTION-INSTRUCTIONS.md (required route: BUILD-10 -> BUILD-12 -> ... -> BUILD-30, BUILD-11 explicitly excluded: 'BUILD-11 is superseded... never execute it'). Kept for history only per user decision 2026-07-22. Never marked ready; never implemented.",
+      "implementationStarted": false
+    },
+    {
+      "id": "BUILD-12",
+      "layer": "DB-DT",
+      "name": "Database Stage 2E — Business Digital Twin persistence",
+      "status": "ready",
+      "specification": "docs/implementation-queue/BUILD-12-DB-DT-SPECIFICATION.md",
+      "specificationSha256": "571b2aae5bdc68ba8755d8e88b4197a986e519f8cb86ae40a3983c17fe504420",
+      "notes": "Dependency: BUILD-09 (Stage 2D, completed) per docs/architecture/PERSISTENCE-STAGE-MAP.md - independent of BUILD-10/BUILD-11 browser track. Frozen migration baseline: 0001-0049.",
+      "readyAt": "2026-07-22T00:00:00.000Z",
+      "testsPass": null
+    },
+    {
+      "id": "BUILD-13",
+      "layer": "DB-SIM",
+      "name": "Database Stage 2F — Simulation persistence",
+      "status": "pending",
+      "specification": "docs/implementation-queue/BUILD-13-DB-SIM-SPECIFICATION.md",
+      "specificationSha256": "cb1c600e9cbbe2445959b233ccc01c9cd5428d98aafea142990e70969da6feda",
+      "notes": "Blocked on BUILD-12 completion."
+    },
+    {
+      "id": "BUILD-14",
+      "layer": "DB-ADI",
+      "name": "Database Stage 2G — AI Decision Intelligence persistence",
+      "status": "pending",
+      "specification": "docs/implementation-queue/BUILD-14-DB-ADI-SPECIFICATION.md",
+      "specificationSha256": "df7a07e945abacb570b4dc2a5596b2aa5b3b32befbe662db27ddfd11e3810122",
+      "notes": "Blocked on BUILD-13 completion."
+    },
+    {
+      "id": "BUILD-15",
+      "layer": "DB-ABA",
+      "name": "Database Stage 2H — Approved Business Action persistence",
+      "status": "pending",
+      "specification": "docs/implementation-queue/BUILD-15-DB-ABA-SPECIFICATION.md",
+      "specificationSha256": "a7a22d7e9c9fa3fa84155d4edd48c69185354d91e9b53f798c9c0088db0bdc6d",
+      "notes": "Blocked on BUILD-14 completion."
+    },
+    {
+      "id": "BUILD-16",
+      "layer": "DB-OM",
+      "name": "Database Stage 2I — Outcome Monitoring persistence",
+      "status": "pending",
+      "specification": "docs/implementation-queue/BUILD-16-DB-OM-SPECIFICATION.md",
+      "specificationSha256": "7fe46451c9a52b2eee8fb337affdb3c0cd94c6242e268ca37b68a4b7d4449c30",
+      "notes": "Blocked on BUILD-15 completion."
+    },
+    {
+      "id": "BUILD-17",
+      "layer": "DB-CL",
+      "name": "Database Stage 2J — Continuous Learning persistence",
+      "status": "pending",
+      "specification": "docs/implementation-queue/BUILD-17-DB-CL-SPECIFICATION.md",
+      "specificationSha256": "8ff97cfbc788c0967e83d8fe303dde093fda9bb16d96e065874d4edef527390d",
+      "notes": "Blocked on BUILD-16 completion. Completes the Stage 1-2J persistence route."
+    },
+    {
+      "id": "BUILD-18",
+      "layer": "AUTH",
+      "name": "Authentication and authorization",
+      "status": "pending",
+      "specification": "docs/implementation-queue/BUILD-18-AUTH-SPECIFICATION.md",
+      "notes": "Blocked on BUILD-17 completion per MASTER-PRODUCTION-ROUTE.md."
+    },
+    {
+      "id": "BUILD-19",
+      "layer": "ONBOARDING",
+      "name": "Onboarding",
+      "status": "pending",
+      "specification": "docs/implementation-queue/BUILD-19-ONBOARDING-SPECIFICATION.md",
+      "notes": "Blocked on BUILD-18 completion."
+    },
+    {
+      "id": "BUILD-20",
+      "layer": "WORKFLOW",
+      "name": "Workflow engine",
+      "status": "pending",
+      "specification": "docs/implementation-queue/BUILD-20-WORKFLOW-SPECIFICATION.md",
+      "notes": "Blocked on BUILD-19 completion."
+    },
+    {
+      "id": "BUILD-21",
+      "layer": "API",
+      "name": "API layer",
+      "status": "pending",
+      "specification": "docs/implementation-queue/BUILD-21-API-SPECIFICATION.md",
+      "notes": "Blocked on BUILD-20 completion."
+    },
+    {
+      "id": "BUILD-22",
+      "layer": "PROD-DB",
+      "name": "Production database readiness",
+      "status": "pending",
+      "specification": "docs/implementation-queue/BUILD-22-PROD-DB-SPECIFICATION.md",
+      "notes": "Blocked on BUILD-21 completion."
+    },
+    {
+      "id": "BUILD-23",
+      "layer": "DEPLOY",
+      "name": "Deployment",
+      "status": "pending",
+      "specification": "docs/implementation-queue/BUILD-23-DEPLOY-SPECIFICATION.md",
+      "notes": "Blocked on BUILD-22 completion."
+    },
+    {
+      "id": "BUILD-24",
+      "layer": "SECRETS",
+      "name": "Secrets management",
+      "status": "pending",
+      "specification": "docs/implementation-queue/BUILD-24-SECRETS-SPECIFICATION.md",
+      "notes": "Blocked on BUILD-23 completion."
+    },
+    {
+      "id": "BUILD-25",
+      "layer": "OBS",
+      "name": "Observability",
+      "status": "pending",
+      "specification": "docs/implementation-queue/BUILD-25-OBS-SPECIFICATION.md",
+      "notes": "Blocked on BUILD-24 completion."
+    },
+    {
+      "id": "BUILD-26",
+      "layer": "SEC-PRIV",
+      "name": "Security and privacy",
+      "status": "pending",
+      "specification": "docs/implementation-queue/BUILD-26-SEC-PRIV-SPECIFICATION.md",
+      "notes": "Blocked on BUILD-25 completion."
+    },
+    {
+      "id": "BUILD-27",
+      "layer": "PERF",
+      "name": "Performance",
+      "status": "pending",
+      "specification": "docs/implementation-queue/BUILD-27-PERF-SPECIFICATION.md",
+      "notes": "Blocked on BUILD-26 completion."
+    },
+    {
+      "id": "BUILD-28",
+      "layer": "BILLING",
+      "name": "Billing",
+      "status": "pending",
+      "specification": "docs/implementation-queue/BUILD-28-BILLING-SPECIFICATION.md",
+      "notes": "Blocked on BUILD-27 completion."
+    },
+    {
+      "id": "BUILD-29",
+      "layer": "INCIDENT",
+      "name": "Incident response",
+      "status": "pending",
+      "specification": "docs/implementation-queue/BUILD-29-INCIDENT-SPECIFICATION.md",
+      "notes": "Blocked on BUILD-28 completion."
+    },
+    {
+      "id": "BUILD-30",
+      "layer": "LAUNCH",
+      "name": "Launch readiness",
+      "status": "pending",
+      "specification": "docs/implementation-queue/BUILD-30-LAUNCH-SPECIFICATION.md",
+      "notes": "Blocked on BUILD-29 completion. Final build in the BUILD-10-30 master roadmap."
     }
   ],
-  "currentReadyBuild": null
+  "currentReadyBuild": "BUILD-12"
 }

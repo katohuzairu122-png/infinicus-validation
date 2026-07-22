@@ -20,9 +20,12 @@ document completely — it is the authoritative scope.
 If no specification section or linked document exists for the ready build,
 STOP and report the missing definition. Do not invent the scope.
 
-Current ready build: **none** — BUILD-10 completed 2026-07-22. BUILD-11 does
-not exist and has no authoritative specification; author one before marking
-it ready.
+Current ready build: **BUILD-12** (DB-DT, Database Stage 2E — Business
+Digital Twin persistence) — specification frozen at
+`docs/implementation-queue/BUILD-12-DB-DT-SPECIFICATION.md` (SHA-256
+`571b2aae5bdc68ba8755d8e88b4197a986e519f8cb86ae40a3983c17fe504420`). BUILD-11
+is superseded — see `CLAUDE-MASTER-EXECUTION-INSTRUCTIONS.md` (repo root)
+and never mark it ready or implement it. Not yet implemented.
 
 ## Step 3 — Inspect the repository
 
