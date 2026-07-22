@@ -2,6 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import { fileURLToPath } from 'node:url';
 
 const buildId = process.argv[2];
 if (!buildId) {
@@ -9,15 +10,42 @@ if (!buildId) {
   process.exit(2);
 }
 
-const root = process.cwd();
-const required = [
-  'CLAUDE.md',
+/**
+ * Deterministic repository-root discovery: walk up from this script's own
+ * location (never from process.cwd(), which varies by invocation) until a
+ * `.git` directory is found. Falls back to process.cwd() only if no `.git`
+ * ancestor exists (e.g. a stripped checkout), so the script never silently
+ * resolves against the wrong directory.
+ */
+function findRepoRoot(startDir) {
+  let dir = startDir;
+  while (true) {
+    if (fs.existsSync(path.join(dir, '.git'))) return dir;
+    const parent = path.dirname(dir);
+    if (parent === dir) return startDir;
+    dir = parent;
+  }
+}
+
+const scriptDir = path.dirname(fileURLToPath(import.meta.url));
+const root = findRepoRoot(scriptDir);
+
+/**
+ * CLAUDE.md may live at the repository root or at infinicus-platform/CLAUDE.md
+ * (this repository's actual layout) — accept either without weakening the
+ * other required-file checks.
+ */
+const CLAUDE_MD_CANDIDATES = ['CLAUDE.md', 'infinicus-platform/CLAUDE.md'];
+const claudeMdFound = CLAUDE_MD_CANDIDATES.some((p) => fs.existsSync(path.join(root, p)));
+
+const otherRequired = [
   'CLAUDE-QUEUE-INSTRUCTIONS.md',
   '.claude/state/implementation-status.json',
   'docs/implementation-queue/00-IMPLEMENTATION-MANIFEST.md'
 ];
 
-const missing = required.filter((p) => !fs.existsSync(path.join(root, p)));
+const missing = otherRequired.filter((p) => !fs.existsSync(path.join(root, p)));
+if (!claudeMdFound) missing.unshift(`CLAUDE.md (checked: ${CLAUDE_MD_CANDIDATES.join(', ')})`);
 if (missing.length) {
   console.error('Missing required repository files:');
   for (const item of missing) console.error(`- ${item}`);
@@ -58,6 +86,8 @@ for (const file of migrations) {
 console.log(JSON.stringify({
   ok: true,
   buildId,
+  repoRoot: root,
+  claudeMdLocation: CLAUDE_MD_CANDIDATES.find((p) => fs.existsSync(path.join(root, p))),
   currentReadyBuild: queue.currentReadyBuild ?? null,
   migrationCount: migrations.length,
   highestMigration: highest,
