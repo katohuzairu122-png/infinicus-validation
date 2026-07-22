@@ -174,10 +174,15 @@
       "id": "BUILD-15",
       "layer": "DB-ABA",
       "name": "Database Stage 2H — Approved Business Action persistence",
-      "status": "pending",
+      "status": "completed",
       "specification": "docs/implementation-queue/BUILD-15-DB-ABA-SPECIFICATION.md",
       "specificationSha256": "a7a22d7e9c9fa3fa84155d4edd48c69185354d91e9b53f798c9c0088db0bdc6d",
-      "notes": "Blocked on BUILD-14 completion."
+      "notes": "Dependency: BUILD-14 (Stage 2G, completed). Frozen migration baseline after this build: 0001-0106.",
+      "readyAt": "2026-07-22T00:00:00.000Z",
+      "startedAt": "2026-07-22T00:00:00.000Z",
+      "completedAt": "2026-07-22T00:00:00.000Z",
+      "report": ".claude/state/reports/BUILD-15-DB-ABA-completion.md",
+      "testsPass": true
     },
     {
       "id": "BUILD-16",
