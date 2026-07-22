@@ -51,7 +51,18 @@ export type LayerEventType =
   | 'sim.risk.calculated'
   | 'sim.sensitivity.completed'
   | 'sim.data.published'
-  // ADI
+  // ADI — Stage 2G (BUILD-14). 'adi.decision.generated' is superseded by
+  // 'adi.recommendation.generated' (the recommendation's actual generation event).
+  | 'adi.intake.received'
+  | 'adi.reasoning.started'
+  | 'adi.reasoning.completed'
+  | 'adi.reasoning.failed'
+  | 'adi.alternative.evaluated'
+  | 'adi.recommendation.generated'
+  | 'adi.confidence.calculated'
+  | 'adi.guardrail.violated'
+  | 'adi.decision.published'
+  | 'adi.data.published'
   | 'adi.decision.generated'
   // ABA
   | 'aba.action.approved'

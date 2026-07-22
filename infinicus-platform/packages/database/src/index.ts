@@ -148,3 +148,33 @@ export type {
   SimulationPublicationPackage,
   SimulationComponentRegistryEntry, SimulationDeployment,
 } from './repositories/simulation/index.js';
+
+// ── AI Decision Intelligence repositories (Stage 2G) ──────────────────────────────
+export {
+  ADIIntakeRepository,
+  DecisionQuestionRepository,
+  DecisionCaseRepository,
+  ReasoningRunRepository,
+  DecisionEvidenceRepository,
+  DecisionAlternativeRepository,
+  DecisionRecommendationRepository,
+  DecisionConfidenceRepository,
+  DecisionPolicyRepository,
+  DecisionMonitoringRequirementRepository,
+  ADIPublicationRepository,
+  ADIComponentRegistryRepository,
+} from './repositories/adi/index.js';
+export type {
+  ADIIntakePackage, ReceiveADIPackageInput,
+  DecisionQuestion,
+  DecisionCase,
+  ReasoningRequest, ReasoningRun,
+  DecisionEvidence,
+  DecisionAlternative,
+  DecisionRecommendation, DecisionRecommendationVersion,
+  DecisionConfidenceScore,
+  DecisionPolicy,
+  DecisionMonitoringRequirement, DecisionReviewSchedule,
+  ADIPublicationPackage,
+  ADIComponentRegistryEntry, ADIDeployment,
+} from './repositories/adi/index.js';
