@@ -293,26 +293,50 @@ importers:
       '@infinicus/configuration':
         specifier: workspace:*
         version: link:../configuration
+      '@infinicus/database':
+        specifier: workspace:*
+        version: link:../database
       '@infinicus/shared-types':
         specifier: workspace:*
         version: link:../shared-types
+      bcryptjs:
+        specifier: ^2.4.3
+        version: 2.4.3
     devDependencies:
+      '@types/bcryptjs':
+        specifier: ^2.4.6
+        version: 2.4.6
       typescript:
         specifier: ^5.4.0
         version: 5.9.3
+      vitest:
+        specifier: ^1.6.0
+        version: 1.6.1(@types/node@26.1.1)
 
   packages/authorization:
     dependencies:
       '@infinicus/authentication':
         specifier: workspace:*
         version: link:../authentication
+      '@infinicus/database':
+        specifier: workspace:*
+        version: link:../database
       '@infinicus/shared-types':
         specifier: workspace:*
         version: link:../shared-types
     devDependencies:
+      '@types/pg':
+        specifier: ^8.11.6
+        version: 8.20.0
+      pg:
+        specifier: ^8.12.0
+        version: 8.22.0
       typescript:
         specifier: ^5.4.0
         version: 5.9.3
+      vitest:
+        specifier: ^1.6.0
+        version: 1.6.1(@types/node@26.1.1)
 
   packages/configuration:
     dependencies:
@@ -790,6 +814,9 @@ packages:
     cpu: [arm64]
     os: [win32]
 
+  '@types/bcryptjs@2.4.6':
+    resolution: {integrity: sha512-9xlo6R2qDs5uixm0bcIqCeMCE6HiQsIyel9KQySStiyqNl2tnj2mP3DX1Nf56MD6KMenNNlBBsy3LJ7gUEQPXQ==}
+
   '@types/esrecurse@4.3.1':
     resolution: {integrity: sha512-xJBAbDifo5hpffDBuHl0Y8ywswbiAp/Wi7Y/GtAgSlZyIABppyurxVueOPE8LUQOxdlgi6Zqce7uoEpqNTeiUw==}
 
@@ -906,6 +933,9 @@ packages:
   balanced-match@4.0.4:
     resolution: {integrity: sha512-BLrgEcRTwX2o6gGxGOCNyMvGSp35YofuYzw9h1IMTRmKqttAZZVU67bdb9Pr2vUHA8+j3i2tJfjO6C6+4myGTA==}
     engines: {node: 18 || 20 || >=22}
+
+  bcryptjs@2.4.3:
+    resolution: {integrity: sha512-V/Hy/X9Vt7f3BbPJEi8BdVFMByHi+jNXrYkW3huaybV/kQ0KJg0Y6PkEMbn+zeT+i+SiKZ/HMqJGIIt4LZDqNQ==}
 
   brace-expansion@5.0.7:
     resolution: {integrity: sha512-7oFy703dxfY3/NLxC1fh2SUCQ0H9rmAY+5EpDVfXjUTTs+HEwR2nYaqLv+GWcTsumwxPfiz6CzCNkwXwBUwqCA==}
@@ -1681,6 +1711,8 @@ snapshots:
   '@turbo/windows-arm64@2.10.5':
     optional: true
 
+  '@types/bcryptjs@2.4.6': {}
+
   '@types/esrecurse@4.3.1': {}
 
   '@types/estree@1.0.9': {}
@@ -1839,6 +1871,8 @@ snapshots:
   assertion-error@1.1.0: {}
 
   balanced-match@4.0.4: {}
+
+  bcryptjs@2.4.3: {}
 
   brace-expansion@5.0.7:
     dependencies:

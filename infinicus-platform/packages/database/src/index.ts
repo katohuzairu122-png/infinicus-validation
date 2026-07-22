@@ -272,3 +272,37 @@ export type {
   CLFeedbackPackage,
   CLComponentRegistryEntry, CLDeployment,
 } from './repositories/cl/index.js';
+
+// ── Authentication and Authorization repositories (BUILD-18) ────────────────────
+export {
+  UserNotFoundError, UserAlreadyExistsError,
+  SessionNotFoundError,
+  ServiceAccountNotFoundError,
+  ApiKeyNotFoundError,
+  RoleNotFoundError,
+  PermissionNotFoundError,
+  MembershipNotFoundError, MembershipAlreadyExistsError,
+  InvitationNotFoundError, InvitationStateConflictError,
+} from './repositories/auth/errors.js';
+export {
+  UserRepository,
+  SessionRepository,
+  ServiceAccountRepository,
+  ApiKeyRepository,
+  RoleRepository,
+  PermissionRepository,
+  MembershipRepository,
+  InvitationRepository,
+  AccessEventRepository,
+} from './repositories/auth/index.js';
+export type {
+  User, CreateUserInput,
+  Session,
+  ServiceAccount,
+  ApiKeyReference,
+  Role,
+  Permission,
+  Membership,
+  Invitation,
+  AccessEvent, AccessEventType,
+} from './repositories/auth/index.js';
