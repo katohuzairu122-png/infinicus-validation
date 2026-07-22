@@ -76,8 +76,19 @@ export type LayerEventType =
   | 'aba.action.released'
   | 'aba.action.published'
   | 'aba.data.published'
-  // OM
+  // OM — Stage 2I (BUILD-16). 'om.outcome.evaluated' is the pre-existing
+  // canonical event named in CLAUDE.md §9 — retained here, not superseded.
   | 'om.outcome.evaluated'
+  | 'om.intake.received'
+  | 'om.monitoring.started'
+  | 'om.observation.recorded'
+  | 'om.target.breached'
+  | 'om.variance.calculated'
+  | 'om.alert.raised'
+  | 'om.incident.opened'
+  | 'om.review.completed'
+  | 'om.feedback.published'
+  | 'om.data.published'
   // CL
   | 'cl.learning.published'
   // Extension point — custom events must still use dot notation

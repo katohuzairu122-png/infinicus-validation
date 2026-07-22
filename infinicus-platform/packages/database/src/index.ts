@@ -210,3 +210,35 @@ export type {
   ABAPublicationPackage,
   ABAComponentRegistryEntry, ABADeployment,
 } from './repositories/approved_action/index.js';
+
+// ── Outcome Monitoring repositories (Stage 2I) ──────────────────────────────────
+export {
+  OMIntakeRepository,
+  MonitoringPlanRepository,
+  MonitoredActionRepository,
+  OutcomeObservationRepository,
+  OutcomeTargetRepository,
+  OutcomeVarianceRepository,
+  MonitoringAlertRepository,
+  MonitoringIncidentRepository,
+  OutcomeAttributionRepository,
+  OutcomeReviewRepository,
+  LearningFeedbackPackageRepository,
+  OMPublicationRepository,
+  OMComponentRegistryRepository,
+} from './repositories/om/index.js';
+export type {
+  OMIntakePackage, ReceiveOMPackageInput,
+  MonitoringPlan,
+  MonitoredAction,
+  OutcomeObservation, OutcomeObservationVersion,
+  OutcomeTarget,
+  OutcomeVarianceRun,
+  MonitoringAlertRule, MonitoringAlert,
+  MonitoringIncident,
+  OutcomeAttributionRun,
+  OutcomeReview,
+  LearningFeedbackPackage,
+  OMPublicationPackage,
+  OMComponentRegistryEntry, OMDeployment,
+} from './repositories/om/index.js';
