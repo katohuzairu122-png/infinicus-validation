@@ -252,7 +252,7 @@ describe('ReadCompletedSimulationRunPort (Engine v3 adapter)', () => {
 });
 
 describe('SIM→ADI mapper (completed-run mapping)', () => {
-  const mapperOptions = { handoffId: 'h-1', sourceBlock: 'engine-v3-facade', correlationId: 'corr-1' };
+  const mapperOptions = { handoffId: 'h-1', sourceBlock: 'engine-v3-facade', workspaceId: 'ws-1', correlationId: 'corr-1' };
 
   it('maps a completed run into a valid SIM→ADI handoff without changing numbers', () => {
     const handoff = mapCompletedRunToSIMToADIHandoff(completedRun(), mapperOptions);

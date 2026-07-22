@@ -20,10 +20,10 @@ document completely — it is the authoritative scope.
 If no specification section or linked document exists for the ready build,
 STOP and report the missing definition. Do not invent the scope.
 
-BUILD-12 (DB-DT, Database Stage 2E — Business Digital Twin persistence) is
-**completed** — see `.claude/state/reports/BUILD-12-DB-DT-completion.md`.
-Per its specification §20, BUILD-13 was not auto-readied; re-verify BUILD-13's
-preconditions against `docs/implementation-queue/BUILD-13-DB-SIM-SPECIFICATION.md`
+BUILD-13 (DB-SIM, Database Stage 2F — Simulation persistence) is
+**completed** — see `.claude/state/reports/BUILD-13-DB-SIM-completion.md`.
+Per its specification §16, BUILD-14 was not auto-readied; re-verify BUILD-14's
+preconditions against `docs/implementation-queue/BUILD-14-DB-ADI-SPECIFICATION.md`
 and the current repository state before marking it ready. BUILD-11 is
 superseded — see `CLAUDE-MASTER-EXECUTION-INSTRUCTIONS.md` (repo root) and
 never mark it ready or implement it.

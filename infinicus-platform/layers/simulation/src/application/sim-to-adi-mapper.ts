@@ -15,8 +15,15 @@ import { ENGINE_V3_NAMESPACE } from '../infrastructure/engine-v3-browser-adapter
 export interface SimToADIMapperOptions {
   handoffId: string;
   sourceBlock: string;
+  /**
+   * Required — Engine v3's browser-facing CompletedSimulationRun predates
+   * the tenant/workspace/business scoping convention (BUILD-07), so this is
+   * supplied by the caller rather than fabricated or read off the run.
+   */
+  workspaceId: string;
   targetBlock?: string;
   correlationId?: string;
+  idempotencyKey?: string;
   currencyCode?: string;
   now?: () => string;
 }
@@ -64,7 +71,9 @@ export function mapCompletedRunToSIMToADIHandoff(
   const payload: SIMToADIHandoffPayload = {
     contractVersion: SIM_TO_ADI_CONTRACT_VERSION,
     tenantId: run.tenantId,
+    workspaceId: options.workspaceId,
     businessId: run.businessId,
+    idempotencyKey: options.idempotencyKey ?? `${run.runId}::sim-to-adi`,
     run: {
       runId: run.runId,
       scenarioId: run.scenarioId,

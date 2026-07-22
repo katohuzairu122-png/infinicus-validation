@@ -11,7 +11,9 @@ function validPayload(): SIMToADIHandoffPayload {
   return {
     contractVersion: SIM_TO_ADI_CONTRACT_VERSION,
     tenantId: 't-1',
+    workspaceId: 'ws-1',
     businessId: 'b-1',
+    idempotencyKey: 'simrun_1::sim-to-adi',
     run: {
       runId: 'simrun_1',
       scenarioId: 'alt-1',
@@ -105,13 +107,40 @@ describe('SIM→ADI runtime validation', () => {
     expect(reasons).toContain('target_layer_must_be_ADI');
   });
 
-  it('rejects missing tenant/business identity with explicit reasons', () => {
+  it('rejects missing tenant/workspace/business identity with explicit reasons', () => {
     const h = validHandoff();
     h.payload.tenantId = '';
+    (h.payload as { workspaceId?: string }).workspaceId = undefined;
     (h.payload as { businessId?: string }).businessId = undefined;
     const reasons = validateSIMToADIHandoff(h).reasons;
     expect(reasons).toContain('tenant_id_required');
+    expect(reasons).toContain('workspace_id_required');
     expect(reasons).toContain('business_id_required');
+  });
+
+  it('rejects a missing idempotency key', () => {
+    const h = validHandoff();
+    (h.payload as { idempotencyKey: string }).idempotencyKey = '';
+    expect(validateSIMToADIHandoff(h).reasons).toContain('idempotency_key_required');
+  });
+
+  it('rejects credential-like keys anywhere in the payload', () => {
+    const h = validHandoff();
+    (h.payload.inputSnapshot.parameters as Record<string, unknown>).apiKey = 'secret-value';
+    expect(validateSIMToADIHandoff(h).reasons.some((r) => r.startsWith('credential_like_field_at_'))).toBe(true);
+  });
+
+  it('rejects __proto__/prototype/constructor keys anywhere in the payload', () => {
+    const h = validHandoff();
+    Object.defineProperty(h.payload.inputSnapshot.parameters, '__proto__', { value: { polluted: true }, enumerable: true, configurable: true });
+    const reasons = validateSIMToADIHandoff(h).reasons;
+    expect(reasons.some((r) => r.startsWith('dangerous_key_at_'))).toBe(true);
+  });
+
+  it('rejects a payload exceeding the 512 KiB bound', () => {
+    const h = validHandoff();
+    (h.payload as unknown as Record<string, unknown>).oversized = 'x'.repeat(600 * 1024);
+    expect(validateSIMToADIHandoff(h).reasons).toContain('payload_too_large');
   });
 
   it('rejects an unsupported contract version', () => {
@@ -171,5 +200,23 @@ describe('SIM→ADI runtime validation', () => {
     const h = validHandoff();
     expect('sensitivity' in h.payload).toBe(false);
     expect(validateSIMToADIHandoff(h).valid).toBe(true);
+  });
+
+  it('rejects a payload exceeding the 512 KiB bound', () => {
+    const h = validHandoff();
+    (h.payload as unknown as Record<string, unknown>).oversized = 'x'.repeat(600 * 1024);
+    expect(validateSIMToADIHandoff(h).reasons).toContain('payload_too_large');
+  });
+
+  it('rejects an unsupported random seed type at run.randomSeed', () => {
+    const h = validHandoff();
+    (h.payload.run as unknown as Record<string, unknown>).randomSeed = { nested: true };
+    expect(validateSIMToADIHandoff(h).reasons).toContain('run_random_seed_invalid');
+  });
+
+  it('rejects credential-like keys anywhere in the payload', () => {
+    const h = validHandoff();
+    (h.payload.inputSnapshot.parameters as Record<string, unknown>).apiKey = 'secret-value';
+    expect(validateSIMToADIHandoff(h).reasons.some((r) => r.startsWith('credential_like_field_at_'))).toBe(true);
   });
 });

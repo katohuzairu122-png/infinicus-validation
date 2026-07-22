@@ -39,8 +39,18 @@ export type LayerEventType =
   | 'dt.scenario_baseline.created'
   | 'dt.scenario_baseline.published'
   | 'dt.data.published'
-  // SIM
-  | 'simulation.completed'
+  // SIM — Stage 2F (BUILD-13). 'simulation.completed' is superseded by
+  // 'sim.run.completed' (the run's actual completion event).
+  | 'sim.intake.received'
+  | 'sim.scenario.created'
+  | 'sim.run.requested'
+  | 'sim.run.started'
+  | 'sim.run.completed'
+  | 'sim.run.failed'
+  | 'sim.result.published'
+  | 'sim.risk.calculated'
+  | 'sim.sensitivity.completed'
+  | 'sim.data.published'
   // ADI
   | 'adi.decision.generated'
   // ABA

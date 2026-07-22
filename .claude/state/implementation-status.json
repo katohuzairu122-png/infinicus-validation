@@ -146,10 +146,15 @@
       "id": "BUILD-13",
       "layer": "DB-SIM",
       "name": "Database Stage 2F — Simulation persistence",
-      "status": "pending",
+      "status": "completed",
       "specification": "docs/implementation-queue/BUILD-13-DB-SIM-SPECIFICATION.md",
       "specificationSha256": "cb1c600e9cbbe2445959b233ccc01c9cd5428d98aafea142990e70969da6feda",
-      "notes": "Blocked on BUILD-12 completion."
+      "notes": "Dependency: BUILD-12 (Stage 2E, completed). Frozen migration baseline after this build: 0001-0076.",
+      "readyAt": "2026-07-22T00:00:00.000Z",
+      "startedAt": "2026-07-22T00:00:00.000Z",
+      "completedAt": "2026-07-22T00:00:00.000Z",
+      "report": ".claude/state/reports/BUILD-13-DB-SIM-completion.md",
+      "testsPass": true
     },
     {
       "id": "BUILD-14",

@@ -120,3 +120,31 @@ export type {
   DTPublicationPackage,
   DTComponentRegistryEntry, DTDeployment,
 } from './repositories/dt/index.js';
+
+// ── Simulation repositories (Stage 2F) ────────────────────────────────────────────
+export {
+  SimulationIntakeRepository,
+  SimulationModelRepository,
+  SimulationScenarioRepository,
+  SimulationRunRepository,
+  SimulationResultRepository,
+  SimulationRiskRepository,
+  SimulationSensitivityRepository,
+  ScenarioComparisonRepository,
+  SimulationValidationRepository,
+  SimulationPublicationRepository,
+  SimulationComponentRegistryRepository,
+} from './repositories/simulation/index.js';
+export type {
+  SimulationIntakePackage, ReceiveSimulationPackageInput,
+  SimulationModel, SimulationModelVersion,
+  SimulationScenario, SimulationScenarioVersion,
+  SimulationRequest, SimulationRun,
+  SimulationResult, SimulationResultVersion,
+  SimulationRiskResult, SimulationFailureMode,
+  SimulationSensitivityRun, SimulationSensitivityResult,
+  ScenarioComparisonRun,
+  SimulationValidationRun, SimulationCalibrationRun,
+  SimulationPublicationPackage,
+  SimulationComponentRegistryEntry, SimulationDeployment,
+} from './repositories/simulation/index.js';

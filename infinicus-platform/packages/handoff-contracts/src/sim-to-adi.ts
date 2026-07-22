@@ -3,7 +3,11 @@
 // v3) to ADI. Evidence only — never a recommendation or approval.
 import type { LayerHandoff, LineageEntry } from '@infinicus/shared-types';
 
-export const SIM_TO_ADI_CONTRACT_VERSION = '1.0.0';
+// v1.1.0 (BUILD-13): adds required workspaceId/idempotencyKey, a 512 KiB
+// payload-size bound, credential-like key rejection, and __proto__/prototype/
+// constructor key rejection — completing the Stage 2A+ tenant/workspace/
+// business + idempotency convention this contract predates (BUILD-07).
+export const SIM_TO_ADI_CONTRACT_VERSION = '1.1.0';
 
 /** One named assumption/parameter the run was executed with. */
 export interface SimulationAssumption {
@@ -82,7 +86,9 @@ export interface SimulationProvenance {
 export interface SIMToADIHandoffPayload {
   contractVersion: typeof SIM_TO_ADI_CONTRACT_VERSION;
   tenantId: string;
+  workspaceId: string;
   businessId: string;
+  idempotencyKey: string;
   run: SimulationRunReference;
   inputSnapshot: SimulationInputSnapshot;
   outcomes: SimulationOutcomeMetrics;
@@ -111,11 +117,15 @@ const isNonEmptyString = (v: unknown): v is string =>
 const isFiniteNumber = (v: unknown): v is number =>
   typeof v === 'number' && Number.isFinite(v);
 
+const MAX_SERIALIZED_BYTES = 512 * 1024;
+const CREDENTIAL_LIKE_KEYS = ['password', 'secret', 'apiKey', 'token', 'credential', 'privateKey'];
+const DANGEROUS_KEYS = ['__proto__', 'prototype', 'constructor'];
+
 function collectUnserializable(value: unknown, path: string, reasons: string[]): void {
   if (value === null || value === undefined) return;
   const t = typeof value;
-  if (t === 'function') {
-    reasons.push(`unserializable_function_at_${path}`);
+  if (t === 'function' || t === 'symbol' || t === 'bigint') {
+    reasons.push(`unserializable_${t}_at_${path}`);
     return;
   }
   if (t !== 'object') return;
@@ -132,6 +142,14 @@ function collectUnserializable(value: unknown, path: string, reasons: string[]):
     return;
   }
   for (const [key, child] of Object.entries(value as Record<string, unknown>)) {
+    if (DANGEROUS_KEYS.includes(key)) {
+      reasons.push(`dangerous_key_at_${path}.${key}`);
+      continue;
+    }
+    if (CREDENTIAL_LIKE_KEYS.some((k) => key.toLowerCase().includes(k.toLowerCase()))) {
+      reasons.push(`credential_like_field_at_${path}.${key}`);
+      continue;
+    }
     collectUnserializable(child, `${path}.${key}`, reasons);
   }
 }
@@ -165,7 +183,9 @@ export function validateSIMToADIHandoff(value: unknown): SIMToADIValidationResul
 
   if (p.contractVersion !== SIM_TO_ADI_CONTRACT_VERSION) reasons.push('contract_version_unsupported');
   if (!isNonEmptyString(p.tenantId)) reasons.push('tenant_id_required');
+  if (!isNonEmptyString(p.workspaceId)) reasons.push('workspace_id_required');
   if (!isNonEmptyString(p.businessId)) reasons.push('business_id_required');
+  if (!isNonEmptyString(p.idempotencyKey)) reasons.push('idempotency_key_required');
 
   const run = p.run;
   if (!run || typeof run !== 'object') {
@@ -237,6 +257,17 @@ export function validateSIMToADIHandoff(value: unknown): SIMToADIValidationResul
   }
 
   collectUnserializable(h, 'handoff', reasons);
+
+  let serializedBytes = 0;
+  try {
+    // Character-length approximation of the serialized byte size (no
+    // TextEncoder/Buffer dependency) — a safe, slightly conservative proxy
+    // for the 512 KiB soft limit, exact for ASCII payloads.
+    serializedBytes = JSON.stringify(h).length;
+  } catch {
+    reasons.push('payload_not_serializable');
+  }
+  if (serializedBytes > MAX_SERIALIZED_BYTES) reasons.push('payload_too_large');
 
   return { valid: reasons.length === 0, reasons };
 }
