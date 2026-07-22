@@ -89,7 +89,18 @@ export type LayerEventType =
   | 'om.review.completed'
   | 'om.feedback.published'
   | 'om.data.published'
-  // CL
+  // CL — Stage 2J (BUILD-17). 'cl.learning.published' is the pre-existing
+  // canonical event named in CLAUDE.md §9 — retained here, not superseded.
   | 'cl.learning.published'
+  | 'cl.intake.received'
+  | 'cl.case.created'
+  | 'cl.lesson.created'
+  | 'cl.pattern.detected'
+  | 'cl.model.drift_detected'
+  | 'cl.policy.evaluated'
+  | 'cl.improvement.proposed'
+  | 'cl.change.approved'
+  | 'cl.feedback.published'
+  | 'cl.data.published'
   // Extension point — custom events must still use dot notation
   | (string & {});

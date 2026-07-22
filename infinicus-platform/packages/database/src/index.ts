@@ -242,3 +242,33 @@ export type {
   OMPublicationPackage,
   OMComponentRegistryEntry, OMDeployment,
 } from './repositories/om/index.js';
+
+// ── Continuous Learning repositories (Stage 2J) ─────────────────────────────────
+export {
+  CLIntakeRepository,
+  LearningCaseRepository,
+  LearningFeedbackRepository,
+  LearnedLessonRepository,
+  LearningPatternRepository,
+  ModelEvaluationRepository,
+  PolicyEvaluationRepository,
+  ImprovementProposalRepository,
+  LearningChangeReviewRepository,
+  KnowledgeArtifactRepository,
+  CLFeedbackPublicationRepository,
+  CLComponentRegistryRepository,
+} from './repositories/cl/index.js';
+export type {
+  CLIntakePackage, ReceiveCLPackageInput,
+  LearningCase,
+  LearningFeedbackRecord,
+  LearnedLesson,
+  LearningPattern,
+  ModelEvaluationRun,
+  PolicyEvaluationRun, PolicyChangeProposal,
+  ImprovementProposal, ImprovementProposalVersion,
+  LearningChangeReview, LearningChangeRelease,
+  KnowledgeArtifact,
+  CLFeedbackPackage,
+  CLComponentRegistryEntry, CLDeployment,
+} from './repositories/cl/index.js';
