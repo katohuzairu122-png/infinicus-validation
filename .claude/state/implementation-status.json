@@ -6,7 +6,7 @@
     {
       "id": "BUILD-01",
       "layer": "DT",
-      "name": "Digital Twin \u2014 24 blocks + dt-bundle.js",
+      "name": "Digital Twin — 24 blocks + dt-bundle.js",
       "status": "completed",
       "blockCount": 24,
       "bundleFile": "digital-twin/dt-bundle.js",
@@ -16,7 +16,7 @@
     {
       "id": "BUILD-02",
       "layer": "BI",
-      "name": "Business Intelligence \u2014 25 blocks + bi-bundle.js",
+      "name": "Business Intelligence — 25 blocks + bi-bundle.js",
       "status": "completed",
       "blockCount": 25,
       "bundleFile": "business-intelligence/bi-bundle.js",
@@ -26,7 +26,7 @@
     {
       "id": "BUILD-03",
       "layer": "ABA",
-      "name": "Approved Business Action \u2014 25 blocks + aba-bundle.js",
+      "name": "Approved Business Action — 25 blocks + aba-bundle.js",
       "status": "completed",
       "blockCount": 25,
       "bundleFile": "approved-business-action/aba-bundle.js",
@@ -36,7 +36,7 @@
     {
       "id": "BUILD-04",
       "layer": "OM",
-      "name": "Outcome Monitoring \u2014 25 blocks + om-bundle.js",
+      "name": "Outcome Monitoring — 25 blocks + om-bundle.js",
       "status": "completed",
       "blockCount": 25,
       "bundleFile": "outcome-monitoring/om-bundle.js",
@@ -46,7 +46,7 @@
     {
       "id": "BUILD-05",
       "layer": "CL",
-      "name": "Continuous Learning \u2014 25 blocks + cl-bundle.js",
+      "name": "Continuous Learning — 25 blocks + cl-bundle.js",
       "status": "completed",
       "blockCount": 25,
       "bundleFile": "continuous-learning/cl-bundle.js",
@@ -56,7 +56,7 @@
     {
       "id": "BUILD-06",
       "layer": "ADI",
-      "name": "AI Decision Intelligence \u2014 25 blocks + adi-bundle.js",
+      "name": "AI Decision Intelligence — 25 blocks + adi-bundle.js",
       "status": "completed",
       "completedAt": "2026-07-21T00:00:00.000Z",
       "blockCount": 25,
@@ -96,10 +96,10 @@
     {
       "id": "BUILD-09",
       "layer": "DB-BI",
-      "name": "Database Stage 2D \u2014 Business Intelligence schema",
+      "name": "Database Stage 2D — Business Intelligence schema",
       "status": "completed",
       "specification": "docs/implementation-queue/BUILD-09-DB-BI-SPECIFICATION.md",
-      "notes": "Frozen Stage 2C migration = 0036; first Stage 2D migration = 0037 (verified, not guessed). Persistence/repository work only \u2014 distinct from completed browser BI root blocks (BUILD-02).",
+      "notes": "Frozen Stage 2C migration = 0036; first Stage 2D migration = 0037 (verified, not guessed). Persistence/repository work only — distinct from completed browser BI root blocks (BUILD-02).",
       "completedAt": "2026-07-21T00:00:00.000Z",
       "report": ".claude/state/reports/BUILD-09-DB-BI-completion.md",
       "testsPass": true
@@ -107,14 +107,17 @@
     {
       "id": "BUILD-10",
       "layer": "PLATFORM",
-      "name": "Platform assembly \u2014 all layers wired and validated",
-      "status": "ready",
+      "name": "Platform assembly — all layers wired and validated",
+      "status": "completed",
       "specification": "docs/implementation-queue/BUILD-10-PLATFORM-SPECIFICATION.md",
       "specificationSha256": "878ff02a4f3865fb2a06ffc33b71d7c614ec65e810f92926a0cd27f0abc081c7",
-      "notes": "Specification authored and frozen 2026-07-21 (authoring-only task; no implementation). Adds platform/platform-bootstrap.js + one index.html script tag; does not modify any completed layer, bundle, or the 6 placeholder handoff-contract files; does not touch migrations 0001-0049.",
+      "notes": "Adds platform/platform-bootstrap.js (window.INFINICUS.PLATFORM) + one index.html script tag (2 insertions, 0 deletions). Does not modify any completed layer, bundle, or the 6 placeholder handoff-contract files; does not touch migrations 0001-0049. Discovered and documented (not fixed, out of scope) two pre-existing defects unrelated to BUILD-10: digital-twin/dt-bundle.js header-comment syntax error (predates this build, git blame 750af3d), and 18 placeholder monorepo packages missing the vitest devDependency their test script requires.",
       "readyAt": "2026-07-21T00:00:00.000Z",
-      "testsPass": null
+      "startedAt": "2026-07-21T00:00:00.000Z",
+      "completedAt": "2026-07-22T00:00:00.000Z",
+      "report": ".claude/state/reports/BUILD-10-PLATFORM-completion.md",
+      "testsPass": true
     }
   ],
-  "currentReadyBuild": "BUILD-10"
+  "currentReadyBuild": null
 }

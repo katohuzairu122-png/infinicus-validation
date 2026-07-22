@@ -15,18 +15,23 @@ All builds in strict execution order. Execute one at a time.
 | BUILD-07 | SIM | Simulation layer integration cleanup | completed |
 | BUILD-08 | DAL | Data Acquisition Layer root blocks | completed |
 | BUILD-09 | DB-BI | Database Stage 2D — Business Intelligence schema | completed |
+| BUILD-10 | PLATFORM | Platform assembly — all layers wired and validated | completed |
 
 ## Current Ready Build
 
-**BUILD-10** (PLATFORM). Authoritative specification frozen at
-[BUILD-10-PLATFORM-SPECIFICATION.md](./BUILD-10-PLATFORM-SPECIFICATION.md)
-(SHA-256 `878ff02a4f3865fb2a06ffc33b71d7c614ec65e810f92926a0cd27f0abc081c7`).
-Not yet implemented.
+None. BUILD-10 completed 2026-07-22. BUILD-11 does not exist and must not
+be authored until an authoritative specification is written and frozen.
 
 ## Pending Builds
 
-None currently pending beyond BUILD-10 (ready). BUILD-11 does not exist and
-must not be authored until BUILD-10 is completed.
+None. Candidate future work (each requires its own authoritative,
+frozen specification before it may be marked ready): fixing the
+`digital-twin/dt-bundle.js` header-comment syntax defect discovered during
+BUILD-10 (`.claude/state/reports/BUILD-10-PLATFORM-completion.md`); adding
+`vitest` to (or removing the unusable `test` script from) the 18 placeholder
+monorepo packages also discovered during BUILD-10; Stage 2E or later
+database persistence; wiring `DT-24`→Simulation and `ADI-24`→ABA; completing
+the six placeholder handoff-contract files.
 
 ---
 
@@ -170,7 +175,8 @@ root blocks (BUILD-02) and does not implement analytical algorithms.
 
 **Authoritative specification:** [BUILD-10-PLATFORM-SPECIFICATION.md](./BUILD-10-PLATFORM-SPECIFICATION.md)
 (frozen 2026-07-21; SHA-256 `878ff02a4f3865fb2a06ffc33b71d7c614ec65e810f92926a0cd27f0abc081c7`;
-status: ready, not yet implemented).
+implemented and completed 2026-07-22 — see
+`.claude/state/reports/BUILD-10-PLATFORM-completion.md`).
 
 ### Objective (summary)
 

@@ -20,10 +20,9 @@ document completely — it is the authoritative scope.
 If no specification section or linked document exists for the ready build,
 STOP and report the missing definition. Do not invent the scope.
 
-Current ready build: **BUILD-10** (PLATFORM) — specification frozen
-2026-07-21 at `docs/implementation-queue/BUILD-10-PLATFORM-SPECIFICATION.md`
-(SHA-256 `878ff02a4f3865fb2a06ffc33b71d7c614ec65e810f92926a0cd27f0abc081c7`).
-Not yet implemented.
+Current ready build: **none** — BUILD-10 completed 2026-07-22. BUILD-11 does
+not exist and has no authoritative specification; author one before marking
+it ready.
 
 ## Step 3 — Inspect the repository
 
