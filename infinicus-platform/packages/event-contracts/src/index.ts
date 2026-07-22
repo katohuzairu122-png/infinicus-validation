@@ -22,8 +22,23 @@ export type LayerEventType =
   | 'bi.forecast.accuracy_recorded'
   | 'bi.insight.published'
   | 'bi.data.published'
-  // DT
-  | 'dt.state.updated'
+  // DT — Stage 2E (BUILD-12).
+  | 'dt.intake.received'
+  | 'dt.intake.accepted'
+  | 'dt.intake.rejected'
+  | 'dt.definition.published'
+  | 'dt.instance.created'
+  | 'dt.instance.status_changed'
+  | 'dt.snapshot.created'
+  | 'dt.snapshot.validated'
+  | 'dt.snapshot.published'
+  | 'dt.calibration.started'
+  | 'dt.calibration.completed'
+  | 'dt.calibration.failed'
+  | 'dt.validation.completed'
+  | 'dt.scenario_baseline.created'
+  | 'dt.scenario_baseline.published'
+  | 'dt.data.published'
   // SIM
   | 'simulation.completed'
   // ADI

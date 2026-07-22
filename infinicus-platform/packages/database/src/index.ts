@@ -90,3 +90,33 @@ export type {
   InsightPackage, InsightPackageVersion, CreateInsightPackageVersionInput,
   BIPublicationPackage, ComponentDeployment, TargetLayer,
 } from './repositories/bi/index.js';
+
+// ── Business Digital Twin repositories (Stage 2E) ────────────────────────────────
+export {
+  DTIntakeRepository,
+  DigitalTwinDefinitionRepository,
+  DigitalTwinInstanceRepository,
+  DigitalTwinSnapshotRepository,
+  StateVariableRepository,
+  TwinEntityRepository,
+  TwinAssumptionConstraintRepository,
+  TwinCalibrationRepository,
+  TwinValidationRepository,
+  ScenarioBaselineRepository,
+  DTPublicationPackageRepository,
+  DTComponentRegistryRepository,
+} from './repositories/dt/index.js';
+export type {
+  DTIntakePackage, ReceivePackageInput,
+  DigitalTwinDefinition, DigitalTwinDefinitionVersion,
+  DigitalTwinInstance,
+  DigitalTwinSnapshot, DigitalTwinSnapshotVersion,
+  StateVariableDefinition, StateVariableValue,
+  TwinEntity, TwinRelationship,
+  TwinAssumption, TwinConstraint, TwinConstraintEvaluation,
+  TwinCalibrationRun,
+  TwinValidationRun,
+  ScenarioBaseline, ScenarioBaselineVersion,
+  DTPublicationPackage,
+  DTComponentRegistryEntry, DTDeployment,
+} from './repositories/dt/index.js';

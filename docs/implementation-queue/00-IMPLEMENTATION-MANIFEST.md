@@ -16,6 +16,7 @@ All builds in strict execution order. Execute one at a time.
 | BUILD-08 | DAL | Data Acquisition Layer root blocks | completed |
 | BUILD-09 | DB-BI | Database Stage 2D — Business Intelligence schema | completed |
 | BUILD-10 | PLATFORM | Platform assembly — all layers wired and validated | completed |
+| BUILD-12 | DB-DT | Database Stage 2E — Business Digital Twin persistence | completed |
 
 ## Superseded Builds
 
@@ -32,18 +33,16 @@ never execute it."* The required build route is
 
 ## Current Ready Build
 
-**BUILD-12** (DB-DT, Database Stage 2E — Business Digital Twin persistence).
-Authoritative specification frozen at
-[BUILD-12-DB-DT-SPECIFICATION.md](./BUILD-12-DB-DT-SPECIFICATION.md)
-(SHA-256 `571b2aae5bdc68ba8755d8e88b4197a986e519f8cb86ae40a3983c17fe504420`).
-Dependency: BUILD-09 (Stage 2D, completed) — independent of the BUILD-10/11
-browser track per `docs/architecture/PERSISTENCE-STAGE-MAP.md`.
+None. Per `BUILD-12-DB-DT-SPECIFICATION.md` §20 ("Do not create or ready
+BUILD-13 automatically"), BUILD-13 is not marked ready by this build's
+completion. A future session must explicitly re-verify BUILD-13's
+preconditions before readying it.
 
 ## Pending Builds
 
 | ID | Layer | Description | Depends on |
 |---|---|---|---|
-| BUILD-13 | DB-SIM | Database Stage 2F — Simulation persistence | BUILD-12 |
+| BUILD-13 | DB-SIM | Database Stage 2F — Simulation persistence | BUILD-12 (completed) |
 | BUILD-14 | DB-ADI | Database Stage 2G — AI Decision Intelligence persistence | BUILD-13 |
 | BUILD-15 | DB-ABA | Database Stage 2H — Approved Business Action persistence | BUILD-14 |
 | BUILD-16 | DB-OM | Database Stage 2I — Outcome Monitoring persistence | BUILD-15 |
@@ -265,7 +264,7 @@ implement.
 
 **Authoritative specification:** [BUILD-12-DB-DT-SPECIFICATION.md](./BUILD-12-DB-DT-SPECIFICATION.md)
 (frozen; SHA-256 `571b2aae5bdc68ba8755d8e88b4197a986e519f8cb86ae40a3983c17fe504420`;
-status: ready, not yet implemented).
+status: completed — see `.claude/state/reports/BUILD-12-DB-DT-completion.md`).
 
 ### Objective (summary)
 
