@@ -188,10 +188,15 @@
       "id": "BUILD-16",
       "layer": "DB-OM",
       "name": "Database Stage 2I — Outcome Monitoring persistence",
-      "status": "pending",
+      "status": "completed",
       "specification": "docs/implementation-queue/BUILD-16-DB-OM-SPECIFICATION.md",
       "specificationSha256": "7fe46451c9a52b2eee8fb337affdb3c0cd94c6242e268ca37b68a4b7d4449c30",
-      "notes": "Blocked on BUILD-15 completion."
+      "notes": "Dependency: BUILD-15 (Stage 2H, completed). Frozen migration baseline after this build: 0001-0121.",
+      "readyAt": "2026-07-22T00:00:00.000Z",
+      "startedAt": "2026-07-22T00:00:00.000Z",
+      "completedAt": "2026-07-22T00:00:00.000Z",
+      "report": ".claude/state/reports/BUILD-16-DB-OM-completion.md",
+      "testsPass": true
     },
     {
       "id": "BUILD-17",
