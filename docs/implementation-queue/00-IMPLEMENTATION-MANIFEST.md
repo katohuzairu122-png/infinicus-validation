@@ -18,6 +18,7 @@ All builds in strict execution order. Execute one at a time.
 | BUILD-10 | PLATFORM | Platform assembly — all layers wired and validated | completed |
 | BUILD-12 | DB-DT | Database Stage 2E — Business Digital Twin persistence | completed |
 | BUILD-13 | DB-SIM | Database Stage 2F — Simulation persistence | completed |
+| BUILD-14 | DB-ADI | Database Stage 2G — AI Decision Intelligence persistence | completed |
 
 ## Superseded Builds
 
@@ -34,17 +35,16 @@ never execute it."* The required build route is
 
 ## Current Ready Build
 
-None. Per `BUILD-13-DB-SIM-SPECIFICATION.md` §16 ("Do not automatically
-implement or ready the next stage"), BUILD-14 is not marked ready by this
-build's completion. A future session must explicitly re-verify BUILD-14's
+None. Per `BUILD-14-DB-ADI-SPECIFICATION.md` §16 ("Do not automatically
+implement or ready the next stage"), BUILD-15 is not marked ready by this
+build's completion. A future session must explicitly re-verify BUILD-15's
 preconditions before readying it.
 
 ## Pending Builds
 
 | ID | Layer | Description | Depends on |
 |---|---|---|---|
-| BUILD-14 | DB-ADI | Database Stage 2G — AI Decision Intelligence persistence | BUILD-13 (completed) |
-| BUILD-15 | DB-ABA | Database Stage 2H — Approved Business Action persistence | BUILD-14 |
+| BUILD-15 | DB-ABA | Database Stage 2H — Approved Business Action persistence | BUILD-14 (completed) |
 | BUILD-16 | DB-OM | Database Stage 2I — Outcome Monitoring persistence | BUILD-15 |
 | BUILD-17 | DB-CL | Database Stage 2J — Continuous Learning persistence | BUILD-16 |
 | BUILD-18 | AUTH | Authentication and authorization | BUILD-17 |

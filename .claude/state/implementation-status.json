@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "lastUpdated": "2026-07-22T00:00:00.000Z",
+  "lastUpdated": "2026-07-22T16:45:00.000Z",
   "platform": "INFINICUS ENGINE v3",
   "builds": [
     {
@@ -160,10 +160,15 @@
       "id": "BUILD-14",
       "layer": "DB-ADI",
       "name": "Database Stage 2G — AI Decision Intelligence persistence",
-      "status": "pending",
+      "status": "completed",
       "specification": "docs/implementation-queue/BUILD-14-DB-ADI-SPECIFICATION.md",
       "specificationSha256": "df7a07e945abacb570b4dc2a5596b2aa5b3b32befbe662db27ddfd11e3810122",
-      "notes": "Blocked on BUILD-13 completion."
+      "notes": "Dependency: BUILD-13 (Stage 2F, completed). Frozen migration baseline after this build: 0001-0091.",
+      "readyAt": "2026-07-22T00:00:00.000Z",
+      "startedAt": "2026-07-22T00:00:00.000Z",
+      "completedAt": "2026-07-22T00:00:00.000Z",
+      "report": ".claude/state/reports/BUILD-14-DB-ADI-completion.md",
+      "testsPass": true
     },
     {
       "id": "BUILD-15",
