@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "lastUpdated": "2026-07-22T16:45:00.000Z",
+  "lastUpdated": "2026-07-22T23:22:00.000Z",
   "platform": "INFINICUS ENGINE v3",
   "builds": [
     {
@@ -216,9 +216,15 @@
       "id": "BUILD-18",
       "layer": "AUTH",
       "name": "Authentication and authorization",
-      "status": "pending",
+      "status": "completed",
       "specification": "docs/implementation-queue/BUILD-18-AUTH-SPECIFICATION.md",
-      "notes": "Blocked on BUILD-17 completion per MASTER-PRODUCTION-ROUTE.md."
+      "specificationSha256": "330ff715175b9e16e8473672c0e31ff09351f2b33c347795ebdf28a0031ccd54",
+      "notes": "Dependency: BUILD-17 (completed). Built on the pre-existing Stage 1 tenancy/identity/audit schema (migrations 0003/0004/0006/0007/0011) plus one new seed migration (0137). Frozen migration baseline after this build: 0001-0137.",
+      "readyAt": "2026-07-22T00:00:00.000Z",
+      "startedAt": "2026-07-22T00:00:00.000Z",
+      "completedAt": "2026-07-22T00:00:00.000Z",
+      "report": ".claude/state/reports/BUILD-18-AUTH-completion.md",
+      "testsPass": true
     },
     {
       "id": "BUILD-19",
