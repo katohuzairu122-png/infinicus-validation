@@ -178,3 +178,35 @@ export type {
   ADIPublicationPackage,
   ADIComponentRegistryEntry, ADIDeployment,
 } from './repositories/adi/index.js';
+
+// ── Approved Business Action repositories (Stage 2H) ───────────────────────────────
+export {
+  ABAIntakeRepository,
+  ActionReviewRepository,
+  ApprovalPolicyRepository,
+  ApproverAuthorityRepository,
+  ApprovalDecisionRepository,
+  ApprovedActionRepository,
+  ActionExecutionPlanRepository,
+  ActionControlGateRepository,
+  ApprovalExceptionRepository,
+  ApprovalAppealRepository,
+  ABAAuditRepository,
+  ABAPublicationRepository,
+  ABAComponentRegistryRepository,
+} from './repositories/approved_action/index.js';
+export type {
+  ABAIntakePackage, ReceiveABAPackageInput,
+  ActionReviewPackage,
+  ApprovalPolicy,
+  ApproverAssignment, ApprovalDelegation,
+  ApprovalDecision, ApprovalDecisionVersion,
+  ApprovedAction,
+  ActionExecutionPlan,
+  ActionControlGate, ActionHold, ActionRelease,
+  ApprovalException,
+  ApprovalAppeal, ApprovalAppealDecision,
+  ApprovalAttestation, ApprovalSignature,
+  ABAPublicationPackage,
+  ABAComponentRegistryEntry, ABADeployment,
+} from './repositories/approved_action/index.js';

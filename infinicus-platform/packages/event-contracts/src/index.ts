@@ -64,8 +64,18 @@ export type LayerEventType =
   | 'adi.decision.published'
   | 'adi.data.published'
   | 'adi.decision.generated'
-  // ABA
+  // ABA — Stage 2H (BUILD-15). 'aba.action.approved' is the same canonical
+  // event named in CLAUDE.md §9 — reused here, not superseded.
+  | 'aba.intake.received'
+  | 'aba.review.requested'
+  | 'aba.review.started'
   | 'aba.action.approved'
+  | 'aba.action.approved_with_modifications'
+  | 'aba.action.rejected'
+  | 'aba.action.held'
+  | 'aba.action.released'
+  | 'aba.action.published'
+  | 'aba.data.published'
   // OM
   | 'om.outcome.evaluated'
   // CL
