@@ -346,7 +346,7 @@ QUEUE TRANSITION
 - currentReadyBuild: none — no later build has an authoritative
   specification; BUILD-11 was not invented.
 
-Commit: (recorded after commit, see below)
+Commit: 2775d4a
 Branch: claude/infinicus-engine-debug-3loqb4
 PR: #10
 Next build: none ready. A future build should scope (a) fixing the
