@@ -20,10 +20,11 @@ document completely — it is the authoritative scope.
 If no specification section or linked document exists for the ready build,
 STOP and report the missing definition. Do not invent the scope.
 
-BUILD-16 (DB-OM, Database Stage 2I — Outcome Monitoring persistence)
-is **completed** — see `.claude/state/reports/BUILD-16-DB-OM-completion.md`.
-Per its specification §16, BUILD-17 was not auto-readied; re-verify BUILD-17's
-preconditions against `docs/implementation-queue/BUILD-17-DB-CL-SPECIFICATION.md`
+BUILD-17 (DB-CL, Database Stage 2J — Continuous Learning persistence)
+is **completed** — see `.claude/state/reports/BUILD-17-DB-CL-completion.md`.
+This completes the Stage 1-2J database persistence route. Per its
+specification §16, BUILD-18 was not auto-readied; re-verify BUILD-18's
+preconditions against `docs/implementation-queue/BUILD-18-AUTH-SPECIFICATION.md`
 and the current repository state before marking it ready. BUILD-11 is
 superseded — see `CLAUDE-MASTER-EXECUTION-INSTRUCTIONS.md` (repo root) and
 never mark it ready or implement it.

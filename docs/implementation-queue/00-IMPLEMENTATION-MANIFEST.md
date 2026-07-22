@@ -21,6 +21,7 @@ All builds in strict execution order. Execute one at a time.
 | BUILD-14 | DB-ADI | Database Stage 2G — AI Decision Intelligence persistence | completed |
 | BUILD-15 | DB-ABA | Database Stage 2H — Approved Business Action persistence | completed |
 | BUILD-16 | DB-OM | Database Stage 2I — Outcome Monitoring persistence | completed |
+| BUILD-17 | DB-CL | Database Stage 2J — Continuous Learning persistence | completed |
 
 ## Superseded Builds
 
@@ -37,17 +38,17 @@ never execute it."* The required build route is
 
 ## Current Ready Build
 
-None. Per `BUILD-16-DB-OM-SPECIFICATION.md` §16 ("Do not automatically
-implement or ready the next stage"), BUILD-17 is not marked ready by this
-build's completion. A future session must explicitly re-verify BUILD-17's
-preconditions before readying it.
+None. Per `BUILD-17-DB-CL-SPECIFICATION.md` §16 ("Do not automatically
+implement or ready the next stage"), BUILD-18 is not marked ready by this
+build's completion. A future session must explicitly re-verify BUILD-18's
+preconditions before readying it. BUILD-17 completes the Stage 1-2J
+database persistence route.
 
 ## Pending Builds
 
 | ID | Layer | Description | Depends on |
 |---|---|---|---|
-| BUILD-17 | DB-CL | Database Stage 2J — Continuous Learning persistence | BUILD-16 (completed) |
-| BUILD-18 | AUTH | Authentication and authorization | BUILD-17 |
+| BUILD-18 | AUTH | Authentication and authorization | BUILD-17 (completed) |
 | BUILD-19 | ONBOARDING | Onboarding | BUILD-18 |
 | BUILD-20 | WORKFLOW | Workflow engine | BUILD-19 |
 | BUILD-21 | API | API layer | BUILD-20 |

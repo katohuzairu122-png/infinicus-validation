@@ -202,10 +202,15 @@
       "id": "BUILD-17",
       "layer": "DB-CL",
       "name": "Database Stage 2J — Continuous Learning persistence",
-      "status": "pending",
+      "status": "completed",
       "specification": "docs/implementation-queue/BUILD-17-DB-CL-SPECIFICATION.md",
       "specificationSha256": "8ff97cfbc788c0967e83d8fe303dde093fda9bb16d96e065874d4edef527390d",
-      "notes": "Blocked on BUILD-16 completion. Completes the Stage 1-2J persistence route."
+      "notes": "Dependency: BUILD-16 (Stage 2I, completed). Frozen migration baseline after this build: 0001-0136. Completes the Stage 1-2J persistence route.",
+      "readyAt": "2026-07-22T00:00:00.000Z",
+      "startedAt": "2026-07-22T00:00:00.000Z",
+      "completedAt": "2026-07-22T00:00:00.000Z",
+      "report": ".claude/state/reports/BUILD-17-DB-CL-completion.md",
+      "testsPass": true
     },
     {
       "id": "BUILD-18",
