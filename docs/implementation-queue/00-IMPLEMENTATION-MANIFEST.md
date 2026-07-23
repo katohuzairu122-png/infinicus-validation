@@ -23,6 +23,7 @@ All builds in strict execution order. Execute one at a time.
 | BUILD-16 | DB-OM | Database Stage 2I — Outcome Monitoring persistence | completed |
 | BUILD-17 | DB-CL | Database Stage 2J — Continuous Learning persistence | completed |
 | BUILD-18 | AUTH | Authentication and authorization | completed |
+| BUILD-19 | ONBOARDING | Tenant onboarding | completed |
 
 ## Superseded Builds
 
@@ -39,19 +40,19 @@ never execute it."* The required build route is
 
 ## Current Ready Build
 
-None. Per `BUILD-18-AUTH-SPECIFICATION.md` §8/§10 ("Do not automatically
-start the next build"), BUILD-19 is not marked ready by this build's
-completion. A future session must explicitly re-verify BUILD-19's
-preconditions before readying it. BUILD-18 delivered authentication and
-authorization on top of the pre-existing Stage 1 tenancy/identity/audit
-schema (one new seed migration, 0137).
+None. Per `BUILD-19-ONBOARDING-SPECIFICATION.md` §8/§10 ("Do not
+automatically start the next build"), BUILD-20 is not marked ready by
+this build's completion. A future session must explicitly re-verify
+BUILD-20's preconditions before readying it. BUILD-19 delivered a
+resumable tenant onboarding wizard on top of the pre-existing
+tenancy/platform/identity schema and BUILD-18's authorization machinery
+(one new schema, one new table, migrations 0138-0141).
 
 ## Pending Builds
 
 | ID | Layer | Description | Depends on |
 |---|---|---|---|
-| BUILD-19 | ONBOARDING | Onboarding | BUILD-18 (completed) |
-| BUILD-20 | WORKFLOW | Workflow engine | BUILD-19 |
+| BUILD-20 | WORKFLOW | Workflow engine | BUILD-19 (completed) |
 | BUILD-21 | API | API layer | BUILD-20 |
 | BUILD-22 | PROD-DB | Production database readiness | BUILD-21 |
 | BUILD-23 | DEPLOY | Deployment | BUILD-22 |

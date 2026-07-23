@@ -20,12 +20,13 @@ document completely — it is the authoritative scope.
 If no specification section or linked document exists for the ready build,
 STOP and report the missing definition. Do not invent the scope.
 
-BUILD-18 (AUTH, Authentication and authorization) is **completed** — see
-`.claude/state/reports/BUILD-18-AUTH-completion.md`. It was built on the
-pre-existing Stage 1 tenancy/identity/audit schema plus one new seed
-migration (0137). Per its specification §8/§10, BUILD-19 was not
-auto-readied; re-verify BUILD-19's preconditions against
-`docs/implementation-queue/BUILD-19-ONBOARDING-SPECIFICATION.md` and the
+BUILD-19 (ONBOARDING, Tenant onboarding) is **completed** — see
+`.claude/state/reports/BUILD-19-ONBOARDING-completion.md`. It was built
+on the pre-existing tenancy/platform/identity schema plus one new
+onboarding schema (one table, migrations 0138-0141). Per its
+specification §8/§10, BUILD-20 was not auto-readied; re-verify BUILD-20's
+preconditions against
+`docs/implementation-queue/BUILD-20-WORKFLOW-SPECIFICATION.md` and the
 current repository state before marking it ready. BUILD-11 is
 superseded — see `CLAUDE-MASTER-EXECUTION-INSTRUCTIONS.md` (repo root) and
 never mark it ready or implement it.
