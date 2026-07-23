@@ -30,6 +30,7 @@ All builds in strict execution order. Execute one at a time.
 | BUILD-23 | DEPLOY | Deployment and environments | completed |
 | BUILD-24 | SECRETS | Secrets and configuration management | completed |
 | BUILD-25 | OBS | Logging, monitoring, and alerting | completed |
+| BUILD-26 | SEC-PRIV | Security, privacy, and retention | completed |
 
 ## Superseded Builds
 
@@ -46,26 +47,28 @@ never execute it."* The required build route is
 
 ## Current Ready Build
 
-`BUILD-26` (SEC-PRIV — Security and privacy). Per the user's explicit
-instruction to continue through full completion of all builds (BUILD-24
-through BUILD-30) without per-build check-ins, each build's own "do not
+`BUILD-27` (PERF — Performance). Per the user's explicit instruction to
+continue through full completion of all builds (BUILD-24 through
+BUILD-30) without per-build check-ins, each build's own "do not
 automatically start the next build" checkpoint is superseded for the
-remainder of this queue by that standing instruction. BUILD-25 delivered
-error tracking (`ErrorTracker`, `observability.error_events`, wired into
-`apps/api`'s central error handler), lightweight in-process distributed
-tracing (`startSpan()`), job/outbox monitoring (`getOutboxBacklog()`
-over the pre-existing `events.outbox_events` table), a
-`platform:admin`-gated `GET /v1/metrics` dashboards-data endpoint, and
-alerting (`observability.alert_events`, `observability-audit.cjs`). It
-also found and fixed a recurrence of BUILD-19's nil-UUID/empty-string
-session-variable bug in new repository code. One migration was added
-(`0148`).
+remainder of this queue by that standing instruction. BUILD-26 delivered
+a threat model, dependency scanning (CI-wired allowlist script), SAST
+(`eslint-plugin-security`), a real DAST scan (`dast-scan.sh`), live
+rate-limit/injection-resistance tests, security headers
+(`@fastify/helmet`), bounded request payloads, an explicit CSRF/XSS/SQLi
+assessment, and a genuine right-to-erasure capability
+(`delete-tenant-data.mjs`, `platform.data_deletion_events`). It found
+and fixed two genuine bugs via live testing: `errorHandler.ts` silently
+redacting legitimate 4xx errors (e.g. rate-limit's 429) to 500, and a
+cross-tenant data-safety defect in the deletion script's first draft
+(a blanket DELETE relying only on RLS visibility would have deleted
+every tenant's shared system roles). One migration was added (`0149`).
 
 ## Pending Builds
 
 | ID | Layer | Description | Depends on |
 |---|---|---|---|
-| BUILD-26 | SEC-PRIV | Security and privacy | BUILD-25 (completed) |
+| BUILD-27 | PERF | Performance | BUILD-26 (completed) |
 | BUILD-26 | SEC-PRIV | Security and privacy | BUILD-25 |
 | BUILD-27 | PERF | Performance | BUILD-26 |
 | BUILD-28 | BILLING | Billing | BUILD-27 |

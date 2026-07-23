@@ -93,6 +93,9 @@ jobs:
       - name: Check for browser secret leakage
         run: node infrastructure/deployment/scripts/check-no-browser-secrets.mjs
 
+      - name: Dependency vulnerability scan
+        run: node infrastructure/deployment/scripts/check-dependency-vulnerabilities.mjs
+
       - name: Create least-privilege application role
         run: |
           PGPASSWORD="$CI_ADMIN_PASSWORD" psql -h localhost -U "$CI_ADMIN_USER" -d "$CI_DB_NAME" -c \
@@ -221,6 +224,9 @@ jobs:
 
       - name: Smoke test
         run: BASE_URL="http://localhost:3000" infrastructure/deployment/scripts/smoke-test.sh
+
+      - name: DAST scan
+        run: BASE_URL="http://localhost:3000" infrastructure/deployment/scripts/dast-scan.sh
 
       - name: Container logs (always, for debugging)
         if: always()

@@ -1,4 +1,5 @@
 import Fastify, { type FastifyInstance } from 'fastify';
+import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
 import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
@@ -41,6 +42,16 @@ export async function buildApp(config: InfinicusConfig): Promise<FastifyInstance
   await app.register(rateLimit, {
     max: config.rateLimitMax,
     timeWindow: config.rateLimitWindowMs,
+  });
+
+  // BUILD-26 — standard security response headers (X-Content-Type-Options,
+  // X-Frame-Options, Referrer-Policy, Strict-Transport-Security, etc.) on
+  // every response. CSP is scoped off: this is a pure JSON API (no HTML
+  // views of its own to protect against injected-script XSS), and a
+  // default CSP would break /documentation's Swagger UI, which needs
+  // inline scripts/styles to render.
+  await app.register(helmet, {
+    contentSecurityPolicy: false,
   });
 
   await app.register(swagger, {

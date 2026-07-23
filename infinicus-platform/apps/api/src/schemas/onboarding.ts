@@ -1,11 +1,11 @@
 import { z } from 'zod';
 
 export const beginOnboardingBodySchema = z.object({
-  tenantName: z.string().min(1),
-  tenantSlug: z.string().min(1),
-  workspaceName: z.string().min(1),
-  workspaceSlug: z.string().min(1),
-  planCode: z.string().optional(),
+  tenantName: z.string().min(1).max(255),
+  tenantSlug: z.string().min(1).max(255),
+  workspaceName: z.string().min(1).max(255),
+  workspaceSlug: z.string().min(1).max(255),
+  planCode: z.string().max(255).optional(),
 });
 
 export const beginOnboardingResponseSchema = z.object({

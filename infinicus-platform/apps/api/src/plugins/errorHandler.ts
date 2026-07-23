@@ -34,7 +34,23 @@ export default fp(async function errorHandlerPlugin(app: FastifyInstance) {
       });
     }
 
-    const statusCode = statusCodeFor(error.name);
+    // BUILD-26 — a well-behaved Fastify plugin (e.g. @fastify/rate-limit)
+    // throws a plain Error with `.statusCode` set to a legitimate 4xx
+    // value but `.name` left as the generic "Error" — statusCodeFor()
+    // alone can't see that and would previously fall through to the
+    // catch-all 500 branch below, incorrectly redacting a real, intended
+    // 429 into a generic "unexpected error" and persisting a false
+    // error_events entry. Found live: a rate-limit test expected 429 and
+    // got 500. Trust error.statusCode only for legitimate 4xx values
+    // (never let a thrown error claim a false 2xx/3xx, and never treat a
+    // claimed 5xx specially — that path already goes through the
+    // redacted branch below).
+    const nameBasedStatusCode = statusCodeFor(error.name);
+    const trustedPluginStatusCode =
+      typeof error.statusCode === 'number' && error.statusCode >= 400 && error.statusCode < 500
+        ? error.statusCode
+        : undefined;
+    const statusCode = nameBasedStatusCode !== 500 ? nameBasedStatusCode : (trustedPluginStatusCode ?? 500);
     if (statusCode === 500) {
       request.log.error({ err: error, correlationId }, 'unhandled error');
       errorEventRepo

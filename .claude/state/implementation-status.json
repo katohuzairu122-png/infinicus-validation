@@ -328,17 +328,23 @@
       "id": "BUILD-26",
       "layer": "SEC-PRIV",
       "name": "Security and privacy",
-      "status": "ready",
+      "status": "completed",
       "specification": "docs/implementation-queue/BUILD-26-SEC-PRIV-SPECIFICATION.md",
-      "notes": "Dependency BUILD-25 completed. Readied per explicit user instruction to continue through all builds to BUILD-30 without per-build check-ins."
+      "specificationSha256": "44f00cc26a3a1caeba455c76714d4c671ea7b9d2a9345535cabf917a989677e1",
+      "notes": "Dependency: BUILD-25 (completed). Delivered a threat model, dependency scanning (CI-wired allowlist script), SAST (eslint-plugin-security), a real DAST scan, live rate-limit/injection-resistance tests, security headers (@fastify/helmet), bounded request payloads, an explicit CSRF/XSS/SQLi assessment, and a genuine right-to-erasure capability (delete-tenant-data.mjs, platform.data_deletion_events). Found and fixed two genuine bugs via live testing: errorHandler.ts silently redacting legitimate 4xx errors to 500, and a cross-tenant data-safety defect in the deletion script's first draft. One migration added (0149).",
+      "readyAt": "2026-07-23T00:00:00.000Z",
+      "startedAt": "2026-07-23T00:00:00.000Z",
+      "completedAt": "2026-07-23T00:00:00.000Z",
+      "report": ".claude/state/reports/BUILD-26-SEC-PRIV-completion.md",
+      "testsPass": true
     },
     {
       "id": "BUILD-27",
       "layer": "PERF",
       "name": "Performance",
-      "status": "pending",
+      "status": "ready",
       "specification": "docs/implementation-queue/BUILD-27-PERF-SPECIFICATION.md",
-      "notes": "Blocked on BUILD-26 completion."
+      "notes": "Dependency BUILD-26 completed. Readied per explicit user instruction to continue through all builds to BUILD-30 without per-build check-ins."
     },
     {
       "id": "BUILD-28",
@@ -365,5 +371,5 @@
       "notes": "Blocked on BUILD-29 completion. Final build in the BUILD-10-30 master roadmap."
     }
   ],
-  "currentReadyBuild": "BUILD-26"
+  "currentReadyBuild": "BUILD-27"
 }

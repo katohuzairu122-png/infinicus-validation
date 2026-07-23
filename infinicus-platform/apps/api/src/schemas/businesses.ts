@@ -35,11 +35,11 @@ export const workflowViewResponseSchema = z.object({
 
 export const createDecisionBodySchema = z.object({
   intakePackageId: z.string().uuid(),
-  reviewCode: z.string().min(1),
-  summary: z.string().min(1),
+  reviewCode: z.string().min(1).max(255),
+  summary: z.string().min(1).max(10_000),
   approverUserId: z.string().uuid(),
-  assignmentCode: z.string().min(1),
-  decisionCode: z.string().min(1),
+  assignmentCode: z.string().min(1).max(255),
+  decisionCode: z.string().min(1).max(255),
   outcome: z.enum(['approve', 'approve_with_modifications', 'reject']),
 });
 
@@ -51,18 +51,18 @@ export const decisionResponseSchema = z.object({
 
 export const recordOutcomeBodySchema = z.object({
   monitoredActionId: z.string().uuid(),
-  observationCode: z.string().min(1),
-  summary: z.string().min(1),
+  observationCode: z.string().min(1).max(255),
+  summary: z.string().min(1).max(10_000),
   effectiveAt: z.string().datetime(),
   measurements: z.array(z.object({
-    metricCode: z.string().min(1),
+    metricCode: z.string().min(1).max(255),
     measuredValue: z.record(z.unknown()),
-    unit: z.string().nullable().optional(),
-  })).optional(),
+    unit: z.string().max(64).nullable().optional(),
+  })).max(100).optional(),
   evidence: z.array(z.object({
     evidenceType: z.enum(['execution_record', 'external_system', 'manual_entry', 'other']),
     evidenceReference: z.record(z.unknown()),
-  })).optional(),
+  })).max(100).optional(),
 });
 
 export const outcomeResponseSchema = z.object({
