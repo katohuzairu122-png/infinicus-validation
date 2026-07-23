@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "lastUpdated": "2026-07-23T09:15:00.000Z",
+  "lastUpdated": "2026-07-23T09:55:00.000Z",
   "platform": "INFINICUS ENGINE v3",
   "builds": [
     {
@@ -286,9 +286,15 @@
       "id": "BUILD-23",
       "layer": "DEPLOY",
       "name": "Deployment",
-      "status": "pending",
+      "status": "completed",
       "specification": "docs/implementation-queue/BUILD-23-DEPLOY-SPECIFICATION.md",
-      "notes": "Blocked on BUILD-22 completion."
+      "specificationSha256": "459a5ddfe4c6aeab3f8b2449a852099e3b04142e27f3c90a5da6509d81728bdc",
+      "notes": "Dependency: BUILD-22 (completed). Delivered release versioning, deployment audit (new platform.deployment_events table + repository), an immutable Dockerfile for apps/api, a migration gate, health/smoke checks, a genuinely enforced promotion gate (staging requires test success, production requires staging success, checked by code), rollback procedure, and a CI workflow (.github/workflows/ci.yml) with real build+test+image jobs. Discovered main branch hosts an unrelated legacy site; CI scoped away from it. Fixed a pre-existing gap (no scripted app-role grants) and a Turborepo strict-envMode false-green bug along the way. One new migration (0146).",
+      "readyAt": "2026-07-23T00:00:00.000Z",
+      "startedAt": "2026-07-23T00:00:00.000Z",
+      "completedAt": "2026-07-23T00:00:00.000Z",
+      "report": ".claude/state/reports/BUILD-23-DEPLOY-completion.md",
+      "testsPass": true
     },
     {
       "id": "BUILD-24",

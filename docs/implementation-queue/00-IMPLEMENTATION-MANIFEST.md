@@ -27,6 +27,7 @@ All builds in strict execution order. Execute one at a time.
 | BUILD-20 | WORKFLOW | Customer decision workflows | completed |
 | BUILD-21 | API | Governed application API | completed |
 | BUILD-22 | PROD-DB | Production database and recovery | completed |
+| BUILD-23 | DEPLOY | Deployment and environments | completed |
 
 ## Superseded Builds
 
@@ -43,27 +44,30 @@ never execute it."* The required build route is
 
 ## Current Ready Build
 
-None. Per `BUILD-22-PROD-DB-SPECIFICATION.md` §8/§10 ("Do not
-automatically start the next build"), BUILD-23 is not marked ready by
+None. Per `BUILD-23-DEPLOY-SPECIFICATION.md` §8/§10 ("Do not
+automatically start the next build"), BUILD-24 is not marked ready by
 this build's completion. A future session must explicitly re-verify
-BUILD-23's preconditions before readying it. BUILD-22 delivered
-hardened PostgreSQL connection pooling, a Postgres advisory-lock guard
-against concurrent-instance migration races, a new `GET /v1/ready`
-readiness endpoint distinct from the pre-existing liveness-only
-`GET /v1/health`, and a full backup/restore/point-in-time-recovery/
-retention/tenant-export toolchain under
-`infrastructure/database/scripts/` (8 scripts) — every capability
-live-tested, including a genuine WAL-archiving PITR drill that enabled
-archiving, took a real base backup, and verified a recovered instance
-correctly reflected data as of a specific target timestamp. Zero
-migrations were added (still `0001`–`0145`, unchanged from BUILD-21).
+BUILD-24's preconditions before readying it. BUILD-23 delivered release
+versioning, a deployment-audit table and repository
+(`platform.deployment_events`), an immutable multi-stage Dockerfile for
+`apps/api`, a migration gate, health/smoke checks, a genuinely enforced
+promotion gate (`staging` requires a prior succeeded `test` deployment
+of the exact same version; `production` requires a prior succeeded
+`staging` deployment — checked by code and live-tested, not just
+documented), a rollback procedure, and a CI workflow
+(`.github/workflows/ci.yml`) running real lint/typecheck/build/test and
+a real Docker build-and-smoke-test job on GitHub's own runners. Entry-
+gate inspection discovered this repository's `main` branch predates
+`infinicus-platform/` and hosts an entirely unrelated legacy static
+site — the new CI workflow is scoped away from it. One migration was
+added (`0146`, one new platform-scoped table, no RLS — matching
+`_migrations`/`system_settings`/`feature_flags`'s existing precedent).
 
 ## Pending Builds
 
 | ID | Layer | Description | Depends on |
 |---|---|---|---|
-| BUILD-23 | DEPLOY | Deployment | BUILD-22 (completed) |
-| BUILD-24 | SECRETS | Secrets management | BUILD-23 |
+| BUILD-24 | SECRETS | Secrets management | BUILD-23 (completed) |
 | BUILD-25 | OBS | Observability | BUILD-24 |
 | BUILD-26 | SEC-PRIV | Security and privacy | BUILD-25 |
 | BUILD-27 | PERF | Performance | BUILD-26 |

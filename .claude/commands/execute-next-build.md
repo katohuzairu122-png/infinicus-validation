@@ -20,21 +20,22 @@ document completely — it is the authoritative scope.
 If no specification section or linked document exists for the ready build,
 STOP and report the missing definition. Do not invent the scope.
 
-BUILD-22 (PROD-DB, Production database and recovery) is **completed** —
-see `.claude/state/reports/BUILD-22-PROD-DB-completion.md`. It delivered
-hardened PostgreSQL connection pooling, a Postgres advisory-lock guard
-against concurrent-instance migration races, a new `GET /v1/ready`
-readiness endpoint distinct from the pre-existing liveness-only
-`GET /v1/health`, and a full backup/restore/point-in-time-recovery/
-retention/tenant-export toolchain under
-`infrastructure/database/scripts/` — every capability live-tested,
-including a genuine WAL-archiving PITR drill. No CLAUDE.md §4 gate
-applied (this build's scope is operational tooling, not a
-frontend/API-framework choice), so no user check-in was required. Zero
-migrations were added (still `0001`–`0145`, unchanged from BUILD-21).
-Per its specification §8/§10, BUILD-23 was not auto-readied; re-verify
-BUILD-23's preconditions against
-`docs/implementation-queue/BUILD-23-DEPLOY-SPECIFICATION.md` and the
+BUILD-23 (DEPLOY, Deployment and environments) is **completed** — see
+`.claude/state/reports/BUILD-23-DEPLOY-completion.md`. It delivered
+release versioning, a deployment-audit table and repository
+(`platform.deployment_events`), an immutable Dockerfile for `apps/api`,
+a migration gate, health/smoke checks, a genuinely code-enforced
+promotion gate (staging requires a prior succeeded test deployment of
+the exact same version; production requires a prior succeeded staging
+deployment), a rollback procedure, and a CI workflow
+(`.github/workflows/ci.yml`, scoped away from this repository's
+unrelated legacy `main` branch, discovered during entry-gate
+inspection) running real build/test/Docker-image jobs on GitHub's own
+runners. No CLAUDE.md §4 gate applied, so no user check-in was
+required. One migration was added (`0146`). Per its specification
+§8/§10, BUILD-24 was not auto-readied; re-verify BUILD-24's
+preconditions against
+`docs/implementation-queue/BUILD-24-SECRETS-SPECIFICATION.md` and the
 current repository state before marking it ready. BUILD-11 is
 superseded — see `CLAUDE-MASTER-EXECUTION-INSTRUCTIONS.md` (repo root) and
 never mark it ready or implement it.
