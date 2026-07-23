@@ -346,3 +346,11 @@ export { SecretRotationEventNotFoundError, SecretRotationEventRepository } from 
 export type {
   SecretRotationEvent, SecretRotationEnvironment, RecordRotationInput,
 } from './repositories/secrets/index.js';
+
+// ── Error tracking and alerting repositories (BUILD-25) ─────────────────
+export { ErrorEventRepository, AlertEventRepository, AlertEventNotFoundError, getOutboxBacklog } from './repositories/observability/index.js';
+export type {
+  ErrorEvent, ErrorEventLevel, RecordErrorInput,
+  AlertEvent, AlertSeverity, TriggerAlertInput,
+  OutboxBacklog,
+} from './repositories/observability/index.js';

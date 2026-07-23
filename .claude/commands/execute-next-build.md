@@ -20,20 +20,17 @@ document completely — it is the authoritative scope.
 If no specification section or linked document exists for the ready build,
 STOP and report the missing definition. Do not invent the scope.
 
-BUILD-24 (SECRETS, Secrets and configuration management) is
-**completed** — see `.claude/state/reports/BUILD-24-SECRETS-completion.md`.
-It delivered a verified secret inventory, a fail-closed
-production-credential guard, a `SecretProvider` abstraction, default
-log redaction plus free-text secret scrubbing, a rotation/expiration
-audit trail (`platform.secret_rotation_events`) with a live-tested
-`rotate-db-credential.sh`, and a CI-wired browser-secret-prevention
-scan. One migration was added (`0147`). Per the user's explicit
+BUILD-25 (OBS, Logging monitoring and alerting) is **completed** — see
+`.claude/state/reports/BUILD-25-OBS-completion.md`. It delivered error
+tracking, lightweight in-process tracing, job/outbox monitoring, a
+`platform:admin`-gated `GET /v1/metrics` dashboards-data endpoint, and
+alerting. One migration was added (`0148`). Per the user's explicit
 "continue to full completion of all the builds (30)" instruction,
-BUILD-25 (OBS) has been marked `ready` — this instruction supersedes
-each individual build's own "do not auto-ready the next build"
-checkpoint for the remainder of the BUILD-24→BUILD-30 queue. BUILD-11
-is superseded — see `CLAUDE-MASTER-EXECUTION-INSTRUCTIONS.md` (repo
-root) and never mark it ready or implement it.
+BUILD-26 (SEC-PRIV) has been marked `ready` — this instruction
+supersedes each individual build's own "do not auto-ready the next
+build" checkpoint for the remainder of the BUILD-24→BUILD-30 queue.
+BUILD-11 is superseded — see `CLAUDE-MASTER-EXECUTION-INSTRUCTIONS.md`
+(repo root) and never mark it ready or implement it.
 
 ## Step 3 — Inspect the repository
 

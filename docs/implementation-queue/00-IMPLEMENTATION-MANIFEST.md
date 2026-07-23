@@ -29,6 +29,7 @@ All builds in strict execution order. Execute one at a time.
 | BUILD-22 | PROD-DB | Production database and recovery | completed |
 | BUILD-23 | DEPLOY | Deployment and environments | completed |
 | BUILD-24 | SECRETS | Secrets and configuration management | completed |
+| BUILD-25 | OBS | Logging, monitoring, and alerting | completed |
 
 ## Superseded Builds
 
@@ -45,29 +46,26 @@ never execute it."* The required build route is
 
 ## Current Ready Build
 
-`BUILD-25` (OBS — Observability). Per the user's explicit instruction to
-continue through full completion of all builds (BUILD-24 through
-BUILD-30) without per-build check-ins, each build's own "do not
+`BUILD-26` (SEC-PRIV — Security and privacy). Per the user's explicit
+instruction to continue through full completion of all builds (BUILD-24
+through BUILD-30) without per-build check-ins, each build's own "do not
 automatically start the next build" checkpoint is superseded for the
-remainder of this queue by that standing instruction. BUILD-24 delivered
-a verified secret inventory (`packages/configuration/src/secrets.ts`), a
-fail-closed production-credential guard, a `SecretProvider` abstraction
-(`EnvSecretProvider`), default log redaction plus free-text secret
-scrubbing, a rotation/expiration audit trail
-(`platform.secret_rotation_events`) with a live-tested
-`rotate-db-credential.sh` enforcing Postgres's own `VALID UNTIL` expiry,
-and a CI-wired browser-secret-prevention scan. It also corrected a stale
-`.env.example` (removed 6 environment variables — `SUPABASE_*`,
-`JWT_SECRET`, `JWT_EXPIRY`, `SENTRY_DSN` — that no code in this
-repository has ever read). One migration was added (`0147`, one new
-platform-scoped table, no RLS — matching `deployment_events`'s
-precedent).
+remainder of this queue by that standing instruction. BUILD-25 delivered
+error tracking (`ErrorTracker`, `observability.error_events`, wired into
+`apps/api`'s central error handler), lightweight in-process distributed
+tracing (`startSpan()`), job/outbox monitoring (`getOutboxBacklog()`
+over the pre-existing `events.outbox_events` table), a
+`platform:admin`-gated `GET /v1/metrics` dashboards-data endpoint, and
+alerting (`observability.alert_events`, `observability-audit.cjs`). It
+also found and fixed a recurrence of BUILD-19's nil-UUID/empty-string
+session-variable bug in new repository code. One migration was added
+(`0148`).
 
 ## Pending Builds
 
 | ID | Layer | Description | Depends on |
 |---|---|---|---|
-| BUILD-25 | OBS | Observability | BUILD-24 (completed) |
+| BUILD-26 | SEC-PRIV | Security and privacy | BUILD-25 (completed) |
 | BUILD-26 | SEC-PRIV | Security and privacy | BUILD-25 |
 | BUILD-27 | PERF | Performance | BUILD-26 |
 | BUILD-28 | BILLING | Billing | BUILD-27 |

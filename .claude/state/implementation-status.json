@@ -314,17 +314,23 @@
       "id": "BUILD-25",
       "layer": "OBS",
       "name": "Observability",
-      "status": "ready",
+      "status": "completed",
       "specification": "docs/implementation-queue/BUILD-25-OBS-SPECIFICATION.md",
-      "notes": "Dependency BUILD-24 completed. Readied per explicit user instruction to continue through all builds to BUILD-30 without per-build check-ins."
+      "specificationSha256": "4efec667549008fc07c5a6b433e4ef02601068c363d103c02d87fcbb80373954",
+      "notes": "Dependency: BUILD-24 (completed). Delivered error tracking (ErrorTracker, observability.error_events, wired into apps/api's error handler), lightweight in-process tracing (startSpan()), job/outbox monitoring (getOutboxBacklog()), a platform:admin-gated GET /v1/metrics dashboards-data endpoint, and alerting (observability.alert_events, observability-audit.cjs). Found and fixed a recurrence of BUILD-19's nil-UUID/empty-string session-variable bug in new repository code. One migration added (0148).",
+      "readyAt": "2026-07-23T00:00:00.000Z",
+      "startedAt": "2026-07-23T00:00:00.000Z",
+      "completedAt": "2026-07-23T00:00:00.000Z",
+      "report": ".claude/state/reports/BUILD-25-OBS-completion.md",
+      "testsPass": true
     },
     {
       "id": "BUILD-26",
       "layer": "SEC-PRIV",
       "name": "Security and privacy",
-      "status": "pending",
+      "status": "ready",
       "specification": "docs/implementation-queue/BUILD-26-SEC-PRIV-SPECIFICATION.md",
-      "notes": "Blocked on BUILD-25 completion."
+      "notes": "Dependency BUILD-25 completed. Readied per explicit user instruction to continue through all builds to BUILD-30 without per-build check-ins."
     },
     {
       "id": "BUILD-27",
@@ -359,5 +365,5 @@
       "notes": "Blocked on BUILD-29 completion. Final build in the BUILD-10-30 master roadmap."
     }
   ],
-  "currentReadyBuild": "BUILD-25"
+  "currentReadyBuild": "BUILD-26"
 }
