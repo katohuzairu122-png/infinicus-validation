@@ -64,20 +64,53 @@ if [[ "$TABLE_COUNT" -eq 0 ]]; then
 fi
 echo "Found ${TABLE_COUNT} tenant-scoped tables."
 
-TABLE_ARGS=()
-while IFS= read -r table; do
-  [[ -n "$table" ]] && TABLE_ARGS+=(--table="$table")
-done <<< "$TABLES"
+# Most tenant-scoped tables' RLS policy ANDs a second predicate —
+# workspace_id = current_setting('app.workspace_id', true)::uuid — not
+# just tenant_id. A single pg_dump pass with only app.tenant_id set (the
+# original approach) leaves that second predicate comparing against NULL
+# for every one of those tables, so RLS silently admits zero rows and
+# pg_dump produces an empty COPY block for them — no error, just an
+# incomplete export (found live during BUILD-27 testing, alongside the
+# identical gap in delete-tenant-data.mjs). Tables requiring
+# app.workspace_id must be dumped once per workspace the tenant owns,
+# with both session variables set for each pass; the results are
+# appended into the same output file.
+WORKSPACE_SCOPED_TABLES=$(psql "$DATABASE_URL" -tAc "
+  SELECT DISTINCT schemaname || '.' || tablename FROM pg_policies
+  WHERE qual LIKE '%app.tenant_id%' AND qual LIKE '%app.workspace_id%' ORDER BY 1;
+")
+TENANT_ONLY_TABLES=$(comm -23 <(echo "$TABLES" | sort) <(echo "$WORKSPACE_SCOPED_TABLES" | sort))
+WORKSPACE_IDS=$(psql "$DATABASE_URL" -tAc "SELECT id FROM tenancy.workspaces WHERE tenant_id = '${TENANT_ID}';" \
+  --set=app.tenant_id="${TENANT_ID}" 2>/dev/null || true)
+if [[ -z "$WORKSPACE_IDS" ]]; then
+  WORKSPACE_IDS=$(PGOPTIONS="-c app.tenant_id=${TENANT_ID}" psql "$DATABASE_URL" -tAc "SELECT id FROM tenancy.workspaces WHERE tenant_id = '${TENANT_ID}';")
+fi
 
 echo "Exporting tenant ${TENANT_ID} to ${OUTPUT_FILE} ..."
-PGOPTIONS="-c app.tenant_id=${TENANT_ID}" pg_dump "$DATABASE_URL" \
-  --data-only \
-  --enable-row-security \
-  --no-owner \
-  --no-privileges \
-  --format=plain \
-  "${TABLE_ARGS[@]}" \
-  --file="$OUTPUT_FILE"
+: > "$OUTPUT_FILE"
+
+if [[ -n "$(echo "$TENANT_ONLY_TABLES" | grep -c . || true)" ]] && [[ "$(echo "$TENANT_ONLY_TABLES" | grep -c . || true)" -gt 0 ]]; then
+  TENANT_ONLY_ARGS=()
+  while IFS= read -r table; do
+    [[ -n "$table" ]] && TENANT_ONLY_ARGS+=(--table="$table")
+  done <<< "$TENANT_ONLY_TABLES"
+  PGOPTIONS="-c app.tenant_id=${TENANT_ID}" pg_dump "$DATABASE_URL" \
+    --data-only --enable-row-security --no-owner --no-privileges --format=plain \
+    "${TENANT_ONLY_ARGS[@]}" >> "$OUTPUT_FILE"
+fi
+
+if [[ "$(echo "$WORKSPACE_SCOPED_TABLES" | grep -c . || true)" -gt 0 ]]; then
+  WORKSPACE_SCOPED_ARGS=()
+  while IFS= read -r table; do
+    [[ -n "$table" ]] && WORKSPACE_SCOPED_ARGS+=(--table="$table")
+  done <<< "$WORKSPACE_SCOPED_TABLES"
+  while IFS= read -r ws; do
+    [[ -z "$ws" ]] && continue
+    PGOPTIONS="-c app.tenant_id=${TENANT_ID} -c app.workspace_id=${ws}" pg_dump "$DATABASE_URL" \
+      --data-only --enable-row-security --no-owner --no-privileges --format=plain \
+      "${WORKSPACE_SCOPED_ARGS[@]}" >> "$OUTPUT_FILE"
+  done <<< "$WORKSPACE_IDS"
+fi
 
 echo "Export complete: ${OUTPUT_FILE} ($(du -h "$OUTPUT_FILE" | cut -f1))"
 echo "$OUTPUT_FILE"

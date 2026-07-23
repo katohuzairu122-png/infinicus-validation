@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "lastUpdated": "2026-07-23T09:55:00.000Z",
+  "lastUpdated": "2026-07-23T20:10:00.000Z",
   "platform": "INFINICUS ENGINE v3",
   "builds": [
     {
@@ -342,17 +342,23 @@
       "id": "BUILD-27",
       "layer": "PERF",
       "name": "Performance",
-      "status": "ready",
+      "status": "completed",
       "specification": "docs/implementation-queue/BUILD-27-PERF-SPECIFICATION.md",
-      "notes": "Dependency BUILD-26 completed. Readied per explicit user instruction to continue through all builds to BUILD-30 without per-build check-ins."
+      "specificationSha256": "0a23753101968a9102a3e7e0d018eec3a2104ab4b451589ee99942e0a4cc9c28",
+      "notes": "Dependency: BUILD-26 (completed). Delivered a live load-test tool (load-test.mjs) with real p50/p95/p99/throughput measurements, live database/Simulation/ADI concurrency tests, outbox-throughput measurement, a large-tenant test, connection-pool resilience testing, and a capacity plan/SLO doc grounded in real numbers. Found and fixed three genuine defects via live testing: (1) no application code anywhere calls the outbox emit_* SQL functions, a real cross-cutting wiring gap; (2) export-tenant.sh (BUILD-22) and delete-tenant-data.mjs (BUILD-26) only ever set app.tenant_id, silently producing incomplete exports/erasures for the ~300 of 442 tenant-scoped tables whose RLS also requires app.workspace_id — fixed to loop per-workspace; (3) delete-tenant-data.mjs crashed outright on tenants with real audit-trail history in the ~210 append-only (forbid_mutation-triggered) tables across every domain — fixed to skip and honestly report retained tables instead. No migrations added.",
+      "readyAt": "2026-07-23T00:00:00.000Z",
+      "startedAt": "2026-07-23T00:00:00.000Z",
+      "completedAt": "2026-07-23T00:00:00.000Z",
+      "report": ".claude/state/reports/BUILD-27-PERF-completion.md",
+      "testsPass": true
     },
     {
       "id": "BUILD-28",
       "layer": "BILLING",
       "name": "Billing",
-      "status": "pending",
+      "status": "ready",
       "specification": "docs/implementation-queue/BUILD-28-BILLING-SPECIFICATION.md",
-      "notes": "Blocked on BUILD-27 completion."
+      "notes": "Dependency BUILD-27 completed. Readied per explicit user instruction to continue through all builds to BUILD-30 without per-build check-ins."
     },
     {
       "id": "BUILD-29",
@@ -371,5 +377,5 @@
       "notes": "Blocked on BUILD-29 completion. Final build in the BUILD-10-30 master roadmap."
     }
   ],
-  "currentReadyBuild": "BUILD-27"
+  "currentReadyBuild": "BUILD-28"
 }

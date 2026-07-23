@@ -115,6 +115,73 @@ async function main() {
     console.log(`Tables scoped indirectly (no literal tenant_id column, blanket DELETE relies on RLS): ${tablesScopedIndirectly.join(', ')}`);
   }
 
+  // SAFETY CHECK #2 (found live during BUILD-27 performance testing):
+  // most tenant-scoped tables' RLS policy ANDs a SECOND predicate —
+  // `workspace_id = current_setting('app.workspace_id', true)::uuid` —
+  // not just tenant_id. Setting only app.tenant_id (as this script did
+  // originally) leaves that second predicate comparing against NULL for
+  // every one of those tables, so RLS silently admits zero rows and every
+  // DELETE against them affects nothing — no error, just orphaned data
+  // that later breaks a FK constraint on some other table (which is
+  // exactly how this was caught: a leftover simulation_model_versions row
+  // blocked deletion of its parent business). Tables requiring
+  // app.workspace_id must be deleted once per workspace the tenant owns,
+  // with both session variables set for each pass.
+  const workspaceScopedCheckRaw = psql(
+    ADMIN_DATABASE_URL,
+    `SELECT DISTINCT schemaname||'.'||tablename FROM pg_policies
+     WHERE qual LIKE '%app.tenant_id%' AND qual LIKE '%app.workspace_id%';`
+  );
+  const tablesRequiringWorkspaceScope = new Set(workspaceScopedCheckRaw.split('\n').map((l) => l.trim()).filter(Boolean));
+
+  const workspaceColumnCheckRaw = psql(
+    ADMIN_DATABASE_URL,
+    `SELECT schemaname||'.'||tablename FROM pg_policies p
+     WHERE qual LIKE '%app.workspace_id%'
+       AND EXISTS (
+         SELECT 1 FROM information_schema.columns c
+         WHERE c.table_schema = p.schemaname AND c.table_name = p.tablename AND c.column_name = 'workspace_id'
+       );`
+  );
+  const tablesWithWorkspaceIdColumn = new Set(workspaceColumnCheckRaw.split('\n').map((l) => l.trim()).filter(Boolean));
+
+  const workspaceIdsRaw = psql(ADMIN_DATABASE_URL, `SELECT id FROM tenancy.workspaces WHERE tenant_id = '${TENANT_ID}';`);
+  const workspaceIds = workspaceIdsRaw.split('\n').map((l) => l.trim()).filter(Boolean);
+  console.log(`Found ${tablesRequiringWorkspaceScope.size} tables requiring per-workspace scoping across ${workspaceIds.length} workspace(s).`);
+
+  // SAFETY CHECK #3 (found live during BUILD-27): a large subset of
+  // tenant-scoped tables across every domain (intake status-history,
+  // run status-history, versions, evidence, deployment-rollback tables,
+  // ...) carry a BEFORE UPDATE OR DELETE trigger calling
+  // <schema>.forbid_mutation(), which unconditionally RAISEs — these are
+  // deliberately append-only audit-trail tables (the same immutability
+  // guarantee BUILD-23/24's own deployment/secret-rotation audit tables
+  // rely on), and no role, including this script's, can DELETE from
+  // them. A tenant with real usage history in these domains therefore
+  // cannot have every one of its rows physically erased without either
+  // compromising that audit-trail integrity guarantee or building a
+  // dedicated anonymization capability — neither of which is in scope
+  // here. This script's honest, safe behavior is to skip these tables
+  // entirely (never attempt the DELETE, since the trigger would abort
+  // the whole surrounding transaction) and report them as retained, so
+  // a caller can see exactly what was and was not erased rather than
+  // the script silently claiming full erasure or crashing outright.
+  const appendOnlyRaw = psql(
+    ADMIN_DATABASE_URL,
+    `SELECT DISTINCT n.nspname||'.'||c.relname
+     FROM pg_trigger t
+     JOIN pg_class c ON c.oid = t.tgrelid
+     JOIN pg_namespace n ON n.oid = c.relnamespace
+     JOIN pg_proc p ON p.oid = t.tgfoid
+     WHERE p.proname = 'forbid_mutation';`
+  );
+  const tablesAppendOnly = new Set(
+    appendOnlyRaw.split('\n').map((l) => l.trim()).filter(Boolean).filter((t) => tenantScopedTables.has(t))
+  );
+  if (tablesAppendOnly.size > 0) {
+    console.log(`${tablesAppendOnly.size} tables are append-only audit trail (forbid_mutation trigger) — will be retained, not deleted.`);
+  }
+
   console.log('Computing FK dependency order ...');
   const fkRaw = psql(
     ADMIN_DATABASE_URL,
@@ -163,36 +230,108 @@ async function main() {
   // (SELECT count(*)) before the deleting pass, both under the same
   // RLS-scoped tenant context, so the audit trail reports exactly how
   // many rows were actually removed per table, not a placeholder.
-  function scopedClause(table) {
-    return tablesWithTenantIdColumn.has(table) ? ` WHERE tenant_id = '${TENANT_ID}'` : '';
+  function scopedClause(table, workspaceId) {
+    let clause = tablesWithTenantIdColumn.has(table) ? ` WHERE tenant_id = '${TENANT_ID}'` : '';
+    if (workspaceId && tablesWithWorkspaceIdColumn.has(table)) {
+      clause += clause ? ` AND workspace_id = '${workspaceId}'` : ` WHERE workspace_id = '${workspaceId}'`;
+    }
+    return clause;
   }
+
+  const deletableOrder = order.filter((table) => !tablesAppendOnly.has(table));
 
   const rowCounts = {};
-  for (const table of order) {
-    const countRaw = psql(DATABASE_URL, `SELECT set_config('app.tenant_id', '${TENANT_ID}', true); SELECT count(*) FROM ${table}${scopedClause(table)};`);
-    const lines = countRaw.split('\n').map((l) => l.trim()).filter(Boolean);
-    rowCounts[table] = Number(lines[lines.length - 1] ?? '0');
+  for (const table of deletableOrder) {
+    if (tablesRequiringWorkspaceScope.has(table)) {
+      let total = 0;
+      for (const ws of workspaceIds) {
+        const countRaw = psql(
+          DATABASE_URL,
+          `SELECT set_config('app.tenant_id', '${TENANT_ID}', true); SELECT set_config('app.workspace_id', '${ws}', true); SELECT count(*) FROM ${table}${scopedClause(table, ws)};`
+        );
+        const lines = countRaw.split('\n').map((l) => l.trim()).filter(Boolean);
+        total += Number(lines[lines.length - 1] ?? '0');
+      }
+      rowCounts[table] = total;
+    } else {
+      const countRaw = psql(DATABASE_URL, `SELECT set_config('app.tenant_id', '${TENANT_ID}', true); SELECT count(*) FROM ${table}${scopedClause(table)};`);
+      const lines = countRaw.split('\n').map((l) => l.trim()).filter(Boolean);
+      rowCounts[table] = Number(lines[lines.length - 1] ?? '0');
+    }
   }
 
-  const deleteStatements = [
-    `SELECT set_config('app.tenant_id', '${TENANT_ID}', true);`,
-    ...order.map((table) => `DELETE FROM ${table}${scopedClause(table)};`),
-  ];
-  psqlTransaction(DATABASE_URL, deleteStatements);
+  // Each deletable table runs as its own short transaction rather than
+  // one giant all-or-nothing transaction. This is necessary, not just
+  // convenient: excluding append-only tables from `order` can still
+  // leave a normal (deletable) table blocked by ON DELETE RESTRICT from
+  // a retained append-only row that references it (e.g. an intake
+  // package with real status-history rows this script must not touch).
+  // Deleting table-by-table lets every table that CAN be removed be
+  // removed, while a table that genuinely can't (blocked by retained
+  // audit-trail rows) is reported honestly instead of rolling back
+  // everything that already succeeded.
+  const blockedTables = {};
+  for (const table of deletableOrder) {
+    try {
+      if (tablesRequiringWorkspaceScope.has(table)) {
+        for (const ws of workspaceIds) {
+          psqlTransaction(DATABASE_URL, [
+            `SELECT set_config('app.tenant_id', '${TENANT_ID}', true);`,
+            `SELECT set_config('app.workspace_id', '${ws}', true);`,
+            `DELETE FROM ${table}${scopedClause(table, ws)};`,
+          ]);
+        }
+      } else {
+        psqlTransaction(DATABASE_URL, [
+          `SELECT set_config('app.tenant_id', '${TENANT_ID}', true);`,
+          `DELETE FROM ${table}${scopedClause(table)};`,
+        ]);
+      }
+    } catch (err) {
+      blockedTables[table] = String(err.message ?? err).split('\n')[0];
+    }
+  }
+
   console.log('Tenant-scoped table deletion complete:', JSON.stringify(rowCounts, null, 2));
+  if (tablesAppendOnly.size > 0) {
+    console.log('Retained (append-only audit trail, not deleted):', [...tablesAppendOnly].join(', '));
+  }
+  if (Object.keys(blockedTables).length > 0) {
+    console.log('Could not delete (blocked by retained append-only dependents):', JSON.stringify(blockedTables, null, 2));
+  }
 
   const tenantNameRaw = psql(ADMIN_DATABASE_URL, `SELECT name FROM tenancy.tenants WHERE id = '${TENANT_ID}';`).trim();
   const tenantName = tenantNameRaw.length > 0 ? tenantNameRaw.replace(/'/g, "''") : null;
 
-  const finalStatements = [
-    `DELETE FROM tenancy.workspaces WHERE tenant_id = '${TENANT_ID}';`,
-    `DELETE FROM tenancy.tenants WHERE id = '${TENANT_ID}';`,
-    `INSERT INTO platform.data_deletion_events (tenant_id, tenant_name, deleted_by, table_row_counts)
-     VALUES ('${TENANT_ID}', ${tenantName ? `'${tenantName}'` : 'NULL'}, '${deletedBy}', '${JSON.stringify(rowCounts)}'::jsonb);`,
-  ];
-  psqlTransaction(ADMIN_DATABASE_URL, finalStatements);
+  const auditPayload = {
+    rowCounts,
+    retainedAppendOnly: [...tablesAppendOnly],
+    blockedByRetainedDependents: blockedTables,
+  };
 
-  console.log(`Deleted tenant ${TENANT_ID} (${tenantName ?? 'unknown name'}).`);
+  let tenantFullyDeleted = true;
+  try {
+    psqlTransaction(ADMIN_DATABASE_URL, [
+      `DELETE FROM tenancy.workspaces WHERE tenant_id = '${TENANT_ID}';`,
+      `DELETE FROM tenancy.tenants WHERE id = '${TENANT_ID}';`,
+    ]);
+  } catch (err) {
+    tenantFullyDeleted = false;
+    console.log(`tenancy.tenants/workspaces could not be deleted (blocked by retained dependents): ${String(err.message ?? err).split('\n')[0]}`);
+  }
+
+  psqlTransaction(ADMIN_DATABASE_URL, [
+    `INSERT INTO platform.data_deletion_events (tenant_id, tenant_name, deleted_by, table_row_counts)
+     VALUES ('${TENANT_ID}', ${tenantName ? `'${tenantName}'` : 'NULL'}, '${deletedBy}', '${JSON.stringify(auditPayload).replace(/'/g, "''")}'::jsonb);`,
+  ]);
+
+  if (tenantFullyDeleted && Object.keys(blockedTables).length === 0) {
+    console.log(`Deleted tenant ${TENANT_ID} (${tenantName ?? 'unknown name'}).`);
+  } else {
+    console.log(
+      `Partially erased tenant ${TENANT_ID} (${tenantName ?? 'unknown name'}): all erasable data was removed, but ${tablesAppendOnly.size} append-only audit-trail table(s) were retained by design (see platform.data_deletion_events for the full record).`
+    );
+  }
 }
 
 main().catch((err) => {

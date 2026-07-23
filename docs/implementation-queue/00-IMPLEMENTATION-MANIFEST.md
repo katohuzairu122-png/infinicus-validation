@@ -31,6 +31,7 @@ All builds in strict execution order. Execute one at a time.
 | BUILD-24 | SECRETS | Secrets and configuration management | completed |
 | BUILD-25 | OBS | Logging, monitoring, and alerting | completed |
 | BUILD-26 | SEC-PRIV | Security, privacy, and retention | completed |
+| BUILD-27 | PERF | Performance and load readiness | completed |
 
 ## Superseded Builds
 
@@ -47,31 +48,33 @@ never execute it."* The required build route is
 
 ## Current Ready Build
 
-`BUILD-27` (PERF — Performance). Per the user's explicit instruction to
+`BUILD-28` (BILLING — Billing). Per the user's explicit instruction to
 continue through full completion of all builds (BUILD-24 through
 BUILD-30) without per-build check-ins, each build's own "do not
 automatically start the next build" checkpoint is superseded for the
-remainder of this queue by that standing instruction. BUILD-26 delivered
-a threat model, dependency scanning (CI-wired allowlist script), SAST
-(`eslint-plugin-security`), a real DAST scan (`dast-scan.sh`), live
-rate-limit/injection-resistance tests, security headers
-(`@fastify/helmet`), bounded request payloads, an explicit CSRF/XSS/SQLi
-assessment, and a genuine right-to-erasure capability
-(`delete-tenant-data.mjs`, `platform.data_deletion_events`). It found
-and fixed two genuine bugs via live testing: `errorHandler.ts` silently
-redacting legitimate 4xx errors (e.g. rate-limit's 429) to 500, and a
-cross-tenant data-safety defect in the deletion script's first draft
-(a blanket DELETE relying only on RLS visibility would have deleted
-every tenant's shared system roles). One migration was added (`0149`).
+remainder of this queue by that standing instruction. BUILD-27 delivered
+a live load-test tool (`load-test.mjs`) with real p50/p95/p99/throughput
+measurements, live database/Simulation/ADI concurrency tests, outbox-
+throughput measurement, a large-tenant test, connection-pool resilience
+testing, and a capacity plan/SLO doc grounded in real measurements. It
+found and fixed three genuine defects via live testing: outbox emission
+is not wired into any domain write path anywhere in the monorepo (the
+`emit_*` SQL functions exist but have zero call sites outside their own
+migrations); `export-tenant.sh` (BUILD-22) and `delete-tenant-data.mjs`
+(BUILD-26) only ever set `app.tenant_id`, silently producing incomplete
+exports/erasures for the majority of tenant-scoped tables (whose RLS
+also requires `app.workspace_id`) — fixed to loop per-workspace; and
+`delete-tenant-data.mjs` crashed outright on a tenant with real
+audit-trail history in the ~210 append-only (`forbid_mutation`) tables
+across every domain — fixed to skip those tables and honestly report
+what was retained rather than crash or silently claim full erasure. No
+migrations were added.
 
 ## Pending Builds
 
 | ID | Layer | Description | Depends on |
 |---|---|---|---|
-| BUILD-27 | PERF | Performance | BUILD-26 (completed) |
-| BUILD-26 | SEC-PRIV | Security and privacy | BUILD-25 |
-| BUILD-27 | PERF | Performance | BUILD-26 |
-| BUILD-28 | BILLING | Billing | BUILD-27 |
+| BUILD-28 | BILLING | Billing | BUILD-27 (completed) |
 | BUILD-29 | INCIDENT | Incident response | BUILD-28 |
 | BUILD-30 | LAUNCH | Launch readiness | BUILD-29 |
 

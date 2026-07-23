@@ -337,11 +337,30 @@ describe.runIf(run)('BUILD-21 governed API — live PostgreSQL', () => {
         [bizId, ctx.tenantId, ctx.workspaceId, uc('api-list-biz')]
       );
 
-      const res = await app!.inject({ method: 'GET', url: '/v1/businesses?page=1&pageSize=10', headers: tenantHeaders(ctx, token) });
-      expect(res.statusCode).toBe(200);
-      const body = res.json();
-      expect(body.items.some((b: { id: string }) => b.id === bizId)).toBe(true);
-      expect(body.page).toBe(1);
+      // T1/WS1 is a fixed fixture tenant shared by every test in this
+      // file (createTenantWithOwner always returns the same ids), so it
+      // accumulates businesses across every historical run — asserting
+      // the new business lands on page 1 assumes an upper bound on that
+      // accumulation that doesn't hold over a long-lived test tenant.
+      // Walk pages (bounded by the endpoint's own max pageSize) until
+      // found instead, which still exercises real pagination without
+      // being fragile to how much prior fixture data exists.
+      const PAGE_SIZE = 100;
+      let found = false;
+      let page = 1;
+      let totalPages = 1;
+      while (page <= totalPages) {
+        const res = await app!.inject({ method: 'GET', url: `/v1/businesses?page=${page}&pageSize=${PAGE_SIZE}`, headers: tenantHeaders(ctx, token) });
+        expect(res.statusCode).toBe(200);
+        const body = res.json();
+        totalPages = Math.max(1, Math.ceil(body.total / PAGE_SIZE));
+        if (body.items.some((b: { id: string }) => b.id === bizId)) {
+          found = true;
+          break;
+        }
+        page += 1;
+      }
+      expect(found).toBe(true);
     });
 
     it('an owner can view the workflow aggregate for a business', async () => {

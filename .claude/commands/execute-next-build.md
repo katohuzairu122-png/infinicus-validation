@@ -20,18 +20,28 @@ document completely — it is the authoritative scope.
 If no specification section or linked document exists for the ready build,
 STOP and report the missing definition. Do not invent the scope.
 
-BUILD-26 (SEC-PRIV, Security privacy and retention) is **completed** —
-see `.claude/state/reports/BUILD-26-SEC-PRIV-completion.md`. It
-delivered a threat model, dependency scanning, SAST, DAST, live rate-
-limit/injection-resistance tests, security headers, bounded payloads, an
-explicit CSRF/XSS/SQLi assessment, and a right-to-erasure capability
-(`delete-tenant-data.mjs`). One migration was added (`0149`). Per the
-user's explicit "continue to full completion of all the builds (30)"
-instruction, BUILD-27 (PERF) has been marked `ready` — this instruction
-supersedes each individual build's own "do not auto-ready the next
-build" checkpoint for the remainder of the BUILD-24→BUILD-30 queue.
-BUILD-11 is superseded — see `CLAUDE-MASTER-EXECUTION-INSTRUCTIONS.md`
-(repo root) and never mark it ready or implement it.
+BUILD-27 (PERF, Performance and load readiness) is **completed** —
+see `.claude/state/reports/BUILD-27-PERF-completion.md`. It delivered a
+live load-test tool with real p50/p95/p99/throughput numbers, live
+database/Simulation/ADI concurrency tests, outbox-throughput
+measurement, a large-tenant test, connection-pool resilience testing,
+and a capacity plan/SLO doc grounded in real measurements. It also found
+and fixed three genuine defects via live testing: outbox emission is not
+wired into any domain write path anywhere in the monorepo; both
+`export-tenant.sh` (BUILD-22) and `delete-tenant-data.mjs` (BUILD-26)
+only ever set `app.tenant_id`, silently producing incomplete exports/
+erasures for the majority of tenant-scoped tables (whose RLS also
+requires `app.workspace_id`) — fixed to loop per-workspace; and
+`delete-tenant-data.mjs` crashed outright on a tenant with real
+audit-trail history in the ~210 append-only (`forbid_mutation`) tables
+across every domain — fixed to skip and honestly report retained tables
+instead of crashing. No migrations added. Per the user's explicit
+"continue to full completion of all the builds (30)" instruction,
+BUILD-28 (BILLING) has been marked `ready` — this instruction supersedes
+each individual build's own "do not auto-ready the next build" checkpoint
+for the remainder of the BUILD-24→BUILD-30 queue. BUILD-11 is superseded
+— see `CLAUDE-MASTER-EXECUTION-INSTRUCTIONS.md` (repo root) and never
+mark it ready or implement it.
 
 ## Step 3 — Inspect the repository
 

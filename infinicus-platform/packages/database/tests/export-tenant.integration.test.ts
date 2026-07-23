@@ -28,6 +28,7 @@ const T2 = '99999999-a0a0-0000-0000-000000000003';
 const WS2 = '99999999-a0a0-0000-0000-000000000004';
 const BIZ_CODE_T1 = 'export-test-biz-t1';
 const BIZ_CODE_T2 = 'export-test-biz-t2';
+const MODEL_CODE_T1 = 'export-test-model-t1';
 
 describe.runIf(run)('export-tenant.sh — live PostgreSQL', () => {
   let adminPool: Pool;
@@ -61,6 +62,20 @@ describe.runIf(run)('export-tenant.sh — live PostgreSQL', () => {
        ON CONFLICT (tenant_id, business_code) DO NOTHING`,
       [T2, WS2, BIZ_CODE_T2]
     );
+    // simulation.simulation_models' RLS policy requires BOTH tenant_id
+    // AND workspace_id (unlike platform.businesses above, which only
+    // requires tenant_id) — this is the regression case for the
+    // BUILD-27-discovered gap where export-tenant.sh only ever set
+    // app.tenant_id, so pg_dump silently produced zero rows for every
+    // table whose RLS also ANDs a workspace_id predicate (the majority
+    // of tenant-scoped tables in this schema).
+    await adminPool.query(
+      `INSERT INTO simulation.simulation_models (id, tenant_id, workspace_id, business_id, model_code, name, status)
+       SELECT gen_random_uuid(), $1, $2, id, $3, 'Export Test Model', 'draft'
+       FROM platform.businesses WHERE business_code = $4
+       ON CONFLICT (business_id, model_code) DO NOTHING`,
+      [T1, WS1, MODEL_CODE_T1, BIZ_CODE_T1]
+    );
     outputDir = await mkdtemp(join(tmpdir(), 'infinicus-export-test-'));
   }, 30_000);
 
@@ -80,6 +95,10 @@ describe.runIf(run)('export-tenant.sh — live PostgreSQL', () => {
     expect(contents).not.toContain(BIZ_CODE_T2);
     expect(contents).toContain(T1);
     expect(contents).not.toContain(T2);
+    // Regression coverage for the BUILD-27-discovered workspace-scoping
+    // gap: a table whose RLS policy requires app.workspace_id (not just
+    // app.tenant_id) must still appear in the export.
+    expect(contents).toContain(MODEL_CODE_T1);
   }, 30_000);
 
   it('refuses to run against a superuser/BYPASSRLS connection', async () => {
