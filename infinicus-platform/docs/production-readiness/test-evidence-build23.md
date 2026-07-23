@@ -173,8 +173,32 @@ surfaced on its own:
    `build-and-smoke-test-image` job at the `Build Docker image` step:
    `ERROR: failed to build: invalid tag "infinicus-api:0.0.1+sha.5d6c205":
    invalid reference format` — see defect 8 below.
-4. See the BUILD-23 completion report / PR #10 summary comment for the
-   confirmed outcome of the corrected run that followed.
+4. Run `29999890251` (after fixing defect 8) **passed both jobs in
+   full**:
+   - `validate` — 2m39s (10:35:38–10:38:17 UTC). Every step green:
+     checkout, `pnpm/action-setup@v4`, `actions/setup-node@v4`,
+     `pnpm install --frozen-lockfile`, `pnpm lint` (23/23 packages),
+     `pnpm typecheck` (26/26 tasks, dependency-ordered via the
+     `^build` fix), `pnpm build` (23/23 packages), least-privilege
+     role creation, `migration-gate.sh` (all 146 migrations applied to
+     a fresh CI database), `grant-app-role.sh`, and the filtered
+     `turbo run test` against every package with a real suite — the
+     full live-database test run, ~55s.
+   - `build-and-smoke-test-image` — 1m27s (10:38:19–10:39:46 UTC).
+     Every step green: checkout (full history for `version.sh`),
+     pnpm/node setup, building `@infinicus/database`, computing the
+     immutable version (`docker_tag` now Docker-safe), `docker build`
+     of `apps/api/Dockerfile` (~35s, on GitHub's unrestricted-network
+     runners — the base-image pull this sandbox cannot perform),
+     provisioning the database for the image, running the real
+     container on `--network host`, readiness confirmed within 1s of
+     `docker run`, and `smoke-test.sh` passing against the live
+     container's `/v1/health`, `/v1/ready`, and `/documentation/json`.
+   Run link:
+   https://github.com/katohuzairu122-png/infinicus-validation/actions/runs/29999890251
+   This is the confirmed, genuinely green live CI evidence for
+   BUILD-23 — see the completion report's VALIDATION section and the
+   PR #10 summary comment for the same result.
 
 ## Defects found and fixed during this build's own testing
 

@@ -219,7 +219,16 @@ unchanged for the audit trail; verified the substitution locally, pushed,
 and re-triggered — see
 docs/production-readiness/test-evidence-build23.md's "Live CI run"
 section and the PR #10 summary comment for the corrected run's
-confirmed outcome.
+confirmed outcome. Run 29999890251 (after fixing defect 8) passed both
+jobs in full: validate in 2m39s (lint 23/23, typecheck 26/26, build
+23/23, migration gate applying all 146 migrations to a fresh CI
+database, grant-app-role.sh, and the filtered turbo run test's full
+live-database suite all green), and build-and-smoke-test-image in 1m27s
+(real docker build of apps/api/Dockerfile on GitHub's unrestricted-
+network runners, the image run for real with --network host, readiness
+confirmed within 1s, and smoke-test.sh passing against the live
+container's /v1/health, /v1/ready, and /documentation/json). Run:
+https://github.com/katohuzairu122-png/infinicus-validation/actions/runs/29999890251
 Eight genuine bugs were found and fixed during this build's own
 testing/authoring (a shell-injection risk in deploy.sh, a doubled status
 code in smoke-test.sh's failure path, turbo's silent env-var
