@@ -20,13 +20,15 @@ document completely — it is the authoritative scope.
 If no specification section or linked document exists for the ready build,
 STOP and report the missing definition. Do not invent the scope.
 
-BUILD-19 (ONBOARDING, Tenant onboarding) is **completed** — see
-`.claude/state/reports/BUILD-19-ONBOARDING-completion.md`. It was built
-on the pre-existing tenancy/platform/identity schema plus one new
-onboarding schema (one table, migrations 0138-0141). Per its
-specification §8/§10, BUILD-20 was not auto-readied; re-verify BUILD-20's
-preconditions against
-`docs/implementation-queue/BUILD-20-WORKFLOW-SPECIFICATION.md` and the
+BUILD-20 (WORKFLOW, Customer decision workflows) is **completed** — see
+`.claude/state/reports/BUILD-20-WORKFLOW-completion.md`. It delivered the
+platform's first real UI (Next.js 15, `apps/web` — confirmed with the
+user before implementation, since root `CLAUDE.md` §4 gates Next.js
+behind explicit instruction) plus `packages/workflow`, composing the
+existing BI/DT/Simulation/ADI/ABA/OM repositories. No migrations were
+added. Per its specification §8/§10, BUILD-21 was not auto-readied;
+re-verify BUILD-21's preconditions against
+`docs/implementation-queue/BUILD-21-API-SPECIFICATION.md` and the
 current repository state before marking it ready. BUILD-11 is
 superseded — see `CLAUDE-MASTER-EXECUTION-INSTRUCTIONS.md` (repo root) and
 never mark it ready or implement it.

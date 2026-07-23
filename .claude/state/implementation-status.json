@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "lastUpdated": "2026-07-22T23:55:00.000Z",
+  "lastUpdated": "2026-07-23T03:30:00.000Z",
   "platform": "INFINICUS ENGINE v3",
   "builds": [
     {
@@ -243,10 +243,16 @@
     {
       "id": "BUILD-20",
       "layer": "WORKFLOW",
-      "name": "Workflow engine",
-      "status": "pending",
+      "name": "Customer decision workflows",
+      "status": "completed",
       "specification": "docs/implementation-queue/BUILD-20-WORKFLOW-SPECIFICATION.md",
-      "notes": "Blocked on BUILD-19 completion."
+      "specificationSha256": "089785c7a260609b7be9976e7505f79d02bac28ec9a34535733fd569017f8770",
+      "notes": "Dependency: BUILD-19 (completed). Built packages/workflow orchestrating the existing BI/DT/SIM/ADI/ABA/OM repositories, plus the first real UI (Next.js 15, apps/web) per explicit user confirmation. No migrations added — six additive read methods on existing repositories only. Frozen migration baseline after this build: 0001-0141 (unchanged from BUILD-19).",
+      "readyAt": "2026-07-23T00:00:00.000Z",
+      "startedAt": "2026-07-23T00:00:00.000Z",
+      "completedAt": "2026-07-23T00:00:00.000Z",
+      "report": ".claude/state/reports/BUILD-20-WORKFLOW-completion.md",
+      "testsPass": true
     },
     {
       "id": "BUILD-21",
