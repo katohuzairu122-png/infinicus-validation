@@ -85,4 +85,31 @@ describe('loadConfig', () => {
   it('throws ConfigurationError for a non-numeric DB_POOL_MAX', () => {
     expect(() => loadConfig({ DATABASE_URL: 'postgresql://x', DB_POOL_MAX: 'not-a-number' })).toThrow(ConfigurationError);
   });
+
+  it('refuses to start in production when DATABASE_URL looks like a local/test credential (BUILD-24)', () => {
+    expect(() =>
+      loadConfig({
+        NODE_ENV: 'production',
+        DATABASE_URL: 'postgresql://infinicus_test_admin:local_admin_pw@localhost:5432/infinicus_test',
+      })
+    ).toThrow(ConfigurationError);
+  });
+
+  it('allows production to start with a DATABASE_URL that does not match any local/test pattern (BUILD-24)', () => {
+    expect(() =>
+      loadConfig({
+        NODE_ENV: 'production',
+        DATABASE_URL: 'postgresql://prod_app_role:x9k2m@prod-db.internal:5432/infinicus_production',
+      })
+    ).not.toThrow();
+  });
+
+  it('does not apply the production-credential guard outside production (BUILD-24)', () => {
+    expect(() =>
+      loadConfig({
+        NODE_ENV: 'test',
+        DATABASE_URL: 'postgresql://infinicus_test_admin:local_admin_pw@localhost:5432/infinicus_test',
+      })
+    ).not.toThrow();
+  });
 });

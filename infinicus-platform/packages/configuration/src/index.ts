@@ -1,10 +1,17 @@
 // Configuration loader — reads process.env once, fails closed on missing required values.
-export class ConfigurationError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = 'ConfigurationError';
-  }
-}
+import { ConfigurationError } from './errors.js';
+import { looksLikeLocalOrTestCredential } from './secrets.js';
+
+export { ConfigurationError } from './errors.js';
+export {
+  SECRET_INVENTORY,
+  SECRET_REDACTION_LOG_PATHS,
+  EnvSecretProvider,
+  validateSecretInventory,
+  looksLikeLocalOrTestCredential,
+  redactSecretValues,
+} from './secrets.js';
+export type { SecretClassification, SecretDefinition, SecretProvider } from './secrets.js';
 
 export interface InfinicusConfig {
   env: 'development' | 'staging' | 'production' | 'test';
@@ -40,9 +47,21 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): InfinicusConfi
   const resolvedEnv: InfinicusConfig['env'] =
     nodeEnv === 'production' || nodeEnv === 'staging' || nodeEnv === 'test' ? nodeEnv : 'development';
 
+  const databaseUrl = requireEnv(env, 'DATABASE_URL');
+
+  // Environment separation, enforced: a production process must never
+  // start against a database credential that looks like a local or CI
+  // disposable test credential — fail closed rather than silently run
+  // production traffic against a dev/test database.
+  if (resolvedEnv === 'production' && looksLikeLocalOrTestCredential(databaseUrl)) {
+    throw new ConfigurationError(
+      'DATABASE_URL looks like a local/test credential (matches a known dev or CI pattern) but NODE_ENV is production — refusing to start.'
+    );
+  }
+
   return {
     env: resolvedEnv,
-    databaseUrl: requireEnv(env, 'DATABASE_URL'),
+    databaseUrl,
     port: optionalInt(env, 'PORT', 3000),
     logLevel: env.LOG_LEVEL ?? (resolvedEnv === 'production' ? 'info' : 'debug'),
     rateLimitMax: optionalInt(env, 'RATE_LIMIT_MAX', 100),

@@ -90,6 +90,9 @@ jobs:
       - name: Build
         run: pnpm build
 
+      - name: Check for browser secret leakage
+        run: node infrastructure/deployment/scripts/check-no-browser-secrets.mjs
+
       - name: Create least-privilege application role
         run: |
           PGPASSWORD="$CI_ADMIN_PASSWORD" psql -h localhost -U "$CI_ADMIN_USER" -d "$CI_DB_NAME" -c \

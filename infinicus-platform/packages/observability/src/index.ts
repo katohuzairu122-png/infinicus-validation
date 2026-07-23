@@ -1,15 +1,40 @@
 // Observability — structured logging built on pino. Metrics/tracing are not yet implemented (see known limitations).
-import pino, { type Logger } from 'pino';
+import pino, { type Logger, type DestinationStream } from 'pino';
+import { SECRET_REDACTION_LOG_PATHS } from '@infinicus/configuration';
 
 export type { Logger } from 'pino';
+
+/**
+ * Redacted regardless of value whenever a logged object contains one of
+ * these paths — independent of and complementary to
+ * @infinicus/configuration's redactSecretValues() (which scrubs a known
+ * secret's literal runtime value out of free-form text, e.g. an error
+ * message). Always includes @infinicus/configuration's
+ * SECRET_REDACTION_LOG_PATHS (BUILD-24's canonical secret-path list) plus
+ * a few generic shapes (HTTP auth headers) that aren't configuration-specific.
+ */
+export const DEFAULT_REDACT_PATHS: readonly string[] = [
+  'req.headers.authorization',
+  ...SECRET_REDACTION_LOG_PATHS,
+];
 
 export interface CreateLoggerOptions {
   name: string;
   level?: string;
+  /** Additional pino redact.paths merged with DEFAULT_REDACT_PATHS. */
+  redactPaths?: readonly string[];
+  /** Overrides pino's write destination — for tests that need to capture output; defaults to stdout. */
+  destination?: DestinationStream;
 }
 
 export function createLogger(options: CreateLoggerOptions): Logger {
-  return pino({ name: options.name, level: options.level ?? 'info' });
+  const paths = [...DEFAULT_REDACT_PATHS, ...(options.redactPaths ?? [])];
+  const config = {
+    name: options.name,
+    level: options.level ?? 'info',
+    redact: { paths, censor: '[REDACTED]' },
+  };
+  return options.destination ? pino(config, options.destination) : pino(config);
 }
 
 /**

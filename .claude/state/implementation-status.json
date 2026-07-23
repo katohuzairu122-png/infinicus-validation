@@ -300,17 +300,23 @@
       "id": "BUILD-24",
       "layer": "SECRETS",
       "name": "Secrets management",
-      "status": "pending",
+      "status": "completed",
       "specification": "docs/implementation-queue/BUILD-24-SECRETS-SPECIFICATION.md",
-      "notes": "Blocked on BUILD-23 completion."
+      "specificationSha256": "9e9af3f9dc0f1de6dda0d4a4c768677734f0c1a80435ab9343c287445e599b71",
+      "notes": "Dependency: BUILD-23 (completed). Delivered a verified secret inventory (packages/configuration/src/secrets.ts), a fail-closed production-credential guard, a SecretProvider abstraction (EnvSecretProvider), default log redaction (packages/observability) plus free-text secret scrubbing, a rotation/expiration audit trail (platform.secret_rotation_events, migration 0147) with a live-tested rotate-db-credential.sh enforcing Postgres's VALID UNTIL, and a CI-wired browser-secret-prevention scan. Corrected a stale .env.example (6 fictitious env vars removed). One migration added (0147).",
+      "readyAt": "2026-07-23T00:00:00.000Z",
+      "startedAt": "2026-07-23T00:00:00.000Z",
+      "completedAt": "2026-07-23T00:00:00.000Z",
+      "report": ".claude/state/reports/BUILD-24-SECRETS-completion.md",
+      "testsPass": true
     },
     {
       "id": "BUILD-25",
       "layer": "OBS",
       "name": "Observability",
-      "status": "pending",
+      "status": "ready",
       "specification": "docs/implementation-queue/BUILD-25-OBS-SPECIFICATION.md",
-      "notes": "Blocked on BUILD-24 completion."
+      "notes": "Dependency BUILD-24 completed. Readied per explicit user instruction to continue through all builds to BUILD-30 without per-build check-ins."
     },
     {
       "id": "BUILD-26",
@@ -353,5 +359,5 @@
       "notes": "Blocked on BUILD-29 completion. Final build in the BUILD-10-30 master roadmap."
     }
   ],
-  "currentReadyBuild": null
+  "currentReadyBuild": "BUILD-25"
 }

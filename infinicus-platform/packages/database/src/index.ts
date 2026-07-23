@@ -340,3 +340,9 @@ export type {
   DeploymentEvent, DeploymentEnvironment, DeploymentStatus, StartDeploymentInput,
 } from './repositories/deployment/index.js';
 export type { IdempotencyRecord, BeginResult as IdempotencyBeginResult } from './repositories/api/index.js';
+
+// ── Secret rotation audit repository (BUILD-24) ─────────────────────────
+export { SecretRotationEventNotFoundError, SecretRotationEventRepository } from './repositories/secrets/index.js';
+export type {
+  SecretRotationEvent, SecretRotationEnvironment, RecordRotationInput,
+} from './repositories/secrets/index.js';

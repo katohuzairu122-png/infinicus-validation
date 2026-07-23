@@ -28,6 +28,7 @@ All builds in strict execution order. Execute one at a time.
 | BUILD-21 | API | Governed application API | completed |
 | BUILD-22 | PROD-DB | Production database and recovery | completed |
 | BUILD-23 | DEPLOY | Deployment and environments | completed |
+| BUILD-24 | SECRETS | Secrets and configuration management | completed |
 
 ## Superseded Builds
 
@@ -44,31 +45,29 @@ never execute it."* The required build route is
 
 ## Current Ready Build
 
-None. Per `BUILD-23-DEPLOY-SPECIFICATION.md` §8/§10 ("Do not
-automatically start the next build"), BUILD-24 is not marked ready by
-this build's completion. A future session must explicitly re-verify
-BUILD-24's preconditions before readying it. BUILD-23 delivered release
-versioning, a deployment-audit table and repository
-(`platform.deployment_events`), an immutable multi-stage Dockerfile for
-`apps/api`, a migration gate, health/smoke checks, a genuinely enforced
-promotion gate (`staging` requires a prior succeeded `test` deployment
-of the exact same version; `production` requires a prior succeeded
-`staging` deployment — checked by code and live-tested, not just
-documented), a rollback procedure, and a CI workflow
-(`.github/workflows/ci.yml`) running real lint/typecheck/build/test and
-a real Docker build-and-smoke-test job on GitHub's own runners. Entry-
-gate inspection discovered this repository's `main` branch predates
-`infinicus-platform/` and hosts an entirely unrelated legacy static
-site — the new CI workflow is scoped away from it. One migration was
-added (`0146`, one new platform-scoped table, no RLS — matching
-`_migrations`/`system_settings`/`feature_flags`'s existing precedent).
+`BUILD-25` (OBS — Observability). Per the user's explicit instruction to
+continue through full completion of all builds (BUILD-24 through
+BUILD-30) without per-build check-ins, each build's own "do not
+automatically start the next build" checkpoint is superseded for the
+remainder of this queue by that standing instruction. BUILD-24 delivered
+a verified secret inventory (`packages/configuration/src/secrets.ts`), a
+fail-closed production-credential guard, a `SecretProvider` abstraction
+(`EnvSecretProvider`), default log redaction plus free-text secret
+scrubbing, a rotation/expiration audit trail
+(`platform.secret_rotation_events`) with a live-tested
+`rotate-db-credential.sh` enforcing Postgres's own `VALID UNTIL` expiry,
+and a CI-wired browser-secret-prevention scan. It also corrected a stale
+`.env.example` (removed 6 environment variables — `SUPABASE_*`,
+`JWT_SECRET`, `JWT_EXPIRY`, `SENTRY_DSN` — that no code in this
+repository has ever read). One migration was added (`0147`, one new
+platform-scoped table, no RLS — matching `deployment_events`'s
+precedent).
 
 ## Pending Builds
 
 | ID | Layer | Description | Depends on |
 |---|---|---|---|
-| BUILD-24 | SECRETS | Secrets management | BUILD-23 (completed) |
-| BUILD-25 | OBS | Observability | BUILD-24 |
+| BUILD-25 | OBS | Observability | BUILD-24 (completed) |
 | BUILD-26 | SEC-PRIV | Security and privacy | BUILD-25 |
 | BUILD-27 | PERF | Performance | BUILD-26 |
 | BUILD-28 | BILLING | Billing | BUILD-27 |

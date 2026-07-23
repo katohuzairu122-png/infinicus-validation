@@ -20,25 +20,20 @@ document completely — it is the authoritative scope.
 If no specification section or linked document exists for the ready build,
 STOP and report the missing definition. Do not invent the scope.
 
-BUILD-23 (DEPLOY, Deployment and environments) is **completed** — see
-`.claude/state/reports/BUILD-23-DEPLOY-completion.md`. It delivered
-release versioning, a deployment-audit table and repository
-(`platform.deployment_events`), an immutable Dockerfile for `apps/api`,
-a migration gate, health/smoke checks, a genuinely code-enforced
-promotion gate (staging requires a prior succeeded test deployment of
-the exact same version; production requires a prior succeeded staging
-deployment), a rollback procedure, and a CI workflow
-(`.github/workflows/ci.yml`, scoped away from this repository's
-unrelated legacy `main` branch, discovered during entry-gate
-inspection) running real build/test/Docker-image jobs on GitHub's own
-runners. No CLAUDE.md §4 gate applied, so no user check-in was
-required. One migration was added (`0146`). Per its specification
-§8/§10, BUILD-24 was not auto-readied; re-verify BUILD-24's
-preconditions against
-`docs/implementation-queue/BUILD-24-SECRETS-SPECIFICATION.md` and the
-current repository state before marking it ready. BUILD-11 is
-superseded — see `CLAUDE-MASTER-EXECUTION-INSTRUCTIONS.md` (repo root) and
-never mark it ready or implement it.
+BUILD-24 (SECRETS, Secrets and configuration management) is
+**completed** — see `.claude/state/reports/BUILD-24-SECRETS-completion.md`.
+It delivered a verified secret inventory, a fail-closed
+production-credential guard, a `SecretProvider` abstraction, default
+log redaction plus free-text secret scrubbing, a rotation/expiration
+audit trail (`platform.secret_rotation_events`) with a live-tested
+`rotate-db-credential.sh`, and a CI-wired browser-secret-prevention
+scan. One migration was added (`0147`). Per the user's explicit
+"continue to full completion of all the builds (30)" instruction,
+BUILD-25 (OBS) has been marked `ready` — this instruction supersedes
+each individual build's own "do not auto-ready the next build"
+checkpoint for the remainder of the BUILD-24→BUILD-30 queue. BUILD-11
+is superseded — see `CLAUDE-MASTER-EXECUTION-INSTRUCTIONS.md` (repo
+root) and never mark it ready or implement it.
 
 ## Step 3 — Inspect the repository
 
