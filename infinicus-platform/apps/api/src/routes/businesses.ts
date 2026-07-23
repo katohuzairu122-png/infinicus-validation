@@ -1,0 +1,110 @@
+import type { FastifyInstance } from 'fastify';
+import type { ZodTypeProvider } from 'fastify-type-provider-zod';
+import { DecisionWorkflowService } from '@infinicus/workflow';
+import {
+  businessListResponseSchema, businessIdParamsSchema, workflowViewResponseSchema,
+  createDecisionBodySchema, decisionResponseSchema,
+  recordOutcomeBodySchema, outcomeResponseSchema,
+} from '../schemas/businesses.js';
+import { paginationQuerySchema, paginate, errorResponseSchema } from '../schemas/common.js';
+
+const workflow = new DecisionWorkflowService();
+
+export default async function businessRoutes(app: FastifyInstance) {
+  const server = app.withTypeProvider<ZodTypeProvider>();
+
+  server.get('/v1/businesses', {
+    schema: {
+      tags: ['businesses'],
+      summary: 'List businesses in the caller\'s workspace (paginated)',
+      querystring: paginationQuerySchema,
+      response: { 200: businessListResponseSchema, 401: errorResponseSchema, 403: errorResponseSchema },
+    },
+    preHandler: [app.authenticate, app.resolveTenantContext],
+  }, async (request, reply) => {
+    const businesses = await workflow.listBusinesses(request.ctx!);
+    const { page, pageSize } = request.query;
+    const result = paginate(
+      businesses.map((b) => ({ id: b.id, legalName: b.legalName, businessCode: b.businessCode, status: b.status, industry: b.industry })),
+      page, pageSize
+    );
+    return reply.status(200).send(result);
+  });
+
+  server.get('/v1/businesses/:businessId/workflow', {
+    schema: {
+      tags: ['businesses'],
+      summary: 'Aggregate decision-workflow view for a business (BI evidence, DT state, simulation, ADI recommendation, ABA review, outcomes)',
+      params: businessIdParamsSchema,
+      response: { 200: workflowViewResponseSchema, 401: errorResponseSchema, 403: errorResponseSchema, 404: errorResponseSchema },
+    },
+    preHandler: [app.authenticate, app.resolveTenantContext],
+  }, async (request, reply) => {
+    const view = await workflow.getWorkflowView(request.ctx!, request.params.businessId);
+    return reply.status(200).send({
+      business: {
+        id: view.business.id, legalName: view.business.legalName, businessCode: view.business.businessCode,
+        status: view.business.status, industry: view.business.industry,
+      },
+      biEvidenceCount: view.biEvidence.length,
+      dtInstanceCount: view.dtInstances.length,
+      hasDtSnapshot: view.dtLatestSnapshot !== null,
+      simulationRunCount: view.simulationRuns.length,
+      hasSimulationResult: view.simulationLatestResult !== null,
+      adiCaseCount: view.adiCases.length,
+      hasAdiRecommendation: view.adiLatestRecommendation !== null,
+      abaReviewCount: view.abaReviews.length,
+      hasAbaDecision: view.abaLatestDecision !== null,
+      outcomeCount: view.outcomes.length,
+    });
+  });
+
+  server.post('/v1/businesses/:businessId/decisions', {
+    schema: {
+      tags: ['businesses'],
+      summary: 'Start an ABA review and record a human approver\'s decision (idempotent)',
+      params: businessIdParamsSchema,
+      body: createDecisionBodySchema,
+      response: { 201: decisionResponseSchema, 401: errorResponseSchema, 403: errorResponseSchema, 409: errorResponseSchema },
+    },
+    preHandler: [app.authenticate, app.resolveTenantContext, app.requirePermission('aba:write'), app.requireIdempotencyKey],
+  }, async (request, reply) => {
+    const { businessId } = request.params;
+    const review = await workflow.createReview(request.ctx!, businessId, {
+      intakePackageId: request.body.intakePackageId,
+      reviewCode: request.body.reviewCode,
+      summary: request.body.summary,
+    });
+    const decision = await workflow.submitApprovalDecision(request.ctx!, businessId, {
+      reviewPackageId: review.id,
+      approverUserId: request.body.approverUserId,
+      assignmentCode: request.body.assignmentCode,
+      decisionCode: request.body.decisionCode,
+      summary: request.body.summary,
+      outcome: request.body.outcome,
+    });
+    return reply.status(201).send({ id: decision.id, status: decision.status, decisionCode: decision.decisionCode });
+  });
+
+  server.post('/v1/businesses/:businessId/outcomes', {
+    schema: {
+      tags: ['businesses'],
+      summary: 'Record and finalize an outcome observation (idempotent, immutable once recorded)',
+      params: businessIdParamsSchema,
+      body: recordOutcomeBodySchema,
+      response: { 201: outcomeResponseSchema, 401: errorResponseSchema, 403: errorResponseSchema, 409: errorResponseSchema },
+    },
+    preHandler: [app.authenticate, app.resolveTenantContext, app.requirePermission('om:write'), app.requireIdempotencyKey],
+  }, async (request, reply) => {
+    const { businessId } = request.params;
+    const { observation } = await workflow.recordOutcome(request.ctx!, businessId, {
+      monitoredActionId: request.body.monitoredActionId,
+      observationCode: request.body.observationCode,
+      summary: request.body.summary,
+      effectiveAt: new Date(request.body.effectiveAt),
+      measurements: request.body.measurements,
+      evidence: request.body.evidence,
+    });
+    return reply.status(201).send({ id: observation.id, status: observation.status, observationCode: observation.observationCode });
+  });
+}

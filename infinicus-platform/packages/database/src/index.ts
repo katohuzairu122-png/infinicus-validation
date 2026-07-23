@@ -329,3 +329,7 @@ export type {
   Setting, SettingsScope,
   OnboardingProgress, OnboardingStatus, OnboardingStep,
 } from './repositories/onboarding/index.js';
+
+// ── API idempotency-key repository (BUILD-21) ──────────────────────────────
+export { IdempotencyConflictError, IdempotencyKeyRepository } from './repositories/api/index.js';
+export type { IdempotencyRecord, BeginResult as IdempotencyBeginResult } from './repositories/api/index.js';
