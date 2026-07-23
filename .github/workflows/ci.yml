@@ -60,7 +60,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # package_json_file defaults to ./package.json resolved from
+      # GITHUB_WORKSPACE (the repo root) — it does NOT inherit this
+      # workflow's `defaults.run.working-directory` (that setting only
+      # applies to `run:` shell steps, not to a `uses:` action's own
+      # inputs). infinicus-platform/'s package.json (with its
+      # "packageManager": "pnpm@10.33.0" field) must be pointed to
+      # explicitly, or this action fails with "No pnpm version is
+      # specified" even though the field genuinely exists.
       - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: infinicus-platform/package.json
 
       - uses: actions/setup-node@v4
         with:
@@ -137,7 +147,17 @@ jobs:
         with:
           fetch-depth: 0 # version.sh needs real git history for a meaningful describe
 
+      # package_json_file defaults to ./package.json resolved from
+      # GITHUB_WORKSPACE (the repo root) — it does NOT inherit this
+      # workflow's `defaults.run.working-directory` (that setting only
+      # applies to `run:` shell steps, not to a `uses:` action's own
+      # inputs). infinicus-platform/'s package.json (with its
+      # "packageManager": "pnpm@10.33.0" field) must be pointed to
+      # explicitly, or this action fails with "No pnpm version is
+      # specified" even though the field genuinely exists.
       - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: infinicus-platform/package.json
 
       - uses: actions/setup-node@v4
         with:

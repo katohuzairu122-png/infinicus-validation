@@ -156,13 +156,14 @@ Re-ran `migration-gate.sh` against the already-migrated database: all
 
 ## Live CI run (GitHub Actions, on GitHub's own runners)
 
-`.github/workflows/ci.yml` runs automatically on push to this branch.
-[This section is completed after observing the actual triggered run —
-see the BUILD-23 completion report and the PR #10 summary comment for
-the confirmed run outcome, including the `build-and-smoke-test-image`
-job's real `docker build`/`docker run` result, which this sandboxed
-development environment's own outbound network policy cannot produce
-locally (see above).]
+`.github/workflows/ci.yml` runs automatically on push. The first real
+run this build's own push triggered (run `29997577400`) genuinely
+failed — and caught a real bug this sandboxed development environment
+could never have surfaced on its own, since the failure is specific to
+how GitHub Actions resolves a `uses:` action's own inputs. See defect 6
+below for the root cause and fix, and the BUILD-23 completion report /
+PR #10 summary comment for the confirmed outcome of the corrected run
+that followed.
 
 ## Defects found and fixed during this build's own testing
 
@@ -219,3 +220,24 @@ locally (see above).]
    `tsconfig.tsbuildinfo` at all) — fixed by deleting every
    `tsconfig.tsbuildinfo` in the workspace and rebuilding cleanly; not a
    defect in any committed file.
+6. **`pnpm/action-setup@v4` failed on the real, live CI run** (run
+   `29997577400`, `validate` job, ~36 seconds in) with `Error: No pnpm
+   version is specified` — even though
+   `infinicus-platform/package.json` genuinely declares
+   `"packageManager": "pnpm@10.33.0"`. Root cause: the action's
+   `package_json_file` input defaults to `./package.json` resolved from
+   `GITHUB_WORKSPACE` (the repository root) — it does **not** inherit
+   this workflow's `defaults.run.working-directory: infinicus-platform`,
+   because that setting only applies to `run:` shell steps, not to a
+   `uses:` action's own inputs. This is exactly the kind of bug that can
+   only be caught by a genuine GitHub Actions run, never by local
+   validation (`docker build`'s own base-image-pull restriction in this
+   sandboxed environment meant Docker-related steps were already known
+   to be unverifiable locally — this defect shows the *entire* workflow
+   benefits from real execution, not just the Docker-specific steps).
+   Fixed by explicitly setting
+   `package_json_file: infinicus-platform/package.json` on both
+   `pnpm/action-setup@v4` steps (`validate` and
+   `build-and-smoke-test-image`). Pushed the fix and re-triggered a real
+   CI run to confirm — see this document's "Live CI run" section above
+   for the corrected run's outcome.
