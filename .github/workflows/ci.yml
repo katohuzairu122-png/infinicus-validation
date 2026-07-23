@@ -172,11 +172,19 @@ jobs:
 
       - name: Compute immutable version
         id: version
-        run: echo "version=$(infrastructure/deployment/scripts/version.sh)" >> "$GITHUB_OUTPUT"
+        run: |
+          VERSION="$(infrastructure/deployment/scripts/version.sh)"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          # Docker tags only allow [\w][\w.-]{0,127} — no "+". version.sh's
+          # output is valid semver build metadata (e.g. "0.0.1+sha.abc1234")
+          # for the deployment-audit table and promotion gate, but the "+"
+          # makes it an invalid Docker reference. Substitute "-" for the
+          # image tag only; the audit trail keeps the real semver string.
+          echo "docker_tag=${VERSION//+/-}" >> "$GITHUB_OUTPUT"
 
       - name: Build Docker image
         run: |
-          docker build -f apps/api/Dockerfile -t "infinicus-api:${{ steps.version.outputs.version }}" .
+          docker build -f apps/api/Dockerfile -t "infinicus-api:${{ steps.version.outputs.docker_tag }}" .
 
       - name: Provision database for the image
         run: |
@@ -193,7 +201,7 @@ jobs:
           docker run -d --name infinicus-api-smoke --network host \
             -e DATABASE_URL="postgresql://${CI_APP_USER}:${CI_APP_PASSWORD}@localhost:5432/${CI_DB_NAME}" \
             -e PORT=3000 -e LOG_LEVEL=info \
-            "infinicus-api:${{ steps.version.outputs.version }}"
+            "infinicus-api:${{ steps.version.outputs.docker_tag }}"
 
       - name: Wait for readiness
         run: |

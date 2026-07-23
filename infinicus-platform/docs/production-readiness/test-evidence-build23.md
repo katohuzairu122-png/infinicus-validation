@@ -167,7 +167,13 @@ surfaced on its own:
    step of the `validate` job: `@infinicus/authentication:typecheck`
    reported `Cannot find module '@infinicus/database'` and `Cannot find
    module 'node:crypto'` — see defect 7 below.
-3. See the BUILD-23 completion report / PR #10 summary comment for the
+3. Run `29999270283` (after fixing defect 7) fully passed the `validate`
+   job (lint, typecheck, build, migration gate, grant script, and the
+   entire live-database `turbo run test` suite all green) but failed the
+   `build-and-smoke-test-image` job at the `Build Docker image` step:
+   `ERROR: failed to build: invalid tag "infinicus-api:0.0.1+sha.5d6c205":
+   invalid reference format` — see defect 8 below.
+4. See the BUILD-23 completion report / PR #10 summary comment for the
    confirmed outcome of the corrected run that followed.
 
 ## Defects found and fixed during this build's own testing
@@ -279,5 +285,23 @@ surfaced on its own:
    locally against the same fresh-checkout simulation:
    `pnpm lint` → 23/23 pass, `pnpm typecheck` → 26/26 pass, `pnpm build`
    → 23/23 pass. Pushed the fix and re-triggered a real CI run to
+   confirm — which surfaced defect 8 below.
+8. **`docker build -t "infinicus-api:${VERSION}"` rejected `version.sh`'s
+   own output as an invalid tag.** `version.sh` produces valid semver
+   with build metadata (e.g. `0.0.1+sha.5d6c205`) — correct semver
+   syntax, and the right choice for the deployment-audit table and the
+   promotion gate (both plain Postgres text). Docker image tags, however,
+   only permit `[\w][\w.-]{0,127}` — `+` is not a legal tag character, so
+   `docker build` failed outright with `invalid reference format` on the
+   real CI run (`29999270283`, `build-and-smoke-test-image` job); this
+   could never have been caught locally since `docker build` cannot run
+   in this sandbox at all (see known-limitations-build23.md). Fixed by
+   computing a second, Docker-safe output (`docker_tag`) in `ci.yml`'s
+   "Compute immutable version" step — `${VERSION//+/-}` — used only for
+   the image tag and container run command; `steps.version.outputs.version`
+   (the real semver string) is unchanged and still what would be recorded
+   in the deployment audit trail. Verified the substitution locally
+   (`0.0.1+sha.5d6c205.dirty` → `0.0.1-sha.5d6c205.dirty`, which satisfies
+   Docker's tag grammar). Pushed the fix and re-triggered a real CI run to
    confirm — see this document's "Live CI run" section above for the
    corrected run's outcome.
