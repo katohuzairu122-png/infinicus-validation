@@ -20,15 +20,20 @@ document completely — it is the authoritative scope.
 If no specification section or linked document exists for the ready build,
 STOP and report the missing definition. Do not invent the scope.
 
-BUILD-20 (WORKFLOW, Customer decision workflows) is **completed** — see
-`.claude/state/reports/BUILD-20-WORKFLOW-completion.md`. It delivered the
-platform's first real UI (Next.js 15, `apps/web` — confirmed with the
-user before implementation, since root `CLAUDE.md` §4 gates Next.js
-behind explicit instruction) plus `packages/workflow`, composing the
-existing BI/DT/Simulation/ADI/ABA/OM repositories. No migrations were
-added. Per its specification §8/§10, BUILD-21 was not auto-readied;
-re-verify BUILD-21's preconditions against
-`docs/implementation-queue/BUILD-21-API-SPECIFICATION.md` and the
+BUILD-21 (API, Governed application API) is **completed** — see
+`.claude/state/reports/BUILD-21-API-completion.md`. It delivered the
+platform's first real HTTP API (Fastify 5, `apps/api` — confirmed with
+the user before implementation, since root `CLAUDE.md` §4 gates the
+API's HTTP framework behind explicit instruction) governing the
+existing AuthenticationService/AuthorizationService/OnboardingService/
+DecisionWorkflowService behind versioned routes, schema validation,
+authentication, tenant-context authorization, permission gates,
+idempotency, pagination, correlation IDs, controlled errors, rate
+limits, audit logging, and OpenAPI documentation. Four migrations were
+added (`0142`–`0145`, one new `api` schema and idempotency table). Per
+its specification §8/§10, BUILD-22 was not auto-readied; re-verify
+BUILD-22's preconditions against
+`docs/implementation-queue/BUILD-22-PROD-DB-SPECIFICATION.md` and the
 current repository state before marking it ready. BUILD-11 is
 superseded — see `CLAUDE-MASTER-EXECUTION-INSTRUCTIONS.md` (repo root) and
 never mark it ready or implement it.

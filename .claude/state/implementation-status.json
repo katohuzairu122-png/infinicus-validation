@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "lastUpdated": "2026-07-23T03:30:00.000Z",
+  "lastUpdated": "2026-07-23T04:30:00.000Z",
   "platform": "INFINICUS ENGINE v3",
   "builds": [
     {
@@ -258,9 +258,15 @@
       "id": "BUILD-21",
       "layer": "API",
       "name": "API layer",
-      "status": "pending",
+      "status": "completed",
       "specification": "docs/implementation-queue/BUILD-21-API-SPECIFICATION.md",
-      "notes": "Blocked on BUILD-20 completion."
+      "specificationSha256": "a5eafc2b92ebc69ae3216f8fb7f88c71afc8bdba0c4ada108b8c298882ecdd66",
+      "notes": "Dependency: BUILD-20 (completed). Built apps/api as a real Fastify 5 HTTP application governing AuthenticationService/AuthorizationService/OnboardingService/DecisionWorkflowService (versioned routes, schema validation, auth, tenant-context authorization, permission gates, idempotency, pagination, correlation IDs, controlled errors, rate limits, audit logging, OpenAPI docs). New api schema/table for HTTP-layer idempotency (migrations 0142-0145). packages/configuration and packages/observability rewritten from stubs into real implementations. Frozen migration baseline after this build: 0001-0145.",
+      "readyAt": "2026-07-23T00:00:00.000Z",
+      "startedAt": "2026-07-23T00:00:00.000Z",
+      "completedAt": "2026-07-23T00:00:00.000Z",
+      "report": ".claude/state/reports/BUILD-21-API-completion.md",
+      "testsPass": true
     },
     {
       "id": "BUILD-22",

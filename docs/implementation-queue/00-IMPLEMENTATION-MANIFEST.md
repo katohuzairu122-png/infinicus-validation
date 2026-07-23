@@ -25,6 +25,7 @@ All builds in strict execution order. Execute one at a time.
 | BUILD-18 | AUTH | Authentication and authorization | completed |
 | BUILD-19 | ONBOARDING | Tenant onboarding | completed |
 | BUILD-20 | WORKFLOW | Customer decision workflows | completed |
+| BUILD-21 | API | Governed application API | completed |
 
 ## Superseded Builds
 
@@ -41,22 +42,26 @@ never execute it."* The required build route is
 
 ## Current Ready Build
 
-None. Per `BUILD-20-WORKFLOW-SPECIFICATION.md` §8/§10 ("Do not
-automatically start the next build"), BUILD-21 is not marked ready by
-this build's completion. A future session must explicitly re-verify
-BUILD-21's preconditions before readying it. BUILD-20 delivered the
-platform's first real UI (Next.js 15, `apps/web`, confirmed with the
-user before implementation since root `CLAUDE.md` §4 gates Next.js
-behind explicit instruction) plus `packages/workflow`, orchestrating
-the existing BI/DT/Simulation/ADI/ABA/OM repositories into a decision
-review/approval/outcome-entry workflow. No migrations were added.
+None. Per `BUILD-21-API-SPECIFICATION.md` §8/§10 ("Do not automatically
+start the next build"), BUILD-22 is not marked ready by this build's
+completion. A future session must explicitly re-verify BUILD-22's
+preconditions before readying it. BUILD-21 delivered the platform's
+first real HTTP API (Fastify 5, `apps/api`, confirmed with the user
+before implementation since root `CLAUDE.md` §4 gates the API's HTTP
+framework behind explicit instruction) governing the existing
+AuthenticationService/AuthorizationService/OnboardingService/
+DecisionWorkflowService behind versioned routes, schema validation,
+authentication, real membership-verified tenant-context authorization,
+permission gates, tenant+route-scoped idempotency, pagination,
+correlation IDs, controlled errors, rate limits, audit logging, and
+OpenAPI documentation. Four migrations were added (`0142`–`0145`,
+one new `api` schema and idempotency-bookkeeping table).
 
 ## Pending Builds
 
 | ID | Layer | Description | Depends on |
 |---|---|---|---|
-| BUILD-21 | API | API layer | BUILD-20 (completed) |
-| BUILD-22 | PROD-DB | Production database readiness | BUILD-21 |
+| BUILD-22 | PROD-DB | Production database readiness | BUILD-21 (completed) |
 | BUILD-23 | DEPLOY | Deployment | BUILD-22 |
 | BUILD-24 | SECRETS | Secrets management | BUILD-23 |
 | BUILD-25 | OBS | Observability | BUILD-24 |
