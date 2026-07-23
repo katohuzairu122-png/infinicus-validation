@@ -369,12 +369,15 @@ importers:
       '@types/bcryptjs':
         specifier: ^2.4.6
         version: 2.4.6
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.20.1
       typescript:
         specifier: ^5.4.0
         version: 5.9.3
       vitest:
         specifier: ^1.6.0
-        version: 1.6.1(@types/node@26.1.1)
+        version: 1.6.1(@types/node@22.20.1)
 
   packages/authorization:
     dependencies:
@@ -388,6 +391,9 @@ importers:
         specifier: workspace:*
         version: link:../shared-types
     devDependencies:
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.20.1
       '@types/pg':
         specifier: ^8.11.6
         version: 8.20.0
@@ -399,7 +405,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^1.6.0
-        version: 1.6.1(@types/node@26.1.1)
+        version: 1.6.1(@types/node@22.20.1)
 
   packages/configuration:
     dependencies:
@@ -432,6 +438,9 @@ importers:
         specifier: ^3.23.0
         version: 3.25.76
     devDependencies:
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.20.1
       '@types/pg':
         specifier: ^8.11.6
         version: 8.20.0
@@ -440,7 +449,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^1.6.0
-        version: 1.6.1(@types/node@26.1.1)
+        version: 1.6.1(@types/node@22.20.1)
 
   packages/event-contracts:
     dependencies:

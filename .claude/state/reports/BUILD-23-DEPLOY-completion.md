@@ -178,26 +178,44 @@ Fresh-database full-suite drill: a completely fresh database, provisioned
 using only migration-gate.sh + grant-app-role.sh (no manual steps), then
 ran the full 2747-test @infinicus/database suite unchanged — passed.
 Live CI run (GitHub Actions, on GitHub's own runners, real network
-access): the first real run this build's own push triggered (run
-29997577400) genuinely failed at the pnpm/action-setup@v4 step with
+access): three real runs were required before a genuinely green run was
+achieved. Run 29997577400 failed at the pnpm/action-setup@v4 step with
 "No pnpm version is specified" — a real bug only a genuine GitHub
 Actions execution could surface (the action's package_json_file input
 resolves from the repository root by default and does not inherit the
 workflow's defaults.run.working-directory, which only applies to run:
 steps). Fixed by explicitly setting package_json_file:
 infinicus-platform/package.json on both pnpm/action-setup@v4 steps,
-pushed, and re-triggered — see
+pushed, and re-triggered. The corrected run (29998343107) failed at a
+different step — the validate job's Typecheck step —
+@infinicus/authentication:typecheck reported "Cannot find module
+'@infinicus/database'" and "Cannot find module 'node:crypto'". Root
+cause: turbo.json's typecheck task depended on ^typecheck instead of
+^build, so a package could be typechecked before its workspace
+dependencies were ever built (no dist/*.d.ts yet), and
+packages/authentication, packages/authorization, and packages/database
+all import Node built-ins directly without declaring @types/node as a
+devDependency, relying on an incidental transitive hoist that a clean
+frozen-lockfile CI install does not reliably reproduce. Reproduced for
+real locally by deleting every dist/ and tsconfig.tsbuildinfo in the
+workspace (genuine fresh-checkout simulation) before re-running pnpm
+typecheck. Fixed by changing turbo.json's typecheck task to
+"dependsOn": ["^build"] and adding an explicit @types/node
+devDependency to the three affected packages; re-verified against the
+same fresh-checkout simulation (pnpm lint 23/23, pnpm typecheck 26/26,
+pnpm build 23/23), pushed, and re-triggered — see
 docs/production-readiness/test-evidence-build23.md's "Live CI run"
 section and the PR #10 summary comment for the corrected run's
 confirmed outcome.
-Six genuine bugs were found and fixed during this build's own
+Seven genuine bugs were found and fixed during this build's own
 testing/authoring (a shell-injection risk in deploy.sh, a doubled status
 code in smoke-test.sh's failure path, turbo's silent env-var
 strict-mode drop causing a false-green test result, the expected
 permission-denied on a freshly created ungranted table, a
 tsconfig.tsbuildinfo staleness artifact from this session's own manual
-exploration, and the pnpm/action-setup@v4 working-directory bug above)
-— full root-cause and fix detail in test-evidence-build23.md.
+exploration, the pnpm/action-setup@v4 working-directory bug, and the
+turbo typecheck task-graph / missing @types/node bug above) — full
+root-cause and fix detail in test-evidence-build23.md.
 
 ROLLBACK
 

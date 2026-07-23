@@ -156,14 +156,19 @@ Re-ran `migration-gate.sh` against the already-migrated database: all
 
 ## Live CI run (GitHub Actions, on GitHub's own runners)
 
-`.github/workflows/ci.yml` runs automatically on push. The first real
-run this build's own push triggered (run `29997577400`) genuinely
-failed — and caught a real bug this sandboxed development environment
-could never have surfaced on its own, since the failure is specific to
-how GitHub Actions resolves a `uses:` action's own inputs. See defect 6
-below for the root cause and fix, and the BUILD-23 completion report /
-PR #10 summary comment for the confirmed outcome of the corrected run
-that followed.
+`.github/workflows/ci.yml` runs automatically on push. Three real runs
+were required before a genuinely green run was achieved — each failure
+was a real bug this sandboxed development environment could not have
+surfaced on its own:
+
+1. Run `29997577400` failed at `pnpm/action-setup@v4` (`Error: No pnpm
+   version is specified`) — see defect 6 below.
+2. Run `29998343107` (after fixing defect 6) failed at the `Typecheck`
+   step of the `validate` job: `@infinicus/authentication:typecheck`
+   reported `Cannot find module '@infinicus/database'` and `Cannot find
+   module 'node:crypto'` — see defect 7 below.
+3. See the BUILD-23 completion report / PR #10 summary comment for the
+   confirmed outcome of the corrected run that followed.
 
 ## Defects found and fixed during this build's own testing
 
@@ -239,5 +244,40 @@ that followed.
    `package_json_file: infinicus-platform/package.json` on both
    `pnpm/action-setup@v4` steps (`validate` and
    `build-and-smoke-test-image`). Pushed the fix and re-triggered a real
-   CI run to confirm — see this document's "Live CI run" section above
-   for the corrected run's outcome.
+   CI run to confirm — which surfaced defect 7 below.
+7. **`turbo.json`'s `typecheck` task depended on `^typecheck` instead of
+   `^build`, so a package's cross-workspace type imports could be
+   typechecked before its workspace dependencies had ever been built.**
+   On the real CI run (`29998343107`, `validate` job, `Typecheck` step),
+   `@infinicus/authentication:typecheck` ran before `@infinicus/database`
+   had been built (the `Build` step comes *after* `Typecheck` in
+   `ci.yml`, and `typecheck`'s own turbo dependency graph never pulled
+   `build` in), so `@infinicus/database`'s `dist/index.d.ts` did not
+   exist yet — `tsc` reported `Cannot find module '@infinicus/database'`.
+   The accompanying `Cannot find module 'node:crypto'` on the same file
+   was a second, independent gap: `packages/authentication`,
+   `packages/authorization`, and `packages/database` all import Node
+   built-ins (`node:crypto`) directly in their `src/`, but only
+   `apps/api` and `packages/configuration` declared `@types/node` as a
+   devDependency — every other package's resolution of `node:` imports
+   depended on an incidental transitive hoist that a clean,
+   frozen-lockfile CI install does not reliably reproduce. Neither gap
+   was visible in this sandboxed session's own local `pnpm typecheck`
+   runs, because a stale `tsconfig.tsbuildinfo` (left over from earlier
+   manual builds in this long-lived container — see defect 5) let `tsc`
+   report false success without re-verifying `dist/` existed, and a
+   long-lived local `node_modules` had already accumulated a working
+   `@types/node` hoist from unrelated earlier installs. Reproduced for
+   real locally by deleting every `dist/` and `tsconfig.tsbuildinfo` in
+   the workspace (a genuine fresh-checkout simulation) and re-running
+   `pnpm typecheck` — same two errors. Fixed by (a) changing
+   `turbo.json`'s `typecheck` task to `"dependsOn": ["^build"]`, so
+   `turbo run typecheck` always builds a package's workspace
+   dependencies first, and (b) adding an explicit `"@types/node":
+   "^22.0.0"` devDependency to `packages/database`,
+   `packages/authentication`, and `packages/authorization`. Re-verified
+   locally against the same fresh-checkout simulation:
+   `pnpm lint` → 23/23 pass, `pnpm typecheck` → 26/26 pass, `pnpm build`
+   → 23/23 pass. Pushed the fix and re-triggered a real CI run to
+   confirm — see this document's "Live CI run" section above for the
+   corrected run's outcome.
