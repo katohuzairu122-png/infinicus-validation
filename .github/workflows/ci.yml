@@ -1,0 +1,200 @@
+name: INFINICUS Platform CI
+
+# BUILD-23 — CI validation (spec §2). Scoped to infinicus-platform/ only:
+# this repository's `main` branch predates this monorepo and hosts an
+# entirely unrelated static site (Cloudflare Pages/Workers, its own
+# .github/workflows/deploy.yml) — this workflow never touches it.
+#
+# Two jobs:
+#   validate                  — lint, typecheck, build, and the full live
+#                                 -database test suite (every package).
+#   build-and-smoke-test-image — builds the immutable apps/api Docker
+#                                 image (tagged by infrastructure/deployment
+#                                 /scripts/version.sh's git-derived version),
+#                                 runs it for real, and smoke-tests it.
+#                                 Does not push/publish the image anywhere —
+#                                 no real container registry or deployment
+#                                 target is configured for this repository
+#                                 (see known-limitations-build23.md).
+
+on:
+  push:
+    branches:
+      - "claude/**"
+    paths:
+      - "infinicus-platform/**"
+      - ".github/workflows/ci.yml"
+  pull_request:
+    paths:
+      - "infinicus-platform/**"
+      - ".github/workflows/ci.yml"
+
+defaults:
+  run:
+    working-directory: infinicus-platform
+
+env:
+  CI_ADMIN_USER: infinicus_ci_admin
+  CI_ADMIN_PASSWORD: ci_admin_pw
+  CI_APP_USER: app_test_user
+  CI_APP_PASSWORD: ci_app_pw
+  CI_DB_NAME: infinicus_ci
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: infinicus_ci_admin
+          POSTGRES_PASSWORD: ci_admin_pw
+          POSTGRES_DB: infinicus_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: infinicus-platform/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Build
+        run: pnpm build
+
+      - name: Create least-privilege application role
+        run: |
+          PGPASSWORD="$CI_ADMIN_PASSWORD" psql -h localhost -U "$CI_ADMIN_USER" -d "$CI_DB_NAME" -c \
+            "CREATE ROLE ${CI_APP_USER} LOGIN PASSWORD '${CI_APP_PASSWORD}';"
+
+      - name: Apply migrations (migration gate)
+        run: |
+          DATABASE_URL="postgresql://${CI_ADMIN_USER}:${CI_ADMIN_PASSWORD}@localhost:5432/${CI_DB_NAME}" \
+            infrastructure/deployment/scripts/migration-gate.sh
+
+      - name: Grant application role access
+        run: |
+          ADMIN_DATABASE_URL="postgresql://${CI_ADMIN_USER}:${CI_ADMIN_PASSWORD}@localhost:5432/${CI_DB_NAME}" \
+          APP_ROLE="$CI_APP_USER" \
+            infrastructure/database/scripts/grant-app-role.sh
+
+      # Scoped to the packages with real test suites — several placeholder
+      # layers/* packages declare a `test` script (`vitest run`) but were
+      # never given vitest as a devDependency (a pre-existing gap flagged
+      # in BUILD-10's own completion report as candidate future work, no
+      # specification authored). A blind `pnpm test` fails on the very
+      # first such package before ever reaching the packages that matter
+      # — exactly matching how every prior build's own regression testing
+      # in this session has always targeted specific packages, never a
+      # blind repo-wide `pnpm test`.
+      - name: Test
+        run: >
+          npx turbo run test
+          --filter=@infinicus/database --filter=@infinicus/configuration --filter=@infinicus/observability
+          --filter=@infinicus/authentication --filter=@infinicus/authorization --filter=@infinicus/onboarding
+          --filter=@infinicus/workflow --filter=@infinicus/api --filter=@infinicus/web
+        env:
+          DATABASE_URL: postgresql://${{ env.CI_APP_USER }}:${{ env.CI_APP_PASSWORD }}@localhost:5432/${{ env.CI_DB_NAME }}
+          ADMIN_DATABASE_URL: postgresql://${{ env.CI_ADMIN_USER }}:${{ env.CI_ADMIN_PASSWORD }}@localhost:5432/${{ env.CI_DB_NAME }}
+
+  build-and-smoke-test-image:
+    needs: validate
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: infinicus_ci_admin
+          POSTGRES_PASSWORD: ci_admin_pw
+          POSTGRES_DB: infinicus_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # version.sh needs real git history for a meaningful describe
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: infinicus-platform/pnpm-lock.yaml
+
+      - name: Install and build @infinicus/database (needed by migration-gate.sh)
+        run: |
+          pnpm install --frozen-lockfile
+          npx turbo run build --filter=@infinicus/database
+
+      - name: Compute immutable version
+        id: version
+        run: echo "version=$(infrastructure/deployment/scripts/version.sh)" >> "$GITHUB_OUTPUT"
+
+      - name: Build Docker image
+        run: |
+          docker build -f apps/api/Dockerfile -t "infinicus-api:${{ steps.version.outputs.version }}" .
+
+      - name: Provision database for the image
+        run: |
+          PGPASSWORD="$CI_ADMIN_PASSWORD" psql -h localhost -U "$CI_ADMIN_USER" -d "$CI_DB_NAME" -c \
+            "CREATE ROLE ${CI_APP_USER} LOGIN PASSWORD '${CI_APP_PASSWORD}';"
+          DATABASE_URL="postgresql://${CI_ADMIN_USER}:${CI_ADMIN_PASSWORD}@localhost:5432/${CI_DB_NAME}" \
+            infrastructure/deployment/scripts/migration-gate.sh
+          ADMIN_DATABASE_URL="postgresql://${CI_ADMIN_USER}:${CI_ADMIN_PASSWORD}@localhost:5432/${CI_DB_NAME}" \
+          APP_ROLE="$CI_APP_USER" \
+            infrastructure/database/scripts/grant-app-role.sh
+
+      - name: Run the image
+        run: |
+          docker run -d --name infinicus-api-smoke --network host \
+            -e DATABASE_URL="postgresql://${CI_APP_USER}:${CI_APP_PASSWORD}@localhost:5432/${CI_DB_NAME}" \
+            -e PORT=3000 -e LOG_LEVEL=info \
+            "infinicus-api:${{ steps.version.outputs.version }}"
+
+      - name: Wait for readiness
+        run: |
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:3000/v1/ready > /dev/null; then
+              echo "Ready after ${i}s"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Image never became ready" >&2
+          docker logs infinicus-api-smoke
+          exit 1
+
+      - name: Smoke test
+        run: BASE_URL="http://localhost:3000" infrastructure/deployment/scripts/smoke-test.sh
+
+      - name: Container logs (always, for debugging)
+        if: always()
+        run: docker logs infinicus-api-smoke || true
+
+      - name: Clean up
+        if: always()
+        run: docker rm -f infinicus-api-smoke || true

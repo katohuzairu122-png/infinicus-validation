@@ -333,4 +333,10 @@ export type {
 
 // ── API idempotency-key repository (BUILD-21) ──────────────────────────────
 export { IdempotencyConflictError, IdempotencyKeyRepository } from './repositories/api/index.js';
+
+// ── Deployment audit repository (BUILD-23) ──────────────────────────────
+export { DeploymentEventNotFoundError, DeploymentEventRepository } from './repositories/deployment/index.js';
+export type {
+  DeploymentEvent, DeploymentEnvironment, DeploymentStatus, StartDeploymentInput,
+} from './repositories/deployment/index.js';
 export type { IdempotencyRecord, BeginResult as IdempotencyBeginResult } from './repositories/api/index.js';

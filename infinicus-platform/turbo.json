@@ -31,6 +31,10 @@
     "test": {
       "dependsOn": [
         "^build"
+      ],
+      "env": [
+        "DATABASE_URL",
+        "ADMIN_DATABASE_URL"
       ]
     },
     "typecheck": {
