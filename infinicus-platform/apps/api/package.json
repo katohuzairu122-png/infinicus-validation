@@ -29,6 +29,7 @@
     "@infinicus/authorization": "workspace:*",
     "@infinicus/onboarding": "workspace:*",
     "@infinicus/workflow": "workspace:*",
+    "@infinicus/billing": "workspace:*",
     "@infinicus/configuration": "workspace:*",
     "@infinicus/observability": "workspace:*",
     "fastify": "^5.0.0",

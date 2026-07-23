@@ -354,3 +354,17 @@ export type {
   AlertEvent, AlertSeverity, TriggerAlertInput,
   OutboxBacklog,
 } from './repositories/observability/index.js';
+
+// ── Billing and entitlements repositories (BUILD-28) ─────────────────────
+export {
+  PlanRepository, SubscriptionRepository, UsageRepository,
+  BillingNotFoundError, BillingConflictError,
+  PlanNotFoundError, SubscriptionNotFoundError, SubscriptionAlreadyExistsError,
+  InvalidSubscriptionTransitionError, UsageLimitExceededError,
+} from './repositories/billing/index.js';
+export type {
+  Plan,
+  Subscription, SubscriptionStatus, PaymentStatus,
+  SubscriptionStatusHistoryEntry, CreateSubscriptionInput, TransitionStatusOptions,
+  UsageRecord, UsageMetric,
+} from './repositories/billing/index.js';

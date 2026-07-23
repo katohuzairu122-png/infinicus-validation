@@ -67,7 +67,7 @@ export default async function businessRoutes(app: FastifyInstance) {
       body: createDecisionBodySchema,
       response: { 201: decisionResponseSchema, 401: errorResponseSchema, 403: errorResponseSchema, 409: errorResponseSchema },
     },
-    preHandler: [app.authenticate, app.resolveTenantContext, app.requirePermission('aba:write'), app.requireIdempotencyKey],
+    preHandler: [app.authenticate, app.resolveTenantContext, app.requirePermission('aba:write'), app.requireActiveSubscription(), app.requireIdempotencyKey],
   }, async (request, reply) => {
     const { businessId } = request.params;
     const review = await workflow.createReview(request.ctx!, businessId, {
@@ -94,7 +94,7 @@ export default async function businessRoutes(app: FastifyInstance) {
       body: recordOutcomeBodySchema,
       response: { 201: outcomeResponseSchema, 401: errorResponseSchema, 403: errorResponseSchema, 409: errorResponseSchema },
     },
-    preHandler: [app.authenticate, app.resolveTenantContext, app.requirePermission('om:write'), app.requireIdempotencyKey],
+    preHandler: [app.authenticate, app.resolveTenantContext, app.requirePermission('om:write'), app.requireActiveSubscription(), app.requireIdempotencyKey],
   }, async (request, reply) => {
     const { businessId } = request.params;
     const { observation } = await workflow.recordOutcome(request.ctx!, businessId, {

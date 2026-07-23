@@ -12,11 +12,13 @@ import errorHandlerPlugin from './plugins/errorHandler.js';
 import authPlugin from './plugins/auth.js';
 import tenantContextPlugin from './plugins/tenantContext.js';
 import permissionPlugin from './plugins/permission.js';
+import billingPlugin from './plugins/billing.js';
 import idempotencyPlugin from './plugins/idempotency.js';
 import authRoutes from './routes/auth.js';
 import onboardingRoutes from './routes/onboarding.js';
 import businessRoutes from './routes/businesses.js';
 import observabilityRoutes from './routes/observability.js';
+import billingRoutes from './routes/billing.js';
 import './types.js';
 
 export async function buildApp(config: InfinicusConfig): Promise<FastifyInstance> {
@@ -37,6 +39,7 @@ export async function buildApp(config: InfinicusConfig): Promise<FastifyInstance
   await app.register(authPlugin);
   await app.register(tenantContextPlugin);
   await app.register(permissionPlugin);
+  await app.register(billingPlugin);
   await app.register(idempotencyPlugin);
 
   await app.register(rateLimit, {
@@ -99,6 +102,7 @@ export async function buildApp(config: InfinicusConfig): Promise<FastifyInstance
   await app.register(onboardingRoutes);
   await app.register(businessRoutes);
   await app.register(observabilityRoutes);
+  await app.register(billingRoutes);
 
   return app;
 }

@@ -58,6 +58,21 @@ export const ERROR_STATUS_CODES: Record<string, number> = {
   IdempotencyConflictError: 409,
   IdempotencyInProgressError: 409,
 
+  // Billing and entitlements (@infinicus/database/repositories/billing,
+  // @infinicus/billing — BUILD-28). PlanNotFoundError/SubscriptionNotFoundError
+  // are empty NotFoundError subclasses (see note above) and already covered
+  // by the generic NotFoundError entry; SubscriptionAlreadyExistsError is
+  // likewise covered by the generic ConflictError entry. Only the errors
+  // below set their own unique .name.
+  InvalidSubscriptionTransitionError: 409,
+  // 402 Payment Required — the plan's usage quota is exhausted for this
+  // billing period; the caller needs to upgrade, not retry (unlike a 429
+  // rate limit, which is about request pacing, not plan entitlement).
+  UsageLimitExceededError: 402,
+  SubscriptionSuspendedError: 402,
+  SubscriptionCanceledError: 402,
+  FeatureNotEntitledError: 403,
+
   // Fastify / schema validation
   FST_ERR_VALIDATION: 400,
 };
