@@ -204,9 +204,21 @@ jobs:
 
       - name: Run the image
         run: |
+          # The Dockerfile bakes ENV NODE_ENV=production into the runtime
+          # image (correct for a real production launch). This step is a
+          # CI smoke test against the workflow's own ephemeral,
+          # necessarily-test-pattern Postgres service container
+          # (CI_APP_USER=app_test_user, CI_DB_NAME=infinicus_ci) — it can
+          # never supply a genuinely non-test-pattern DATABASE_URL.
+          # packages/configuration's production-credential guard
+          # (BUILD-24) correctly refuses to start a *production*-labeled
+          # process against test-pattern credentials; overriding NODE_ENV
+          # to "test" here tells the guard the truth about what this run
+          # actually is, rather than weakening the guard itself or trying
+          # to disguise CI's credentials as production-looking ones.
           docker run -d --name infinicus-api-smoke --network host \
             -e DATABASE_URL="postgresql://${CI_APP_USER}:${CI_APP_PASSWORD}@localhost:5432/${CI_DB_NAME}" \
-            -e PORT=3000 -e LOG_LEVEL=info \
+            -e NODE_ENV=test -e PORT=3000 -e LOG_LEVEL=info \
             "infinicus-api:${{ steps.version.outputs.docker_tag }}"
 
       - name: Wait for readiness
