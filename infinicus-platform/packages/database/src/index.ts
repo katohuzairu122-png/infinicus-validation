@@ -306,3 +306,26 @@ export type {
   Invitation,
   AccessEvent, AccessEventType,
 } from './repositories/auth/index.js';
+
+// ── Tenant onboarding repositories (BUILD-19) ──────────────────────────────
+export {
+  TenantNotFoundError, TenantSlugConflictError,
+  WorkspaceNotFoundError, WorkspaceSlugConflictError,
+  BusinessNotFoundError, BusinessCodeConflictError,
+  OnboardingNotFoundError, OnboardingStepOrderError, OnboardingAlreadyTerminalError,
+} from './repositories/onboarding/errors.js';
+export {
+  TenantRepository,
+  WorkspaceRepository,
+  BusinessRepository,
+  SettingsRepository,
+  OnboardingProgressRepository,
+  STEP_ORDER as ONBOARDING_STEP_ORDER,
+} from './repositories/onboarding/index.js';
+export type {
+  Tenant, CreateTenantInput,
+  Workspace, CreateWorkspaceInput,
+  Business, CreateBusinessInput,
+  Setting, SettingsScope,
+  OnboardingProgress, OnboardingStatus, OnboardingStep,
+} from './repositories/onboarding/index.js';
