@@ -20,20 +20,21 @@ document completely — it is the authoritative scope.
 If no specification section or linked document exists for the ready build,
 STOP and report the missing definition. Do not invent the scope.
 
-BUILD-21 (API, Governed application API) is **completed** — see
-`.claude/state/reports/BUILD-21-API-completion.md`. It delivered the
-platform's first real HTTP API (Fastify 5, `apps/api` — confirmed with
-the user before implementation, since root `CLAUDE.md` §4 gates the
-API's HTTP framework behind explicit instruction) governing the
-existing AuthenticationService/AuthorizationService/OnboardingService/
-DecisionWorkflowService behind versioned routes, schema validation,
-authentication, tenant-context authorization, permission gates,
-idempotency, pagination, correlation IDs, controlled errors, rate
-limits, audit logging, and OpenAPI documentation. Four migrations were
-added (`0142`–`0145`, one new `api` schema and idempotency table). Per
-its specification §8/§10, BUILD-22 was not auto-readied; re-verify
-BUILD-22's preconditions against
-`docs/implementation-queue/BUILD-22-PROD-DB-SPECIFICATION.md` and the
+BUILD-22 (PROD-DB, Production database and recovery) is **completed** —
+see `.claude/state/reports/BUILD-22-PROD-DB-completion.md`. It delivered
+hardened PostgreSQL connection pooling, a Postgres advisory-lock guard
+against concurrent-instance migration races, a new `GET /v1/ready`
+readiness endpoint distinct from the pre-existing liveness-only
+`GET /v1/health`, and a full backup/restore/point-in-time-recovery/
+retention/tenant-export toolchain under
+`infrastructure/database/scripts/` — every capability live-tested,
+including a genuine WAL-archiving PITR drill. No CLAUDE.md §4 gate
+applied (this build's scope is operational tooling, not a
+frontend/API-framework choice), so no user check-in was required. Zero
+migrations were added (still `0001`–`0145`, unchanged from BUILD-21).
+Per its specification §8/§10, BUILD-23 was not auto-readied; re-verify
+BUILD-23's preconditions against
+`docs/implementation-queue/BUILD-23-DEPLOY-SPECIFICATION.md` and the
 current repository state before marking it ready. BUILD-11 is
 superseded — see `CLAUDE-MASTER-EXECUTION-INSTRUCTIONS.md` (repo root) and
 never mark it ready or implement it.

@@ -26,6 +26,7 @@ All builds in strict execution order. Execute one at a time.
 | BUILD-19 | ONBOARDING | Tenant onboarding | completed |
 | BUILD-20 | WORKFLOW | Customer decision workflows | completed |
 | BUILD-21 | API | Governed application API | completed |
+| BUILD-22 | PROD-DB | Production database and recovery | completed |
 
 ## Superseded Builds
 
@@ -42,27 +43,26 @@ never execute it."* The required build route is
 
 ## Current Ready Build
 
-None. Per `BUILD-21-API-SPECIFICATION.md` §8/§10 ("Do not automatically
-start the next build"), BUILD-22 is not marked ready by this build's
-completion. A future session must explicitly re-verify BUILD-22's
-preconditions before readying it. BUILD-21 delivered the platform's
-first real HTTP API (Fastify 5, `apps/api`, confirmed with the user
-before implementation since root `CLAUDE.md` §4 gates the API's HTTP
-framework behind explicit instruction) governing the existing
-AuthenticationService/AuthorizationService/OnboardingService/
-DecisionWorkflowService behind versioned routes, schema validation,
-authentication, real membership-verified tenant-context authorization,
-permission gates, tenant+route-scoped idempotency, pagination,
-correlation IDs, controlled errors, rate limits, audit logging, and
-OpenAPI documentation. Four migrations were added (`0142`–`0145`,
-one new `api` schema and idempotency-bookkeeping table).
+None. Per `BUILD-22-PROD-DB-SPECIFICATION.md` §8/§10 ("Do not
+automatically start the next build"), BUILD-23 is not marked ready by
+this build's completion. A future session must explicitly re-verify
+BUILD-23's preconditions before readying it. BUILD-22 delivered
+hardened PostgreSQL connection pooling, a Postgres advisory-lock guard
+against concurrent-instance migration races, a new `GET /v1/ready`
+readiness endpoint distinct from the pre-existing liveness-only
+`GET /v1/health`, and a full backup/restore/point-in-time-recovery/
+retention/tenant-export toolchain under
+`infrastructure/database/scripts/` (8 scripts) — every capability
+live-tested, including a genuine WAL-archiving PITR drill that enabled
+archiving, took a real base backup, and verified a recovered instance
+correctly reflected data as of a specific target timestamp. Zero
+migrations were added (still `0001`–`0145`, unchanged from BUILD-21).
 
 ## Pending Builds
 
 | ID | Layer | Description | Depends on |
 |---|---|---|---|
-| BUILD-22 | PROD-DB | Production database readiness | BUILD-21 (completed) |
-| BUILD-23 | DEPLOY | Deployment | BUILD-22 |
+| BUILD-23 | DEPLOY | Deployment | BUILD-22 (completed) |
 | BUILD-24 | SECRETS | Secrets management | BUILD-23 |
 | BUILD-25 | OBS | Observability | BUILD-24 |
 | BUILD-26 | SEC-PRIV | Security and privacy | BUILD-25 |
