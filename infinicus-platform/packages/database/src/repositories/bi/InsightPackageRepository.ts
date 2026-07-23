@@ -65,6 +65,16 @@ export class InsightPackageRepository {
     });
   }
 
+  async listForBusiness(ctx: TenantContext, businessId: string): Promise<InsightPackage[]> {
+    return withTenantTransaction(ctx, async (client) => {
+      const result = await client.query<Record<string, unknown>>(
+        'SELECT * FROM business_intelligence.insight_packages WHERE business_id = $1 ORDER BY created_at DESC',
+        [businessId]
+      );
+      return result.rows.map(rowToPackage);
+    });
+  }
+
   async publishVersion(ctx: TenantContext, insightPackageId: string, businessId: string, input: CreateInsightPackageVersionInput): Promise<InsightPackageVersion> {
     return withTenantTransaction(ctx, async (client) => {
       const pkg = await client.query<Record<string, unknown>>('SELECT * FROM business_intelligence.insight_packages WHERE id = $1', [insightPackageId]);

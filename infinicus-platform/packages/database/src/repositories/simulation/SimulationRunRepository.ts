@@ -194,4 +194,13 @@ export class SimulationRunRepository {
       return result.rows.map(rowToRun);
     });
   }
+
+  async listForBusiness(ctx: TenantContext, businessId: string): Promise<SimulationRun[]> {
+    return withTenantTransaction(ctx, async (client) => {
+      const result = await client.query<Record<string, unknown>>(
+        'SELECT * FROM simulation.simulation_runs WHERE business_id = $1 ORDER BY created_at DESC', [businessId]
+      );
+      return result.rows.map(rowToRun);
+    });
+  }
 }

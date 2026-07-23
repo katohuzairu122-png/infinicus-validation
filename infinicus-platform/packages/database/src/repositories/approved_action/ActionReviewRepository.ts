@@ -100,4 +100,13 @@ export class ActionReviewRepository {
       return rowToReview(result.rows[0]);
     });
   }
+
+  async listForBusiness(ctx: TenantContext, businessId: string): Promise<ActionReviewPackage[]> {
+    return withTenantTransaction(ctx, async (client) => {
+      const result = await client.query<Record<string, unknown>>(
+        'SELECT * FROM approved_business_action.action_review_packages WHERE business_id = $1 ORDER BY created_at DESC', [businessId]
+      );
+      return result.rows.map(rowToReview);
+    });
+  }
 }

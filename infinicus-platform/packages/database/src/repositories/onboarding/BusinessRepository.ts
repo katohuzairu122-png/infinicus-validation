@@ -83,6 +83,17 @@ export class BusinessRepository {
     });
   }
 
+  /** Business selection: lists every non-deleted business in the caller's workspace, most recently created first. */
+  async listForWorkspace(ctx: TenantContext): Promise<Business[]> {
+    return withTenantTransaction(ctx, async (client) => {
+      const result = await client.query<Record<string, unknown>>(
+        `SELECT * FROM platform.businesses WHERE workspace_id = $1 AND deleted_at IS NULL ORDER BY legal_name`,
+        [ctx.workspaceId]
+      );
+      return result.rows.map(rowToBusiness);
+    });
+  }
+
   async updateStatus(ctx: TenantContext, id: string, status: string): Promise<Business> {
     if (!VALID_STATUSES.includes(status)) throw new BusinessNotFoundError('Business', id);
     return withTenantTransaction(ctx, async (client) => {

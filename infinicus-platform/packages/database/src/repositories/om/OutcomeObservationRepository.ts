@@ -156,4 +156,13 @@ export class OutcomeObservationRepository {
       return result.rows.map(rowToObservation);
     });
   }
+
+  async listForBusiness(ctx: TenantContext, businessId: string): Promise<OutcomeObservation[]> {
+    return withTenantTransaction(ctx, async (client) => {
+      const result = await client.query<Record<string, unknown>>(
+        'SELECT * FROM outcome_monitoring.outcome_observations WHERE business_id = $1 ORDER BY created_at DESC', [businessId]
+      );
+      return result.rows.map(rowToObservation);
+    });
+  }
 }

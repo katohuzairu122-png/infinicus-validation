@@ -4,18 +4,27 @@
   "private": true,
   "description": "INFINICUS public web application",
   "scripts": {
-    "build": "tsc --project tsconfig.json",
-    "dev": "tsc --watch",
-    "lint": "eslint src/",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint app/ lib/",
     "test": "vitest run",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf .next dist"
   },
   "devDependencies": {
-    "typescript": "^5.4.0"
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.4.0",
+    "vitest": "^1.6.0"
   },
   "dependencies": {
     "@infinicus/shared-types": "workspace:*",
     "@infinicus/authentication": "workspace:*",
-    "@infinicus/configuration": "workspace:*"
+    "@infinicus/configuration": "workspace:*",
+    "@infinicus/database": "workspace:*",
+    "@infinicus/workflow": "workspace:*",
+    "next": "^15.5.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   }
 }

@@ -98,4 +98,13 @@ export class DecisionCaseRepository {
       return rowToCase(result.rows[0]);
     });
   }
+
+  async listForBusiness(ctx: TenantContext, businessId: string): Promise<DecisionCase[]> {
+    return withTenantTransaction(ctx, async (client) => {
+      const result = await client.query<Record<string, unknown>>(
+        'SELECT * FROM ai_decision_intelligence.decision_cases WHERE business_id = $1 ORDER BY created_at DESC', [businessId]
+      );
+      return result.rows.map(rowToCase);
+    });
+  }
 }
