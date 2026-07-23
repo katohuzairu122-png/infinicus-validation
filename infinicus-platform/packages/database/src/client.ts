@@ -7,6 +7,20 @@ export interface DbConfig {
   poolMin?: number;
   poolMax?: number;
   ssl?: boolean;
+  /** Milliseconds an idle client sits in the pool before being closed. */
+  idleTimeoutMillis?: number;
+  /** Milliseconds to wait for a connection to be established before failing. */
+  connectionTimeoutMillis?: number;
+  /** Milliseconds before Postgres itself cancels a running statement (server-side `statement_timeout`, set per-session via `options`). */
+  statementTimeoutMillis?: number;
+  /** Reported to Postgres as `application_name`, visible in `pg_stat_activity` — useful for identifying which service/instance holds a connection. */
+  applicationName?: string;
+}
+
+export interface PoolStats {
+  totalCount: number;
+  idleCount: number;
+  waitingCount: number;
 }
 
 export interface TenantContext {
@@ -16,11 +30,19 @@ export interface TenantContext {
 }
 
 export function createPool(config: DbConfig): Pool {
+  const statementTimeoutMs = config.statementTimeoutMillis ?? 30_000;
   const opts: PoolConfig = {
     connectionString: config.connectionString,
-    min:  config.poolMin ?? 2,
-    max:  config.poolMax ?? 10,
-    ssl:  config.ssl ? { rejectUnauthorized: false } : false,
+    min: config.poolMin ?? 2,
+    max: config.poolMax ?? 10,
+    ssl: config.ssl ? { rejectUnauthorized: false } : false,
+    idleTimeoutMillis: config.idleTimeoutMillis ?? 30_000,
+    connectionTimeoutMillis: config.connectionTimeoutMillis ?? 5_000,
+    application_name: config.applicationName ?? 'infinicus',
+    // Server-side backstop against a runaway/hung query holding a connection
+    // indefinitely — set per-session via libpq startup options, same
+    // mechanism `pg` uses for `application_name`.
+    options: `-c statement_timeout=${statementTimeoutMs}`,
   };
   pool = new Pool(opts);
   pool.on('error', (err) => {
@@ -32,6 +54,12 @@ export function createPool(config: DbConfig): Pool {
 export function getPool(): Pool {
   if (!pool) throw new Error('Database pool not initialised — call createPool() first.');
   return pool;
+}
+
+/** Point-in-time pool utilization — used by the readiness endpoint and operational monitoring. */
+export function poolStats(): PoolStats {
+  const p = getPool();
+  return { totalCount: p.totalCount, idleCount: p.idleCount, waitingCount: p.waitingCount };
 }
 
 export async function query<T extends Record<string, unknown> = Record<string, unknown>>(

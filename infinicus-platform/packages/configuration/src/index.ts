@@ -13,6 +13,11 @@ export interface InfinicusConfig {
   logLevel: string;
   rateLimitMax: number;
   rateLimitWindowMs: number;
+  dbPoolMin: number;
+  dbPoolMax: number;
+  dbIdleTimeoutMs: number;
+  dbConnectionTimeoutMs: number;
+  dbStatementTimeoutMs: number;
 }
 
 function requireEnv(env: NodeJS.ProcessEnv, key: string): string {
@@ -42,5 +47,10 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): InfinicusConfi
     logLevel: env.LOG_LEVEL ?? (resolvedEnv === 'production' ? 'info' : 'debug'),
     rateLimitMax: optionalInt(env, 'RATE_LIMIT_MAX', 100),
     rateLimitWindowMs: optionalInt(env, 'RATE_LIMIT_WINDOW_MS', 60_000),
+    dbPoolMin: optionalInt(env, 'DB_POOL_MIN', 2),
+    dbPoolMax: optionalInt(env, 'DB_POOL_MAX', 10),
+    dbIdleTimeoutMs: optionalInt(env, 'DB_IDLE_TIMEOUT_MS', 30_000),
+    dbConnectionTimeoutMs: optionalInt(env, 'DB_CONNECTION_TIMEOUT_MS', 5_000),
+    dbStatementTimeoutMs: optionalInt(env, 'DB_STATEMENT_TIMEOUT_MS', 30_000),
   };
 }

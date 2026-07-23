@@ -11,6 +11,11 @@ describe('loadConfig', () => {
       logLevel: 'info',
       rateLimitMax: 100,
       rateLimitWindowMs: 60_000,
+      dbPoolMin: 2,
+      dbPoolMax: 10,
+      dbIdleTimeoutMs: 30_000,
+      dbConnectionTimeoutMs: 5_000,
+      dbStatementTimeoutMs: 30_000,
     });
   });
 
@@ -53,5 +58,31 @@ describe('loadConfig', () => {
     const config = loadConfig({ DATABASE_URL: 'postgresql://x', RATE_LIMIT_MAX: '50', RATE_LIMIT_WINDOW_MS: '30000' });
     expect(config.rateLimitMax).toBe(50);
     expect(config.rateLimitWindowMs).toBe(30_000);
+  });
+
+  it('applies default connection-pool settings when unset', () => {
+    const config = loadConfig({ DATABASE_URL: 'postgresql://x' });
+    expect(config.dbPoolMin).toBe(2);
+    expect(config.dbPoolMax).toBe(10);
+    expect(config.dbIdleTimeoutMs).toBe(30_000);
+    expect(config.dbConnectionTimeoutMs).toBe(5_000);
+    expect(config.dbStatementTimeoutMs).toBe(30_000);
+  });
+
+  it('respects connection-pool overrides', () => {
+    const config = loadConfig({
+      DATABASE_URL: 'postgresql://x',
+      DB_POOL_MIN: '5', DB_POOL_MAX: '25',
+      DB_IDLE_TIMEOUT_MS: '10000', DB_CONNECTION_TIMEOUT_MS: '2000', DB_STATEMENT_TIMEOUT_MS: '15000',
+    });
+    expect(config.dbPoolMin).toBe(5);
+    expect(config.dbPoolMax).toBe(25);
+    expect(config.dbIdleTimeoutMs).toBe(10_000);
+    expect(config.dbConnectionTimeoutMs).toBe(2_000);
+    expect(config.dbStatementTimeoutMs).toBe(15_000);
+  });
+
+  it('throws ConfigurationError for a non-numeric DB_POOL_MAX', () => {
+    expect(() => loadConfig({ DATABASE_URL: 'postgresql://x', DB_POOL_MAX: 'not-a-number' })).toThrow(ConfigurationError);
   });
 });

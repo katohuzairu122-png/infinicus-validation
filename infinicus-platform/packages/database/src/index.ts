@@ -8,8 +8,9 @@ export {
   closeDatabasePool,
   withTransaction,
   withTenantTransaction,
+  poolStats,
 } from './client.js';
-export type { DbConfig, TenantContext } from './client.js';
+export type { DbConfig, TenantContext, PoolStats } from './client.js';
 export { runMigrations } from './migrate.js';
 
 // ── Data Acquisition repositories ─────────────────────────────────────────────

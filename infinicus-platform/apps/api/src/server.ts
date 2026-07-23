@@ -4,7 +4,15 @@ import { buildApp } from './app.js';
 
 async function main(): Promise<void> {
   const config = loadConfig();
-  createPool({ connectionString: config.databaseUrl });
+  createPool({
+    connectionString: config.databaseUrl,
+    poolMin: config.dbPoolMin,
+    poolMax: config.dbPoolMax,
+    idleTimeoutMillis: config.dbIdleTimeoutMs,
+    connectionTimeoutMillis: config.dbConnectionTimeoutMs,
+    statementTimeoutMillis: config.dbStatementTimeoutMs,
+    applicationName: '@infinicus/api',
+  });
 
   const app = await buildApp(config);
   await app.listen({ port: config.port, host: '0.0.0.0' });
