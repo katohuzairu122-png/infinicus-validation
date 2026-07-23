@@ -27,6 +27,42 @@ const ALLOWLIST = [
     reason:
       'Transitive dependency of Next.js\'s built-in image-optimization component (next/image). apps/web never imports next/image (verified via grep) — no code path in this repository invokes sharp/libvips, so the vulnerable image-processing routines are never executed.',
   },
+  // ── BUILD-30 launch-acceptance findings (esbuild/vite, transitive via vitest) ──
+  // All four advisories below are vulnerabilities in vite's or esbuild's
+  // OWN development server (`vite dev`/`vite preview`, or esbuild's
+  // `--serve` mode) — not in any code these packages execute when used
+  // as vitest's internal module-transform/resolution engine (`vitest
+  // run`, the only way this monorepo ever invokes vitest — see the
+  // vitest entry above). Verified live: `grep` across every
+  // package.json's "dev"/"preview" script in the entire workspace shows
+  // none of them invoke `vite`/`esbuild` directly — every package's
+  // "dev" script is `tsc --watch`, and apps/web's is `next dev` (Next.js's
+  // own dev server, unrelated to vite). vite/esbuild are pulled in only
+  // as vitest's own transitive dependencies.
+  {
+    githubAdvisoryId: 'GHSA-67mh-4wv8-2f99',
+    package: 'esbuild',
+    reason:
+      'esbuild\'s own development server (`esbuild --serve`) can be queried cross-origin. Never started in this repository — esbuild is used only as vitest\'s internal bundler for `vitest run`, never via its own CLI/serve mode.',
+  },
+  {
+    githubAdvisoryId: 'GHSA-4w7w-66w2-5vf9',
+    package: 'vite',
+    reason:
+      'Path traversal in vite dev server\'s handling of optimized-dependency `.map` files. Requires `vite dev`/`vite preview` to be running; this repository never starts vite\'s own dev/preview server (see file-level note above).',
+  },
+  {
+    githubAdvisoryId: 'GHSA-v6wh-96g9-6wx3',
+    package: 'vite',
+    reason:
+      'NTLMv2 hash disclosure via UNC path handling, in vite\'s `launch-editor` dev-server integration, Windows-only. Never reachable: no vite dev server is ever started in this repository, and this platform\'s CI/deployment targets are not Windows.',
+  },
+  {
+    githubAdvisoryId: 'GHSA-fx2h-pf6j-xcff',
+    package: 'vite',
+    reason:
+      'vite dev server\'s `server.fs.deny` path-restriction bypass on Windows alternate data streams. Never reachable: no vite dev server is ever started in this repository, and this platform\'s CI/deployment targets are not Windows.',
+  },
 ];
 
 function main() {
