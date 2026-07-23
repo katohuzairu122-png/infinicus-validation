@@ -19,6 +19,7 @@ import onboardingRoutes from './routes/onboarding.js';
 import businessRoutes from './routes/businesses.js';
 import observabilityRoutes from './routes/observability.js';
 import billingRoutes from './routes/billing.js';
+import incidentRoutes from './routes/incidents.js';
 import './types.js';
 
 export async function buildApp(config: InfinicusConfig): Promise<FastifyInstance> {
@@ -103,6 +104,7 @@ export async function buildApp(config: InfinicusConfig): Promise<FastifyInstance
   await app.register(businessRoutes);
   await app.register(observabilityRoutes);
   await app.register(billingRoutes);
+  await app.register(incidentRoutes);
 
   return app;
 }

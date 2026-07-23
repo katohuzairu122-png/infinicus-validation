@@ -368,3 +368,13 @@ export type {
   SubscriptionStatusHistoryEntry, CreateSubscriptionInput, TransitionStatusOptions,
   UsageRecord, UsageMetric,
 } from './repositories/billing/index.js';
+
+// ── Incident response repository (BUILD-29) ───────────────────────────────
+// Named PlatformIncident*, not Incident*, to avoid colliding with the
+// pre-existing business_operations.IncidentRepository (BUILD-08) already
+// exported above under "Business Operations repositories".
+export { PlatformIncidentRepository, PlatformIncidentNotFoundError, PlatformIncidentAlreadyResolvedError } from './repositories/incident/index.js';
+export type {
+  PlatformIncident, PlatformIncidentSeverity, PlatformIncidentStatus,
+  PlatformIncidentUpdate, DeclarePlatformIncidentInput,
+} from './repositories/incident/index.js';

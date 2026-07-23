@@ -73,6 +73,11 @@ export const ERROR_STATUS_CODES: Record<string, number> = {
   SubscriptionCanceledError: 402,
   FeatureNotEntitledError: 403,
 
+  // Incident response (@infinicus/database/repositories/incident — BUILD-29).
+  // PlatformIncidentNotFoundError is an empty NotFoundError subclass (see
+  // note above) and already covered by the generic NotFoundError entry.
+  PlatformIncidentAlreadyResolvedError: 409,
+
   // Fastify / schema validation
   FST_ERR_VALIDATION: 400,
 };
