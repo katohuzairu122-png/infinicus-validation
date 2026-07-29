@@ -32,6 +32,13 @@ export async function runMigrations(): Promise<void> {
   // per call and defeat the lock entirely.
   const client = await pool.connect();
   try {
+    // pg_advisory_lock's blocking wait is an intentional, open-ended wait
+    // for another instance's in-progress migration run — not a runaway
+    // query, so it must not be subject to the pool's default server-side
+    // statement_timeout (createPool()'s backstop against hung queries).
+    // Restored before release() below so this connection's timeout
+    // reverts to the pool default once back in circulation.
+    await client.query('SET statement_timeout = 0');
     await client.query('SELECT pg_advisory_lock($1)', [MIGRATION_LOCK_KEY]);
 
     // Ensure migration registry exists (idempotent)
@@ -66,6 +73,7 @@ export async function runMigrations(): Promise<void> {
     console.log('Migrations complete.');
   } finally {
     await client.query('SELECT pg_advisory_unlock($1)', [MIGRATION_LOCK_KEY]);
+    await client.query('RESET statement_timeout');
     client.release();
   }
 }
