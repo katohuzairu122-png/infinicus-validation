@@ -53,6 +53,7 @@ export const ERROR_STATUS_CODES: Record<string, number> = {
   // (@infinicus/database/repositories/onboarding — not empty subclasses)
   OnboardingStepOrderError: 409,
   OnboardingAlreadyTerminalError: 409,
+  OnboardingNotInitiatorError: 403,
 
   // API layer (this build) — all set their own unique name
   IdempotencyConflictError: 409,

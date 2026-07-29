@@ -53,6 +53,7 @@ export const SECRET_INVENTORY: readonly SecretDefinition[] = [
   { name: 'DB_IDLE_TIMEOUT_MS', classification: 'non-secret', required: false, owner: 'platform-database', rotationPolicyDays: null, description: 'Pool idle-connection timeout.' },
   { name: 'DB_CONNECTION_TIMEOUT_MS', classification: 'non-secret', required: false, owner: 'platform-database', rotationPolicyDays: null, description: 'Pool connection-acquisition timeout.' },
   { name: 'DB_STATEMENT_TIMEOUT_MS', classification: 'non-secret', required: false, owner: 'platform-database', rotationPolicyDays: null, description: 'Per-statement timeout.' },
+  { name: 'CORS_ALLOWED_ORIGINS', classification: 'non-secret', required: false, owner: 'platform', rotationPolicyDays: null, description: 'Comma-separated browser origins allowed to call this API cross-origin.' },
 ] as const;
 
 /** pino `redact.paths` — structured-log paths that are always redacted regardless of value, independent of redactSecretValues()'s value-based scrubbing. */

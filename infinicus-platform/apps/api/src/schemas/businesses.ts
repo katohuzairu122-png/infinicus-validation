@@ -8,6 +8,66 @@ export const businessSummarySchema = z.object({
   industry: z.string().nullable(),
 });
 
+export const createBusinessBodySchema = z.object({
+  legalName: z.string().min(1).max(500),
+  tradingName: z.string().min(1).max(500).optional(),
+  businessCode: z.string().min(1).max(255),
+  industry: z.string().min(1).max(255).optional(),
+  legalStructure: z.string().min(1).max(255).optional(),
+  businessModel: z.string().min(1).max(255).optional(),
+});
+
+export const createBusinessResponseSchema = businessSummarySchema;
+
+const industryCodeSchema = z.enum([
+  'food', 'retail', 'saas', 'service', 'fitness', 'agency', 'health',
+  'edtech', 'marketplace', 'events', 'fintech', 'realestate', 'logistics',
+]);
+
+export const startSimulationBodySchema = z.object({
+  ideaText: z.string().min(1).max(4_000),
+  capital: z.number().positive(),
+  price: z.number().positive(),
+  mktBud: z.number().min(0),
+  team: z.number().int().min(1),
+  industry: industryCodeSchema,
+  loc: z.string().max(255).optional(),
+  mkt: z.string().max(500).optional(),
+  exp: z.enum(['first', 'some', 'serial', 'expert']).optional(),
+  comp: z.enum(['low', 'medium', 'high', 'red']).optional(),
+  engMode: z.enum(['balanced', 'lean', 'aggressive', 'investor']).optional(),
+});
+
+export const startSimulationResponseSchema = z.object({
+  runId: z.string().uuid(),
+  status: z.string(),
+});
+
+export const simulationRunParamsSchema = z.object({
+  businessId: z.string().uuid(),
+  runId: z.string().uuid(),
+});
+
+const simulationRunResultSchema = z.object({
+  finalCash: z.number(),
+  finalCustomers: z.number(),
+  totalRevenue: z.number(),
+  totalCost: z.number(),
+  profitableDays: z.number(),
+  survivalRate: z.number(),
+  percentiles: z.object({ p10: z.number(), p25: z.number(), p50: z.number(), p75: z.number(), p90: z.number() }),
+  scores: z.object({ VIABILITY: z.number(), 'MKT FIT': z.number(), EXECUTION: z.number(), FINANCIAL: z.number() }),
+  verdict: z.enum(['go', 'modify', 'stop']),
+  capRatio: z.number(),
+});
+
+export const simulationRunStatusResponseSchema = z.object({
+  runId: z.string().uuid(),
+  status: z.string(),
+  failureMessage: z.string().nullable(),
+  result: simulationRunResultSchema.nullable(),
+});
+
 export const businessListResponseSchema = z.object({
   items: z.array(businessSummarySchema),
   page: z.number(),

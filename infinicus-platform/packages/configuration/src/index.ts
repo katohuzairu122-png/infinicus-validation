@@ -25,6 +25,8 @@ export interface InfinicusConfig {
   dbIdleTimeoutMs: number;
   dbConnectionTimeoutMs: number;
   dbStatementTimeoutMs: number;
+  /** Browser origins allowed to call this API cross-origin (see apps/api/src/app.ts's @fastify/cors registration). */
+  corsAllowedOrigins: string[];
 }
 
 function requireEnv(env: NodeJS.ProcessEnv, key: string): string {
@@ -71,5 +73,11 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): InfinicusConfi
     dbIdleTimeoutMs: optionalInt(env, 'DB_IDLE_TIMEOUT_MS', 30_000),
     dbConnectionTimeoutMs: optionalInt(env, 'DB_CONNECTION_TIMEOUT_MS', 5_000),
     dbStatementTimeoutMs: optionalInt(env, 'DB_STATEMENT_TIMEOUT_MS', 30_000),
+    // Default matches the live public site's real domain (root CNAME file)
+    // so the demo works out of the box; CORS_ALLOWED_ORIGINS overrides for
+    // staging/local/other deployments. Comma-separated, trimmed, empty
+    // entries dropped.
+    corsAllowedOrigins: (env.CORS_ALLOWED_ORIGINS ?? 'https://infini-cus.com,https://www.infini-cus.com')
+      .split(',').map((o) => o.trim()).filter((o) => o.length > 0),
   };
 }

@@ -1,14 +1,18 @@
 import type { FastifyInstance } from 'fastify';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
-import { DecisionWorkflowService } from '@infinicus/workflow';
+import { DecisionWorkflowService, SimulationOrchestrationService } from '@infinicus/workflow';
 import {
   businessListResponseSchema, businessIdParamsSchema, workflowViewResponseSchema,
+  createBusinessBodySchema, createBusinessResponseSchema,
   createDecisionBodySchema, decisionResponseSchema,
   recordOutcomeBodySchema, outcomeResponseSchema,
+  startSimulationBodySchema, startSimulationResponseSchema,
+  simulationRunParamsSchema, simulationRunStatusResponseSchema,
 } from '../schemas/businesses.js';
 import { paginationQuerySchema, paginate, errorResponseSchema } from '../schemas/common.js';
 
 const workflow = new DecisionWorkflowService();
+const simulations = new SimulationOrchestrationService();
 
 export default async function businessRoutes(app: FastifyInstance) {
   const server = app.withTypeProvider<ZodTypeProvider>();
@@ -29,6 +33,22 @@ export default async function businessRoutes(app: FastifyInstance) {
       page, pageSize
     );
     return reply.status(200).send(result);
+  });
+
+  server.post('/v1/businesses', {
+    schema: {
+      tags: ['businesses'],
+      summary: 'Create a business in the caller\'s workspace',
+      body: createBusinessBodySchema,
+      response: { 201: createBusinessResponseSchema, 401: errorResponseSchema, 403: errorResponseSchema, 409: errorResponseSchema },
+    },
+    preHandler: [app.authenticate, app.resolveTenantContext, app.requirePermission('bo:write'), app.requireActiveSubscription(), app.requireIdempotencyKey],
+  }, async (request, reply) => {
+    const business = await workflow.createBusiness(request.ctx!, request.body);
+    return reply.status(201).send({
+      id: business.id, legalName: business.legalName, businessCode: business.businessCode,
+      status: business.status, industry: business.industry,
+    });
   });
 
   server.get('/v1/businesses/:businessId/workflow', {
@@ -57,6 +77,35 @@ export default async function businessRoutes(app: FastifyInstance) {
       hasAbaDecision: view.abaLatestDecision !== null,
       outcomeCount: view.outcomes.length,
     });
+  });
+
+  server.post('/v1/businesses/:businessId/simulations', {
+    schema: {
+      tags: ['businesses'],
+      summary: 'Start a real Data Acquisition -> Simulation -> AI Decision Intelligence run for a business idea (async: poll GET .../simulations/:runId)',
+      params: businessIdParamsSchema,
+      body: startSimulationBodySchema,
+      response: { 202: startSimulationResponseSchema, 400: errorResponseSchema, 401: errorResponseSchema, 403: errorResponseSchema, 404: errorResponseSchema },
+    },
+    preHandler: [app.authenticate, app.resolveTenantContext, app.requirePermission('sim:write'), app.requireActiveSubscription(), app.requireIdempotencyKey],
+  }, async (request, reply) => {
+    const { businessId } = request.params;
+    const { runId } = await simulations.startRun(request.ctx!, businessId, request.body);
+    return reply.status(202).send({ runId, status: 'queued' });
+  });
+
+  server.get('/v1/businesses/:businessId/simulations/:runId', {
+    schema: {
+      tags: ['businesses'],
+      summary: 'Poll a simulation run\'s status and, once completed, its published result',
+      params: simulationRunParamsSchema,
+      response: { 200: simulationRunStatusResponseSchema, 401: errorResponseSchema, 403: errorResponseSchema, 404: errorResponseSchema },
+    },
+    preHandler: [app.authenticate, app.resolveTenantContext, app.requirePermission('sim:read')],
+  }, async (request, reply) => {
+    const { runId } = request.params;
+    const status = await simulations.getRunStatus(request.ctx!, runId);
+    return reply.status(200).send(status);
   });
 
   server.post('/v1/businesses/:businessId/decisions', {

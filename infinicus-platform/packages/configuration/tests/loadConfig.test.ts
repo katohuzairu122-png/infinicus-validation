@@ -16,7 +16,18 @@ describe('loadConfig', () => {
       dbIdleTimeoutMs: 30_000,
       dbConnectionTimeoutMs: 5_000,
       dbStatementTimeoutMs: 30_000,
+      corsAllowedOrigins: ['https://infini-cus.com', 'https://www.infini-cus.com'],
     });
+  });
+
+  it('defaults corsAllowedOrigins to the live site\'s domain when unset', () => {
+    const config = loadConfig({ DATABASE_URL: 'postgresql://x' });
+    expect(config.corsAllowedOrigins).toEqual(['https://infini-cus.com', 'https://www.infini-cus.com']);
+  });
+
+  it('respects a CORS_ALLOWED_ORIGINS override, trimming whitespace and dropping empty entries', () => {
+    const config = loadConfig({ DATABASE_URL: 'postgresql://x', CORS_ALLOWED_ORIGINS: ' https://staging.example.com, http://localhost:3001 ,' });
+    expect(config.corsAllowedOrigins).toEqual(['https://staging.example.com', 'http://localhost:3001']);
   });
 
   it('throws ConfigurationError when DATABASE_URL is missing', () => {

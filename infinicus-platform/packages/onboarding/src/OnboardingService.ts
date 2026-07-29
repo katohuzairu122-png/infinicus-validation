@@ -1,6 +1,7 @@
 import {
   TenantRepository, WorkspaceRepository, BusinessRepository, SettingsRepository,
   OnboardingProgressRepository, MembershipRepository, InvitationRepository,
+  OnboardingNotInitiatorError,
   type TenantContext, type Tenant, type Workspace, type Business, type Membership,
   type OnboardingProgress, type Setting, type Invitation,
 } from '@infinicus/database';
@@ -73,9 +74,16 @@ export class OnboardingService {
     return this.progress.getActiveForUser(userId);
   }
 
-  /** Step 2: registers the business and its industry. Idempotent — re-calling after success returns the existing business. */
+  /**
+   * Step 2: registers the business and its industry. Idempotent —
+   * re-calling after success returns the existing business. Same
+   * caller-supplied-ctx / initiator-verification reasoning as step 3's
+   * assignOwner (see its own comment) — no membership exists yet here
+   * either.
+   */
   async setBusiness(ctx: TenantContext, onboardingId: string, input: CreateOnboardingBusinessInput): Promise<{ business: Business; progress: OnboardingProgress }> {
     const current = await this.progress.getById(ctx, onboardingId);
+    if (current.initiatedBy !== ctx.userId) throw new OnboardingNotInitiatorError();
     if (current.businessId) {
       return { business: await this.businesses.getById(ctx, current.businessId), progress: current };
     }
@@ -84,9 +92,23 @@ export class OnboardingService {
     return { business, progress: updated };
   }
 
-  /** Step 3: creates and activates the initiating user's membership, granting the 'owner' role. Idempotent. */
+  /**
+   * Step 3: creates and activates the initiating user's membership,
+   * granting the 'owner' role. Idempotent.
+   *
+   * ctx.tenantId/workspaceId here are necessarily caller-supplied (no
+   * membership exists yet for resolveTenantContext's usual active-
+   * membership check to succeed against — this route is itself what
+   * creates the first one). RLS on getById already confines the lookup
+   * to ctx.tenantId's own rows, but that alone isn't enough: a caller
+   * who supplies a real tenantId/onboardingId pair belonging to a
+   * DIFFERENT user's in-progress onboarding would otherwise grant
+   * themselves 'owner' in that tenant. Verifying the record's own
+   * initiatedBy against ctx.userId closes that gap.
+   */
   async assignOwner(ctx: TenantContext, onboardingId: string): Promise<{ membership: Membership; progress: OnboardingProgress }> {
     const current = await this.progress.getById(ctx, onboardingId);
+    if (current.initiatedBy !== ctx.userId) throw new OnboardingNotInitiatorError();
     if (current.membershipId) {
       return { membership: await this.memberships.getById(ctx, current.membershipId), progress: current };
     }

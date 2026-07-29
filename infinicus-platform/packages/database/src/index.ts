@@ -141,7 +141,7 @@ export type {
   SimulationModel, SimulationModelVersion,
   SimulationScenario, SimulationScenarioVersion,
   SimulationRequest, SimulationRun,
-  SimulationResult, SimulationResultVersion,
+  SimulationResult, SimulationResultVersion, SimulationResultMetric,
   SimulationRiskResult, SimulationFailureMode,
   SimulationSensitivityRun, SimulationSensitivityResult,
   ScenarioComparisonRun,
@@ -313,7 +313,7 @@ export {
   TenantNotFoundError, TenantSlugConflictError,
   WorkspaceNotFoundError, WorkspaceSlugConflictError,
   BusinessNotFoundError, BusinessCodeConflictError,
-  OnboardingNotFoundError, OnboardingStepOrderError, OnboardingAlreadyTerminalError,
+  OnboardingNotFoundError, OnboardingStepOrderError, OnboardingAlreadyTerminalError, OnboardingNotInitiatorError,
 } from './repositories/onboarding/errors.js';
 export {
   TenantRepository,

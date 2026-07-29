@@ -8,3 +8,8 @@ export type {
   WorkflowView, DecisionHistory,
   CreateReviewInput, SubmitApprovalInput, RecordOutcomeInput,
 } from './DecisionWorkflowService.js';
+
+export { SimulationOrchestrationService, ValidationError as SimulationValidationError } from './SimulationOrchestrationService.js';
+export type {
+  StartSimulationInput, SimulationRunStatus, SimulationRunStatusResult,
+} from './SimulationOrchestrationService.js';
