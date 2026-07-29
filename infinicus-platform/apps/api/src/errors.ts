@@ -42,6 +42,7 @@ export const ERROR_STATUS_CODES: Record<string, number> = {
   SessionInvalidError: 401,
   ApiKeyInvalidError: 401,
   WeakPasswordError: 400,
+  VerificationTokenInvalidError: 400,
 
   // Authorization (@infinicus/authorization)
   PermissionDeniedError: 403,

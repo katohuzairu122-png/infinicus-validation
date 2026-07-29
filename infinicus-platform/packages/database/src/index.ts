@@ -288,6 +288,7 @@ export {
 export {
   UserRepository,
   SessionRepository,
+  EmailVerificationTokenRepository, EmailVerificationTokenNotFoundError,
   ServiceAccountRepository,
   ApiKeyRepository,
   RoleRepository,
@@ -299,6 +300,7 @@ export {
 export type {
   User, CreateUserInput,
   Session,
+  EmailVerificationToken,
   ServiceAccount,
   ApiKeyReference,
   Role,

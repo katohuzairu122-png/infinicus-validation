@@ -16,7 +16,7 @@ import { Pool } from 'pg';
 import { loadConfig } from '@infinicus/configuration';
 import {
   createPool, closePool,
-  UserRepository, MembershipRepository, RoleRepository,
+  UserRepository, EmailVerificationTokenRepository, MembershipRepository, RoleRepository,
   InsightPackageRepository, BIPublicationPackageRepository,
   DTIntakeRepository, DigitalTwinDefinitionRepository, DigitalTwinInstanceRepository,
   DigitalTwinSnapshotRepository, ScenarioBaselineRepository, DTPublicationPackageRepository,
@@ -29,6 +29,7 @@ import {
   OMIntakeRepository, MonitoringPlanRepository, MonitoredActionRepository,
   type TenantContext,
 } from '@infinicus/database';
+import { generateSessionToken, hashToken } from '@infinicus/authentication';
 import { buildApp } from '../src/app.js';
 
 const run = !!process.env.DATABASE_URL;
@@ -218,10 +219,10 @@ describe.runIf(run)('BUILD-21 governed API — live PostgreSQL', () => {
   });
 
   describe('auth', () => {
-    it('registers a new user in pending status', async () => {
+    it('registers a new user, active immediately', async () => {
       const res = await app!.inject({ method: 'POST', url: '/v1/auth/register', payload: { email: uniqueEmail('reg'), password: STRONG_PASSWORD } });
       expect(res.statusCode).toBe(201);
-      expect(res.json().status).toBe('pending');
+      expect(res.json().status).toBe('active');
     });
 
     it('rejects registration with a weak password', async () => {
@@ -229,11 +230,41 @@ describe.runIf(run)('BUILD-21 governed API — live PostgreSQL', () => {
       expect(res.statusCode).toBe(400);
     });
 
-    it('rejects login for a pending (not yet activated) account', async () => {
-      const email = uniqueEmail('pending');
+    it('a newly-registered account can log in immediately, with no separate activation step', async () => {
+      const email = uniqueEmail('active-now');
       await app!.inject({ method: 'POST', url: '/v1/auth/register', payload: { email, password: STRONG_PASSWORD } });
       const res = await app!.inject({ method: 'POST', url: '/v1/auth/login', payload: { email, password: STRONG_PASSWORD } });
-      expect(res.statusCode).toBe(403);
+      expect(res.statusCode).toBe(200);
+    });
+
+    it('verify-email confirms a valid token without affecting account status', async () => {
+      // Registration already sends a real verification email as a side
+      // effect (see AuthenticationService.register()) — this route test
+      // doesn't re-capture that email (apps/api wires AuthenticationService
+      // with its own real defaults, unlike packages/authentication's own
+      // unit-level test, which injects a capturing EmailSender for exactly
+      // this purpose). Here, a token is fixtured directly via the same
+      // repository the real flow uses, to test the route's own wiring.
+      const email = uniqueEmail('verify-flow');
+      const registerRes = await app!.inject({ method: 'POST', url: '/v1/auth/register', payload: { email, password: STRONG_PASSWORD } });
+      expect(registerRes.statusCode).toBe(201);
+      expect(registerRes.json().status).toBe('active');
+
+      const verificationTokens = new EmailVerificationTokenRepository();
+      const rawToken = generateSessionToken();
+      await verificationTokens.create(registerRes.json().id, hashToken(rawToken), new Date(Date.now() + 60_000));
+
+      const verifyRes = await app!.inject({ method: 'POST', url: '/v1/auth/verify-email', payload: { token: rawToken } });
+      expect(verifyRes.statusCode).toBe(200);
+      expect(verifyRes.json().emailVerifiedAt).not.toBeNull();
+      const users = new UserRepository();
+      const reloaded = await users.getById(registerRes.json().id);
+      expect(reloaded.status).toBe('active');
+    });
+
+    it('rejects an unknown verify-email token', async () => {
+      const res = await app!.inject({ method: 'POST', url: '/v1/auth/verify-email', payload: { token: 'not-a-real-token' } });
+      expect(res.statusCode).toBe(400);
     });
 
     it('rejects login with the wrong password', async () => {

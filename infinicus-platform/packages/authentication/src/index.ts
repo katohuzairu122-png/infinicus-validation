@@ -2,8 +2,14 @@
 export {
   InvalidCredentialsError, AccountNotActiveError,
   SessionExpiredError, SessionRevokedError, SessionInvalidError,
-  ApiKeyInvalidError, WeakPasswordError,
+  ApiKeyInvalidError, WeakPasswordError, VerificationTokenInvalidError,
 } from './errors.js';
+
+export type { EmailMessage, EmailSender } from './email/EmailSender.js';
+export { ResendEmailSender, EmailSendError } from './email/ResendEmailSender.js';
+export { NoopEmailSender } from './email/NoopEmailSender.js';
+export { createEmailSender, resolveEmailConfig } from './email/createEmailSender.js';
+export type { EmailConfig } from './email/createEmailSender.js';
 
 export { validatePasswordStrength, hashPassword, verifyPassword } from './password.js';
 

@@ -54,6 +54,16 @@ export const SECRET_INVENTORY: readonly SecretDefinition[] = [
   { name: 'DB_CONNECTION_TIMEOUT_MS', classification: 'non-secret', required: false, owner: 'platform-database', rotationPolicyDays: null, description: 'Pool connection-acquisition timeout.' },
   { name: 'DB_STATEMENT_TIMEOUT_MS', classification: 'non-secret', required: false, owner: 'platform-database', rotationPolicyDays: null, description: 'Per-statement timeout.' },
   { name: 'CORS_ALLOWED_ORIGINS', classification: 'non-secret', required: false, owner: 'platform', rotationPolicyDays: null, description: 'Comma-separated browser origins allowed to call this API cross-origin.' },
+  {
+    name: 'RESEND_API_KEY',
+    classification: 'secret',
+    required: false,
+    owner: 'platform',
+    rotationPolicyDays: 180,
+    description: 'Resend API key for sending real email-verification messages (packages/authentication). Not read via loadConfig() — resolved independently by resolveEmailConfig() (see its own doc comment). Unset means verification emails are logged, not sent (NoopEmailSender), which never blocks registration.',
+  },
+  { name: 'EMAIL_FROM_ADDRESS', classification: 'non-secret', required: false, owner: 'platform', rotationPolicyDays: null, description: 'From address for verification emails.' },
+  { name: 'EMAIL_VERIFICATION_URL_BASE', classification: 'non-secret', required: false, owner: 'platform', rotationPolicyDays: null, description: 'Base URL the verification link points at (a frontend page that then calls POST /v1/auth/verify-email).' },
 ] as const;
 
 /** pino `redact.paths` — structured-log paths that are always redacted regardless of value, independent of redactSecretValues()'s value-based scrubbing. */

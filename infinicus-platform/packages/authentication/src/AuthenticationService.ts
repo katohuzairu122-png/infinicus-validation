@@ -1,6 +1,6 @@
 import {
-  UserRepository, SessionRepository, AccessEventRepository,
-  UserNotFoundError, SessionNotFoundError,
+  UserRepository, SessionRepository, AccessEventRepository, EmailVerificationTokenRepository,
+  UserNotFoundError, SessionNotFoundError, EmailVerificationTokenNotFoundError,
   type User, type Session,
 } from '@infinicus/database';
 import { hashPassword, verifyPassword } from './password.js';
@@ -8,7 +8,13 @@ import { generateSessionToken, hashToken, defaultSessionExpiry } from './tokens.
 import {
   InvalidCredentialsError, AccountNotActiveError,
   SessionExpiredError, SessionRevokedError, SessionInvalidError,
+  VerificationTokenInvalidError,
 } from './errors.js';
+import { createEmailSender, resolveEmailConfig, type EmailConfig } from './email/createEmailSender.js';
+import type { EmailSender } from './email/EmailSender.js';
+import { verificationEmail } from './email/verificationEmail.js';
+
+const VERIFICATION_TOKEN_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 export interface LoginResult {
   user: User;
@@ -30,13 +36,55 @@ export class AuthenticationService {
   constructor(
     private readonly users: UserRepository = new UserRepository(),
     private readonly sessions: SessionRepository = new SessionRepository(),
-    private readonly accessEvents: AccessEventRepository = new AccessEventRepository()
+    private readonly accessEvents: AccessEventRepository = new AccessEventRepository(),
+    private readonly verificationTokens: EmailVerificationTokenRepository = new EmailVerificationTokenRepository(),
+    private readonly emailSender: EmailSender = createEmailSender(),
+    private readonly emailConfig: EmailConfig = resolveEmailConfig()
   ) {}
 
-  /** New accounts start in 'pending' status — activation is a deliberate separate step, never implicit at registration. */
+  /**
+   * Accounts are activated immediately — signup must not depend on a
+   * click-through email step to be usable (this backend previously had no
+   * activation route or email-sending capability at all, so a registered
+   * account could never actually become usable through the API before
+   * this). A real, separate email-ownership-verification flow still
+   * exists (see verifyEmail() below) and is tracked via
+   * identity.users.email_verified_at, independent of account usability.
+   * Sending the verification email is best-effort: a failure here (e.g.
+   * no RESEND_API_KEY configured — see NoopEmailSender) must never fail
+   * registration, since the account is already fully usable regardless.
+   */
   async register(email: string, password: string): Promise<User> {
     const passwordHash = await hashPassword(password);
-    return this.users.createUser({ email, passwordHash });
+    const created = await this.users.createUser({ email, passwordHash });
+    const active = await this.users.activate(created.id);
+
+    const rawToken = generateSessionToken();
+    const expiresAt = new Date(Date.now() + VERIFICATION_TOKEN_TTL_MS);
+    await this.verificationTokens.create(active.id, hashToken(rawToken), expiresAt);
+    await this.emailSender
+      .send(verificationEmail(active.email, this.emailConfig.verificationUrlBase, rawToken))
+      .catch((err: unknown) => {
+        // eslint-disable-next-line no-console -- best-effort send; a failure here must never fail registration (see doc comment above).
+        console.warn('[auth] verification email send failed (registration still succeeded)', err);
+      });
+
+    return active;
+  }
+
+  /** Marks the token's owner's email verified. Does not affect account status/usability — see register()'s own comment. */
+  async verifyEmail(rawToken: string): Promise<User> {
+    const tokenHash = hashToken(rawToken);
+    let token;
+    try {
+      token = await this.verificationTokens.getByTokenHash(tokenHash);
+    } catch (err) {
+      if (err instanceof EmailVerificationTokenNotFoundError) throw new VerificationTokenInvalidError();
+      throw err;
+    }
+    if (token.usedAt || token.expiresAt.getTime() < Date.now()) throw new VerificationTokenInvalidError();
+    await this.verificationTokens.markUsed(token.id);
+    return this.users.markEmailVerified(token.userId);
   }
 
   async login(email: string, password: string, meta: RequestMetadata = {}): Promise<LoginResult> {
