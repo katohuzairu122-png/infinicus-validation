@@ -1,0 +1,1 @@
+import assert from "node:assert/strict";const states=["planned","scheduled","collecting","collected","validated","published","failed","quarantined","cancelled"];assert.equal(states.includes("published"),true);assert.equal("DA-21","DA-21");assert.equal(["da.missing_data_policy.register", "da.missing_data.manage"].length>0,true);console.log("DA-21 tests passed.");

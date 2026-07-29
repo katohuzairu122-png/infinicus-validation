@@ -1,0 +1,1 @@
+(function(g){"use strict";if(!g.INFINICUS?.BO?.runtime)throw new Error("BO-01 must be loaded before BO-07.");if(!g.INFINICUS.BO.leadOpportunitySalesPipelineEngine)throw new Error("BO-06 must be loaded before BO-07.");})(window);

@@ -1,0 +1,1 @@
+(function(g){"use strict";if(!g.INFINICUS?.DA?.runtime)throw new Error("DA-01 must be loaded before DA-21.");if(!g.INFINICUS.DA.dataQualityScoringEngine)throw new Error("DA-20 must be loaded before DA-21.");})(window);

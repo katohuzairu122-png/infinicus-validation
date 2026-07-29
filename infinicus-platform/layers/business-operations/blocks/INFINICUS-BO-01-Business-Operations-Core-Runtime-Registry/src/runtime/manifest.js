@@ -1,0 +1,1 @@
+(function(g){"use strict";const r=g.INFINICUS.BO.runtime;g.INFINICUS.BO.manifest=Object.freeze({block:"BO-01",version:"1.0.0",nextBlock:"BO-02"});r.registerRoute("bo.runtime.manifest",()=>r.success(g.INFINICUS.BO.manifest));})(window);

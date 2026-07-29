@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-adi-06-simulation-engine-results-adapter",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/adi-06-simulation-engine-results-adapter.test.mjs"
+  }
+}

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>INFINICUS BI-04</title>
+  <link rel="stylesheet" href="../src/styles/quality.css">
+</head>
+<body>
+<main>
+  <h1>BI-04 — Data Validation and Quality Control Engine</h1>
+  <p>Validates ingested records before cleaning and standardization.</p>
+
+  <section class="panel">
+    <pre id="output">Loading...</pre>
+  </section>
+</main>
+
+<script src="../src/core/runtime-guard.js"></script>
+<script src="../src/model/quality-rule.js"></script>
+<script src="../src/validation/rule-evaluator.js"></script>
+<script src="../src/scoring/quality-scorer.js"></script>
+<script src="../src/storage/quality-store.js"></script>
+<script src="../src/engine/data-quality-engine.js"></script>
+<script src="../src/ui/demo.js"></script>
+</body>
+</html>

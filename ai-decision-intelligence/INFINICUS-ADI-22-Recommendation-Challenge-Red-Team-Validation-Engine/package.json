@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-adi-22-recommendation-challenge-red-team-validation-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/adi-22-recommendation-challenge-red-team-validation-engine.test.mjs"
+  }
+}

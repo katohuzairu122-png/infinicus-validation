@@ -1,0 +1,1 @@
+window.addEventListener("DOMContentLoaded",()=>{document.querySelector("#output").textContent=JSON.stringify({block:"DT-18",purpose:"Evaluate constraints, policies, limits, prerequisites, and dependencies.",outputs:["hard constraints","soft constraints","dependency checks","blocking breaches","warnings","evidence","DT-19 handoff"]},null,2)});

@@ -1,0 +1,1 @@
+addEventListener("DOMContentLoaded",()=>document.querySelector("#output").textContent=JSON.stringify({block:"BO-14",purpose:"Control fulfilment, dispatch, routing, delivery tracking, proof of delivery, failures, and returns.",routes:["bo.fulfilment_policy.register", "bo.fulfilment.process"],targetBlock:"BO-15"},null,2));

@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-cl-04-lesson-classification-taxonomy-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/classification.test.mjs"
+  }
+}

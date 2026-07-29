@@ -1,0 +1,1 @@
+addEventListener("DOMContentLoaded",()=>document.querySelector("#output").textContent=JSON.stringify({block:"DA-25",purpose:"Verify and assemble the complete Data Acquisition layer.",routes:["da.master.diagnose", "da.master.assemble", "da.master.deploy", "da.master.rollback.record"],targetBlock:null},null,2));

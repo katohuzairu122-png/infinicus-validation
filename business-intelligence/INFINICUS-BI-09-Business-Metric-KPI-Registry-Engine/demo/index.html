@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>INFINICUS BI-09</title>
+  <link rel="stylesheet" href="../src/styles/metrics.css">
+</head>
+<body>
+<main>
+  <h1>BI-09 — Business Metric and KPI Registry Engine</h1>
+  <p>Defines governed metrics before calculation and reporting.</p>
+
+  <section class="panel">
+    <pre id="output">Loading...</pre>
+  </section>
+</main>
+
+<script src="../src/core/runtime-guard.js"></script>
+<script src="../src/model/metric-definition.js"></script>
+<script src="../src/governance/dependency-validator.js"></script>
+<script src="../src/governance/metric-lineage.js"></script>
+<script src="../src/storage/metric-store.js"></script>
+<script src="../src/engine/metric-registry-engine.js"></script>
+<script src="../src/ui/demo.js"></script>
+</body>
+</html>

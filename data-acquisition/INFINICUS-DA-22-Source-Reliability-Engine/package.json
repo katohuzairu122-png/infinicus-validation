@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-da-22-source-reliability-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/da-22.test.mjs"
+  }
+}

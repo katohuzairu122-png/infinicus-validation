@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>INFINICUS DT-12</title>
+  <link rel="stylesheet" href="../src/styles/inventory.css">
+</head>
+<body>
+<main>
+  <h1>DT-12 — Inventory and Supply Network Twin Engine</h1>
+  <p>Builds governed product, stock, supplier, and replenishment state.</p>
+  <section class="panel"><pre id="output">Loading...</pre></section>
+</main>
+<script src="../src/core/runtime-guard.js"></script>
+<script src="../src/model/product-location.js"></script>
+<script src="../src/model/supplier-purchase-order.js"></script>
+<script src="../src/model/inventory-state.js"></script>
+<script src="../src/analysis/inventory-supply-analyzer.js"></script>
+<script src="../src/validation/inventory-supply-validator.js"></script>
+<script src="../src/storage/inventory-supply-store.js"></script>
+<script src="../src/engine/inventory-supply-twin-engine.js"></script>
+<script src="../src/ui/demo.js"></script>
+</body>
+</html>

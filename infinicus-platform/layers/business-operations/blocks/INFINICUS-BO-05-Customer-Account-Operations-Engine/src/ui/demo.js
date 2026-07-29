@@ -1,0 +1,1 @@
+addEventListener("DOMContentLoaded",()=>document.querySelector("#output").textContent=JSON.stringify({block:"BO-05",purpose:"Manage customer profiles, accounts, contacts, segments, preferences, credit limits, and consent.",routes:["bo.customer_policy.register", "bo.customers.register"],targetBlock:"BO-06"},null,2));

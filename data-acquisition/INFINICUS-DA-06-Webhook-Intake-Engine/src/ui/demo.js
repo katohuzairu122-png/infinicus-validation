@@ -1,0 +1,1 @@
+addEventListener("DOMContentLoaded",()=>document.querySelector("#output").textContent=JSON.stringify({block:"DA-06",purpose:"Receive and validate webhook events.",routes:["da.webhook_policy.register", "da.webhooks.intake"],targetBlock:"DA-07"},null,2));

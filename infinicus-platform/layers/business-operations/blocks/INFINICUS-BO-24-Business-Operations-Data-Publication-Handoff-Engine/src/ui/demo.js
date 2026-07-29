@@ -1,0 +1,1 @@
+addEventListener("DOMContentLoaded",()=>document.querySelector("#output").textContent=JSON.stringify({block:"BO-24",purpose:"Publish governed operational snapshots, transactions, events, risks, and quality indicators downstream.",routes:["bo.operations_publication_policy.register", "bo.operations_data.publish"],targetBlock:"BO-25"},null,2));

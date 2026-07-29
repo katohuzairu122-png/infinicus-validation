@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-om-16-expected-versus-actual-comparison-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/comparison.test.mjs"
+  }
+}

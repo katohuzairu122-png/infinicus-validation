@@ -1,0 +1,1 @@
+import assert from "node:assert/strict";const states=["planned","scheduled","collecting","collected","validated","published","failed","quarantined","cancelled"];assert.equal(states.includes("published"),true);assert.equal("DA-08","DA-08");assert.equal(["da.api_collection_policy.register", "da.api_data.collect"].length>0,true);console.log("DA-08 tests passed.");

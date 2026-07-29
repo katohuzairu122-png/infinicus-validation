@@ -1,0 +1,10 @@
+{
+  "name": "infinicus-bi-18-market-competitive-intelligence-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/market-competitive-intelligence.test.mjs",
+    "validate": "node tests/market-competitive-intelligence.test.mjs"
+  }
+}

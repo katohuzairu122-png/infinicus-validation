@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-adi-16-simulation-orchestration-scenario-comparison-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/adi-16-simulation-orchestration-scenario-comparison-engine.test.mjs"
+  }
+}

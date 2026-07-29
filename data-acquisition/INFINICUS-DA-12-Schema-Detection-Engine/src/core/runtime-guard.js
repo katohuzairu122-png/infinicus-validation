@@ -1,0 +1,1 @@
+(function(g){"use strict";if(!g.INFINICUS?.DA?.runtime)throw new Error("DA-01 must be loaded before DA-12.");if(!g.INFINICUS.DA.streamingEventIntakeEngine)throw new Error("DA-11 must be loaded before DA-12.");})(window);

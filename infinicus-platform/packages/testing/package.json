@@ -1,0 +1,30 @@
+{
+  "name": "@infinicus/testing",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Shared test utilities, fixtures, and layer mock factories",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "dev":   "tsc --watch",
+    "lint":  "eslint src/",
+    "test":  "vitest run",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@infinicus/shared-types":    "workspace:*",
+    "@infinicus/handoff-contracts":"workspace:*",
+    "@infinicus/event-contracts":  "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "vitest":     "^1.6.0"
+  }
+}

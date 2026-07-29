@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-bo-08-order-transaction-management-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/bo-08.test.mjs"
+  }
+}

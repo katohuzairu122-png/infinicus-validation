@@ -1,0 +1,1 @@
+addEventListener("DOMContentLoaded",()=>document.querySelector("#output").textContent=JSON.stringify({block:"DA-19",purpose:"Apply masking, redaction and handling restrictions.",routes:["da.sensitive_data_policy.register", "da.sensitive_data.process"],targetBlock:"DA-20"},null,2));

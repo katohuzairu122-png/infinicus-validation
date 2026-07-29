@@ -1,0 +1,1 @@
+addEventListener("DOMContentLoaded",()=>document.querySelector("#output").textContent=JSON.stringify({block:"DA-09",purpose:"Collect database records using governed queries and checkpoints.",routes:["da.database_collection_policy.register", "da.database_data.collect"],targetBlock:"DA-10"},null,2));

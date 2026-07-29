@@ -1,0 +1,53 @@
+import assert from "node:assert/strict";
+
+// Browser-global IIFEs target window; provide it for Node.
+globalThis.window ??= globalThis;
+
+await import("../../INFINICUS-ADI-01-AI-Decision-Intelligence-Core-Runtime-Registry/src/adi-01-ai-decision-intelligence-core-runtime-registry.js");
+await import("../../INFINICUS-ADI-02-Decision-Request-Intake-Validation-Engine/src/adi-02-decision-request-intake-validation-engine.js");
+await import("../../INFINICUS-ADI-03-Decision-Identity-Ownership-Access-Control-Engine/src/adi-03-decision-identity-ownership-access-control-engine.js");
+await import("../../INFINICUS-ADI-04-Decision-Context-Acquisition-Normalization-Engine/src/adi-04-decision-context-acquisition-normalization-engine.js");
+await import("../../INFINICUS-ADI-05-Business-Digital-Twin-Context-Adapter/src/adi-05-business-digital-twin-context-adapter.js");
+await import("../../INFINICUS-ADI-06-Simulation-Engine-Results-Adapter/src/adi-06-simulation-engine-results-adapter.js");
+await import("../src/adi-07-decision-evidence-provenance-registry.js");
+
+const ADI = globalThis.INFINICUS.ADI;
+const blocks = ADI.blocks;
+const block = blocks["ADI-07"];
+assert.ok(block, "block ADI-07 not registered on INFINICUS.ADI.blocks");
+assert.equal(typeof block.createEvidenceRegistry, "function");
+assert.equal(typeof block.attachToADIRuntime, "function");
+
+const runtime = blocks["ADI-01"].installGlobal(globalThis);
+assert.ok(runtime, "ADI-01 runtime not installed");
+{
+  const result = blocks["ADI-02"].attachToADIRuntime(runtime, {});
+  assert.equal(result.ok, true, "attach ADI-02 failed: " + JSON.stringify(result.error));
+}
+{
+  const result = blocks["ADI-03"].attachToADIRuntime(runtime, {});
+  assert.equal(result.ok, true, "attach ADI-03 failed: " + JSON.stringify(result.error));
+}
+{
+  const result = blocks["ADI-04"].attachToADIRuntime(runtime, {});
+  assert.equal(result.ok, true, "attach ADI-04 failed: " + JSON.stringify(result.error));
+}
+{
+  const result = blocks["ADI-05"].attachToADIRuntime(runtime, { readSnapshot: async () => null });
+  assert.equal(result.ok, true, "attach ADI-05 failed: " + JSON.stringify(result.error));
+}
+{
+  const result = blocks["ADI-06"].attachToADIRuntime(runtime, { readCompletedRun: async () => null });
+  assert.equal(result.ok, true, "attach ADI-06 failed: " + JSON.stringify(result.error));
+}
+{
+  const result = blocks["ADI-07"].attachToADIRuntime(runtime, {});
+  assert.equal(result.ok, true, "attach ADI-07 failed: " + JSON.stringify(result.error));
+}
+
+// service is registered after the attach chain
+const service = runtime.getService("adi.evidence_registry");
+assert.equal(service.ok, true, "service adi.evidence_registry not registered");
+assert.equal(service.data.blockId, "ADI-07");
+
+console.log("ADI-07 tests passed.");

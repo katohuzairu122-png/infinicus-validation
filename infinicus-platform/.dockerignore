@@ -1,0 +1,36 @@
+# BUILD-23 — keeps the Docker build context small and prevents
+# host-built artifacts (which may not match the container's platform)
+# from being copied in instead of being rebuilt inside the image.
+
+# VCS
+.git/
+.gitignore
+
+# Dependencies (reinstalled inside the image)
+node_modules/
+.pnpm-store/
+
+# Build outputs (rebuilt inside the image)
+dist/
+.turbo/
+*.tsbuildinfo
+.next/
+next-env.d.ts
+
+# Env — never bake secrets into an image layer
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Docs (not needed at runtime, keeps context lean)
+docs/

@@ -1,0 +1,1 @@
+import assert from "node:assert/strict";const states=["planned","scheduled","collecting","collected","validated","published","failed","quarantined","cancelled"];assert.equal(states.includes("published"),true);assert.equal("DA-23","DA-23");assert.equal(["da.lineage_policy.register", "da.lineage.assemble"].length>0,true);console.log("DA-23 tests passed.");

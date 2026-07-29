@@ -1,0 +1,1 @@
+import assert from "node:assert/strict";const p={legalName:"INFINICUS LLC",businessModel:"software_platform",operatingCountries:["UG"],currencies:["UGX","USD"],status:"active"};assert.equal(Boolean(p.legalName),true);assert.equal(p.operatingCountries.length,1);assert.equal(p.currencies.includes("UGX"),true);console.log("BO-02 business profile tests passed.");

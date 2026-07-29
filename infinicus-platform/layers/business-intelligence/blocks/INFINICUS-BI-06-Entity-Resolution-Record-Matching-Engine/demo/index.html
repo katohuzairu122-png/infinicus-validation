@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>INFINICUS BI-06</title>
+  <link rel="stylesheet" href="../src/styles/resolution.css">
+</head>
+<body>
+<main>
+  <h1>BI-06 — Entity Resolution and Record Matching Engine</h1>
+  <p>Detects duplicate and related business entities before analytical transformation.</p>
+
+  <section class="panel">
+    <pre id="output">Loading...</pre>
+  </section>
+</main>
+
+<script src="../src/core/runtime-guard.js"></script>
+<script src="../src/model/match-rule.js"></script>
+<script src="../src/matching/similarity.js"></script>
+<script src="../src/matching/match-scorer.js"></script>
+<script src="../src/matching/candidate-generator.js"></script>
+<script src="../src/storage/resolution-store.js"></script>
+<script src="../src/engine/entity-resolution-engine.js"></script>
+<script src="../src/ui/demo.js"></script>
+</body>
+</html>

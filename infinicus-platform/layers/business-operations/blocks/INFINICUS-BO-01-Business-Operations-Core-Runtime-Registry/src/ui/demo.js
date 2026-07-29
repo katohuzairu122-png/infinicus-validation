@@ -1,0 +1,1 @@
+addEventListener("DOMContentLoaded",()=>document.querySelector("#output").textContent=JSON.stringify(window.INFINICUS.BO.runtime.diagnose(),null,2));

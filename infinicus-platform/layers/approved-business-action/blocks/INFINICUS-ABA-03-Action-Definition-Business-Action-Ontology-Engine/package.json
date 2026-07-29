@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-aba-03-action-definition-business-action-ontology-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/action-ontology.test.mjs"
+  }
+}

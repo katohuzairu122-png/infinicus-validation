@@ -1,0 +1,1 @@
+addEventListener("DOMContentLoaded",()=>document.querySelector("#output").textContent=JSON.stringify({block:"DA-10",purpose:"Capture governed manual submissions.",routes:["da.manual_intake_policy.register", "da.manual_data.intake"],targetBlock:"DA-11"},null,2));

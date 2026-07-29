@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-bo-16-task-workflow-process-execution-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/bo-16.test.mjs"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-om-02-monitoring-contract-intake-validation-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/intake.test.mjs"
+  }
+}

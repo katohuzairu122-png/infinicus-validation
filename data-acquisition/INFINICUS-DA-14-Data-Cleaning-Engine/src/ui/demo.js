@@ -1,0 +1,1 @@
+addEventListener("DOMContentLoaded",()=>document.querySelector("#output").textContent=JSON.stringify({block:"DA-14",purpose:"Apply governed cleaning and repair operations.",routes:["da.cleaning_policy.register", "da.data.clean"],targetBlock:"DA-15"},null,2));

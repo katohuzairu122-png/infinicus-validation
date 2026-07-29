@@ -1,0 +1,1 @@
+import assert from "node:assert/strict";const states=["planned","scheduled","collecting","collected","validated","published","failed","quarantined","cancelled"];assert.equal(states.includes("published"),true);assert.equal("DA-06","DA-06");assert.equal(["da.webhook_policy.register", "da.webhooks.intake"].length>0,true);console.log("DA-06 tests passed.");

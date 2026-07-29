@@ -1,0 +1,1 @@
+{"name":"infinicus-adi-13-strategic-alternative-generation-engine","version":"1.0.0","private":true,"type":"module","scripts":{"test":"node --test tests/*.test.mjs","validate":"npm test"}}

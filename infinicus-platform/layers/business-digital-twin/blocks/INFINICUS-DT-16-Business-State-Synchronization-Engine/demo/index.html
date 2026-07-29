@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>INFINICUS DT-16</title>
+  <link rel="stylesheet" href="../src/styles/synchronization.css">
+</head>
+<body>
+<main>
+  <h1>DT-16 — Business State Synchronization Engine</h1>
+  <p>Merges validated domain state into one versioned Digital Twin state.</p>
+  <section class="panel">
+    <pre id="output">Loading...</pre>
+  </section>
+</main>
+<script src="../src/core/runtime-guard.js"></script>
+<script src="../src/model/synchronization-policy.js"></script>
+<script src="../src/sync/state-normalizer.js"></script>
+<script src="../src/sync/conflict-detector.js"></script>
+<script src="../src/sync/state-selector.js"></script>
+<script src="../src/storage/synchronization-store.js"></script>
+<script src="../src/engine/business-state-synchronization-engine.js"></script>
+<script src="../src/ui/demo.js"></script>
+</body>
+</html>

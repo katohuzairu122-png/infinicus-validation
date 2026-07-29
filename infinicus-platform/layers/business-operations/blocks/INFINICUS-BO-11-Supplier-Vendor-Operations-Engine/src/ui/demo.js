@@ -1,0 +1,1 @@
+addEventListener("DOMContentLoaded",()=>document.querySelector("#output").textContent=JSON.stringify({block:"BO-11",purpose:"Manage supplier profiles, contracts, terms, quality, delivery reliability, risk, and status.",routes:["bo.supplier_policy.register", "bo.suppliers.manage"],targetBlock:"BO-12"},null,2));

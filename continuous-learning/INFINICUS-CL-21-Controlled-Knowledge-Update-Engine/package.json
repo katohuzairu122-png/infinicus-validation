@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-cl-21-controlled-knowledge-update-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/cl-21.test.mjs"
+  }
+}

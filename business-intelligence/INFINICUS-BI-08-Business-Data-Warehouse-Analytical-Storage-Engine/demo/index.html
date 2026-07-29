@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>INFINICUS BI-08</title>
+  <link rel="stylesheet" href="../src/styles/warehouse.css">
+</head>
+<body>
+<main>
+  <h1>BI-08 — Business Data Warehouse and Analytical Storage Engine</h1>
+  <p>Organizes transformed records into governed analytical datasets.</p>
+
+  <section class="panel">
+    <pre id="output">Loading...</pre>
+  </section>
+</main>
+
+<script src="../src/core/runtime-guard.js"></script>
+<script src="../src/model/warehouse-dataset.js"></script>
+<script src="../src/warehouse/grain-validator.js"></script>
+<script src="../src/warehouse/load-planner.js"></script>
+<script src="../src/storage/warehouse-store.js"></script>
+<script src="../src/engine/data-warehouse-engine.js"></script>
+<script src="../src/ui/demo.js"></script>
+</body>
+</html>

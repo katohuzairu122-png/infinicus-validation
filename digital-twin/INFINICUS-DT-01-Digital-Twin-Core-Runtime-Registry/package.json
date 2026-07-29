@@ -1,0 +1,10 @@
+{
+  "name": "infinicus-dt-01-digital-twin-core-runtime-registry",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/runtime.test.mjs",
+    "validate": "node tests/runtime.test.mjs"
+  }
+}

@@ -1,0 +1,1 @@
+addEventListener("DOMContentLoaded",()=>document.querySelector("#output").textContent=JSON.stringify({block:"BO-04",purpose:"Manage products, services, bundles, variants, prices, costs, units, availability, and lifecycle state.",routes:["bo.catalog_policy.register", "bo.catalog_items.register"],targetBlock:"BO-05"},null,2));

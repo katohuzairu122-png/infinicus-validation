@@ -1,44 +1,82 @@
-# INFINICUS MASTER IMPLEMENTATION QUEUE
+# CLAUDE QUEUE INSTRUCTIONS — INFINICUS ENGINE
 
-This repository contains a fixed implementation queue.
+## Purpose
 
-## Mandatory operating loop
+This file governs all Claude-driven build execution on the INFINICUS repository.
+Read this file before reading any queue state or executing any build.
 
-For every Claude Code session:
+## Repository Source of Truth
 
-1. Read `.claude/state/implementation-status.json`.
-2. Read `docs/implementation-queue/00-IMPLEMENTATION-MANIFEST.md`.
-3. Read all completion reports listed for dependencies of `currentBuild`.
-4. Open only the prompt identified by `currentBuild`.
-5. Inspect existing code and align with repository conventions.
-6. Implement only the current build.
-7. Run every validation command required by that prompt.
-8. Fix in-scope failures.
-9. Create `docs/completion-reports/<build-id>-report.md`.
-10. Update `.claude/state/implementation-status.json`:
-   - current build → `complete`;
-   - attach completion-report path and validation summary;
-   - promote only the next build whose dependencies are complete to `ready`;
-   - set `currentBuild` to that build.
-11. Stop.
+- The repository is the source of truth. Do not guess state — inspect files.
+- Preserve the working application at all times. Never break `index.html`.
+- All bundles in `index.html` must remain loadable after every build.
+- Do not rewrite working blocks unless the build explicitly targets them.
 
-## Prohibited behavior
+## Queue Files
 
-Do not redesign approved architecture.
-Do not combine builds.
-Do not skip dependencies.
-Do not invent migration numbers.
-Do not modify frozen migrations.
-Do not claim completion without required tests.
-Do not mark a build complete when validation is skipped.
-Do not start the next build in the same session unless the user explicitly requests continuous execution.
+| File | Purpose |
+|---|---|
+| `.claude/state/implementation-status.json` | Live state of all builds |
+| `docs/implementation-queue/00-IMPLEMENTATION-MANIFEST.md` | Full ordered build list |
+| `.claude/commands/execute-next-build.md` | Instructions for executing the next build |
 
-## Priority
+## Execution Protocol
 
-The first incomplete build is:
+1. Read this file.
+2. Read `.claude/state/implementation-status.json` to find the current ready build.
+3. Read `docs/implementation-queue/00-IMPLEMENTATION-MANIFEST.md` for the build spec.
+4. Read `.claude/commands/execute-next-build.md` for execution steps.
+5. Inspect the repository before writing any code.
+6. Execute only the single build marked `ready`.
+7. Run every required validation command.
+8. Create the completion report in `.claude/state/reports/`.
+9. Update `.claude/state/implementation-status.json` — mark the build `completed`.
+10. Stop. Do not begin the next build.
 
-```text
-database-stage-2c
+## Layer Architecture
+
+Root-level layer directories contain browser-global IIFE JavaScript blocks:
+
+```
+/{layer-name}/
+  INFINICUS-{LAYER}-{NN}-{Block-Name}/
+    src/          ← browser-global IIFE .js files
+    tests/        ← node .mjs tests (assert-based, not TAP)
+    CLAUDE.md
+    README.md
+    docs/
+    demo/
+    package.json
+  {layer}-bundle.js   ← concatenated bundle loaded by index.html
 ```
 
-Existing repository code remains authoritative when it proves a build has already passed. In that case, verify the completion evidence, create the missing completion report, update queue state, and move to the next eligible build.
+Bundles use `(function(global){ ... })(window);` IIFE pattern.
+Bundles are loaded via `<script src="/{layer}/{layer}-bundle.js">` in index.html.
+All blocks set their namespace via `global.INFINICUS.{LAYER} = ...`.
+
+## Validation Commands
+
+After every build, run in order:
+
+```bash
+# 1. Node tests for the new layer (from repo root)
+for dir in /{layer}/INFINICUS-{LAYER}-*/; do
+  for test in "$dir/tests/"*.mjs; do
+    node "$test"
+  done
+done
+
+# 2. Node tests for all existing layers (regression)
+# Run all *.mjs tests in approved-business-action, business-intelligence,
+# digital-twin, outcome-monitoring, continuous-learning
+
+# 3. Syntax check the bundle
+node --check {layer}/adi-bundle.js
+```
+
+## Security Constraints
+
+- Never commit passwords, API keys, tokens, database credentials, or secrets.
+- Never store secrets in browser-visible configuration.
+- ADI layer must not bypass upstream validation from DT, BI, SIM layers.
+- Preserve all correlation, causation, lineage, and confidence identifiers.

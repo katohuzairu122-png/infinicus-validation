@@ -1,0 +1,1 @@
+window.addEventListener("DOMContentLoaded",()=>{document.querySelector("#output").textContent=JSON.stringify({block:"DT-17",purpose:"Convert synchronized state changes into governed business events.",outputs:["event types","transition rules","state changes","business events","correlation","causation","DT-18 handoff"]},null,2)});

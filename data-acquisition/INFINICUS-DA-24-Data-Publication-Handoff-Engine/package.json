@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-da-24-data-publication-handoff-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/da-24.test.mjs"
+  }
+}

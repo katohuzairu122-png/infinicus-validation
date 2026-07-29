@@ -1,0 +1,10 @@
+{
+  "name": "infinicus-bi-11-financial-intelligence-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/financial-intelligence.test.mjs",
+    "validate": "node tests/financial-intelligence.test.mjs"
+  }
+}

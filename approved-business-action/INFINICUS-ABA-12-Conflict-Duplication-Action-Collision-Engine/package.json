@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-aba-12-conflict-duplication-action-collision-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/collision.test.mjs"
+  }
+}

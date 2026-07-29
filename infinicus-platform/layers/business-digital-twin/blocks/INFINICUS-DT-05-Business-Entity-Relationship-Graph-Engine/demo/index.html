@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>INFINICUS DT-05</title>
+  <link rel="stylesheet" href="../src/styles/entity-graph.css">
+</head>
+<body>
+<main>
+  <h1>DT-05 — Business Entity and Relationship Graph Engine</h1>
+  <p>Builds the ontology-valid entity graph of the Business Digital Twin.</p>
+
+  <section class="panel">
+    <pre id="output">Loading...</pre>
+  </section>
+</main>
+
+<script src="../src/core/runtime-guard.js"></script>
+<script src="../src/model/entity-instance.js"></script>
+<script src="../src/model/relationship-instance.js"></script>
+<script src="../src/validation/entity-validator.js"></script>
+<script src="../src/validation/relationship-validator.js"></script>
+<script src="../src/graph/graph-index.js"></script>
+<script src="../src/graph/integrity-analyzer.js"></script>
+<script src="../src/storage/graph-store.js"></script>
+<script src="../src/engine/entity-relationship-graph-engine.js"></script>
+<script src="../src/ui/demo.js"></script>
+</body>
+</html>

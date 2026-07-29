@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>INFINICUS BI-02</title>
+  <link rel="stylesheet" href="../src/styles/semantic.css">
+</head>
+<body>
+<main>
+  <h1>BI-02 — Data Source Mapping and Semantic Definition</h1>
+  <p>Defines how operational data becomes canonical Business Intelligence data.</p>
+
+  <div class="layout">
+    <section class="panel">
+      <form id="mappingForm">
+        <textarea name="source">{
+  "name":"Business Operations Sales Database",
+  "sourceType":"postgresql",
+  "owner":"Business Operations Layer",
+  "layer":"business_operations",
+  "connectionReference":"operations.sales.primary",
+  "metadata":{
+    "country":"Uganda",
+    "refreshFrequency":"hourly"
+  }
+}</textarea>
+        <button type="submit">Register source system</button>
+      </form>
+    </section>
+
+    <section class="panel">
+      <h2>Source-system record</h2>
+      <pre id="output">Ready.</pre>
+    </section>
+  </div>
+</main>
+
+<script src="../../INFINICUS-BI-01-Business-Intelligence-Core-Runtime-Registry/src/runtime/result-envelope.js"></script>
+<script src="../../INFINICUS-BI-01-Business-Intelligence-Core-Runtime-Registry/src/runtime/registry.js"></script>
+<script src="../../INFINICUS-BI-01-Business-Intelligence-Core-Runtime-Registry/src/runtime/event-bus.js"></script>
+<script src="../../INFINICUS-BI-01-Business-Intelligence-Core-Runtime-Registry/src/runtime/bi-runtime.js"></script>
+
+<script src="../src/core/runtime-guard.js"></script>
+<script src="../src/model/source-system.js"></script>
+<script src="../src/model/semantic-entity.js"></script>
+<script src="../src/mapping/type-compatibility.js"></script>
+<script src="../src/mapping/field-mapping.js"></script>
+<script src="../src/contracts/dataset-contract.js"></script>
+<script src="../src/storage/semantic-store.js"></script>
+<script src="../src/engine/data-source-mapping-engine.js"></script>
+<script src="../src/ui/demo.js"></script>
+</body>
+</html>

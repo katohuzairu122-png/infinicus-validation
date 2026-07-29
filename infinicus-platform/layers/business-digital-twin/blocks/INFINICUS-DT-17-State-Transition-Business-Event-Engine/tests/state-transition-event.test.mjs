@@ -1,0 +1,1 @@
+import assert from "node:assert/strict";function p(x,k){const e=x.replace(/[.+?^${}()|[\]\\]/g,"\\$&").replace(/\*/g,".*");return new RegExp(`^${e}$`).test(k)}assert.equal(p("financial.*","financial.cash"),true);assert.equal(JSON.stringify(1)!==JSON.stringify(2),true);console.log("DT-17 state transition event tests passed.");

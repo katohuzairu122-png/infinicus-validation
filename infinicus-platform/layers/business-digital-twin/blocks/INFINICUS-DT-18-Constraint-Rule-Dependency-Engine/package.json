@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-dt-18-constraint-rule-dependency-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/constraint-rule-dependency.test.mjs"
+  }
+}

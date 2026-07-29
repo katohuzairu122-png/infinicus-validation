@@ -1,0 +1,1 @@
+addEventListener("DOMContentLoaded",()=>document.querySelector("#output").textContent=JSON.stringify({block:"BO-09",purpose:"Manage invoices, payments, refunds, receivables, reconciliation, overdue balances, and collections.",routes:["bo.billing_policy.register", "bo.billing.process"],targetBlock:"BO-10"},null,2));

@@ -1,0 +1,1 @@
+addEventListener("DOMContentLoaded",()=>document.querySelector("#output").textContent=JSON.stringify({block:"BO-08",purpose:"Create, validate, approve, amend, cancel, and track customer orders and transactions.",routes:["bo.order_policy.register", "bo.orders.process"],targetBlock:"BO-09"},null,2));

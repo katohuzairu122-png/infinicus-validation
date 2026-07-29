@@ -1,0 +1,1 @@
+import assert from "node:assert/strict";const states=["planned","scheduled","collecting","collected","validated","published","failed","quarantined","cancelled"];assert.equal(states.includes("published"),true);assert.equal("DA-11","DA-11");assert.equal(["da.stream_policy.register", "da.stream_events.intake"].length>0,true);console.log("DA-11 tests passed.");

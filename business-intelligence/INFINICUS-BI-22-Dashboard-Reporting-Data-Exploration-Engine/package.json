@@ -1,0 +1,10 @@
+{
+  "name": "infinicus-bi-22-dashboard-reporting-data-exploration-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/reporting-exploration.test.mjs",
+    "validate": "node tests/reporting-exploration.test.mjs"
+  }
+}

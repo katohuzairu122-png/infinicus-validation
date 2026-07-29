@@ -1,0 +1,10 @@
+{
+  "name": "infinicus-dt-23-scenario-baseline-initial-conditions-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/scenario-baseline.test.mjs",
+    "validate": "node tests/scenario-baseline.test.mjs"
+  }
+}

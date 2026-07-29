@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-aba-04-action-instance-lifecycle-registry",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/action-lifecycle.test.mjs"
+  }
+}

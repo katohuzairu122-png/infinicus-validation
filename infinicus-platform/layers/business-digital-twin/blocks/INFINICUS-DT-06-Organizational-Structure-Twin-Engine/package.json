@@ -1,0 +1,10 @@
+{
+  "name": "infinicus-dt-06-organizational-structure-twin-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/organizational-structure.test.mjs",
+    "validate": "node tests/organizational-structure.test.mjs"
+  }
+}

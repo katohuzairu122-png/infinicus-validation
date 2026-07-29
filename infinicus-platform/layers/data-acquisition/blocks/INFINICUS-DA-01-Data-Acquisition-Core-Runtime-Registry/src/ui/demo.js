@@ -1,0 +1,1 @@
+addEventListener("DOMContentLoaded",()=>document.querySelector("#output").textContent=JSON.stringify({block:"DA-01",purpose:"Provide shared runtime and registries.",routes:["da.runtime.diagnose", "da.runtime.manifest"],targetBlock:"DA-02"},null,2));

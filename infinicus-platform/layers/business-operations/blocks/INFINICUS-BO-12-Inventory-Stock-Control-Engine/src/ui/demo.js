@@ -1,0 +1,1 @@
+addEventListener("DOMContentLoaded",()=>document.querySelector("#output").textContent=JSON.stringify({block:"BO-12",purpose:"Control stock, reservations, receipts, transfers, adjustments, returns, reorder points, and valuation.",routes:["bo.inventory_policy.register", "bo.inventory.movements.process"],targetBlock:"BO-13"},null,2));

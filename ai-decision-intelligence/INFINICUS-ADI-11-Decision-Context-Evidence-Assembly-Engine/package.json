@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-adi-11-decision-context-evidence-assembly-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/adi-11-decision-context-evidence-assembly-engine.test.mjs"
+  }
+}

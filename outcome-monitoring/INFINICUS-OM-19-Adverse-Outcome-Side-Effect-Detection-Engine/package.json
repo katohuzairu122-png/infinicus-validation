@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-om-19-adverse-outcome-side-effect-detection-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/adverse-outcomes.test.mjs"
+  }
+}

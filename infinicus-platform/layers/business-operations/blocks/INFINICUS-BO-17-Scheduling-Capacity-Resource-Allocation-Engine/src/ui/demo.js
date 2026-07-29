@@ -1,0 +1,1 @@
+addEventListener("DOMContentLoaded",()=>document.querySelector("#output").textContent=JSON.stringify({block:"BO-17",purpose:"Manage schedules, capacity, appointments, workload balancing, conflicts, queues, and overbooking controls.",routes:["bo.scheduling_policy.register", "bo.resources.allocate"],targetBlock:"BO-18"},null,2));

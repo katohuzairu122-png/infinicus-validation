@@ -1,0 +1,10 @@
+{
+  "name": "infinicus-dt-09-sales-revenue-flow-twin-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/sales-revenue-flow.test.mjs",
+    "validate": "node tests/sales-revenue-flow.test.mjs"
+  }
+}

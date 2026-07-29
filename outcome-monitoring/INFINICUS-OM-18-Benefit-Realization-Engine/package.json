@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-om-18-benefit-realization-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/benefit-realization.test.mjs"
+  }
+}

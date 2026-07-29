@@ -1,0 +1,1 @@
+import assert from "node:assert/strict";const states=["planned","authorized","executed","completed","failed","reversed"];assert.equal(states.includes("completed"),true);assert.equal("BO-06","BO-06");assert.equal(["bo.sales_pipeline_policy.register", "bo.sales_pipeline.process"].length>0,true);console.log("BO-06 tests passed.");

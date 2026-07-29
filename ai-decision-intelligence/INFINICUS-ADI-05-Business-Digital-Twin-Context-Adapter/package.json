@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-adi-05-business-digital-twin-context-adapter",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/adi-05-business-digital-twin-context-adapter.test.mjs"
+  }
+}

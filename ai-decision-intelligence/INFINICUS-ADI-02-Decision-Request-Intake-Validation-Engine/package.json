@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-adi-02-decision-request-intake-validation-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/adi-02-decision-request-intake-validation-engine.test.mjs"
+  }
+}

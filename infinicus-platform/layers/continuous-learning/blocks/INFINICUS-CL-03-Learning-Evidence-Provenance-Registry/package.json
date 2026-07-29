@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-cl-03-learning-evidence-provenance-registry",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/evidence-provenance.test.mjs"
+  }
+}

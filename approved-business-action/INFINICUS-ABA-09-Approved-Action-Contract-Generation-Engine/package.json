@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-aba-09-approved-action-contract-generation-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/action-contract.test.mjs"
+  }
+}

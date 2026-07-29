@@ -1,0 +1,10 @@
+{
+  "name": "infinicus-dt-11-operations-process-twin-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/operations-process.test.mjs",
+    "validate": "node tests/operations-process.test.mjs"
+  }
+}

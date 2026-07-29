@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-bo-21-compliance-control-operational-risk-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/bo-21.test.mjs"
+  }
+}

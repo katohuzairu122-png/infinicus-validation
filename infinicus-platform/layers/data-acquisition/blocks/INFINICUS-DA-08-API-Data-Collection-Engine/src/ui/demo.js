@@ -1,0 +1,1 @@
+addEventListener("DOMContentLoaded",()=>document.querySelector("#output").textContent=JSON.stringify({block:"DA-08",purpose:"Collect external API data with retries and lineage.",routes:["da.api_collection_policy.register", "da.api_data.collect"],targetBlock:"DA-09"},null,2));

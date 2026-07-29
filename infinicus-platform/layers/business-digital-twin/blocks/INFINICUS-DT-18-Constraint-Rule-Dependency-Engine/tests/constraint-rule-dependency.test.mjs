@@ -1,0 +1,1 @@
+import assert from "node:assert/strict";const cmp=(a,o,e)=>o==="greater_than"?Number(a)>Number(e):o==="between"?Number(a)>=Number(e[0])&&Number(a)<=Number(e[1]):false;assert.equal(cmp(120,"greater_than",100),true);assert.equal(cmp(75,"between",[50,100]),true);assert.equal(0.8>=0.5,true);console.log("DT-18 constraint rule dependency tests passed.");

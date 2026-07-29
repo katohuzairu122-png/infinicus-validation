@@ -1,0 +1,1 @@
+addEventListener("DOMContentLoaded",()=>document.querySelector("#output").textContent=JSON.stringify({block:"BO-21",purpose:"Manage obligations, controls, licences, permits, inspections, risk indicators, breaches, and corrective actions.",routes:["bo.compliance_policy.register", "bo.compliance.evaluate"],targetBlock:"BO-22"},null,2));

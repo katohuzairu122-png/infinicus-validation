@@ -1,0 +1,8 @@
+:root { color-scheme: dark; font-family: Inter, system-ui, sans-serif; background:#050705; color:#f4fff4; }
+body { margin:0; padding:32px; background:radial-gradient(circle at top,#102010,#050705 55%); }
+main { max-width:920px; margin:auto; }
+h1 { color:#57ff75; }
+.grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; }
+.card { padding:18px; border:1px solid #244629; border-radius:14px; background:#0a100b; }
+.value { font-size:1.6rem; font-weight:800; color:#57ff75; }
+pre { overflow:auto; padding:16px; background:#020402; border-radius:12px; border:1px solid #172a19; }

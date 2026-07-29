@@ -1,0 +1,20 @@
+{
+  "environment": "production",
+  "security": {
+    "allowBrowserSecrets": false,
+    "secretManagerReference": "replace-with-secret-manager-reference"
+  },
+  "dataGovernance": {
+    "minimumDataQuality": 0.7,
+    "minimumConfidence": 0.6,
+    "requireLineage": true,
+    "observedStateSeparation": true
+  },
+  "handoffs": {
+    "businessDigitalTwinEnabled": true
+  },
+  "runtime": {
+    "failClosed": true,
+    "diagnosticsEnabled": true
+  }
+}

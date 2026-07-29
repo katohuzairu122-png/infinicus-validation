@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>INFINICUS DT-04</title>
+  <link rel="stylesheet" href="../src/styles/intake.css">
+</head>
+<body>
+<main>
+  <h1>DT-04 — Intelligence Package Intake and Validation Engine</h1>
+  <p>Validates BI-24 intelligence packages before Digital Twin state construction.</p>
+
+  <section class="panel">
+    <pre id="output">Loading...</pre>
+  </section>
+</main>
+
+<script src="../src/core/runtime-guard.js"></script>
+<script src="../src/model/intake-policy.js"></script>
+<script src="../src/validation/package-validator.js"></script>
+<script src="../src/validation/state-source-classifier.js"></script>
+<script src="../src/validation/ontology-mapper.js"></script>
+<script src="../src/storage/intake-store.js"></script>
+<script src="../src/engine/intelligence-intake-engine.js"></script>
+<script src="../src/ui/demo.js"></script>
+</body>
+</html>

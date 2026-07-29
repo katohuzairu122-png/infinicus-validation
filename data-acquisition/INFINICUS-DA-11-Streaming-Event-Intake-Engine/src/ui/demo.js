@@ -1,0 +1,1 @@
+addEventListener("DOMContentLoaded",()=>document.querySelector("#output").textContent=JSON.stringify({block:"DA-11",purpose:"Receive streaming events with offsets and replay evidence.",routes:["da.stream_policy.register", "da.stream_events.intake"],targetBlock:"DA-12"},null,2));

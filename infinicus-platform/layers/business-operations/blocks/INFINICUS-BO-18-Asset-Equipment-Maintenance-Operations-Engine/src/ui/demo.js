@@ -1,0 +1,1 @@
+addEventListener("DOMContentLoaded",()=>document.querySelector("#output").textContent=JSON.stringify({block:"BO-18",purpose:"Manage assets, equipment, inspections, maintenance, breakdowns, repairs, downtime, warranties, and disposal.",routes:["bo.asset_policy.register", "bo.assets.manage"],targetBlock:"BO-19"},null,2));

@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-da-15-data-normalization-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/da-15.test.mjs"
+  }
+}

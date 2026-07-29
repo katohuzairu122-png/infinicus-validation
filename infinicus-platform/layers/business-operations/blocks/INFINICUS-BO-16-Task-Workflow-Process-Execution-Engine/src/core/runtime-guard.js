@@ -1,0 +1,1 @@
+(function(g){"use strict";if(!g.INFINICUS?.BO?.runtime)throw new Error("BO-01 must be loaded before BO-16.");if(!g.INFINICUS.BO.workforceEmployeeOperationsEngine)throw new Error("BO-15 must be loaded before BO-16.");})(window);

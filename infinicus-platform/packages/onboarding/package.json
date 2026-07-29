@@ -1,0 +1,34 @@
+{
+  "name": "@infinicus/onboarding",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Tenant onboarding — tenant/workspace/business creation, owner assignment, default settings, team invitations, resumable progress",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "dev": "tsc --watch",
+    "lint": "eslint src/",
+    "typecheck": "tsc --project tsconfig.json --noEmit",
+    "test": "vitest run",
+    "clean": "rm -rf dist"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.11.6",
+    "pg": "^8.12.0",
+    "typescript": "^5.4.0",
+    "vitest": "^1.6.0"
+  },
+  "dependencies": {
+    "@infinicus/shared-types": "workspace:*",
+    "@infinicus/database": "workspace:*",
+    "@infinicus/authorization": "workspace:*"
+  }
+}

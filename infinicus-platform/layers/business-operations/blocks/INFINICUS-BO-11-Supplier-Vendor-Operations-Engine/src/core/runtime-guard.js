@@ -1,0 +1,1 @@
+(function(g){"use strict";if(!g.INFINICUS?.BO?.runtime)throw new Error("BO-01 must be loaded before BO-11.");if(!g.INFINICUS.BO.procurementPurchaseManagementEngine)throw new Error("BO-10 must be loaded before BO-11.");})(window);

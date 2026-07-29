@@ -1,0 +1,1 @@
+addEventListener("DOMContentLoaded",()=>document.querySelector("#output").textContent=JSON.stringify({block:"DA-13",purpose:"Validate schema, types, ranges, formats and relationships.",routes:["da.validation_policy.register", "da.data.validate"],targetBlock:"DA-14"},null,2));

@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-bo-12-inventory-stock-control-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/bo-12.test.mjs"
+  }
+}

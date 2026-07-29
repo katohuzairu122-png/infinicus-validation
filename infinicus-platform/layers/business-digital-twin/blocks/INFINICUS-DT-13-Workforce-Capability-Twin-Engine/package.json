@@ -1,0 +1,10 @@
+{
+  "name": "infinicus-dt-13-workforce-capability-twin-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/workforce-capability.test.mjs",
+    "validate": "node tests/workforce-capability.test.mjs"
+  }
+}

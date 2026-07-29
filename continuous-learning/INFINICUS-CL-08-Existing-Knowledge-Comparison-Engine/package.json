@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-cl-08-existing-knowledge-comparison-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/cl-08.test.mjs"
+  }
+}

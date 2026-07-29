@@ -1,0 +1,1 @@
+(function(g){"use strict";if(!g.INFINICUS?.BO?.runtime)throw new Error("BO-01 must be loaded before BO-08.");if(!g.INFINICUS.BO.quotationPricingCommercialTermsEngine)throw new Error("BO-07 must be loaded before BO-08.");})(window);

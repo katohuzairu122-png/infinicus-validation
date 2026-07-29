@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-adi-25-ai-decision-intelligence-master-integration-deployment-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/adi-25-ai-decision-intelligence-master-integration-deployment-engine.test.mjs"
+  }
+}

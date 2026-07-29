@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-bo-10-procurement-purchase-management-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/bo-10.test.mjs"
+  }
+}

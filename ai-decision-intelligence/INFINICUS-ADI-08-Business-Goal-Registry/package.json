@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-adi-08-business-goal-registry",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/adi-08-business-goal-registry.test.mjs"
+  }
+}

@@ -1,0 +1,1 @@
+addEventListener("DOMContentLoaded",()=>document.querySelector("#output").textContent=JSON.stringify({block:"DA-04",purpose:"Manage non-secret credential references and rotation metadata.",routes:["da.credential_policy.register", "da.credential_references.register"],targetBlock:"DA-05"},null,2));

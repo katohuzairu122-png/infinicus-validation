@@ -1,0 +1,10 @@
+{
+  "name": "infinicus-bi-15-operations-productivity-intelligence-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/operations-intelligence.test.mjs",
+    "validate": "node tests/operations-intelligence.test.mjs"
+  }
+}

@@ -1,0 +1,1 @@
+addEventListener("DOMContentLoaded",()=>document.querySelector("#output").textContent=JSON.stringify({block:"DA-21",purpose:"Detect, classify, impute or quarantine missing data.",routes:["da.missing_data_policy.register", "da.missing_data.manage"],targetBlock:"DA-22"},null,2));

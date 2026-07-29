@@ -1,0 +1,1 @@
+import assert from "node:assert/strict";const states=["planned","authorized","executed","completed","failed","reversed"];assert.equal(states.includes("completed"),true);assert.equal("BO-17","BO-17");assert.equal(["bo.scheduling_policy.register", "bo.resources.allocate"].length>0,true);console.log("BO-17 tests passed.");

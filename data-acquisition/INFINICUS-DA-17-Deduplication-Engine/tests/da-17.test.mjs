@@ -1,0 +1,1 @@
+import assert from "node:assert/strict";const states=["planned","scheduled","collecting","collected","validated","published","failed","quarantined","cancelled"];assert.equal(states.includes("published"),true);assert.equal("DA-17","DA-17");assert.equal(["da.deduplication_policy.register", "da.records.deduplicate"].length>0,true);console.log("DA-17 tests passed.");

@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-cl-12-risk-model-learning-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/cl-12.test.mjs"
+  }
+}

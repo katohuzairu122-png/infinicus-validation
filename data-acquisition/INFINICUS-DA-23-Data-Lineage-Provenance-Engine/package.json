@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-da-23-data-lineage-provenance-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/da-23.test.mjs"
+  }
+}

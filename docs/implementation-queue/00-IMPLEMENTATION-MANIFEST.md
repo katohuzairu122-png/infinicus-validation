@@ -1,58 +1,300 @@
-# INFINICUS MASTER IMPLEMENTATION MANIFEST
+# INFINICUS IMPLEMENTATION MANIFEST
 
-Claude executes one build at a time. The machine-readable source of truth is:
+All builds in strict execution order. Execute one at a time.
 
-```text
-.claude/state/implementation-status.json
+## Completed Builds
+
+| ID | Layer | Description | Status |
+|---|---|---|---|
+| BUILD-01 | DT | Digital Twin — 24 blocks + dt-bundle.js | completed |
+| BUILD-02 | BI | Business Intelligence — 25 blocks + bi-bundle.js | completed |
+| BUILD-03 | ABA | Approved Business Action — 25 blocks + aba-bundle.js | completed |
+| BUILD-04 | OM | Outcome Monitoring — 25 blocks + om-bundle.js | completed |
+| BUILD-05 | CL | Continuous Learning — 25 blocks + cl-bundle.js | completed |
+| BUILD-06 | ADI | AI Decision Intelligence — 25 blocks + adi-bundle.js | completed |
+| BUILD-07 | SIM | Simulation layer integration cleanup | completed |
+| BUILD-08 | DAL | Data Acquisition Layer root blocks | completed |
+| BUILD-09 | DB-BI | Database Stage 2D — Business Intelligence schema | completed |
+| BUILD-10 | PLATFORM | Platform assembly — all layers wired and validated | completed |
+| BUILD-12 | DB-DT | Database Stage 2E — Business Digital Twin persistence | completed |
+| BUILD-13 | DB-SIM | Database Stage 2F — Simulation persistence | completed |
+| BUILD-14 | DB-ADI | Database Stage 2G — AI Decision Intelligence persistence | completed |
+| BUILD-15 | DB-ABA | Database Stage 2H — Approved Business Action persistence | completed |
+| BUILD-16 | DB-OM | Database Stage 2I — Outcome Monitoring persistence | completed |
+| BUILD-17 | DB-CL | Database Stage 2J — Continuous Learning persistence | completed |
+| BUILD-18 | AUTH | Authentication and authorization | completed |
+| BUILD-19 | ONBOARDING | Tenant onboarding | completed |
+| BUILD-20 | WORKFLOW | Customer decision workflows | completed |
+| BUILD-21 | API | Governed application API | completed |
+| BUILD-22 | PROD-DB | Production database and recovery | completed |
+| BUILD-23 | DEPLOY | Deployment and environments | completed |
+| BUILD-24 | SECRETS | Secrets and configuration management | completed |
+| BUILD-25 | OBS | Logging, monitoring, and alerting | completed |
+| BUILD-26 | SEC-PRIV | Security, privacy, and retention | completed |
+| BUILD-27 | PERF | Performance and load readiness | completed |
+
+## Superseded Builds
+
+| ID | Layer | Description | Status |
+|---|---|---|---|
+| BUILD-11 | PLATFORM/FUNCTIONAL_PIPELINE | Governed MVP Decision Pipeline | superseded — never executed |
+
+BUILD-11's specification (`BUILD-11-GOVERNED-DECISION-PIPELINE-SPECIFICATION.md`)
+is kept for history only. `CLAUDE-MASTER-EXECUTION-INSTRUCTIONS.md` (repo root)
+explicitly supersedes it: *"BUILD-11 is superseded. Keep its history, but
+never execute it."* The required build route is
+`BUILD-10 → BUILD-12 → BUILD-13 → … → BUILD-30`. Confirmed by user decision
+2026-07-22.
+
+## Current Ready Build
+
+`BUILD-28` (BILLING — Billing). Per the user's explicit instruction to
+continue through full completion of all builds (BUILD-24 through
+BUILD-30) without per-build check-ins, each build's own "do not
+automatically start the next build" checkpoint is superseded for the
+remainder of this queue by that standing instruction. BUILD-27 delivered
+a live load-test tool (`load-test.mjs`) with real p50/p95/p99/throughput
+measurements, live database/Simulation/ADI concurrency tests, outbox-
+throughput measurement, a large-tenant test, connection-pool resilience
+testing, and a capacity plan/SLO doc grounded in real measurements. It
+found and fixed three genuine defects via live testing: outbox emission
+is not wired into any domain write path anywhere in the monorepo (the
+`emit_*` SQL functions exist but have zero call sites outside their own
+migrations); `export-tenant.sh` (BUILD-22) and `delete-tenant-data.mjs`
+(BUILD-26) only ever set `app.tenant_id`, silently producing incomplete
+exports/erasures for the majority of tenant-scoped tables (whose RLS
+also requires `app.workspace_id`) — fixed to loop per-workspace; and
+`delete-tenant-data.mjs` crashed outright on a tenant with real
+audit-trail history in the ~210 append-only (`forbid_mutation`) tables
+across every domain — fixed to skip those tables and honestly report
+what was retained rather than crash or silently claim full erasure. No
+migrations were added.
+
+## Pending Builds
+
+| ID | Layer | Description | Depends on |
+|---|---|---|---|
+| BUILD-28 | BILLING | Billing | BUILD-27 (completed) |
+| BUILD-29 | INCIDENT | Incident response | BUILD-28 |
+| BUILD-30 | LAUNCH | Launch readiness | BUILD-29 |
+
+All specifications for BUILD-13 through BUILD-30 are staged in this
+directory (frozen, checksum-verified against their source packages) but
+remain `pending` until their dependency completes — only one build is
+`ready` at a time per `CLAUDE-QUEUE-INSTRUCTIONS.md`. See
+`docs/architecture/PERSISTENCE-STAGE-MAP.md`,
+`docs/implementation-queue/MASTER-PRODUCTION-ROUTE.md`, and
+`CLAUDE-MASTER-EXECUTION-INSTRUCTIONS.md` (repo root) for the full route,
+and `docs/architecture/DECISION-LEDGER.md` for frozen architectural
+decisions (AD-001 through AD-027) governing all remaining builds.
+
+Also unresolved from BUILD-10 (candidate future work, no specification
+authored yet): fixing the `digital-twin/dt-bundle.js` header-comment syntax
+defect (`.claude/state/reports/BUILD-10-PLATFORM-completion.md`); adding
+`vitest` to (or removing the unusable `test` script from) the 18 placeholder
+monorepo packages; wiring `DT-24`→Simulation and `ADI-24`→ABA; completing
+the six placeholder handoff-contract files.
+
+---
+
+## BUILD-06 Specification: ADI Layer
+
+### Objective
+
+Create the root-level `ai-decision-intelligence/` directory with 25 blocks
+in browser-global IIFE format, produce `adi-bundle.js`, and wire it into `index.html`.
+
+### Source Material
+
+ES module implementations exist in:
+`infinicus-platform/layers/ai-decision-intelligence/blocks/INFINICUS-ADI-{NN}-*/`
+
+All 25 blocks are implemented and all 106 tests pass in Node.js.
+
+### Output Structure
+
+```
+ai-decision-intelligence/
+  INFINICUS-ADI-01-AI-Decision-Intelligence-Core-Runtime-Registry/
+  INFINICUS-ADI-02-Decision-Request-Intake-Validation-Engine/
+  ... (ADI-03 through ADI-24)
+  INFINICUS-ADI-25-AI-Decision-Intelligence-Master-Integration-Deployment-Engine/
+  adi-bundle.js
 ```
 
-## Execution order
+### Bundle Global Namespace
 
-| Order | Build | Category | Initial status | Dependencies | Prompt |
-|---:|---|---|---|---|---|
-| 0 | `foundation` | reference | `complete` | None | `docs/implementation-queue/00-foundation.md` |
-| 1 | `database-stage-2a` | database | `complete` | foundation | `docs/implementation-queue/01-database-stage-2a.md` |
-| 2 | `database-stage-2b` | database | `complete` | database-stage-2a | `docs/implementation-queue/02-database-stage-2b.md` |
-| 3 | `database-stage-2c` | database | `ready` | database-stage-2b | `docs/implementation-queue/03-database-stage-2c.md` |
-| 4 | `event-backbone-phase-1` | eventing | `blocked` | database-stage-2c | `docs/implementation-queue/04-event-backbone-phase-1.md` |
-| 5 | `event-backbone-phase-2` | eventing | `blocked` | event-backbone-phase-1 | `docs/implementation-queue/05-event-backbone-phase-2.md` |
-| 6 | `event-backbone-phase-3` | eventing | `blocked` | event-backbone-phase-2 | `docs/implementation-queue/06-event-backbone-phase-3.md` |
-| 7 | `event-backbone-phase-4` | vertical-slice | `blocked` | event-backbone-phase-3, database-stage-2c | `docs/implementation-queue/07-event-backbone-phase-4.md` |
-| 8 | `database-stage-2d` | database | `blocked` | database-stage-2c | `docs/implementation-queue/08-database-stage-2d.md` |
-| 9 | `event-backbone-phase-5` | vertical-slice | `blocked` | event-backbone-phase-4, database-stage-2d | `docs/implementation-queue/09-event-backbone-phase-5.md` |
-| 10 | `database-stage-2e` | database | `blocked` | database-stage-2d | `docs/implementation-queue/10-database-stage-2e.md` |
-| 11 | `event-backbone-phase-6` | vertical-slice | `blocked` | event-backbone-phase-5, database-stage-2e | `docs/implementation-queue/11-event-backbone-phase-6.md` |
-| 12 | `database-stage-2f` | database | `blocked` | database-stage-2e | `docs/implementation-queue/12-database-stage-2f.md` |
-| 13 | `event-backbone-phase-7` | vertical-slice | `blocked` | event-backbone-phase-6, database-stage-2f | `docs/implementation-queue/13-event-backbone-phase-7.md` |
-| 14 | `database-stage-2g` | database | `blocked` | database-stage-2f | `docs/implementation-queue/14-database-stage-2g.md` |
-| 15 | `event-backbone-phase-8` | vertical-slice | `blocked` | event-backbone-phase-7, database-stage-2g | `docs/implementation-queue/15-event-backbone-phase-8.md` |
-| 16 | `database-stage-2h` | database | `blocked` | database-stage-2g | `docs/implementation-queue/16-database-stage-2h.md` |
-| 17 | `event-backbone-phase-9` | vertical-slice | `blocked` | event-backbone-phase-8, database-stage-2h | `docs/implementation-queue/17-event-backbone-phase-9.md` |
-| 18 | `database-stage-2i` | database | `blocked` | database-stage-2h | `docs/implementation-queue/18-database-stage-2i.md` |
-| 19 | `event-backbone-phase-10` | vertical-slice | `blocked` | event-backbone-phase-9, database-stage-2i | `docs/implementation-queue/19-event-backbone-phase-10.md` |
-| 20 | `database-stage-2j` | database | `blocked` | database-stage-2i | `docs/implementation-queue/20-database-stage-2j.md` |
-| 21 | `event-backbone-phase-11` | vertical-slice | `blocked` | event-backbone-phase-10, database-stage-2j | `docs/implementation-queue/21-event-backbone-phase-11.md` |
-| 22 | `event-backbone-phase-12` | continuous-learning | `blocked` | event-backbone-phase-11 | `docs/implementation-queue/22-event-backbone-phase-12.md` |
-| 23 | `event-backbone-phase-13` | continuous-learning | `blocked` | event-backbone-phase-12 | `docs/implementation-queue/23-event-backbone-phase-13.md` |
-| 24 | `event-backbone-phase-14` | closure | `blocked` | event-backbone-phase-13 | `docs/implementation-queue/24-event-backbone-phase-14.md` |
-| 25 | `event-backbone-phase-15` | governance | `blocked` | event-backbone-phase-14 | `docs/implementation-queue/25-event-backbone-phase-15.md` |
-| 26 | `event-backbone-phase-16` | deployment | `blocked` | event-backbone-phase-15 | `docs/implementation-queue/26-event-backbone-phase-16.md` |
-| 27 | `event-backbone-phase-17` | deployment | `blocked` | event-backbone-phase-16 | `docs/implementation-queue/27-event-backbone-phase-17.md` |
-| 28 | `phase-18` | operations | `blocked` | event-backbone-phase-17 | `docs/implementation-queue/28-phase-18.md` |
-| 29 | `phase-19` | operations | `blocked` | phase-18 | `docs/implementation-queue/29-phase-19.md` |
-| 30 | `phase-20` | product-strategy | `blocked` | phase-19 | `docs/implementation-queue/30-phase-20.md` |
-| 31 | `phase-21` | product | `blocked` | phase-20, database-stage-2j, event-backbone-phase-14 | `docs/implementation-queue/31-phase-21.md` |
-
-## Status rules
-
-```text
-complete  = verified implementation and completion report exist
-ready     = all dependencies complete; Claude may execute it
-blocked   = one or more dependencies incomplete
-in_progress = currently being implemented
-failed    = implementation attempted but required validation failed
+```js
+global.INFINICUS.ADI = {
+  runtime,       // ADI-01 runtime instance
+  // ADI-02 through ADI-24 services attached to runtime
+  // ADI-25 master integration attached last
+}
 ```
 
-## Migration rule
+### index.html Integration
 
-Every database stage calculates its migration start number from the actual repository and the latest verified completion report. Frozen migrations are never edited.
+Add before the closing `</body>` tag, in dependency order after dt-bundle.js:
+
+```html
+<script src="/ai-decision-intelligence/adi-bundle.js"></script>
+```
+
+### Validation Commands
+
+```bash
+node --check ai-decision-intelligence/adi-bundle.js
+for dir in ai-decision-intelligence/INFINICUS-ADI-*/; do
+  for test in "$dir/tests/"*.mjs; do
+    node "$test"
+  done
+done
+```
+
+### Required Completion Report
+
+`.claude/state/reports/BUILD-06-ADI-completion.md`
+
+### Success Criteria
+
+- 25 root-level block directories exist
+- `adi-bundle.js` syntax-checks clean
+- All block tests pass
+- `index.html` loads adi-bundle.js
+- All existing layer tests still pass (regression)
+
+---
+
+## BUILD-07 Specification: SIM Layer Integration Cleanup
+
+**Authoritative specification:** [BUILD-07-SIM-SPECIFICATION.md](./BUILD-07-SIM-SPECIFICATION.md)
+(frozen 2026-07-21; implemented and completed 2026-07-21 — see
+`.claude/state/reports/BUILD-07-SIM-completion.md`).
+
+### Objective (summary)
+
+Integrate the existing INFINICUS Engine v3 Simulation capability
+(`window.INFINICUS.SIMULATION.*` in root `index.html`) with the modular
+architecture and the completed ADI layer through typed ports, a narrow
+browser adapter, and a complete SIM-to-ADI handoff contract — replacing the
+"not connected" ADI-06/ADI-16 stub adapters. BUILD-07 must not create or
+rewrite the Simulation engine; established Monte Carlo behaviour (500 runs,
+90-day horizon) is preserved. Simulation produces evidence; ADI evaluates it.
+No recommendation or approval authority moves into SIM. No database schema or
+migrations.
+
+See the dedicated specification for the full scope, architecture boundary,
+port and contract requirements, characterization/parity requirements,
+validation gates, and success criteria.
+
+---
+
+## BUILD-08 Specification: DAL Root Blocks
+
+**Authoritative specification:** [BUILD-08-DAL-SPECIFICATION.md](./BUILD-08-DAL-SPECIFICATION.md)
+(frozen 2026-07-21; implemented and completed 2026-07-21 — see
+`.claude/state/reports/BUILD-08-DAL-completion.md`).
+
+### Objective (summary)
+
+Assemble the 25 completed Data Acquisition browser-runtime blocks
+(`infinicus-platform/layers/data-acquisition/blocks/INFINICUS-DA-01…25`,
+already browser-global IIFEs, all source tests passing) into a root-level
+`data-acquisition/` layer with `da-bundle.js` exposing `window.INFINICUS.DA`,
+wired into `index.html` before `dt-bundle.js`, and complete the strict
+versioned DAL-to-BO handoff contract (`dal-to-bo.ts`), aligned with
+`da.data.published` and Stage 2B `publication_packages`. DAL means
+Data Acquisition Layer (settled by the 2026-07-21 audit). No DA algorithm
+changes, no database changes, no Stage 2B duplication, no CL-to-DAL
+feedback, no BUILD-09.
+
+---
+
+## BUILD-09 Specification: DB-BI Database Stage 2D
+
+**Authoritative specification:** [BUILD-09-DB-BI-SPECIFICATION.md](./BUILD-09-DB-BI-SPECIFICATION.md)
+(frozen 2026-07-21; implemented and completed 2026-07-21 — see
+`.claude/state/reports/BUILD-09-DB-BI-completion.md`).
+
+### Objective (summary)
+
+Implement Database Stage 2D — Business Intelligence persistence only: a new
+`business_intelligence` PostgreSQL schema (migrations starting at `0037`,
+frozen 0001–0036 untouched), tenant-isolated RLS-enabled-and-forced tables
+for intake/lineage, analytical datasets, metrics/KPIs, analysis lifecycle,
+findings, trends, forecasts, anomalies, benchmarks, risk intelligence, and
+publication/registry — plus strict TypeScript repository adapters and BI
+outbox events. Consumes validated `business_operations.bo_publication_packages`
+via a completed `bo-to-bi.ts` handoff contract; publishes onward declarations
+only to Digital Twin, Simulation, and ADI (no downstream implementation).
+Requires ≥100 meaningful live PostgreSQL 16 integration tests. This is
+database/repository work only — it does not touch the completed browser BI
+root blocks (BUILD-02) and does not implement analytical algorithms.
+
+---
+
+## BUILD-10 Specification: PLATFORM Assembly
+
+**Authoritative specification:** [BUILD-10-PLATFORM-SPECIFICATION.md](./BUILD-10-PLATFORM-SPECIFICATION.md)
+(frozen 2026-07-21; SHA-256 `878ff02a4f3865fb2a06ffc33b71d7c614ec65e810f92926a0cd27f0abc081c7`;
+implemented and completed 2026-07-22 — see
+`.claude/state/reports/BUILD-10-PLATFORM-completion.md`).
+
+### Objective (summary)
+
+Full browser platform assembly, orchestration, wiring, and end-to-end
+validation of all completed INFINICUS Engine v3 layers. Adds one new file,
+`platform/platform-bootstrap.js` (loaded via one new deferred `<script>` tag
+inserted after the ADI bundle in `index.html`), establishing a
+`window.INFINICUS.PLATFORM` namespace that reports readiness of the 8
+browser-applicable layers (DA, BI, DT, SIM, ADI, ABA, OM, CL) using each
+layer's own existing diagnostic surface, plus a static, verified record of
+the 9 cross-layer handoff boundaries (3 persistence-backed/complete, 1
+functional browser adapter, 3 browser-wired-but-not-contract-validated, 2
+confirmed not wired). Business Operations has no browser layer and is
+explicitly out of the namespace contract. BUILD-10 does not modify any
+completed layer, any existing bundle, any of the 6 placeholder handoff-
+contract files, or any migration (0001–0049 remain frozen). No Stage 2E or
+later persistence, no new event backbone, no external broker, no UI
+redesign, no production deployment. See the dedicated specification for the
+full namespace contract, state machine, handoff map, capability registry,
+test plan, and validation commands.
+
+---
+
+## BUILD-11 (superseded, never executed): Governed MVP Decision Pipeline
+
+**Specification (history only):** [BUILD-11-GOVERNED-DECISION-PIPELINE-SPECIFICATION.md](./BUILD-11-GOVERNED-DECISION-PIPELINE-SPECIFICATION.md)
+(SHA-256 `142d260faeeef43582a5645e1bdcbbce84732691d7be4304839eb38c7c61e2c7`;
+superseded 2026-07-22 — see `CLAUDE-MASTER-EXECUTION-INSTRUCTIONS.md`).
+
+Would have completed the `BI→DT`, `DT→SIM`, and `ADI→ABA` placeholder
+handoff contracts and wired a browser vertical slice
+`BI→DT→SIM→ADI→ABA`. Explicitly excluded from the required build route by
+`CLAUDE-MASTER-EXECUTION-INSTRUCTIONS.md`, which routes directly from
+BUILD-10 to BUILD-12 (database persistence). Do not mark ready. Do not
+implement.
+
+---
+
+## BUILD-12 Specification: DB-DT Database Stage 2E
+
+**Authoritative specification:** [BUILD-12-DB-DT-SPECIFICATION.md](./BUILD-12-DB-DT-SPECIFICATION.md)
+(frozen; SHA-256 `571b2aae5bdc68ba8755d8e88b4197a986e519f8cb86ae40a3983c17fe504420`;
+status: completed — see `.claude/state/reports/BUILD-12-DB-DT-completion.md`).
+
+### Objective (summary)
+
+Implement Database Stage 2E — Business Digital Twin persistence: a new
+`business_digital_twin` PostgreSQL schema (migration numbers to be
+determined by directory inspection at implementation time, not guessed;
+frozen `0001`–`0049` untouched) persisting twin definitions/versions,
+state snapshots, state variables, entities/relationships, assumptions and
+constraints, calibration/validation, uncertainty/confidence, scenario
+baselines, evidence/lineage, publication, and registry/deployment. Depends
+only on BUILD-09 (Stage 2D, completed) — explicitly independent of the
+BUILD-10/BUILD-11 browser track. Completes the `bi-to-dt.ts` handoff
+contract (currently a placeholder) and publishes onward via a `dt-to-sim.ts`
+completion for Simulation to consume in a later build. 12 named
+repositories required. Does not implement Simulation persistence (BUILD-13)
+or any browser wiring.

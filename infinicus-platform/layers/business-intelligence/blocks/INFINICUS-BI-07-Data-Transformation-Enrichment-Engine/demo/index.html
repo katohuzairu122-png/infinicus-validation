@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>INFINICUS BI-07</title>
+  <link rel="stylesheet" href="../src/styles/transformation.css">
+</head>
+<body>
+<main>
+  <h1>BI-07 — Data Transformation and Enrichment Engine</h1>
+  <p>Transforms resolved records into analysis-ready datasets.</p>
+
+  <section class="panel">
+    <pre id="output">Loading...</pre>
+  </section>
+</main>
+
+<script src="../src/core/runtime-guard.js"></script>
+<script src="../src/model/transformation-rule.js"></script>
+<script src="../src/transformation/formula-engine.js"></script>
+<script src="../src/transformation/rule-applier.js"></script>
+<script src="../src/transformation/merge-plan-applier.js"></script>
+<script src="../src/storage/transformation-store.js"></script>
+<script src="../src/engine/data-transformation-engine.js"></script>
+<script src="../src/ui/demo.js"></script>
+</body>
+</html>

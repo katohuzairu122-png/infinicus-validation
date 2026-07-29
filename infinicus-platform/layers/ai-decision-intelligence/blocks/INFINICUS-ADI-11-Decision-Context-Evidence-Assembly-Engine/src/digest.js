@@ -1,0 +1,2 @@
+function canonical(v){if(v===null||typeof v!=="object")return JSON.stringify(v);if(Array.isArray(v))return`[${v.map(canonical).join(",")}]`;return`{${Object.keys(v).sort().map(k=>`${JSON.stringify(k)}:${canonical(v[k])}`).join(",")}}`}
+export async function sha256(value){if(!globalThis.crypto?.subtle)throw new Error("Web Crypto SHA-256 is unavailable.");const bytes=new TextEncoder().encode(canonical(value));const hash=await globalThis.crypto.subtle.digest("SHA-256",bytes);return[...new Uint8Array(hash)].map(x=>x.toString(16).padStart(2,"0")).join("")}

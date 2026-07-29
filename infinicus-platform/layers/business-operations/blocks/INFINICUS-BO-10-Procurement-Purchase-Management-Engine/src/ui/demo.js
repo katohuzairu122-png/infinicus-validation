@@ -1,0 +1,1 @@
+addEventListener("DOMContentLoaded",()=>document.querySelector("#output").textContent=JSON.stringify({block:"BO-10",purpose:"Manage purchase requests, approvals, supplier quotes, purchase orders, receiving, and audit trail.",routes:["bo.procurement_policy.register", "bo.procurement.process"],targetBlock:"BO-11"},null,2));

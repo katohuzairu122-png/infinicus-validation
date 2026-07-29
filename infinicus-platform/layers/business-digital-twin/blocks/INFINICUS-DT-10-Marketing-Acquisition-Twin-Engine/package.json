@@ -1,0 +1,10 @@
+{
+  "name": "infinicus-dt-10-marketing-acquisition-twin-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/marketing-acquisition.test.mjs",
+    "validate": "node tests/marketing-acquisition.test.mjs"
+  }
+}

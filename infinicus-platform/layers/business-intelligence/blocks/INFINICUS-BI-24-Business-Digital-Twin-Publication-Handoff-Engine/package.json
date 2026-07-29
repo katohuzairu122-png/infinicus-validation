@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-bi-24-business-digital-twin-publication-handoff-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/digital-twin-publication.test.mjs"
+  }
+}

@@ -1,0 +1,1 @@
+addEventListener("DOMContentLoaded",()=>document.querySelector("#output").textContent=JSON.stringify({block:"DA-17",purpose:"Detect exact and fuzzy duplicates without destroying evidence.",routes:["da.deduplication_policy.register", "da.records.deduplicate"],targetBlock:"DA-18"},null,2));

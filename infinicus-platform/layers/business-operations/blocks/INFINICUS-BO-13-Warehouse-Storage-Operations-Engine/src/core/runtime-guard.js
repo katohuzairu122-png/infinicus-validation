@@ -1,0 +1,1 @@
+(function(g){"use strict";if(!g.INFINICUS?.BO?.runtime)throw new Error("BO-01 must be loaded before BO-13.");if(!g.INFINICUS.BO.inventoryStockControlEngine)throw new Error("BO-12 must be loaded before BO-13.");})(window);

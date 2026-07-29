@@ -1,0 +1,10 @@
+{
+  "name": "infinicus-bi-20-anomaly-business-signal-detection-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/anomaly-signal-detection.test.mjs",
+    "validate": "node tests/anomaly-signal-detection.test.mjs"
+  }
+}

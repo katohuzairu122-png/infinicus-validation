@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-da-16-entity-resolution-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/da-16.test.mjs"
+  }
+}

@@ -1,0 +1,1 @@
+(function(g){"use strict";if(!g.INFINICUS?.BO?.runtime)throw new Error("BO-01 must be loaded before BO-24.");if(!g.INFINICUS.BO.operationalPerformanceEventPublicationEngine)throw new Error("BO-23 must be loaded before BO-24.");})(window);

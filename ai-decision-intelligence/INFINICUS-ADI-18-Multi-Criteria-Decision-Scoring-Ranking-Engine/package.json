@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-adi-18-multi-criteria-decision-scoring-ranking-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/adi-18-multi-criteria-decision-scoring-ranking-engine.test.mjs"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-om-09-metric-normalization-aggregation-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/normalization.test.mjs"
+  }
+}

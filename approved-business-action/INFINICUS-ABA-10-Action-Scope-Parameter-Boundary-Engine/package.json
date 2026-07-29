@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-aba-10-action-scope-parameter-boundary-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/boundary.test.mjs"
+  }
+}

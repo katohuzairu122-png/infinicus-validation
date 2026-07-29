@@ -1,0 +1,10 @@
+{
+  "name": "infinicus-bi-17-workforce-organizational-intelligence-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/workforce-intelligence.test.mjs",
+    "validate": "node tests/workforce-intelligence.test.mjs"
+  }
+}

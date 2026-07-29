@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>INFINICUS BI-16</title>
+  <link rel="stylesheet" href="../src/styles/inventory.css">
+</head>
+<body>
+<main>
+  <h1>BI-16 — Inventory and Supply Intelligence Engine</h1>
+  <p>Interprets stock, replenishment, waste, and supplier-performance metrics.</p>
+
+  <section class="panel">
+    <pre id="output">Loading...</pre>
+  </section>
+</main>
+
+<script src="../src/core/runtime-guard.js"></script>
+<script src="../src/analysis/inventory-scorer.js"></script>
+<script src="../src/analysis/inventory-signal-engine.js"></script>
+<script src="../src/analysis/inventory-ranker.js"></script>
+<script src="../src/storage/inventory-store.js"></script>
+<script src="../src/engine/inventory-supply-intelligence-engine.js"></script>
+<script src="../src/ui/demo.js"></script>
+</body>
+</html>

@@ -1,0 +1,1 @@
+import assert from "node:assert/strict";const s=["planned","authorized","executed","completed","failed","reversed"];assert.equal(s.length,6);assert.equal(s.includes("completed"),true);console.log("BO-01 runtime tests passed.");

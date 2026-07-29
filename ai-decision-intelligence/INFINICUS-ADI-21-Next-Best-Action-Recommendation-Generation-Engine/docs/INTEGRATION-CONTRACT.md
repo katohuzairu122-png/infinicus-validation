@@ -1,0 +1,7 @@
+# ADI-21 Integration Contract
+
+- Load order: after ADI-01, ADI-17, ADI-18, ADI-19, ADI-20.
+- Registers service `adi.recommendation_generation` on the ADI-01 runtime.
+- All results use the standard envelope `{ ok, data, error, meta }`.
+- Tenant and business boundary fields (`tenantId`, `businessId`) are required on all persistent queries.
+- Analytical output only; no business action is approved or executed by this block.

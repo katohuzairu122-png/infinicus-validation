@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-om-17-outcome-confidence-reliability-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/confidence-reliability.test.mjs"
+  }
+}

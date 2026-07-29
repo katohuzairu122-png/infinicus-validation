@@ -1,0 +1,1 @@
+addEventListener("DOMContentLoaded",()=>document.querySelector("#output").textContent=JSON.stringify({block:"DA-23",purpose:"Assemble immutable lineage, provenance and transformation history.",routes:["da.lineage_policy.register", "da.lineage.assemble"],targetBlock:"DA-24"},null,2));

@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-om-03-metric-kpi-registry",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/metric-registry.test.mjs"
+  }
+}

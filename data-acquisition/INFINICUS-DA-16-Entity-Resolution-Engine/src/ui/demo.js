@@ -1,0 +1,1 @@
+addEventListener("DOMContentLoaded",()=>document.querySelector("#output").textContent=JSON.stringify({block:"DA-16",purpose:"Resolve records to canonical entities.",routes:["da.entity_resolution_policy.register", "da.entities.resolve"],targetBlock:"DA-17"},null,2));

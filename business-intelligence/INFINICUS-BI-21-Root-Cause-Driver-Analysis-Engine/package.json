@@ -1,0 +1,10 @@
+{
+  "name": "infinicus-bi-21-root-cause-driver-analysis-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/root-cause-driver.test.mjs",
+    "validate": "node tests/root-cause-driver.test.mjs"
+  }
+}

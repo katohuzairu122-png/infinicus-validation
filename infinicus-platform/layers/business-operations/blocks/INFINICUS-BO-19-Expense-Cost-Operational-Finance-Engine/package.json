@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-bo-19-expense-cost-operational-finance-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/bo-19.test.mjs"
+  }
+}

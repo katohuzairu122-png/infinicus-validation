@@ -1,0 +1,10 @@
+{
+  "name": "infinicus-bi-03-data-ingestion-coordination-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/data-ingestion.test.mjs",
+    "validate": "node tests/data-ingestion.test.mjs"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "name": "infinicus-bi-02-data-source-mapping-semantic-definition-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/semantic-mapping.test.mjs",
+    "validate": "node tests/semantic-mapping.test.mjs"
+  }
+}

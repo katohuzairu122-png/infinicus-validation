@@ -1,0 +1,1 @@
+addEventListener("DOMContentLoaded",()=>document.querySelector("#output").textContent=JSON.stringify({block:"DA-03",purpose:"Manage connectors, protocols, versions and health.",routes:["da.connector_policy.register", "da.connectors.register"],targetBlock:"DA-04"},null,2));

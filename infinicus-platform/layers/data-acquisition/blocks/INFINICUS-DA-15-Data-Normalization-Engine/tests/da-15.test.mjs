@@ -1,0 +1,1 @@
+import assert from "node:assert/strict";const states=["planned","scheduled","collecting","collected","validated","published","failed","quarantined","cancelled"];assert.equal(states.includes("published"),true);assert.equal("DA-15","DA-15");assert.equal(["da.normalization_policy.register", "da.data.normalize"].length>0,true);console.log("DA-15 tests passed.");

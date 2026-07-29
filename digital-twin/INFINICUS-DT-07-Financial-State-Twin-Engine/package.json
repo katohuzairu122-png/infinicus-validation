@@ -1,0 +1,10 @@
+{
+  "name": "infinicus-dt-07-financial-state-twin-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/financial-state.test.mjs",
+    "validate": "node tests/financial-state.test.mjs"
+  }
+}

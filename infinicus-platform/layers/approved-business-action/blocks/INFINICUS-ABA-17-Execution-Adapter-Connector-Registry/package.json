@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-aba-17-execution-adapter-connector-registry",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/adapter-registry.test.mjs"
+  }
+}

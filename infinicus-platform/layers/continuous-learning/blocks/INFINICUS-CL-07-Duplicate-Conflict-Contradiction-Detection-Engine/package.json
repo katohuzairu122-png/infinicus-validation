@@ -1,0 +1,9 @@
+{
+  "name": "infinicus-cl-07-duplicate-conflict-contradiction-detection-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/cl-07.test.mjs"
+  }
+}
