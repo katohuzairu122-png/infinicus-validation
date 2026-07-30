@@ -36,6 +36,7 @@ export const startSimulationBodySchema = z.object({
   exp: z.enum(['first', 'some', 'serial', 'expert']).optional(),
   comp: z.enum(['low', 'medium', 'high', 'red']).optional(),
   engMode: z.enum(['balanced', 'lean', 'aggressive', 'investor']).optional(),
+  extraDailyRev: z.number().min(0).optional(),
 });
 
 export const startSimulationResponseSchema = z.object({
@@ -48,14 +49,59 @@ export const simulationRunParamsSchema = z.object({
   runId: z.string().uuid(),
 });
 
+const simDaySchema = z.object({
+  d: z.number(),
+  rev: z.number(),
+  cost: z.number(),
+  fixed: z.number(),
+  varC: z.number(),
+  mktC: z.number(),
+  profit: z.number(),
+  customers: z.number(),
+  acq: z.number(),
+  churned: z.number(),
+  cash: z.number(),
+  seasonMult: z.number(),
+});
+
+const simEventSchema = z.object({
+  type: z.enum(['econ', 'cust', 'comp', 'ops', 'mkt']),
+  msg: z.string(),
+  impact: z.number(),
+  day: z.number(),
+});
+
+const simulationParamsSchema = z.object({
+  idea: z.string(),
+  capital: z.number(),
+  price: z.number(),
+  mktBud: z.number(),
+  team: z.number(),
+  industry: industryCodeSchema,
+  loc: z.string().optional(),
+  mkt: z.string().optional(),
+  exp: z.enum(['first', 'some', 'serial', 'expert']).optional(),
+  comp: z.enum(['low', 'medium', 'high', 'red']).optional(),
+  engMode: z.enum(['balanced', 'lean', 'aggressive', 'investor']).optional(),
+  extraDailyRev: z.number().optional(),
+});
+
+/**
+ * The full EngineRunResult, matching @infinicus/workflow's
+ * SimulationRunStatusResult — index.html's pre-existing rendering code
+ * (renderVerdict(), dashboard charts, generateStaticAnalysis()) needs the
+ * day-by-day array and raw Monte Carlo distribution, not just aggregates.
+ */
 const simulationRunResultSchema = z.object({
-  finalCash: z.number(),
-  finalCustomers: z.number(),
-  totalRevenue: z.number(),
-  totalCost: z.number(),
-  profitableDays: z.number(),
-  survivalRate: z.number(),
-  percentiles: z.object({ p10: z.number(), p25: z.number(), p50: z.number(), p75: z.number(), p90: z.number() }),
+  engineVersion: z.string(),
+  params: simulationParamsSchema,
+  days: z.array(simDaySchema),
+  events: z.array(simEventSchema),
+  mc: z.object({
+    p10: z.number(), p25: z.number(), p50: z.number(), p75: z.number(), p90: z.number(),
+    survivalRate: z.number(),
+    runs: z.array(z.number()),
+  }),
   scores: z.object({ VIABILITY: z.number(), 'MKT FIT': z.number(), EXECUTION: z.number(), FINANCIAL: z.number() }),
   verdict: z.enum(['go', 'modify', 'stop']),
   capRatio: z.number(),

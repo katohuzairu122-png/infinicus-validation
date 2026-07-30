@@ -36,20 +36,23 @@ export interface StartSimulationInput {
   exp?: ExperienceCode;
   comp?: CompetitionCode;
   engMode?: EngineModeCode;
+  extraDailyRev?: number;
 }
 
-export interface SimulationRunStatusResult {
-  finalCash: number;
-  finalCustomers: number;
-  totalRevenue: number;
-  totalCost: number;
-  profitableDays: number;
-  survivalRate: number;
-  percentiles: { p10: number; p25: number; p50: number; p75: number; p90: number };
-  scores: EngineRunResult['scores'];
-  verdict: EngineRunResult['verdict'];
-  capRatio: number;
-}
+/**
+ * The full EngineRunResult (day-by-day array, discrete events, and the
+ * complete 500-value Monte Carlo distribution — not just aggregates) is
+ * returned here, matching what index.html's own pre-existing rendering
+ * code (renderVerdict(), the dashboard charts, generateStaticAnalysis())
+ * already expects from a local simulate()/monteCarlo() call — Phase 2
+ * swaps the *source* of this data (a real backend run instead of
+ * client-side computation), not the shape client-side rendering already
+ * depends on. This is a single JSONB value on one row (simulation_result_
+ * metrics), not per-iteration writes — no conflict with BUILD-27's own
+ * per-iteration write-volume concern, which is specifically about
+ * avoiding 500 separate INSERTs, not about the size of one JSON value.
+ */
+export type SimulationRunStatusResult = EngineRunResult;
 
 export interface SimulationRunStatus {
   runId: string;
@@ -76,9 +79,13 @@ function normalizeInput(input: StartSimulationInput): SimulationParams {
   if (!Number.isFinite(input.price) || input.price <= 0) throw new ValidationError('price must be a positive number');
   if (!Number.isFinite(input.mktBud) || input.mktBud < 0) throw new ValidationError('mktBud must be a non-negative number');
   if (!Number.isInteger(input.team) || input.team < 1) throw new ValidationError('team must be a positive integer');
+  if (input.extraDailyRev !== undefined && (!Number.isFinite(input.extraDailyRev) || input.extraDailyRev < 0)) {
+    throw new ValidationError('extraDailyRev must be a non-negative number');
+  }
   return {
     idea, capital: input.capital, price: input.price, mktBud: input.mktBud, team: input.team,
     industry: input.industry, loc: input.loc, mkt: input.mkt, exp: input.exp, comp: input.comp, engMode: input.engMode,
+    extraDailyRev: input.extraDailyRev,
   };
 }
 
@@ -156,10 +163,6 @@ export class SimulationOrchestrationService {
   private async executeRun(ctx: TenantContext, businessId: string, runId: string, params: SimulationParams): Promise<void> {
     try {
       const outcome = runSimulation(params);
-      const lastDay = outcome.days[outcome.days.length - 1];
-      const totalRevenue = outcome.days.reduce((s, d) => s + d.rev, 0);
-      const totalCost = outcome.days.reduce((s, d) => s + d.cost, 0);
-      const profitableDays = outcome.days.filter((d) => d.profit > 0).length;
 
       await this.runs.recordIterationSummary(ctx, runId, businessId, 'final_cash', {
         sampleSize: outcome.mc.runs.length,
@@ -175,13 +178,7 @@ export class SimulationOrchestrationService {
         ctx, businessId, runId, `result-${runId.slice(0, 8)}`,
         `Verdict: ${outcome.verdict.toUpperCase()} — survival ${(outcome.mc.survivalRate * 100).toFixed(0)}%`
       );
-      const summaryResult: SimulationRunStatusResult = {
-        finalCash: lastDay.cash, finalCustomers: lastDay.customers, totalRevenue, totalCost, profitableDays,
-        survivalRate: outcome.mc.survivalRate,
-        percentiles: { p10: outcome.mc.p10, p25: outcome.mc.p25, p50: outcome.mc.p50, p75: outcome.mc.p75, p90: outcome.mc.p90 },
-        scores: outcome.scores, verdict: outcome.verdict, capRatio: outcome.capRatio,
-      };
-      await this.results.addMetric(ctx, version.id, RESULT_METRIC_CODE, summaryResult);
+      await this.results.addMetric(ctx, version.id, RESULT_METRIC_CODE, outcome);
       await this.results.validateResult(ctx, result.id, version.id);
       await this.results.publishResult(ctx, result.id, version.id);
 

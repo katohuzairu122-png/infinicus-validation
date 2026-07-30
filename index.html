@@ -2998,6 +2998,130 @@ function nav(id) {
   if (id==='forecast') renderForecast();
 }
 
+// ─── BACKEND SIMULATION BRIDGE ───────────────────────────────────────────────
+// Bridges an already-signed-in Supabase user (U, populated above by the
+// existing SUPA.auth.onAuthStateChange listener — signup is already
+// required before this runs, since startSim() below still gates on !U) to
+// a shadow account on the new backend (infinicus-platform/apps/api), which
+// has its own separate identity system with no shared login with Supabase.
+// This block is purely additive: it never reads, writes, or otherwise
+// touches Supabase auth, landing.html's signup, or account.html.
+//
+// Phase 4: point API_BASE_URL at the real OCI-hosted HTTPS API once it's
+// provisioned (or set localStorage.inf_api_base_url for local testing
+// without editing this file — see docs/production-readiness/).
+const API_BASE_URL = (function () {
+  try { const override = localStorage.getItem('inf_api_base_url'); if (override) return override; } catch (e) {}
+  return (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+    ? 'http://127.0.0.1:3000'
+    : 'https://api.infini-cus.com';
+})();
+const BACKEND_ACCOUNT_KEY = 'inf_backend_account_v1';
+
+function loadBackendAccount() {
+  try { return JSON.parse(localStorage.getItem(BACKEND_ACCOUNT_KEY) || 'null'); } catch (e) { return null; }
+}
+function saveBackendAccount(acct) {
+  try { localStorage.setItem(BACKEND_ACCOUNT_KEY, JSON.stringify(acct)); } catch (e) {}
+}
+function randomBackendPassword() {
+  const bytes = new Uint8Array(24);
+  if (window.crypto && crypto.getRandomValues) crypto.getRandomValues(bytes);
+  else for (let i = 0; i < bytes.length; i++) bytes[i] = Math.floor(Math.random() * 256);
+  return 'Inf-' + Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('') + '-aA1!';
+}
+async function backendFetch(path, opts) {
+  opts = opts || {};
+  const res = await fetch(API_BASE_URL + path, {
+    method: opts.method || 'GET',
+    headers: Object.assign({ 'Content-Type': 'application/json' }, opts.headers || {}),
+    body: opts.body ? JSON.stringify(opts.body) : undefined,
+  });
+  const text = await res.text();
+  let json = null;
+  try { json = text ? JSON.parse(text) : null; } catch (e) {}
+  if (!res.ok) {
+    const err = new Error((json && json.message) || ('HTTP ' + res.status));
+    err.status = res.status;
+    throw err;
+  }
+  return json;
+}
+
+// Provisions (once per browser, cached thereafter) or reuses a backend
+// tenant/workspace/business tied to the currently-signed-in Supabase user,
+// and returns a fresh session token for it.
+async function ensureBackendBusiness() {
+  if (!U) throw new Error('not signed in');
+  let acct = loadBackendAccount();
+  if (!acct || acct.supaId !== U.supaId) {
+    acct = { supaId: U.supaId, email: U.email, password: randomBackendPassword() };
+    saveBackendAccount(acct);
+  }
+  let token;
+  try {
+    token = (await backendFetch('/v1/auth/login', { method: 'POST', body: { email: acct.email, password: acct.password } })).rawSessionToken;
+  } catch (e) {
+    if (e.status !== 401 && e.status !== 404) throw e;
+    await backendFetch('/v1/auth/register', { method: 'POST', body: { email: acct.email, password: acct.password } });
+    token = (await backendFetch('/v1/auth/login', { method: 'POST', body: { email: acct.email, password: acct.password } })).rawSessionToken;
+  }
+  acct.token = token;
+  saveBackendAccount(acct);
+  if (acct.tenantId && acct.workspaceId && acct.businessId) return acct;
+
+  const stamp = Date.now().toString(36);
+  const authHeader = { Authorization: 'Bearer ' + token };
+  const onboarding = await backendFetch('/v1/onboarding', { method: 'POST', headers: authHeader, body: {
+    tenantName: (U.email.split('@')[0] || 'demo') + "'s Workspace",
+    tenantSlug: 'demo-' + acct.supaId.slice(0, 8) + '-' + stamp,
+    workspaceName: 'Primary',
+    workspaceSlug: 'primary-' + stamp,
+  }});
+  const tenantId = onboarding.tenant.id, workspaceId = onboarding.workspace.id;
+  const step2 = await backendFetch('/v1/onboarding/' + onboarding.progress.id + '/business', { method: 'POST', headers: authHeader, body: {
+    tenantId, workspaceId, legalName: 'Public Demo Idea', businessCode: 'demo-' + stamp,
+  }});
+  await backendFetch('/v1/onboarding/' + onboarding.progress.id + '/owner', { method: 'POST', headers: authHeader, body: { tenantId, workspaceId } });
+  acct.tenantId = tenantId; acct.workspaceId = workspaceId; acct.businessId = step2.business.id;
+  saveBackendAccount(acct);
+  return acct;
+}
+
+// Runs the full simulation through the real Data Acquisition → Simulation →
+// AI Decision Intelligence pipeline and returns the same {days, events, mc}
+// shape the local simulate()/monteCarlo() pair already produces, so existing
+// rendering code (renderVerdict, calcScores, computeVerdict, dashboard
+// charts) needs no changes — only the *source* of S.days/S.events/S.mc
+// changes when the backend is reachable.
+async function runBackendSimulation(params) {
+  const acct = await ensureBackendBusiness();
+  const tenantHeaders = {
+    Authorization: 'Bearer ' + acct.token,
+    'X-Tenant-Id': acct.tenantId,
+    'X-Workspace-Id': acct.workspaceId,
+  };
+  const idemKey = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : (Date.now() + '-' + Math.random());
+  const start = await backendFetch('/v1/businesses/' + acct.businessId + '/simulations', {
+    method: 'POST',
+    headers: Object.assign({ 'Idempotency-Key': idemKey }, tenantHeaders),
+    body: {
+      ideaText: params.idea, capital: params.capital, price: params.price, mktBud: params.mktBud,
+      team: params.team, industry: params.industry, loc: params.loc || undefined, mkt: params.mkt || undefined,
+      exp: params.exp || undefined, comp: params.comp || undefined, engMode: params.engMode || undefined,
+      extraDailyRev: params.extraDailyRev || undefined,
+    },
+  });
+  let statusResp;
+  for (let i = 0; i < 40; i++) {
+    statusResp = await backendFetch('/v1/businesses/' + acct.businessId + '/simulations/' + start.runId, { headers: tenantHeaders });
+    if (statusResp.status === 'completed' || statusResp.status === 'failed') break;
+    await new Promise(r => setTimeout(r, 300));
+  }
+  if (statusResp.status !== 'completed') throw new Error('backend run did not complete: ' + statusResp.status);
+  return statusResp.result;
+}
+
 // ─── SIMULATION CONTROLS ─────────────────────────────────────────────────────
 let _pendingSimAfterReg = false;
 
@@ -3040,6 +3164,13 @@ function startSim() {
   S.params={idea,capital,price,mktBud,team,industry,loc,mkt,exp,comp,engMode,extraDailyRev:extraDailyRev||0};
   trackEvent('sim_start',{industry,cur:curCode});
   S.running=true;S.done=false;S.scores=null;S.aiData=null;
+  // Kick off the real backend run in parallel with the progress-bar UI below;
+  // finalize() awaits this and falls back to the local engine on any failure
+  // (network error, backend not yet deployed, etc.) so the demo never breaks.
+  S._backendPromise = runBackendSimulation(S.params).catch(function (err) {
+    console.warn('[infinicus] backend simulation unavailable, falling back to local engine:', err);
+    return null;
+  });
   setBadge('running');
   advanceInputProgress(4);
   const lb=$('launch-btn');
@@ -3069,11 +3200,20 @@ function startSim() {
   tick();
 }
 
-function finalize() {
+async function finalize() {
   if (!S.running) return;
-  const {days,events}=simulate(S.params);
-  S.days=days;S.events=events;S.mc=monteCarlo(S.params);
-  // Extended simulations (run in background, don't block render)
+  let backendResult = null;
+  try { backendResult = await S._backendPromise; } catch (e) { backendResult = null; }
+  if (!S.running) return; // stopSim() may have run while we were awaiting
+  if (backendResult) {
+    S.days = backendResult.days; S.events = backendResult.events; S.mc = backendResult.mc;
+  } else {
+    const {days,events}=simulate(S.params);
+    S.days=days;S.events=events;S.mc=monteCarlo(S.params);
+  }
+  // Extended simulations (6m/12m forecast) are not yet part of the backend
+  // pipeline (which only models the 90-day SIM_DAYS window) — still computed
+  // locally regardless of which engine produced the main run above.
   S.ext = {
     '6m':  { days: simulateLong(S.params, 180), mc: monteCarloLong(S.params, 180) },
     '12m': { days: simulateLong(S.params, 365), mc: monteCarloLong(S.params, 365) },
