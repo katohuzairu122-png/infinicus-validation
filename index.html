@@ -81,6 +81,17 @@ header{display:flex;align-items:center;justify-content:space-between;padding:.85
 /* TYPOGRAPHY */
 .pg-title{font-family:var(--head);font-size:clamp(28px,4.5vw,50px);font-weight:800;letter-spacing:-.02em;line-height:1.05;margin-bottom:.25rem;}
 .pg-sub{font-family:var(--mono);font-size:12px;color:var(--muted-2);letter-spacing:.1em;margin-bottom:2rem;}
+.home-card{background:var(--glass);border:1px solid var(--line-2);border-radius:12px;padding:1.2rem;cursor:pointer;transition:all .2s;position:relative;display:flex;flex-direction:column;gap:.3rem;}
+.home-card:hover{border-color:rgba(0,224,96,.35);}
+.home-card.disabled{cursor:default;opacity:.55;}
+.home-card.disabled:hover{border-color:var(--line-2);}
+.home-card-code{font-family:var(--mono);font-size:10px;color:var(--cyan);letter-spacing:.12em;margin-bottom:.2rem;}
+.home-card-t{font-family:var(--head);font-size:16px;font-weight:700;}
+.home-card-d{font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.5;flex:1;}
+.home-card-tag{display:inline-block;font-family:var(--mono);font-size:8.5px;letter-spacing:.08em;padding:2px 7px;border-radius:4px;margin-top:.4rem;align-self:flex-start;}
+.home-card-tag.live{background:rgba(0,224,96,.1);color:var(--cyan);border:1px solid rgba(0,224,96,.25);}
+.home-card-tag.start{background:var(--cyan);color:#04060d;border:1px solid transparent;font-weight:700;}
+.home-card-tag.dev{background:rgba(93,104,133,.15);color:var(--muted);border:1px solid var(--line);}
 .c{color:var(--cyan);} .p{color:var(--purple);} .e{color:var(--emerald);} .a{color:var(--amber);} .r{color:var(--red);}
 
 /* CARDS */
@@ -882,7 +893,7 @@ async function supabaseSaveSimulation(entry) {
   <button class="ham-btn" id="ham-btn" onclick="toggleNav()" aria-label="Menu">☰</button>
   <nav class="nav" id="main-nav" style="display:none!important;"></nav>
   <div style="display:flex;align-items:center;gap:8px;flex:1;">
-    <span style="font-family:var(--mono);font-size:9px;letter-spacing:.12em;color:var(--muted-2);border:1px solid var(--line);border-radius:4px;padding:3px 8px;white-space:nowrap;">SIMULATION ENGINE</span>
+    <span style="font-family:var(--mono);font-size:9px;letter-spacing:.12em;color:var(--muted-2);border:1px solid var(--line);border-radius:4px;padding:3px 8px;white-space:nowrap;">9-LAYER PLATFORM</span>
     <span id="hdr-mode-badge" style="font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--cyan);background:rgba(0,224,96,.08);border:1px solid rgba(0,224,96,.2);border-radius:4px;padding:3px 8px;white-space:nowrap;">● PUBLIC IDEA MODE</span>
   </div>
   <div class="hdr-right">
@@ -940,12 +951,28 @@ async function supabaseSaveSimulation(entry) {
 
 <!-- ── SIDEBAR ── -->
 <aside id="app-sidebar">
-  <div class="sb-engine-label">INFINICUS ENGINE v3</div>
+  <div class="sb-engine-label">INFINICUS PLATFORM</div>
   <div class="sb-mode-badge" id="sb-mode-badge"><span class="sb-dot"></span>PUBLIC IDEA MODE</div>
 
+  <div class="sb-platform-lbl">PLATFORM</div>
+  <div class="sb-pair" style="padding:0 .6rem;">
+    <button class="sb-platform-link active" data-section="home"       onclick="nav('home')">Home</button>
+    <button class="sb-platform-link"        data-section="operations" onclick="nav('operations')">Operations</button>
+  </div>
+  <div class="sb-pair" style="padding:0 .6rem;">
+    <button class="sb-platform-link" data-section="twin"      onclick="nav('twin')">Digital Twin</button>
+    <button class="sb-platform-link" data-section="decisions" onclick="nav('decisions')">AI Decisions</button>
+  </div>
+  <div class="sb-pair" style="padding:0 .6rem;">
+    <button class="sb-platform-link" data-section="intelligence" onclick="nav('intelligence')">Biz Intel.</button>
+    <button class="sb-platform-link" data-section="simulation"   onclick="nav('simulation')">Engine Hub</button>
+  </div>
+
+  <hr class="sb-sep">
+
   <div class="sb-group">
-    <div class="sb-group-lbl">SETUP</div>
-    <button class="sb-link active" data-section="data"        onclick="nav('data')">Input</button>
+    <div class="sb-group-lbl">SIMULATION — SETUP</div>
+    <button class="sb-link" data-section="data"        onclick="nav('data')">Input</button>
   </div>
 
   <div class="sb-group">
@@ -977,19 +1004,6 @@ async function supabaseSaveSimulation(entry) {
     </div>
     <button class="sb-link" data-section="report" onclick="nav('report')">Report</button>
   </div>
-
-  <hr class="sb-sep">
-
-  <div class="sb-platform-lbl">PLATFORM LAYERS</div>
-  <div class="sb-pair" style="padding:0 .6rem;">
-    <button class="sb-platform-link" data-section="decisions"    onclick="nav('decisions')">AI Decisions</button>
-    <button class="sb-platform-link" data-section="twin"         onclick="nav('twin')">Digital Twin</button>
-  </div>
-  <div class="sb-pair" style="padding:0 .6rem;">
-    <button class="sb-platform-link" data-section="intelligence" onclick="nav('intelligence')">Biz Intel.</button>
-    <button class="sb-platform-link" data-section="operations"   onclick="nav('operations')">Operations</button>
-  </div>
-  <button class="sb-platform-link" style="padding-left:1.2rem;" data-section="simulation" onclick="nav('simulation')">Engine Hub</button>
 </aside>
 
 <!-- overlay for mobile sidebar -->
@@ -998,8 +1012,72 @@ async function supabaseSaveSimulation(entry) {
 <!-- ── WORKSPACE ── -->
 <div class="workspace">
 
+<!-- ══ PLATFORM HOME ══ -->
+<section class="section active" id="sec-home">
+  <div class="pg-title">INFINICUS <span class="c">PLATFORM</span></div>
+  <div class="pg-sub">// DATA IN · DECISION OUT · OUTCOME TRACKED — NINE LAYERS, ONE LOOP</div>
+  <div style="font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.1em;margin-bottom:1.2rem;margin-top:1rem;">GO TO A LAYER</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:.85rem;">
+    <div class="home-card" onclick="nav('operations')">
+      <div class="home-card-code">DA</div>
+      <div class="home-card-t">Data Acquisition</div>
+      <div class="home-card-d">Every sale, expense, or inventory change you log is the entry point for the whole platform.</div>
+      <span class="home-card-tag live">LIVE</span>
+    </div>
+    <div class="home-card" onclick="nav('operations')">
+      <div class="home-card-code">OPS</div>
+      <div class="home-card-t">Business Operations</div>
+      <div class="home-card-d">Log sales, expenses, inventory, customer, and team events. KPI summaries roll up automatically.</div>
+      <span class="home-card-tag live">LIVE</span>
+    </div>
+    <div class="home-card" onclick="nav('intelligence')">
+      <div class="home-card-code">BI</div>
+      <div class="home-card-t">Business Intelligence</div>
+      <div class="home-card-d">KPI dashboard, economy, customers, and forecast — over your simulation runs today.</div>
+      <span class="home-card-tag dev">SIMULATION-SCOPED</span>
+    </div>
+    <div class="home-card" onclick="nav('twin')">
+      <div class="home-card-code">DT</div>
+      <div class="home-card-t">Digital Twin</div>
+      <div class="home-card-d">A live model of your business — profit, burn rate, churn, headcount — recomputed from operations data.</div>
+      <span class="home-card-tag live">LIVE</span>
+    </div>
+    <div class="home-card" onclick="nav('data')">
+      <div class="home-card-code">SIM</div>
+      <div class="home-card-t">Simulation</div>
+      <div class="home-card-d">1,000-run Monte Carlo test of any decision or idea — no real business required.</div>
+      <span class="home-card-tag start">START HERE</span>
+    </div>
+    <div class="home-card" onclick="nav('decisions')">
+      <div class="home-card-code">AI</div>
+      <div class="home-card-t">AI Decision Intelligence</div>
+      <div class="home-card-d">Reads your digital twin and recommends a next decision, with rationale and expected outcome.</div>
+      <span class="home-card-tag live">LIVE</span>
+    </div>
+    <div class="home-card" onclick="nav('decisions')">
+      <div class="home-card-code">ACT</div>
+      <div class="home-card-t">Approved Business Action</div>
+      <div class="home-card-d">Approving a recommendation in AI Decisions runs it through a formal approval chain, not a checkbox.</div>
+      <span class="home-card-tag live">VIA AI DECISIONS</span>
+    </div>
+    <div class="home-card" onclick="nav('decisions')">
+      <div class="home-card-code">MON</div>
+      <div class="home-card-t">Outcome Monitoring</div>
+      <div class="home-card-d">Record what actually happened after an approved decision, from the same AI Decisions screen.</div>
+      <span class="home-card-tag live">VIA AI DECISIONS</span>
+    </div>
+    <div class="home-card disabled">
+      <div class="home-card-code">LRN</div>
+      <div class="home-card-t">Continuous Learning</div>
+      <div class="home-card-d">Feeds recorded outcomes back to sharpen future recommendations.</div>
+      <span class="home-card-tag dev">ROADMAP</span>
+    </div>
+  </div>
+  <div style="margin-top:1.5rem;font-family:var(--mono);font-size:11px;color:var(--muted-2);text-align:center;">↻ Outcomes retrain the model — the loop feeds Day 1 again, sharper each cycle.</div>
+</section>
+
 <!-- ══ INPUT ══ -->
-<section class="section active" id="sec-data">
+<section class="section" id="sec-data">
   <div class="pg-title">SIMULATION <span class="c">SETUP</span></div>
   <div class="pg-sub">// ENTER YOUR BUSINESS IDEA — PARAMETERS · MARKET · FINANCIALS</div>
   <!-- 5-STEP PROGRESS INDICATOR -->
@@ -6080,6 +6158,9 @@ async function submitEmailCapture() {
 function restoreFromURL() {
   const params=new URLSearchParams(window.location.search);
   if(!params.has('idea')) return;
+  // A shared simulation link always means "show me the simulation setup",
+  // regardless of which section the app defaults to on load.
+  if (typeof nav==='function') nav('data');
   // Restore currency first so the form values display in the right unit
   const cur=params.get('cur')||'USD';
   if(CUR[cur]) setCurrency(cur);
@@ -6129,6 +6210,16 @@ function restoreFromURL() {
   } catch(e){}
   restoreFromURL();
   loadFromStorage();
+  // A visitor coming from a hero CTA on landing.html ("Connect My Existing
+  // Business" vs "Prepare My Business for Launch") lands straight on the
+  // matching section instead of always seeing the platform home screen.
+  try {
+    const intent = localStorage.getItem('inf_landing_intent');
+    if (intent) {
+      localStorage.removeItem('inf_landing_intent');
+      if (typeof nav==='function' && document.getElementById('sec-'+intent)) nav(intent);
+    }
+  } catch(e) {}
   updatePriceLabel('food');
   // Auto-detect currency from location input
   const locInput = $('i-loc');
