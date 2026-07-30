@@ -1533,38 +1533,11 @@ async function supabaseSaveSimulation(entry) {
   <!-- Main content (shown when logged in) -->
   <div id="biz-main" style="display:none;">
 
-    <!-- Business selector row -->
-    <div class="biz-selector-row">
-      <select id="biz-select" onchange="bizOnSelectChange()">
-        <option value="">— Select a business —</option>
-      </select>
-      <button class="btn-sm" onclick="bizToggleCreateForm()">＋ NEW BUSINESS</button>
-    </div>
+    <!-- Active business status line (single shadow business per browser — see
+         docs/production-readiness/migrate-bizops-twin-decisions-backend.md) -->
+    <div id="biz-status-line" style="font-family:var(--mono);font-size:11px;color:var(--muted-2);margin-bottom:1.2rem;"></div>
 
-    <!-- Create business form -->
-    <div class="biz-create-form" id="biz-create-form">
-      <div style="font-family:var(--mono);font-size:12px;color:var(--green);letter-spacing:.1em;margin-bottom:.9rem;">CREATE NEW BUSINESS</div>
-      <div class="biz-field"><label>Business Name</label><input id="biz-new-name" type="text" placeholder="e.g. Sunrise Café"></div>
-      <div class="biz-field">
-        <label>Industry</label>
-        <select id="biz-new-ind">
-          <option value="food">Food & Beverage</option>
-          <option value="retail">Retail</option>
-          <option value="tech">Tech / SaaS</option>
-          <option value="service">Services</option>
-          <option value="health">Health & Wellness</option>
-          <option value="education">Education</option>
-          <option value="real_estate">Real Estate</option>
-          <option value="creative">Creative / Media</option>
-          <option value="logistics">Logistics</option>
-          <option value="finance">Finance</option>
-          <option value="other">Other</option>
-        </select>
-      </div>
-      <button class="btn-main" onclick="bizCreateBusiness()" style="margin-top:.4rem;">CREATE →</button>
-    </div>
-
-    <!-- Event entry tabs (shown when a business is selected) -->
+    <!-- Event entry tabs (shown once the business is provisioned) -->
     <div id="biz-event-area" style="display:none;">
 
       <div style="font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.1em;margin-bottom:.6rem;">LOG AN EVENT</div>
@@ -3032,9 +3005,11 @@ function randomBackendPassword() {
 }
 async function backendFetch(path, opts) {
   opts = opts || {};
+  const headers = Object.assign({}, opts.headers || {});
+  if (opts.body) headers['Content-Type'] = 'application/json';
   const res = await fetch(API_BASE_URL + path, {
     method: opts.method || 'GET',
-    headers: Object.assign({ 'Content-Type': 'application/json' }, opts.headers || {}),
+    headers: headers,
     body: opts.body ? JSON.stringify(opts.body) : undefined,
   });
   const text = await res.text();
@@ -3120,6 +3095,23 @@ async function runBackendSimulation(params) {
   }
   if (statusResp.status !== 'completed') throw new Error('backend run did not complete: ' + statusResp.status);
   return statusResp.result;
+}
+
+// Shared helper for Operations/Twin/Decisions — same shadow account/business
+// as runBackendSimulation() above, reused rather than re-provisioned.
+async function bizBackendFetch(path, opts) {
+  const acct = await ensureBackendBusiness();
+  const tenantHeaders = {
+    Authorization: 'Bearer ' + acct.token,
+    'X-Tenant-Id': acct.tenantId,
+    'X-Workspace-Id': acct.workspaceId,
+  };
+  opts = opts || {};
+  const headers = Object.assign({}, tenantHeaders, opts.headers || {});
+  if (opts.method && opts.method !== 'GET') {
+    headers['Idempotency-Key'] = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : (Date.now() + '-' + Math.random());
+  }
+  return backendFetch(path, Object.assign({}, opts, { headers }));
 }
 
 // ─── SIMULATION CONTROLS ─────────────────────────────────────────────────────
@@ -6486,7 +6478,7 @@ async function handleIdeaUpload(input) {
 let _bizCurrentId   = null;   // selected business_id
 let _bizCurrentType = 'sale'; // active event tab
 
-// Called when nav('operations') fires — show/hide auth gate and load businesses
+// Called when nav('operations') fires — show/hide auth gate and provision the business
 function bizInit() {
   const email = (U && U.email) ? U.email : null;
   const gate  = document.getElementById('biz-auth-gate');
@@ -6498,7 +6490,7 @@ function bizInit() {
   }
   if (gate) gate.style.display = 'none';
   if (main) main.style.display = 'block';
-  bizLoadBusinesses(email);
+  bizEnsureBusiness();
   // Set default date range: last 30 days
   const today = new Date();
   const prior = new Date(today - 30 * 86400000);
@@ -6509,58 +6501,23 @@ function bizInit() {
   if (t && !t.value) t.value = fmt(today);
 }
 
-async function bizLoadBusinesses(email) {
-  const sel = document.getElementById('biz-select');
-  if (!sel) return;
+// Provisions (once per browser, cached) the same shadow business the Simulation
+// flow already uses — ensureBackendBusiness(), defined above alongside the
+// backend simulation bridge. The legacy multi-business dropdown/create-business
+// UI is not carried over (single business per browser for this launch scope —
+// see docs/production-readiness/migrate-bizops-twin-decisions-backend.md).
+async function bizEnsureBusiness() {
+  const statusLine = document.getElementById('biz-status-line');
   try {
-    const r = await fetch(`/api/business/manage?user_email=${encodeURIComponent(email)}`);
-    const d = await r.json();
-    if (!d.ok) return;
-    sel.innerHTML = '<option value="">— Select a business —</option>';
-    (d.businesses || []).forEach(b => {
-      const o = document.createElement('option');
-      o.value = b.id;
-      o.textContent = `${b.name} (${b.industry})`;
-      sel.appendChild(o);
-    });
-    if (_bizCurrentId) sel.value = _bizCurrentId;
-    bizOnSelectChange();
-  } catch(e) { console.warn('bizLoadBusinesses:', e); }
-}
-
-function bizOnSelectChange() {
-  const sel = document.getElementById('biz-select');
-  _bizCurrentId = sel?.value || null;
-  const area = document.getElementById('biz-event-area');
-  if (area) area.style.display = _bizCurrentId ? 'block' : 'none';
-}
-
-function bizToggleCreateForm() {
-  const f = document.getElementById('biz-create-form');
-  if (!f) return;
-  const visible = f.classList.contains('visible');
-  f.classList.toggle('visible', !visible);
-}
-
-async function bizCreateBusiness() {
-  const email = (U && U.email) ? U.email : null;
-  if (!email) return;
-  const name = (document.getElementById('biz-new-name')?.value || '').trim();
-  const ind  = document.getElementById('biz-new-ind')?.value || 'other';
-  if (!name) { alert('Please enter a business name.'); return; }
-  try {
-    const r = await fetch('/api/business/manage', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_email: email, name, industry: ind }),
-    });
-    const d = await r.json();
-    if (!d.ok) { alert('Could not create business: ' + d.error); return; }
-    _bizCurrentId = d.business.id;
-    document.getElementById('biz-create-form')?.classList.remove('visible');
-    const nameEl = document.getElementById('biz-new-name'); if (nameEl) nameEl.value = '';
-    bizLoadBusinesses(email);
-  } catch(e) { alert('Network error: ' + e.message); }
+    const acct = await ensureBackendBusiness();
+    _bizCurrentId = acct.businessId;
+    if (statusLine) statusLine.textContent = `Business ID: ${_bizCurrentId}`;
+    const area = document.getElementById('biz-event-area');
+    if (area) area.style.display = 'block';
+  } catch (e) {
+    if (statusLine) statusLine.textContent = '';
+    showToast('Could not set up your business account: ' + e.message);
+  }
 }
 
 function bizTab(type, btn) {
@@ -6581,61 +6538,51 @@ function bizShowMsg(type, msg, isErr) {
 
 async function bizLogEvent(type) {
   if (!_bizCurrentId) return;
-  const payload = { business_id: _bizCurrentId, event_type: type };
+  const payload = { eventType: type };
   if (type === 'sale') {
-    payload.amount    = parseFloat(document.getElementById('biz-sale-amount')?.value) || null;
-    payload.quantity  = parseFloat(document.getElementById('biz-sale-qty')?.value)    || null;
-    payload.customer_id = document.getElementById('biz-sale-cust')?.value.trim() || null;
-    payload.notes     = document.getElementById('biz-sale-notes')?.value.trim() || null;
+    payload.amount     = parseFloat(document.getElementById('biz-sale-amount')?.value) || undefined;
+    payload.quantity   = parseFloat(document.getElementById('biz-sale-qty')?.value)    || undefined;
+    payload.customerId = document.getElementById('biz-sale-cust')?.value.trim() || undefined;
+    payload.notes      = document.getElementById('biz-sale-notes')?.value.trim() || undefined;
   } else if (type === 'expense') {
-    payload.amount    = parseFloat(document.getElementById('biz-exp-amount')?.value) || null;
-    payload.category  = document.getElementById('biz-exp-cat')?.value.trim() || null;
-    payload.notes     = document.getElementById('biz-exp-notes')?.value.trim() || null;
+    payload.amount    = parseFloat(document.getElementById('biz-exp-amount')?.value) || undefined;
+    payload.category  = document.getElementById('biz-exp-cat')?.value.trim() || undefined;
+    payload.notes     = document.getElementById('biz-exp-notes')?.value.trim() || undefined;
   } else if (type === 'inventory') {
-    payload.category  = document.getElementById('biz-inv-item')?.value.trim() || null;
-    payload.quantity  = parseFloat(document.getElementById('biz-inv-qty')?.value)    || null;
-    payload.amount    = parseFloat(document.getElementById('biz-inv-cost')?.value)   || null;
-    payload.notes     = document.getElementById('biz-inv-notes')?.value.trim() || null;
+    payload.category  = document.getElementById('biz-inv-item')?.value.trim() || undefined;
+    payload.quantity  = parseFloat(document.getElementById('biz-inv-qty')?.value)    || undefined;
+    payload.amount    = parseFloat(document.getElementById('biz-inv-cost')?.value)   || undefined;
+    payload.notes     = document.getElementById('biz-inv-notes')?.value.trim() || undefined;
   } else if (type === 'customer') {
-    payload.customer_id = document.getElementById('biz-cust-id')?.value.trim()      || null;
+    payload.customerId = document.getElementById('biz-cust-id')?.value.trim()      || undefined;
     payload.action      = document.getElementById('biz-cust-action')?.value         || 'new';
-    payload.notes       = document.getElementById('biz-cust-notes')?.value.trim()   || null;
+    payload.notes       = document.getElementById('biz-cust-notes')?.value.trim()   || undefined;
   } else if (type === 'team') {
-    payload.member_id = document.getElementById('biz-team-id')?.value.trim()      || null;
+    payload.memberId = document.getElementById('biz-team-id')?.value.trim()      || undefined;
     payload.action    = document.getElementById('biz-team-action')?.value         || 'hire';
-    payload.quantity  = parseFloat(document.getElementById('biz-team-hours')?.value) || null;
-    payload.notes     = document.getElementById('biz-team-notes')?.value.trim()   || null;
+    payload.quantity  = parseFloat(document.getElementById('biz-team-hours')?.value) || undefined;
+    payload.notes     = document.getElementById('biz-team-notes')?.value.trim()   || undefined;
   }
   try {
-    const r = await fetch('/api/business/events', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-    const d = await r.json();
-    if (!d.ok) { bizShowMsg(type, '✗ ' + d.error, true); return; }
+    await bizBackendFetch('/v1/businesses/' + _bizCurrentId + '/events', { method: 'POST', body: payload });
     bizShowMsg(type, '✓ Event logged!', false);
     // Clear numeric fields
     ['biz-sale-amount','biz-sale-qty','biz-exp-amount','biz-inv-qty','biz-inv-cost','biz-team-hours'].forEach(id => {
       const el = document.getElementById(id); if (el) el.value = '';
     });
-  } catch(e) { bizShowMsg(type, '✗ Network error', true); }
+  } catch(e) { bizShowMsg(type, '✗ ' + e.message, true); }
 }
 
 async function bizLoadSummary() {
   if (!_bizCurrentId) return;
   const fromDate = document.getElementById('biz-from-date')?.value;
   const toDate   = document.getElementById('biz-to-date')?.value;
-  const fromMs   = fromDate ? new Date(fromDate).getTime() : 0;
-  const toMs     = toDate   ? new Date(toDate + 'T23:59:59').getTime() : Date.now();
+  const from     = fromDate ? new Date(fromDate).toISOString() : new Date(0).toISOString();
+  const to       = toDate   ? new Date(toDate + 'T23:59:59').toISOString() : new Date().toISOString();
   const area     = document.getElementById('biz-kpi-area');
   if (area) area.innerHTML = '<div style="font-family:var(--mono);font-size:12px;color:var(--muted-2);padding:1rem;">Loading...</div>';
   try {
-    const r = await fetch(
-      `/api/business/summary?business_id=${_bizCurrentId}&from=${fromMs}&to=${toMs}`
-    );
-    const d = await r.json();
-    if (!d.ok || !area) { if(area) area.innerHTML = '<div style="color:var(--red);font-family:var(--mono);font-size:12px;padding:1rem;">Error: ' + (d.error||'unknown') + '</div>'; return; }
+    const d = await bizBackendFetch('/v1/businesses/' + _bizCurrentId + '/events/summary?from=' + encodeURIComponent(from) + '&to=' + encodeURIComponent(to));
     const s = d.summary;
     const fmt = n => n == null ? '—' : (Number(n) >= 1000 ? '$'+Number(n).toLocaleString('en',{maximumFractionDigits:0}) : '$'+Number(n).toFixed(2));
     const fmtN = n => n == null ? '—' : Number(n).toLocaleString('en');
@@ -6643,44 +6590,44 @@ async function bizLoadSummary() {
     <div class="biz-kpi-grid">
       <div class="biz-kpi-card">
         <div class="biz-kpi-label">💰 Total Revenue</div>
-        <div class="biz-kpi-val">${fmt(s.sales.total_revenue)}</div>
-        <div class="biz-kpi-sub">${fmtN(s.sales.transaction_count)} sales · avg ${fmt(s.sales.avg_sale_value)}</div>
-        ${s.sales.top_customer ? `<ul class="biz-sub-list"><li>Top customer: <span>${s.sales.top_customer.id}</span> (${fmt(s.sales.top_customer.spend)})</li></ul>` : ''}
+        <div class="biz-kpi-val">${fmt(s.sales.totalRevenue)}</div>
+        <div class="biz-kpi-sub">${fmtN(s.sales.transactionCount)} sales · avg ${fmt(s.sales.avgSaleValue)}</div>
+        ${s.sales.topCustomer ? `<ul class="biz-sub-list"><li>Top customer: <span>${s.sales.topCustomer.id}</span> (${fmt(s.sales.topCustomer.spend)})</li></ul>` : ''}
       </div>
       <div class="biz-kpi-card">
         <div class="biz-kpi-label">📤 Total Expenses</div>
-        <div class="biz-kpi-val" style="color:var(--red);">${fmt(s.expenses.total_spend)}</div>
-        <div class="biz-kpi-sub">Burn rate ${fmt(s.expenses.burn_rate_per_day)}/day</div>
-        ${s.expenses.by_category.slice(0,3).length ? `<ul class="biz-sub-list">${s.expenses.by_category.slice(0,3).map(c=>`<li>${c.category}: <span>${fmt(c.amount)}</span></li>`).join('')}</ul>` : ''}
+        <div class="biz-kpi-val" style="color:var(--red);">${fmt(s.expenses.totalSpend)}</div>
+        <div class="biz-kpi-sub">Burn rate ${fmt(s.expenses.burnRatePerDay)}/day</div>
+        ${s.expenses.byCategory.slice(0,3).length ? `<ul class="biz-sub-list">${s.expenses.byCategory.slice(0,3).map(c=>`<li>${c.category}: <span>${fmt(c.amount)}</span></li>`).join('')}</ul>` : ''}
       </div>
       <div class="biz-kpi-card">
         <div class="biz-kpi-label">📦 Inventory</div>
-        <div class="biz-kpi-val" style="color:var(--cyan);">${fmtN(s.inventory.net_units_delta)} units</div>
-        <div class="biz-kpi-sub">COGS ${fmt(s.inventory.total_cogs)}</div>
-        ${s.inventory.top_items.slice(0,3).length ? `<ul class="biz-sub-list">${s.inventory.top_items.slice(0,3).map(i=>`<li>${i.item}: <span>${fmtN(i.net_units)}</span></li>`).join('')}</ul>` : ''}
+        <div class="biz-kpi-val" style="color:var(--cyan);">${fmtN(s.inventory.netUnitsDelta)} units</div>
+        <div class="biz-kpi-sub">COGS ${fmt(s.inventory.totalCogs)}</div>
+        ${s.inventory.topItems.slice(0,3).length ? `<ul class="biz-sub-list">${s.inventory.topItems.slice(0,3).map(i=>`<li>${i.item}: <span>${fmtN(i.netUnits)}</span></li>`).join('')}</ul>` : ''}
       </div>
       <div class="biz-kpi-card">
         <div class="biz-kpi-label">👥 Customers</div>
-        <div class="biz-kpi-val" style="color:var(--cyan);">${fmtN(s.customers.new_customers)} new</div>
+        <div class="biz-kpi-val" style="color:var(--cyan);">${fmtN(s.customers.newCustomers)} new</div>
         <div class="biz-kpi-sub">${fmtN(s.customers.returning)} returning · ${fmtN(s.customers.churned)} churned</div>
         <ul class="biz-sub-list">
-          <li>Churn rate: <span>${s.customers.churn_rate_pct}%</span></li>
-          <li>Avg LTV: <span>${fmt(s.customers.avg_ltv)}</span></li>
+          <li>Churn rate: <span>${s.customers.churnRatePct}%</span></li>
+          <li>Avg LTV: <span>${fmt(s.customers.avgLtv)}</span></li>
         </ul>
       </div>
       <div class="biz-kpi-card">
         <div class="biz-kpi-label">🧑‍💼 Team</div>
         <div class="biz-kpi-val" style="color:var(--cyan);">+${fmtN(s.team.hired)} / -${fmtN(s.team.fired)}</div>
-        <div class="biz-kpi-sub">Net: ${s.team.net_headcount_delta >= 0 ? '+' : ''}${fmtN(s.team.net_headcount_delta)} headcount</div>
+        <div class="biz-kpi-sub">Net: ${s.team.netHeadcountDelta >= 0 ? '+' : ''}${fmtN(s.team.netHeadcountDelta)} headcount</div>
         <ul class="biz-sub-list">
-          <li>Hours logged: <span>${fmtN(s.team.total_hours_logged)}</span></li>
-          <li>Reviews: <span>${fmtN(s.team.performance_reviews)}</span></li>
+          <li>Hours logged: <span>${fmtN(s.team.totalHoursLogged)}</span></li>
+          <li>Reviews: <span>${fmtN(s.team.performanceReviews)}</span></li>
         </ul>
       </div>
       <div class="biz-kpi-card">
         <div class="biz-kpi-label">📊 Profit / Loss</div>
-        <div class="biz-kpi-val" style="color:${(s.sales.total_revenue - s.expenses.total_spend) >= 0 ? 'var(--green)' : 'var(--red)'};">
-          ${fmt(s.sales.total_revenue - s.expenses.total_spend)}
+        <div class="biz-kpi-val" style="color:${(s.sales.totalRevenue - s.expenses.totalSpend) >= 0 ? 'var(--green)' : 'var(--red)'};">
+          ${fmt(s.sales.totalRevenue - s.expenses.totalSpend)}
         </div>
         <div class="biz-kpi-sub">Revenue − Expenses (${d.period.days} days)</div>
       </div>
@@ -6697,11 +6644,9 @@ async function bizLoadTwin() {
   if (!area || !_bizCurrentId) { showToast('Select a business first.'); return; }
   area.innerHTML = '<div style="font-family:var(--mono);font-size:12px;color:var(--muted-2);padding:.75rem;">Loading twin…</div>';
   try {
-    const r = await fetch(`/api/business/twin?business_id=${_bizCurrentId}`);
-    const d = await r.json();
-    if (!d.ok) { area.innerHTML = `<div style="color:var(--red);font-family:var(--mono);font-size:12px;padding:.75rem;">${d.error||'Error loading twin.'}</div>`; return; }
+    const d = await bizBackendFetch('/v1/businesses/' + _bizCurrentId + '/twin');
     renderTwin(d.twin, d.cached);
-  } catch(e) { area.innerHTML = '<div style="color:var(--red);font-family:var(--mono);font-size:12px;padding:.75rem;">Network error.</div>'; }
+  } catch(e) { area.innerHTML = '<div style="color:var(--red);font-family:var(--mono);font-size:12px;padding:.75rem;">' + e.message + '</div>'; }
 }
 
 async function bizRefreshTwin() {
@@ -6709,16 +6654,10 @@ async function bizRefreshTwin() {
   if (!area || !_bizCurrentId) { showToast('Select a business first.'); return; }
   area.innerHTML = '<div style="font-family:var(--mono);font-size:12px;color:var(--muted-2);padding:.75rem;">Refreshing twin from event stream…</div>';
   try {
-    const r = await fetch('/api/business/twin', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ business_id: _bizCurrentId }),
-    });
-    const d = await r.json();
-    if (!d.ok) { area.innerHTML = `<div style="color:var(--red);font-family:var(--mono);font-size:12px;padding:.75rem;">${d.error||'Error refreshing twin.'}</div>`; return; }
-    renderTwin(d.twin, false);
+    const d = await bizBackendFetch('/v1/businesses/' + _bizCurrentId + '/twin/refresh', { method: 'POST' });
+    renderTwin(d.twin, d.cached);
     showToast('Digital Twin refreshed ✓');
-  } catch(e) { area.innerHTML = '<div style="color:var(--red);font-family:var(--mono);font-size:12px;padding:.75rem;">Network error.</div>'; }
+  } catch(e) { area.innerHTML = '<div style="color:var(--red);font-family:var(--mono);font-size:12px;padding:.75rem;">' + e.message + '</div>'; }
 }
 
 function renderTwin(t, cached) {
@@ -6726,8 +6665,8 @@ function renderTwin(t, cached) {
   if (!area || !t) return;
   const fmt  = n => n == null ? '—' : (Math.abs(Number(n)) >= 1000 ? '$'+Number(n).toLocaleString('en',{maximumFractionDigits:0}) : '$'+Number(n).toFixed(2));
   const fmtN = n => n == null ? '—' : Number(n).toLocaleString('en');
-  const pnl  = t.financial.profit_30d;
-  const snap = new Date(t.snapshot_at).toLocaleString();
+  const pnl  = t.financial.profit30d;
+  const snap = new Date(t.snapshotAt).toLocaleString();
   area.innerHTML = `
   <div style="font-family:var(--mono);font-size:10px;color:var(--muted-2);margin-bottom:.75rem;">
     Snapshot: ${snap} ${cached ? '· <span style="color:var(--cyan)">cached</span>' : '· <span style="color:var(--emerald)">fresh</span>'}
@@ -6735,13 +6674,13 @@ function renderTwin(t, cached) {
   <div class="biz-kpi-grid">
     <div class="biz-kpi-card">
       <div class="biz-kpi-label">💰 30d Revenue</div>
-      <div class="biz-kpi-val">${fmt(t.financial.revenue_30d)}</div>
-      <div class="biz-kpi-sub">${fmtN(t.financial.sales_count_30d)} transactions</div>
+      <div class="biz-kpi-val">${fmt(t.financial.revenue30d)}</div>
+      <div class="biz-kpi-sub">${fmtN(t.financial.salesCount30d)} transactions</div>
     </div>
     <div class="biz-kpi-card">
       <div class="biz-kpi-label">📤 30d Expenses</div>
-      <div class="biz-kpi-val" style="color:var(--red);">${fmt(t.financial.expenses_30d)}</div>
-      <div class="biz-kpi-sub">Burn ${fmt(t.financial.burn_rate_per_day)}/day</div>
+      <div class="biz-kpi-val" style="color:var(--red);">${fmt(t.financial.expenses30d)}</div>
+      <div class="biz-kpi-sub">Burn ${fmt(t.financial.burnRatePerDay)}/day</div>
     </div>
     <div class="biz-kpi-card">
       <div class="biz-kpi-label">📊 30d P&L</div>
@@ -6750,41 +6689,39 @@ function renderTwin(t, cached) {
     </div>
     <div class="biz-kpi-card">
       <div class="biz-kpi-label">👥 Customers</div>
-      <div class="biz-kpi-val" style="color:var(--cyan);">${fmtN(t.customers.new_30d + t.customers.returning_30d)}</div>
-      <div class="biz-kpi-sub">${fmtN(t.customers.new_30d)} new · ${t.customers.churn_rate_pct}% churn</div>
+      <div class="biz-kpi-val" style="color:var(--cyan);">${fmtN(t.customers.new30d + t.customers.returning30d)}</div>
+      <div class="biz-kpi-sub">${fmtN(t.customers.new30d)} new · ${t.customers.churnRatePct}% churn</div>
     </div>
     <div class="biz-kpi-card">
       <div class="biz-kpi-label">📦 Inventory</div>
-      <div class="biz-kpi-val" style="color:var(--cyan);">${fmtN(t.operations.net_inventory_units_30d)}</div>
+      <div class="biz-kpi-val" style="color:var(--cyan);">${fmtN(t.operations.netInventoryUnits30d)}</div>
       <div class="biz-kpi-sub">net unit delta (30d)</div>
     </div>
     <div class="biz-kpi-card">
       <div class="biz-kpi-label">🧑‍💼 Team</div>
-      <div class="biz-kpi-val" style="color:var(--cyan);">${t.team.net_headcount_delta >= 0 ? '+' : ''}${fmtN(t.team.net_headcount_delta)}</div>
-      <div class="biz-kpi-sub">${fmtN(t.team.hired_30d)} hired · ${fmtN(t.team.terminated_30d)} left</div>
+      <div class="biz-kpi-val" style="color:var(--cyan);">${t.team.netHeadcountDelta >= 0 ? '+' : ''}${fmtN(t.team.netHeadcountDelta)}</div>
+      <div class="biz-kpi-sub">${fmtN(t.team.hired30d)} hired · ${fmtN(t.team.terminated30d)} left</div>
     </div>
   </div>`;
 }
 
 // ── Decision Intelligence ─────────────────────────────────────────────────────
 
+// Maps a recommendation id to the real ApprovedAction id created when it's
+// chosen (real ABA approval chain, not a boolean flag — see
+// docs/production-readiness/migrate-bizops-twin-decisions-backend.md).
+// bizRecordOutcome() needs this id, since the new backend records outcomes
+// against that real entity rather than reusing the recommendation id.
+let _bizApprovedActions = {};
+
 async function bizGetDecisions() {
   const area = $('biz-decisions-area');
   if (!area || !_bizCurrentId) { showToast('Select a business first.'); return; }
   area.innerHTML = '<div style="font-family:var(--mono);font-size:12px;color:var(--muted-2);padding:.75rem;">Analysing your real business data…</div>';
   try {
-    const r = await fetch('/api/business/decisions/recommend', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ business_id: _bizCurrentId }),
-    });
-    const d = await r.json();
-    if (!d.ok) {
-      area.innerHTML = `<div style="color:var(--red);font-family:var(--mono);font-size:12px;padding:.75rem;">${d.error||'Error getting decisions.'}</div>`;
-      return;
-    }
+    const d = await bizBackendFetch('/v1/businesses/' + _bizCurrentId + '/decision-recommendations', { method: 'POST' });
     renderDecisions(d.decisions);
-  } catch(e) { area.innerHTML = '<div style="color:var(--red);font-family:var(--mono);font-size:12px;padding:.75rem;">Network error.</div>'; }
+  } catch(e) { area.innerHTML = '<div style="color:var(--red);font-family:var(--mono);font-size:12px;padding:.75rem;">' + e.message + '</div>'; }
 }
 
 function renderDecisions(decisions) {
@@ -6795,12 +6732,12 @@ function renderDecisions(decisions) {
     <div style="background:var(--glass);border:1px solid var(--line);border-radius:10px;padding:1rem;margin-bottom:.75rem;">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.5rem;flex-wrap:wrap;margin-bottom:.5rem;">
         <div style="font-family:var(--sans);font-size:14px;font-weight:500;flex:1;">${d.decision}</div>
-        <span style="font-family:var(--mono);font-size:10px;padding:2px 6px;border-radius:4px;border:1px solid ${riskColor(d.risk_level)};color:${riskColor(d.risk_level)};white-space:nowrap;">${(d.risk_level||'?').toUpperCase()} RISK</span>
+        <span style="font-family:var(--mono);font-size:10px;padding:2px 6px;border-radius:4px;border:1px solid ${riskColor(d.riskLevel)};color:${riskColor(d.riskLevel)};white-space:nowrap;">${(d.riskLevel||'?').toUpperCase()} RISK</span>
       </div>
       <div style="font-family:var(--mono);font-size:11px;color:var(--muted-2);margin-bottom:.4rem;">RATIONALE</div>
       <div style="font-size:13px;color:var(--muted);margin-bottom:.6rem;">${d.rationale}</div>
       <div style="font-family:var(--mono);font-size:11px;color:var(--muted-2);margin-bottom:.4rem;">EXPECTED OUTCOME</div>
-      <div style="font-size:13px;color:var(--cyan);margin-bottom:.75rem;">${d.expected_outcome}</div>
+      <div style="font-size:13px;color:var(--cyan);margin-bottom:.75rem;">${d.expectedOutcome}</div>
       <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
         <button class="btn-sm" style="background:rgba(0,224,96,.12);border-color:rgba(0,224,96,.3);color:var(--cyan);" onclick="bizRecordChoice('${d.id}',true,this)">✓ I'll do this</button>
         <button class="btn-sm" onclick="bizRecordChoice('${d.id}',false,this)">✗ Skip</button>
@@ -6811,14 +6748,14 @@ function renderDecisions(decisions) {
 
 async function bizRecordChoice(decisionId, chosen, btn) {
   try {
-    await fetch('/api/business/decisions/record-choice', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ decision_id: decisionId, chosen }),
-    });
+    const result = await bizBackendFetch(
+      '/v1/businesses/' + _bizCurrentId + '/decision-recommendations/' + decisionId + '/choice',
+      { method: 'POST', body: { chosen } }
+    );
     btn.textContent = chosen ? '✓ Chosen' : '✗ Skipped';
     btn.disabled = true;
-    if (chosen) {
+    if (result.approved && result.approvedActionId) {
+      _bizApprovedActions[decisionId] = result.approvedActionId;
       const outBtn = $(`outcome-btn-${decisionId}`);
       if (outBtn) outBtn.style.display = 'inline-flex';
     }
@@ -6828,11 +6765,11 @@ async function bizRecordChoice(decisionId, chosen, btn) {
 async function bizRecordOutcome(decisionId) {
   const notes = prompt('How did it go? Describe the actual outcome:');
   if (!notes) return;
+  const approvedActionId = _bizApprovedActions[decisionId];
+  if (!approvedActionId) { showToast('This decision was not approved.'); return; }
   try {
-    await fetch('/api/business/decisions/record-outcome', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ decision_id: decisionId, outcome_notes: notes }),
+    await bizBackendFetch('/v1/businesses/' + _bizCurrentId + '/decision-recommendations/outcome', {
+      method: 'POST', body: { approvedActionId, outcomeNotes: notes },
     });
     showToast('Outcome recorded ✓');
     const btn = $(`outcome-btn-${decisionId}`);
@@ -6847,26 +6784,27 @@ async function bizLoadDecisionHistory() {
   histDiv.style.display = 'block';
   histDiv.innerHTML = '<div style="font-family:var(--mono);font-size:12px;color:var(--muted-2);padding:.5rem;">Loading…</div>';
   try {
-    const r = await fetch(`/api/business/decisions/history?business_id=${_bizCurrentId}`);
-    const d = await r.json();
-    if (!d.ok || !d.decisions?.length) {
+    const d = await bizBackendFetch('/v1/businesses/' + _bizCurrentId + '/decision-recommendations/history');
+    if (!d.decisions?.length) {
       histDiv.innerHTML = '<div style="font-family:var(--mono);font-size:12px;color:var(--muted-2);padding:.5rem;">No decision history yet.</div>';
       return;
     }
     histDiv.innerHTML = d.decisions.map(dec => `
       <div style="border-left:2px solid var(--line-2);padding:.5rem .75rem;margin-bottom:.5rem;">
-        <div style="font-size:13px;margin-bottom:.2rem;">${dec.decision_text}</div>
+        <div style="font-size:13px;margin-bottom:.2rem;">${dec.decisionText}</div>
         <div style="font-family:var(--mono);font-size:11px;color:var(--muted-2);">
-          ${new Date(dec.recommended_at).toLocaleDateString()} ·
-          ${dec.chosen ? '<span style="color:var(--cyan)">Chosen</span>' : '<span style="color:var(--muted-2)">Skipped</span>'}
-          ${dec.outcome_notes ? ` · <span style="color:var(--emerald)">Outcome: ${dec.outcome_notes}</span>` : ''}
+          ${new Date(dec.recommendedAt).toLocaleDateString()}
+          ${dec.chosen === true ? ' · <span style="color:var(--cyan)">Chosen</span>' : dec.chosen === false ? ' · <span style="color:var(--muted-2)">Skipped</span>' : ''}
+          ${dec.outcomeNotes ? ` · <span style="color:var(--emerald)">Outcome: ${dec.outcomeNotes}</span>` : ''}
         </div>
       </div>`).join('');
   } catch(e) { histDiv.innerHTML = '<div style="color:var(--red);font-family:var(--mono);font-size:12px;padding:.5rem;">Error loading history.</div>'; }
 }
 
-// Auth+state init for Digital Twin section
-function bizInitTwin() {
+// Auth+state init for Digital Twin section. Auto-provisions the shadow
+// business if a visitor lands here directly (without visiting Operations
+// first) — the single-shadow-business model needs no explicit selection.
+async function bizInitTwin() {
   const email = U && U.email ? U.email : null;
   const authGate = document.getElementById('twin-auth-gate');
   const noBiz    = document.getElementById('twin-no-biz');
@@ -6878,6 +6816,7 @@ function bizInitTwin() {
     return;
   }
   if (authGate) authGate.style.display = 'none';
+  if (!_bizCurrentId) { try { await bizEnsureBusiness(); } catch(e) {} }
   if (!_bizCurrentId) {
     if (noBiz)  noBiz.style.display  = 'block';
     if (main)   main.style.display   = 'none';
@@ -6889,8 +6828,8 @@ function bizInitTwin() {
   if (lbl) lbl.textContent = `Business ID: ${_bizCurrentId} · cached · auto-refreshes hourly`;
 }
 
-// Auth+state init for AI Decisions section
-function bizInitDecisions() {
+// Auth+state init for AI Decisions section (same auto-provision behavior).
+async function bizInitDecisions() {
   const email = U && U.email ? U.email : null;
   const authGate = document.getElementById('decisions-auth-gate');
   const noBiz    = document.getElementById('decisions-no-biz');
@@ -6902,6 +6841,7 @@ function bizInitDecisions() {
     return;
   }
   if (authGate) authGate.style.display = 'none';
+  if (!_bizCurrentId) { try { await bizEnsureBusiness(); } catch(e) {} }
   if (!_bizCurrentId) {
     if (noBiz)  noBiz.style.display  = 'block';
     if (main)   main.style.display   = 'none';
