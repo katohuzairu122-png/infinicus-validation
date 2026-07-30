@@ -1,0 +1,80 @@
+#cloud-config
+# Phase 3 — one-time setup for an Oracle Cloud "Always Free" Ampere A1
+# Compute instance (Ubuntu 22.04/24.04 minimal image assumed). Paste this
+# whole file into the "Add cloud-init script" box when creating the
+# instance in the OCI console (Compute > Instances > Create Instance >
+# Show Advanced Options > Management > Cloud-init script).
+#
+# What this does NOT do: open OCI's own network-level firewall (Security
+# List / Network Security Group). That's a separate, mandatory step in
+# the OCI console — see runbook.md step 2. Without it, nothing in this
+# file makes port 443 reachable from the internet.
+#
+# What this does NOT do: deploy the application itself. It only
+# provisions the machine (Docker, a dedicated non-root deploy user, the
+# host firewall, unattended security updates) so that runbook.md's later
+# steps (copy files, set secrets, docker compose up) have a ready target.
+
+package_update: true
+package_upgrade: true
+
+packages:
+  - ca-certificates
+  - curl
+  - gnupg
+  - ufw
+  - unattended-upgrades
+
+users:
+  - name: deploy
+    groups: [sudo, docker]
+    shell: /bin/bash
+    sudo: ["ALL=(ALL) NOPASSWD:ALL"]
+    lock_passwd: true
+    ssh_authorized_keys: []
+    # ^ leave empty here and add your own public key via the OCI console's
+    # instance creation flow (or `ssh-copy-id` after first boot using the
+    # default opc/ubuntu user) — never paste a private key into cloud-init.
+
+write_files:
+  - path: /etc/ufw/applications.d/infinicus
+    content: |
+      [infinicus-http]
+      title=INFINICUS API (HTTP, redirects to HTTPS)
+      description=Caddy HTTP listener
+      ports=80/tcp
+
+      [infinicus-https]
+      title=INFINICUS API (HTTPS)
+      description=Caddy HTTPS listener
+      ports=443/tcp
+
+runcmd:
+  # ── Docker Engine + Compose plugin (official repo, not the distro's
+  # older/slower-to-update package) ──────────────────────────────────
+  - install -m 0755 -d /etc/apt/keyrings
+  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+  - chmod a+r /etc/apt/keyrings/docker.asc
+  - >
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc]
+    https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo $VERSION_CODENAME) stable"
+    > /etc/apt/sources.list.d/docker.list
+  - apt-get update
+  - apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+  - systemctl enable --now docker
+
+  # ── Host firewall — OCI's Security List/NSG is the primary gate, this
+  # is defense in depth. SSH must stay open or you lock yourself out. ──
+  - ufw allow OpenSSH
+  - ufw allow infinicus-http
+  - ufw allow infinicus-https
+  - ufw --force enable
+
+  # ── Unattended security patches (low-maintenance box, not hand-tended) ──
+  - dpkg-reconfigure -f noninteractive unattended-upgrades
+
+  # ── App directory the deploy user owns ──────────────────────────────
+  - mkdir -p /opt/infinicus
+  - chown deploy:deploy /opt/infinicus
+
+final_message: "INFINICUS OCI host provisioned in $UPTIME seconds. Next: runbook.md step 3 (copy deployment files, set secrets, docker compose up)."

@@ -1,0 +1,104 @@
+# Phase 3 — runs on the OCI Always Free Compute VM provisioned by
+# cloud-init.yaml. Three containers: Postgres (data lives in this VM,
+# not OCI's separate Autonomous DB product — this is the "Compute VM +
+# Docker" shape, not "Compute VM + Autonomous DB"), the existing
+# apps/api image (built from the Dockerfile already in this repo, not a
+# new one), and Caddy as a TLS-terminating reverse proxy (the browser on
+# the HTTPS Cloudflare Pages site will refuse to call a plain-HTTP API,
+# so this is required, not optional).
+#
+# Run from infrastructure/deployment/oci/ on the VM, after copying (or
+# git-cloning) this repo there — see runbook.md for the full sequence.
+# Requires a sibling .env file (copy .env.example from the repo root and
+# fill in real values — see runbook.md step 4).
+
+services:
+  postgres:
+    image: postgres:16-bookworm
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: infinicus
+      POSTGRES_USER: admin_role
+      POSTGRES_PASSWORD: ${POSTGRES_ADMIN_PASSWORD:?set POSTGRES_ADMIN_PASSWORD in .env}
+      # Read by postgres-init/01-create-app-role.sh on first init only —
+      # creates the least-privilege login the api/tools containers use.
+      POSTGRES_APP_PASSWORD: ${POSTGRES_APP_PASSWORD:?set POSTGRES_APP_PASSWORD in .env}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./postgres-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin_role -d infinicus"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    # Not published to the host/internet — only reachable from other
+    # containers on this compose network. The API and one-off migration
+    # commands are the only things that ever need to reach it.
+    expose:
+      - "5432"
+
+  api:
+    build:
+      context: ../../..
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://app_role:${POSTGRES_APP_PASSWORD:?set POSTGRES_APP_PASSWORD in .env}@postgres:5432/infinicus
+      PORT: "3000"
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-https://infini-cus.com,https://www.infini-cus.com}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      EMAIL_FROM_ADDRESS: ${EMAIL_FROM_ADDRESS:-INFINICUS <noreply@infini-cus.com>}
+      EMAIL_VERIFICATION_URL_BASE: ${EMAIL_VERIFICATION_URL_BASE:-https://infini-cus.com/verify-email}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    # Not published directly either — Caddy is the only public entry
+    # point, so every request is TLS-terminated before it reaches this
+    # container.
+    expose:
+      - "3000"
+
+  # One-off container, same image as `api`, for running migrations and
+  # the admin-role grant step — never started by `docker compose up`,
+  # only invoked directly (see runbook.md step 5) via
+  # `docker compose run --rm --entrypoint <script> tools`.
+  tools:
+    build:
+      context: ../../..
+      dockerfile: apps/api/Dockerfile
+    profiles: ["tools"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    # migration-gate.sh (see infrastructure/deployment/scripts/) reads
+    # DATABASE_URL — deliberately reusing that name for the *admin*
+    # connection string per its own usage docstring, not a typo here.
+    # grant-app-role.sh instead reads ADMIN_DATABASE_URL — both are set
+    # here so either script can be invoked without extra flags.
+    environment:
+      DATABASE_URL: postgresql://admin_role:${POSTGRES_ADMIN_PASSWORD:?set POSTGRES_ADMIN_PASSWORD in .env}@postgres:5432/infinicus
+      ADMIN_DATABASE_URL: postgresql://admin_role:${POSTGRES_ADMIN_PASSWORD:?set POSTGRES_ADMIN_PASSWORD in .env}@postgres:5432/infinicus
+      APP_ROLE: app_role
+    working_dir: /repo
+    entrypoint: ["bash", "infrastructure/deployment/scripts/migration-gate.sh"]
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+
+volumes:
+  postgres-data:
+  caddy-data:
+  caddy-config:

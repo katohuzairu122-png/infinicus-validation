@@ -24,7 +24,7 @@ export { SimulationRunRepository } from './SimulationRunRepository.js';
 export type { SimulationRequest, SimulationRun } from './SimulationRunRepository.js';
 
 export { SimulationResultRepository } from './SimulationResultRepository.js';
-export type { SimulationResult, SimulationResultVersion } from './SimulationResultRepository.js';
+export type { SimulationResult, SimulationResultVersion, SimulationResultMetric } from './SimulationResultRepository.js';
 
 export { SimulationRiskRepository } from './SimulationRiskRepository.js';
 export type { SimulationRiskResult, SimulationFailureMode } from './SimulationRiskRepository.js';

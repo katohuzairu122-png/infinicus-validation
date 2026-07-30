@@ -16,6 +16,9 @@ export type { User, CreateUserInput } from './UserRepository.js';
 export { SessionRepository } from './SessionRepository.js';
 export type { Session } from './SessionRepository.js';
 
+export { EmailVerificationTokenRepository, EmailVerificationTokenNotFoundError } from './EmailVerificationTokenRepository.js';
+export type { EmailVerificationToken } from './EmailVerificationTokenRepository.js';
+
 export { ServiceAccountRepository } from './ServiceAccountRepository.js';
 export type { ServiceAccount } from './ServiceAccountRepository.js';
 

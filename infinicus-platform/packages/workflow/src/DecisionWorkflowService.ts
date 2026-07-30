@@ -6,7 +6,7 @@ import {
   DecisionCaseRepository, DecisionRecommendationRepository,
   ActionReviewRepository, ApproverAuthorityRepository, ApprovalDecisionRepository,
   MonitoredActionRepository, OutcomeObservationRepository,
-  type TenantContext, type Business,
+  type TenantContext, type Business, type CreateBusinessInput,
   type InsightPackage,
   type DigitalTwinInstance, type DigitalTwinSnapshot,
   type SimulationRun, type SimulationResult,
@@ -92,6 +92,10 @@ export class DecisionWorkflowService {
   /** Business selection. */
   async listBusinesses(ctx: TenantContext): Promise<Business[]> {
     return this.businesses.listForWorkspace(ctx);
+  }
+
+  async createBusiness(ctx: TenantContext, input: CreateBusinessInput): Promise<Business> {
+    return this.businesses.create(ctx, input);
   }
 
   /**

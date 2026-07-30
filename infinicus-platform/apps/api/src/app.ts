@@ -1,4 +1,5 @@
 import Fastify, { type FastifyInstance } from 'fastify';
+import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
 import swagger from '@fastify/swagger';
@@ -20,6 +21,9 @@ import businessRoutes from './routes/businesses.js';
 import observabilityRoutes from './routes/observability.js';
 import billingRoutes from './routes/billing.js';
 import incidentRoutes from './routes/incidents.js';
+import bizopsRoutes from './routes/bizops.js';
+import twinRoutes from './routes/twin.js';
+import decisionRecommendationsRoutes from './routes/decisionRecommendations.js';
 import './types.js';
 
 export async function buildApp(config: InfinicusConfig): Promise<FastifyInstance> {
@@ -46,6 +50,22 @@ export async function buildApp(config: InfinicusConfig): Promise<FastifyInstance
   await app.register(rateLimit, {
     max: config.rateLimitMax,
     timeWindow: config.rateLimitWindowMs,
+  });
+
+  // Browser cross-origin access for the public site (see
+  // packages/configuration's corsAllowedOrigins / CORS_ALLOWED_ORIGINS).
+  // No CORS registration existed before this — a browser calling this API
+  // cross-origin was blocked outright by same-origin policy. Explicit
+  // allowlist (never "*"): this API accepts an Authorization bearer token
+  // and tenant-scoping headers, which must never be readable by an
+  // arbitrary origin. credentials:true + a wildcard origin is also
+  // rejected by browsers themselves, so "*" was never a viable shortcut
+  // here regardless.
+  await app.register(cors, {
+    origin: config.corsAllowedOrigins,
+    credentials: true,
+    methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Tenant-Id', 'X-Workspace-Id', 'Idempotency-Key'],
   });
 
   // BUILD-26 — standard security response headers (X-Content-Type-Options,
@@ -105,6 +125,9 @@ export async function buildApp(config: InfinicusConfig): Promise<FastifyInstance
   await app.register(observabilityRoutes);
   await app.register(billingRoutes);
   await app.register(incidentRoutes);
+  await app.register(bizopsRoutes);
+  await app.register(twinRoutes);
+  await app.register(decisionRecommendationsRoutes);
 
   return app;
 }

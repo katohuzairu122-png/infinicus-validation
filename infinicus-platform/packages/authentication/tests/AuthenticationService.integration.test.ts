@@ -11,13 +11,15 @@
  */
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { createPool, closePool, UserRepository, SessionRepository, AccessEventRepository } from '@infinicus/database';
+import { createPool, closePool, UserRepository, SessionRepository, AccessEventRepository, EmailVerificationTokenRepository } from '@infinicus/database';
 import { AuthenticationService } from '../src/AuthenticationService.js';
 import { generateSessionToken, hashToken } from '../src/tokens.js';
 import {
   InvalidCredentialsError, AccountNotActiveError,
   SessionExpiredError, SessionRevokedError, SessionInvalidError,
+  VerificationTokenInvalidError,
 } from '../src/errors.js';
+import type { EmailMessage, EmailSender } from '../src/email/EmailSender.js';
 
 const run = !!process.env.DATABASE_URL;
 
@@ -26,6 +28,20 @@ function uniqueEmail(prefix: string): string {
 }
 
 const STRONG_PASSWORD = 'Correct-Horse-9!';
+
+/** Captures every message "sent" instead of making a real HTTP call — lets tests recover the raw verification token, which is otherwise never returned from register()'s own public API (see AuthenticationService.register()'s doc comment: it's emailed, not returned). */
+class CapturingEmailSender implements EmailSender {
+  readonly sent: EmailMessage[] = [];
+  async send(message: EmailMessage): Promise<void> {
+    this.sent.push(message);
+  }
+  lastToken(): string {
+    const last = this.sent[this.sent.length - 1];
+    const match = /[?&]token=([^&\s]+)/.exec(last.text);
+    if (!match) throw new Error('no token found in captured email');
+    return decodeURIComponent(match[1]);
+  }
+}
 
 async function registerAndActivate(service: AuthenticationService, users: UserRepository, email = uniqueEmail('svc')) {
   const user = await service.register(email, STRONG_PASSWORD);
@@ -37,7 +53,11 @@ describe.runIf(run)('AuthenticationService — live PostgreSQL', () => {
   const users = new UserRepository();
   const sessions = new SessionRepository();
   const accessEvents = new AccessEventRepository();
-  const service = new AuthenticationService(users, sessions, accessEvents);
+  const verificationTokens = new EmailVerificationTokenRepository();
+  const emailSender = new CapturingEmailSender();
+  const service = new AuthenticationService(users, sessions, accessEvents, verificationTokens, emailSender, {
+    apiKey: undefined, fromAddress: 'test@authsvc-test.example', verificationUrlBase: 'https://example.test/verify',
+  });
 
   beforeAll(() => {
     createPool({ connectionString: process.env.DATABASE_URL! });
@@ -48,9 +68,15 @@ describe.runIf(run)('AuthenticationService — live PostgreSQL', () => {
   });
 
   describe('register', () => {
-    it('creates a new user in pending status (never implicitly active)', async () => {
+    it('activates the account immediately — never leaves it pending from the caller\'s perspective', async () => {
       const user = await service.register(uniqueEmail('reg'), STRONG_PASSWORD);
-      expect(user.status).toBe('pending');
+      expect(user.status).toBe('active');
+    });
+
+    it('an immediately-registered account can log in right away, with no separate activation step', async () => {
+      const email = uniqueEmail('reg-login');
+      await service.register(email, STRONG_PASSWORD);
+      await expect(service.login(email, STRONG_PASSWORD)).resolves.toBeDefined();
     });
 
     it('stores a bcrypt hash, never the plaintext password', async () => {
@@ -65,6 +91,42 @@ describe.runIf(run)('AuthenticationService — live PostgreSQL', () => {
       const email = uniqueEmail('reg-weak');
       await expect(service.register(email, 'weak')).rejects.toThrow();
       await expect(users.getByEmail(email)).rejects.toThrow();
+    });
+
+    it('sends a real verification email as a side effect, with a token that verifies the account', async () => {
+      const email = uniqueEmail('reg-verify');
+      const before = emailSender.sent.length;
+      const user = await service.register(email, STRONG_PASSWORD);
+      expect(emailSender.sent.length).toBe(before + 1);
+      expect(emailSender.sent[emailSender.sent.length - 1].to).toBe(email);
+      expect(user.emailVerifiedAt).toBeNull();
+
+      const rawToken = emailSender.lastToken();
+      const verified = await service.verifyEmail(rawToken);
+      expect(verified.id).toBe(user.id);
+      expect(verified.emailVerifiedAt).not.toBeNull();
+      // Verifying email never changes account usability — it's tracked independently (see register()'s own doc comment).
+      expect(verified.status).toBe('active');
+    });
+
+    it('rejects an already-used verification token on a second attempt', async () => {
+      const email = uniqueEmail('reg-reuse');
+      await service.register(email, STRONG_PASSWORD);
+      const rawToken = emailSender.lastToken();
+      await service.verifyEmail(rawToken);
+      await expect(service.verifyEmail(rawToken)).rejects.toBeInstanceOf(VerificationTokenInvalidError);
+    });
+
+    it('rejects an unknown verification token', async () => {
+      await expect(service.verifyEmail(generateSessionToken())).rejects.toBeInstanceOf(VerificationTokenInvalidError);
+    });
+
+    it('rejects an expired verification token', async () => {
+      const email = uniqueEmail('reg-expired');
+      const user = await service.register(email, STRONG_PASSWORD);
+      const rawToken = generateSessionToken();
+      await verificationTokens.create(user.id, hashToken(rawToken), new Date(Date.now() - 1000));
+      await expect(service.verifyEmail(rawToken)).rejects.toBeInstanceOf(VerificationTokenInvalidError);
     });
   });
 
@@ -100,10 +162,12 @@ describe.runIf(run)('AuthenticationService — live PostgreSQL', () => {
       expect(events.some((e) => e.eventType === 'failed_auth')).toBe(true);
     });
 
-    it('rejects login for a pending (not-yet-activated) account', async () => {
+    it('login\'s active-status guard still rejects a genuinely pending account (defense in depth — register() itself no longer produces one, but the guard must still hold for any account created outside it)', async () => {
       const email = uniqueEmail('pending');
-      await service.register(email, STRONG_PASSWORD);
-      await expect(service.login(email, STRONG_PASSWORD)).rejects.toBeInstanceOf(AccountNotActiveError);
+      const passwordHash = await users.getPasswordHash((await service.register(email, STRONG_PASSWORD)).id);
+      const directlyCreated = await users.createUser({ email: uniqueEmail('pending-direct'), passwordHash: passwordHash! });
+      expect(directlyCreated.status).toBe('pending');
+      await expect(service.login(directlyCreated.email, STRONG_PASSWORD)).rejects.toBeInstanceOf(AccountNotActiveError);
     });
 
     it('rejects login for a suspended account', async () => {

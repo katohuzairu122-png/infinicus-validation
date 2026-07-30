@@ -55,6 +55,7 @@ export {
   IncidentRepository,
   TaskRepository,
   InventoryBalanceRepository,
+  BusinessEventRepository,
 } from './repositories/bo/index.js';
 export type {
   Lead, CreateLeadInput,
@@ -64,6 +65,8 @@ export type {
   Incident, CreateIncidentInput,
   Task, CreateTaskInput,
   InventoryBalance, CreateInventoryBalanceInput,
+  BusinessEvent, LogBusinessEventInput, BusinessEventType, BusinessEventAction,
+  SalesAggregate, ExpensesAggregate, InventoryAggregate, CustomersAggregate, TeamAggregate,
 } from './repositories/bo/index.js';
 
 // ── Business Intelligence repositories (Stage 2D) ───────────────────────────────
@@ -111,7 +114,7 @@ export type {
   DTIntakePackage, ReceivePackageInput,
   DigitalTwinDefinition, DigitalTwinDefinitionVersion,
   DigitalTwinInstance,
-  DigitalTwinSnapshot, DigitalTwinSnapshotVersion,
+  DigitalTwinSnapshot, DigitalTwinSnapshotVersion, DigitalTwinSnapshotValue,
   StateVariableDefinition, StateVariableValue,
   TwinEntity, TwinRelationship,
   TwinAssumption, TwinConstraint, TwinConstraintEvaluation,
@@ -141,7 +144,7 @@ export type {
   SimulationModel, SimulationModelVersion,
   SimulationScenario, SimulationScenarioVersion,
   SimulationRequest, SimulationRun,
-  SimulationResult, SimulationResultVersion,
+  SimulationResult, SimulationResultVersion, SimulationResultMetric,
   SimulationRiskResult, SimulationFailureMode,
   SimulationSensitivityRun, SimulationSensitivityResult,
   ScenarioComparisonRun,
@@ -288,6 +291,7 @@ export {
 export {
   UserRepository,
   SessionRepository,
+  EmailVerificationTokenRepository, EmailVerificationTokenNotFoundError,
   ServiceAccountRepository,
   ApiKeyRepository,
   RoleRepository,
@@ -299,6 +303,7 @@ export {
 export type {
   User, CreateUserInput,
   Session,
+  EmailVerificationToken,
   ServiceAccount,
   ApiKeyReference,
   Role,
@@ -313,7 +318,7 @@ export {
   TenantNotFoundError, TenantSlugConflictError,
   WorkspaceNotFoundError, WorkspaceSlugConflictError,
   BusinessNotFoundError, BusinessCodeConflictError,
-  OnboardingNotFoundError, OnboardingStepOrderError, OnboardingAlreadyTerminalError,
+  OnboardingNotFoundError, OnboardingStepOrderError, OnboardingAlreadyTerminalError, OnboardingNotInitiatorError,
 } from './repositories/onboarding/errors.js';
 export {
   TenantRepository,

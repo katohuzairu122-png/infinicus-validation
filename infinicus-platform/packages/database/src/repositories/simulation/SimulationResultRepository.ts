@@ -23,6 +23,14 @@ export interface SimulationResultVersion {
   correlationId: string;
 }
 
+export interface SimulationResultMetric {
+  id: string;
+  resultVersionId: string;
+  metricCode: string;
+  valueJson: unknown;
+  unit: string | null;
+}
+
 function rowToResult(row: Record<string, unknown>): SimulationResult {
   return {
     id: row.id as string,
@@ -72,6 +80,42 @@ export class SimulationResultRepository {
          VALUES ($1,$2,$3,(SELECT business_id FROM simulation.simulation_result_versions WHERE id = $1),$4,$5,$6)`,
         [resultVersionId, ctx.tenantId, ctx.workspaceId, metricCode, JSON.stringify(valueJson), unit ?? null]
       );
+    });
+  }
+
+  async getMetrics(ctx: TenantContext, resultVersionId: string): Promise<SimulationResultMetric[]> {
+    return withTenantTransaction(ctx, async (client) => {
+      const result = await client.query<Record<string, unknown>>(
+        `SELECT * FROM simulation.simulation_result_metrics WHERE result_version_id = $1 ORDER BY created_at`,
+        [resultVersionId]
+      );
+      return result.rows.map((row) => ({
+        id: row.id as string,
+        resultVersionId: row.result_version_id as string,
+        metricCode: row.metric_code as string,
+        valueJson: row.value_json,
+        unit: row.unit as string | null,
+      }));
+    });
+  }
+
+  /** Metrics for a result's currently-published version — callers that only have the result id (not the version id) don't need to re-derive it themselves. */
+  async getMetricsForPublishedResult(ctx: TenantContext, resultId: string): Promise<SimulationResultMetric[]> {
+    return withTenantTransaction(ctx, async (client) => {
+      const result = await client.query<Record<string, unknown>>(
+        `SELECT m.* FROM simulation.simulation_result_metrics m
+         JOIN simulation.simulation_result_versions v ON v.id = m.result_version_id
+         WHERE v.result_id = $1 AND v.status = 'published'
+         ORDER BY m.created_at`,
+        [resultId]
+      );
+      return result.rows.map((row) => ({
+        id: row.id as string,
+        resultVersionId: row.result_version_id as string,
+        metricCode: row.metric_code as string,
+        valueJson: row.value_json,
+        unit: row.unit as string | null,
+      }));
     });
   }
 

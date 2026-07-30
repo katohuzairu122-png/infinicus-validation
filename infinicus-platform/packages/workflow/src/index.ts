@@ -8,3 +8,18 @@ export type {
   WorkflowView, DecisionHistory,
   CreateReviewInput, SubmitApprovalInput, RecordOutcomeInput,
 } from './DecisionWorkflowService.js';
+
+export { SimulationOrchestrationService, ValidationError as SimulationValidationError } from './SimulationOrchestrationService.js';
+export type {
+  StartSimulationInput, SimulationRunStatus, SimulationRunStatusResult,
+} from './SimulationOrchestrationService.js';
+
+export { TwinComputationService } from './TwinComputationService.js';
+export type {
+  TwinSnapshotResult, TwinFinancial, TwinCustomers, TwinOperations, TwinTeam,
+} from './TwinComputationService.js';
+
+export { BusinessDecisionRecommendationService } from './BusinessDecisionRecommendationService.js';
+export type {
+  RecommendedDecision, ChoiceReviewResult, DecisionHistoryEntry, RiskLevel,
+} from './BusinessDecisionRecommendationService.js';

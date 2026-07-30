@@ -34,3 +34,18 @@ export class OnboardingAlreadyTerminalError extends Error {
     this.name = 'OnboardingAlreadyTerminalError';
   }
 }
+
+/**
+ * Thrown when the caller is authenticated and RLS-scoped correctly into
+ * the target tenant, but is not the user who actually started this
+ * specific onboarding attempt — without this check, an authenticated
+ * caller who supplies (or guesses) a real tenantId/onboardingId pair
+ * belonging to a different user's in-progress onboarding could grant
+ * themselves the 'owner' role in that tenant.
+ */
+export class OnboardingNotInitiatorError extends Error {
+  constructor() {
+    super('This onboarding attempt was not initiated by the current user');
+    this.name = 'OnboardingNotInitiatorError';
+  }
+}

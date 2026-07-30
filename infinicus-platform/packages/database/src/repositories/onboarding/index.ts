@@ -3,7 +3,7 @@ export {
   TenantNotFoundError, TenantSlugConflictError,
   WorkspaceNotFoundError, WorkspaceSlugConflictError,
   BusinessNotFoundError, BusinessCodeConflictError,
-  OnboardingNotFoundError, OnboardingStepOrderError, OnboardingAlreadyTerminalError,
+  OnboardingNotFoundError, OnboardingStepOrderError, OnboardingAlreadyTerminalError, OnboardingNotInitiatorError,
 } from './errors.js';
 
 export { TenantRepository } from './TenantRepository.js';

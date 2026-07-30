@@ -42,6 +42,7 @@ export const ERROR_STATUS_CODES: Record<string, number> = {
   SessionInvalidError: 401,
   ApiKeyInvalidError: 401,
   WeakPasswordError: 400,
+  VerificationTokenInvalidError: 400,
 
   // Authorization (@infinicus/authorization)
   PermissionDeniedError: 403,
@@ -53,6 +54,7 @@ export const ERROR_STATUS_CODES: Record<string, number> = {
   // (@infinicus/database/repositories/onboarding — not empty subclasses)
   OnboardingStepOrderError: 409,
   OnboardingAlreadyTerminalError: 409,
+  OnboardingNotInitiatorError: 403,
 
   // API layer (this build) — all set their own unique name
   IdempotencyConflictError: 409,

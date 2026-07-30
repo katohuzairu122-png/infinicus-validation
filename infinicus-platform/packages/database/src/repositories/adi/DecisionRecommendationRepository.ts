@@ -26,6 +26,7 @@ export interface DecisionRecommendationVersion {
   summary: string;
   status: string;
   correlationId: string;
+  createdAt: Date;
 }
 
 function rowToRecommendation(row: Record<string, unknown>): DecisionRecommendation {
@@ -50,6 +51,7 @@ function rowToVersion(row: Record<string, unknown>): DecisionRecommendationVersi
     summary: row.summary as string,
     status: row.status as string,
     correlationId: row.correlation_id as string,
+    createdAt: row.created_at as Date,
   };
 }
 
@@ -170,6 +172,34 @@ export class DecisionRecommendationRepository {
         [caseId]
       );
       return result.rows.map(rowToRecommendation);
+    });
+  }
+
+  /** The published version of a single recommendation — needed anywhere a caller only has the recommendation's header id (e.g. from an API param) but needs the version id FK'd elsewhere (ADI publication packages, addRationale, etc.). */
+  async getPublishedVersion(ctx: TenantContext, recommendationId: string): Promise<DecisionRecommendationVersion> {
+    return withTenantTransaction(ctx, async (client) => {
+      const result = await client.query<Record<string, unknown>>(
+        `SELECT * FROM ai_decision_intelligence.decision_recommendation_versions
+         WHERE recommendation_id = $1 AND status = 'published'
+         ORDER BY version_number DESC LIMIT 1`,
+        [recommendationId]
+      );
+      if (result.rows.length === 0) throw new DecisionRecommendationNotFoundError('PublishedDecisionRecommendationVersion', recommendationId);
+      return rowToVersion(result.rows[0]);
+    });
+  }
+
+  /** Published version(s) for a case, joined server-side — includes the summary text getPublishedForCase's header rows don't expose. */
+  async getPublishedVersionsForCase(ctx: TenantContext, caseId: string): Promise<DecisionRecommendationVersion[]> {
+    return withTenantTransaction(ctx, async (client) => {
+      const result = await client.query<Record<string, unknown>>(
+        `SELECT v.* FROM ai_decision_intelligence.decision_recommendation_versions v
+         JOIN ai_decision_intelligence.decision_recommendations r ON r.id = v.recommendation_id
+         WHERE r.case_id = $1 AND v.status = 'published'
+         ORDER BY v.created_at DESC`,
+        [caseId]
+      );
+      return result.rows.map(rowToVersion);
     });
   }
 }

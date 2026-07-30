@@ -28,6 +28,8 @@
   },
   "dependencies": {
     "@infinicus/shared-types": "workspace:*",
-    "@infinicus/database": "workspace:*"
+    "@infinicus/database": "workspace:*",
+    "@infinicus/simulation-engine": "workspace:*",
+    "@infinicus/llm-client": "workspace:*"
   }
 }

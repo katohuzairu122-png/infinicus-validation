@@ -46,3 +46,10 @@ export class WeakPasswordError extends Error {
     this.name = 'WeakPasswordError';
   }
 }
+
+export class VerificationTokenInvalidError extends Error {
+  constructor() {
+    super('Email verification token is invalid, expired, or already used');
+    this.name = 'VerificationTokenInvalidError';
+  }
+}

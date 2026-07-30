@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>INFINICUS ENGINE — Simulate Your Business Before You Risk Your Capital</title>
-<meta name="description" content="Run a 90-day Monte Carlo simulation of your business idea. Industry-calibrated models, AI venture analysis, and a clear Go/Modify/Stop verdict in under 60 seconds.">
+<title>INFINICUS — Business Operating &amp; Decision-Intelligence Platform</title>
+<meta name="description" content="Simulate a business idea before you risk capital, or connect a real business and get AI-recommended decisions grounded in its live data. Nine layers, one operating loop — a human always approves before anything happens.">
 <meta property="og:type" content="website">
-<meta property="og:title" content="INFINICUS ENGINE — Know If Your Idea Survives Before You Invest">
-<meta property="og:description" content="90-day business simulation · Monte Carlo risk · AI analysis · Go/Modify/Stop verdict. Free. No card required.">
+<meta property="og:title" content="INFINICUS — Know What's Happening In Your Business, And What To Do Next">
+<meta property="og:description" content="Simulation, live business operations, a digital twin, and AI-recommended decisions — one connected platform. Free to start. No card required.">
 <meta property="og:image" content="/og-image.svg">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="canonical" href="https://infini-cus.com/">
@@ -195,6 +195,15 @@ nav{display:flex;align-items:center;gap:1rem;padding:.85rem 2rem;border-bottom:1
 .step-h{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--cyan);margin-bottom:.5rem;}
 .step-body{font-size:13.5px;color:var(--fg-2);line-height:1.65;}
 .step-connector{position:absolute;top:50%;right:-1.1rem;transform:translateY(-50%);color:var(--muted-2);font-size:18px;z-index:2;}
+
+/* ══ LANDING — 9-LAYER PIPELINE ═══════════════════════════════════════════ */
+.pipe-card{width:148px;display:flex;flex-direction:column;align-items:center;text-align:center;padding:1.1rem .75rem;background:var(--glass);border:1px solid var(--line);border-radius:10px;}
+.pipe-ic{width:42px;height:42px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-weight:700;font-size:12px;margin-bottom:.75rem;border:1px solid var(--line-2);}
+.pipe-t{font-family:var(--head);font-weight:700;font-size:13px;margin-bottom:.4rem;}
+.pipe-d{font-family:var(--mono);font-size:10px;color:var(--muted-2);line-height:1.45;}
+.pipe-badge{font-family:var(--mono);font-size:8px;letter-spacing:.06em;padding:2px 7px;border-radius:10px;margin-top:.6rem;border:1px solid;}
+.pipe-arrow{display:flex;align-items:center;color:var(--muted-2);font-size:16px;padding:0 2px;}
+@media(max-width:900px){.pipe-arrow{display:none;}}
 
 /* ══ LANDING — FEATURES ═══════════════════════════════════════════════════ */
 .features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;margin-top:3.5rem;}
@@ -475,19 +484,19 @@ footer{position:relative;z-index:1;border-top:1px solid var(--line);padding:3rem
 <section class="hero">
   <div class="hero-eyebrow">
     <span class="hero-eyebrow-dot"></span>
-    90-DAY MONTE CARLO BUSINESS SIMULATION
+    BUSINESS OPERATING &amp; DECISION-INTELLIGENCE PLATFORM
   </div>
   <h1 class="hero-h">
-    Know If Your Idea<br>
-    <span class="hl">Survives</span> Before<br>
-    You <span class="hl-p">Risk a Dollar</span>
+    Know <span class="hl">What's Happening</span><br>
+    In Your Business — And<br>
+    <span class="hl-p">What To Do Next</span>
   </h1>
-  <p class="hero-sub">INFINICUS ENGINE runs your business through 90 virtual days with real market volatility, industry cost models, and AI-powered analysis — then tells you Go, Modify, or Stop.</p>
+  <p class="hero-sub">Connect your sales, expenses, inventory, and customer data — or prepare an idea before you launch it. INFINICUS builds a live model of your business, recommends the next decision, and lets you test it before committing money.</p>
   <div class="hero-actions" id="hero-actions">
-    <a class="btn-hero-primary" href="#register">⚡ Start Simulating Free</a>
-    <a class="btn-hero-secondary" href="#how-it-works">See How It Works ↓</a>
+    <a class="btn-hero-primary" href="#register" onclick="setLandingIntent('operations')">Connect My Existing Business</a>
+    <a class="btn-hero-secondary" href="#register" onclick="setLandingIntent('data')">Prepare My Business for Launch</a>
   </div>
-  <p class="hero-proof">No credit card · <span>Free forever tier</span> · Results in under 60 seconds</p>
+  <p class="hero-proof">No credit card · <span>Free forever tier</span> · Not sure yet? <a href="#how-it-works" style="color:var(--cyan);">See how the platform works ↓</a></p>
 </section>
 
 <!-- ══ TERMINAL DEMO ══════════════════════════════════════════════════════ -->
@@ -495,11 +504,11 @@ footer{position:relative;z-index:1;border-top:1px solid var(--line);padding:3rem
   <div class="terminal">
     <div class="term-bar">
       <div class="term-dot"></div><div class="term-dot"></div><div class="term-dot"></div>
-      <div class="term-title">INFINICUS ENGINE v3 — Simulation Output</div>
+      <div class="term-title">INFINICUS PLATFORM — LIVE READOUT</div>
     </div>
     <div class="term-body">
-      <div class="term-row"><span class="term-key">IDEA</span><span class="term-val">Lagos Premium Laundry Service</span></div>
-      <div class="term-row"><span class="term-key">INDUSTRY</span><span class="term-val">Services</span></div>
+      <div class="term-row"><span class="term-key">BUSINESS</span><span class="term-val">Lagos Premium Laundry Service</span></div>
+      <div class="term-row"><span class="term-key">LAYER</span><span class="term-val green">SIMULATION</span></div>
       <div class="term-row"><span class="term-key">CAPITAL</span><span class="term-val">₦1,200,000 starting</span></div>
       <div class="term-row"><span class="term-key">SIMULATION</span><span class="term-val green">90 days · 1,000 Monte Carlo runs</span></div>
       <hr class="term-divider">
@@ -510,27 +519,84 @@ footer{position:relative;z-index:1;border-top:1px solid var(--line);padding:3rem
       <div class="term-row"><span class="term-key">BIGGEST RISK</span><span class="term-val red">Customer acquisition cost spike</span></div>
       <hr class="term-divider">
       <div class="term-row"><span class="term-key">VERDICT</span><span class="term-val term-verdict green">▶ GO — Strong unit economics. Scale marketing by Day 45.</span></div>
+      <div class="term-row"><span class="term-key">AI DECISION</span><span class="term-val" style="color:var(--purple);">Recommends scaling — awaiting your approval</span></div>
     </div>
   </div>
 </div>
 
 <!-- ══ STATS BAR ══════════════════════════════════════════════════════════ -->
 <div class="stats-bar">
-  <div class="stat-item"><div class="stat-n">90</div><div class="stat-l">SIMULATION DAYS</div></div>
+  <div class="stat-item"><div class="stat-n">9</div><div class="stat-l">PLATFORM LAYERS</div></div>
   <div class="stat-item"><div class="stat-n">1K</div><div class="stat-l">MONTE CARLO RUNS</div></div>
   <div class="stat-item"><div class="stat-n">12+</div><div class="stat-l">INDUSTRIES MODELLED</div></div>
-  <div class="stat-item"><div class="stat-n">&lt;60s</div><div class="stat-l">TIME TO VERDICT</div></div>
+  <div class="stat-item"><div class="stat-n">&lt;60s</div><div class="stat-l">TIME TO FIRST VERDICT</div></div>
 </div>
 
-<!-- ══ HOW IT WORKS ═══════════════════════════════════════════════════════ -->
+<!-- ══ HOW THE PLATFORM WORKS: 9-LAYER LOOP ═══════════════════════════════ -->
 <section class="section" id="how-it-works">
   <div class="section-inner">
-    <div class="section-label">// HOW IT WORKS</div>
-    <h2 class="section-h">Three steps from idea<br>to data-backed verdict</h2>
-    <div class="steps">
-      <div class="step"><div class="step-num">01</div><div class="step-icon">📝</div><div class="step-h">INPUT YOUR IDEA</div><div class="step-body">Enter your business idea, starting capital, price, marketing budget, team size and location. Takes under 90 seconds.</div><div class="step-connector">→</div></div>
-      <div class="step"><div class="step-num">02</div><div class="step-icon">⚙️</div><div class="step-h">ENGINE SIMULATES</div><div class="step-body">We run 1,000 Monte Carlo scenarios across 90 days with real market volatility, industry cost benchmarks, and demand shocks.</div><div class="step-connector">→</div></div>
-      <div class="step"><div class="step-num">03</div><div class="step-icon">🎯</div><div class="step-h">GET YOUR VERDICT</div><div class="step-body">Receive a Go / Modify / Stop verdict with survival probability, break-even timeline, risk factors, and AI-powered improvement recommendations.</div></div>
+    <div class="section-label">// HOW THE PLATFORM WORKS</div>
+    <h2 class="section-h">One loop: data in,<br>decision out, outcome tracked</h2>
+    <p class="section-sub">Nine layers, one continuous cycle. AI recommends at every step — a human always approves before anything happens to the real business.</p>
+
+    <div style="display:flex;align-items:stretch;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:3rem;">
+      <div style="display:flex;align-items:stretch;">
+        <div class="pipe-card"><div class="pipe-ic" style="color:var(--cyan);border-color:rgba(0,224,96,.25);">DA</div><div class="pipe-t">Data Acquisition</div><div class="pipe-d">Every sale, expense, or inventory change you log is the entry point.</div></div>
+        <div class="pipe-arrow">→</div>
+      </div>
+      <div style="display:flex;align-items:stretch;">
+        <div class="pipe-card"><div class="pipe-ic" style="color:var(--cyan);border-color:rgba(0,224,96,.25);">OPS</div><div class="pipe-t">Business Operations</div><div class="pipe-d">Log sales, expenses, inventory, and team activity from one operating view.</div></div>
+        <div class="pipe-arrow">→</div>
+      </div>
+      <div style="display:flex;align-items:stretch;">
+        <div class="pipe-card"><div class="pipe-ic" style="color:var(--muted);border-color:var(--line-2);">BI</div><div class="pipe-t">Business Intelligence</div><div class="pipe-d">Analytics and reporting over your operations data.</div><div class="pipe-badge" style="background:rgba(93,104,133,.15);color:var(--muted);border-color:var(--line);">IN DEVELOPMENT</div></div>
+        <div class="pipe-arrow">→</div>
+      </div>
+      <div style="display:flex;align-items:stretch;">
+        <div class="pipe-card"><div class="pipe-ic" style="color:var(--purple);border-color:rgba(139,92,246,.25);">DT</div><div class="pipe-t">Digital Twin</div><div class="pipe-d">A live model of your business, recomputed from real operations data.</div></div>
+        <div class="pipe-arrow">→</div>
+      </div>
+      <div style="display:flex;align-items:stretch;">
+        <div class="pipe-card" style="position:relative;"><div class="pipe-badge" style="position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:var(--cyan);color:#04060d;border-color:transparent;font-weight:700;">START HERE</div><div class="pipe-ic" style="color:var(--cyan);border-color:rgba(0,224,96,.25);">SIM</div><div class="pipe-t">Simulation</div><div class="pipe-d">1,000-run Monte Carlo test of any decision or idea — no real business required.</div></div>
+        <div class="pipe-arrow">→</div>
+      </div>
+      <div style="display:flex;align-items:stretch;">
+        <div class="pipe-card"><div class="pipe-ic" style="color:var(--purple);border-color:rgba(139,92,246,.25);">AI</div><div class="pipe-t">AI Decision Intelligence</div><div class="pipe-d">Reads your twin and recommends a next decision. Never acts alone.</div></div>
+        <div class="pipe-arrow">→</div>
+      </div>
+      <div style="display:flex;align-items:stretch;">
+        <div class="pipe-card"><div class="pipe-ic" style="color:var(--emerald);border-color:rgba(16,185,129,.25);">ACT</div><div class="pipe-t">Approved Action</div><div class="pipe-d">Runs through a formal approval chain once you say go.</div></div>
+        <div class="pipe-arrow">→</div>
+      </div>
+      <div style="display:flex;align-items:stretch;">
+        <div class="pipe-card"><div class="pipe-ic" style="color:var(--emerald);border-color:rgba(16,185,129,.25);">MON</div><div class="pipe-t">Outcome Monitoring</div><div class="pipe-d">Tracks what actually happened after an approved decision.</div></div>
+        <div class="pipe-arrow">→</div>
+      </div>
+      <div style="display:flex;align-items:stretch;">
+        <div class="pipe-card"><div class="pipe-ic" style="color:var(--cyan);border-color:rgba(0,224,96,.25);">LRN</div><div class="pipe-t">Continuous Learning</div><div class="pipe-d">Feeds outcomes back to sharpen future recommendations.</div><div class="pipe-badge" style="background:rgba(93,104,133,.15);color:var(--muted);border-color:var(--line);">ROADMAP</div></div>
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:center;margin-top:1.5rem;">
+      <div style="display:flex;align-items:center;gap:.6rem;font-family:var(--mono);font-size:11.5px;color:var(--muted-2);border:1px dashed var(--line-2);border-radius:20px;padding:.5rem 1.1rem;">
+        ↻ Outcomes retrain the model — the loop feeds Day 1 again, sharper each cycle
+      </div>
+    </div>
+    <div style="display:flex;justify-content:center;margin-top:1rem;">
+      <div style="display:flex;align-items:center;gap:.7rem;font-family:var(--mono);font-size:12px;color:#c9c2f5;background:rgba(139,92,246,.07);border:1px solid rgba(139,92,246,.3);border-radius:8px;padding:.7rem 1.25rem;">
+        <span style="color:var(--purple);">◆</span>
+        AI Decision Intelligence recommends. It never acts alone — Approved Business Action only runs once a human signs off.
+      </div>
+    </div>
+
+    <div style="margin-top:4rem;">
+      <div class="section-label">// FASTEST PATH IN — SIMULATION</div>
+      <h3 style="font-family:var(--head);font-size:22px;font-weight:800;margin:.5rem 0 0;">No real business yet? Three steps to a verdict.</h3>
+      <div class="steps">
+        <div class="step"><div class="step-num">01</div><div class="step-icon">📝</div><div class="step-h">INPUT YOUR IDEA</div><div class="step-body">Enter your business idea, starting capital, price, marketing budget, team size and location. Takes under 90 seconds.</div><div class="step-connector">→</div></div>
+        <div class="step"><div class="step-num">02</div><div class="step-icon">⚙️</div><div class="step-h">ENGINE SIMULATES</div><div class="step-body">We run 1,000 Monte Carlo scenarios across 90 days with real market volatility, industry cost benchmarks, and demand shocks.</div><div class="step-connector">→</div></div>
+        <div class="step"><div class="step-num">03</div><div class="step-icon">🎯</div><div class="step-h">GET YOUR VERDICT</div><div class="step-body">Receive a Go / Modify / Stop verdict, then connect your real business anytime to keep the loop running with live data.</div></div>
+      </div>
     </div>
   </div>
 </section>
@@ -550,6 +616,18 @@ footer{position:relative;z-index:1;border-top:1px solid var(--line);padding:3rem
       <div class="feat-card"><div class="feat-icon">📋</div><div class="feat-h">Exportable Reports</div><div class="feat-body">Download a full PDF report with all charts, metrics, and AI analysis. Share with co-founders, investors, or advisors in one click.</div><span class="feat-tag pro">STARTER+</span></div>
       <div class="feat-card"><div class="feat-icon">🔗</div><div class="feat-h">Shareable Results</div><div class="feat-body">Generate a unique share link for your simulation results. Anyone with the link can view your full dashboard — perfect for feedback.</div><span class="feat-tag free">FREE</span></div>
       <div class="feat-card"><div class="feat-icon">💾</div><div class="feat-h">Simulation History</div><div class="feat-body">Every simulation is saved. Return to any previous run, restore it to the dashboard, or compare it against newer iterations.</div><span class="feat-tag free">FREE</span></div>
+    </div>
+
+    <div style="margin-top:3.5rem;">
+      <div class="section-label">// BEYOND SIMULATION — THE LIVE PLATFORM</div>
+      <h3 style="font-family:var(--head);font-size:22px;font-weight:800;margin:.5rem 0 1rem;">Connect a real business and the loop keeps running</h3>
+      <p class="section-sub" style="margin-bottom:0;">Simulation is where most people start. These layers pick up once you connect a real business.</p>
+      <div class="features-grid" style="margin-top:2rem;">
+        <div class="feat-card"><div class="feat-icon">🧾</div><div class="feat-h">Business Operations</div><div class="feat-body">Log sales, expenses, inventory, customer, and team events. KPI summaries roll up automatically over any date range.</div><span class="feat-tag free">FREE</span></div>
+        <div class="feat-card"><div class="feat-icon">🪞</div><div class="feat-h">Digital Twin</div><div class="feat-body">A continuously-updated model of your real business — profit, burn rate, churn, headcount — recomputed from operations data.</div><span class="feat-tag free">FREE</span></div>
+        <div class="feat-card"><div class="feat-icon">🤖</div><div class="feat-h">AI Decision Intelligence</div><div class="feat-body">Reads your digital twin and recommends specific next decisions with rationale and expected outcome. Never acts alone.</div><span class="feat-tag ai">AI</span></div>
+        <div class="feat-card"><div class="feat-icon">✅</div><div class="feat-h">Approve &amp; Track Outcomes</div><div class="feat-body">Approve or decline a recommendation, then record what actually happened — a real audit trail from suggestion to result.</div><span class="feat-tag free">FREE</span></div>
+      </div>
     </div>
   </div>
 </section>
@@ -590,12 +668,54 @@ footer{position:relative;z-index:1;border-top:1px solid var(--line);padding:3rem
   </div>
 </section>
 
+<!-- ══ OPERATING VIEW (real business) ═══════════════════════════════════════ -->
+<section class="section alt">
+  <div class="section-inner">
+    <div class="section-label">// THE OPERATING VIEW</div>
+    <h2 class="section-h">Once you connect a real business,<br>the same dashboard keeps going</h2>
+    <p class="section-sub">Digital twin, AI recommendation, and outcome tracking — from one connected model, not three separate tools.</p>
+    <div style="margin-top:2.5rem;background:rgba(8,12,22,.9);border:1px solid var(--line-2);border-radius:14px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.4);">
+      <div style="display:flex;gap:2px;background:rgba(255,255,255,.06);border-bottom:1px solid var(--line);flex-wrap:wrap;">
+        <div style="padding:.85rem 1.35rem;font-family:var(--mono);font-size:11px;letter-spacing:.03em;color:var(--text);border-bottom:2px solid var(--cyan);">DIGITAL TWIN</div>
+        <div style="padding:.85rem 1.35rem;font-family:var(--mono);font-size:11px;letter-spacing:.03em;color:var(--muted);">AI DECISIONS</div>
+        <div style="padding:.85rem 1.35rem;font-family:var(--mono);font-size:11px;letter-spacing:.03em;color:var(--muted);">OUTCOME MONITOR</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1.3fr;gap:0;">
+        <div style="padding:1.75rem;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:1rem;">
+          <div style="font-family:var(--mono);font-size:10.5px;color:var(--muted-2);letter-spacing:.08em;">DIGITAL TWIN — CURRENT STATE</div>
+          <div><div style="font-family:var(--mono);font-size:10.5px;color:var(--muted-2);">BUSINESS</div><div style="font-size:14px;">Organic Grocery Delivery — Nairobi</div></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.85rem;font-family:var(--mono);font-size:11.5px;">
+            <div><div style="color:var(--muted-2);">PROFIT (30d)</div><div>KES 612,000</div></div>
+            <div><div style="color:var(--muted-2);">REVENUE (30d)</div><div>KES 2.1M</div></div>
+            <div><div style="color:var(--muted-2);">CHURN (30d)</div><div style="color:var(--amber);">4.2%</div></div>
+            <div><div style="color:var(--muted-2);">SNAPSHOT AGE</div><div style="color:var(--cyan);">Fresh — 4 min</div></div>
+          </div>
+          <div style="margin-top:auto;background:rgba(139,92,246,.07);border:1px solid rgba(139,92,246,.25);border-radius:8px;padding:.85rem;font-family:var(--mono);font-size:10.5px;color:#c9c2f5;">
+            AI DECISION: Reduce logistics spend 8% and reroute to Zone 3. <span style="color:var(--purple);">Awaiting approval →</span>
+          </div>
+        </div>
+        <div style="padding:1.75rem;display:flex;flex-direction:column;gap:1rem;">
+          <div style="font-family:var(--mono);font-size:10.5px;color:var(--muted-2);letter-spacing:.08em;">RECOMMENDATION → APPROVAL → OUTCOME</div>
+          <div style="display:flex;flex-direction:column;gap:.6rem;font-family:var(--mono);font-size:11px;">
+            <div style="display:flex;justify-content:space-between;padding:.5rem .75rem;background:rgba(255,255,255,.03);border-radius:7px;"><span>1. AI recommends a decision</span><span style="color:var(--cyan);">✓ generated</span></div>
+            <div style="display:flex;justify-content:space-between;padding:.5rem .75rem;background:rgba(255,255,255,.03);border-radius:7px;"><span>2. You approve or decline</span><span style="color:var(--purple);">⏸ awaiting you</span></div>
+            <div style="display:flex;justify-content:space-between;padding:.5rem .75rem;background:rgba(255,255,255,.03);border-radius:7px;"><span>3. Outcome is recorded</span><span style="color:var(--muted-2);">— pending</span></div>
+          </div>
+          <div style="background:rgba(16,185,129,.07);border:1px solid rgba(16,185,129,.25);border-radius:8px;padding:.85rem;font-family:var(--mono);font-size:10.5px;color:#a7f3d3;">
+            Once approved, the decision runs through a real approval record — not a checkbox — so outcome tracking has something to compare against.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ══ PRICING ═════════════════════════════════════════════════════════════ -->
 <section class="section alt" id="pricing">
   <div class="section-inner" style="text-align:center;">
     <div class="section-label" style="display:inline-block;">// PRICING</div>
     <h2 class="section-h" style="margin-top:.5rem;">Start free. Scale when ready.</h2>
-    <p class="section-sub" style="margin:0 auto 2.5rem;text-align:center;">Every plan includes the core simulation engine. Upgrade for deeper analysis and team features.</p>
+    <p class="section-sub" style="margin:0 auto 1rem;text-align:center;">Every plan includes the simulation engine and the operating loop it feeds — Operations, Digital Twin, and AI Decisions. Upgrade for deeper simulation analysis and team features.</p>
     <div class="pricing-grid">
       <div class="plan-card">
         <div class="plan-icon">🌱</div><div class="plan-name">FREE</div>
@@ -637,8 +757,8 @@ footer{position:relative;z-index:1;border-top:1px solid var(--line);padding:3rem
 <section class="reg-section" id="register">
   <div class="reg-inner">
     <div class="section-label" style="display:inline-block;margin-bottom:.75rem;">// GET STARTED</div>
-    <h2 class="reg-h">Launch Your First<br><span class="c">Simulation</span> Now</h2>
-    <p class="reg-sub">Create a free account and run your first 90-day business simulation in under 60 seconds. No credit card. No fluff.</p>
+    <h2 class="reg-h">Run the Engine<br>That Powers the <span class="c">Platform</span></h2>
+    <p class="reg-sub">Create a free account and run your first 90-day simulation in under 60 seconds — then see how it connects to the rest of the loop.</p>
     <div class="reg-box" id="reg-box">
       <div class="reg-field">
         <label class="reg-label" for="reg-name">YOUR NAME</label>
@@ -682,11 +802,13 @@ footer{position:relative;z-index:1;border-top:1px solid var(--line);padding:3rem
     <div class="section-label">// FAQ</div>
     <h2 class="section-h">Common questions</h2>
     <div class="faq-list">
+      <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">Do I need a real, running business to use this?<span class="faq-chevron">▾</span></button><div class="faq-a">No. Simulation works from zero — test an idea before it exists. Once you have a real business, connect it through Operations and the rest of the loop (digital twin, AI recommendations, outcome tracking) comes online from the same account.</div></div>
+      <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">Does the AI ever act on its own?<span class="faq-chevron">▾</span></button><div class="faq-a">No. AI Decision Intelligence only recommends. Every choice — approve or decline — is yours, and it's recorded through a formal approval step, not a checkbox. Nothing executes without that explicit approval.</div></div>
       <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">How accurate is the simulation?<span class="faq-chevron">▾</span></button><div class="faq-a">The engine uses industry-calibrated cost structures, demand elasticity curves, and real-world volatility bands derived from thousands of business data points. Monte Carlo with 1,000 runs gives you statistically meaningful probability distributions — not a single optimistic forecast. That said, it's a simulation tool: real-world results depend on execution, timing, and factors no model can fully predict.</div></div>
       <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">What industries does INFINICUS support?<span class="faq-chevron">▾</span></button><div class="faq-a">Currently: Food & Beverage, Retail, Services, Technology / SaaS, Logistics & Delivery, Education & Training, Health & Wellness, Real Estate, Manufacturing, Media & Content, Hospitality, and a General model. Each industry has its own cost ratios, demand curves, and margin benchmarks built in.</div></div>
       <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">Do I need technical skills to use it?<span class="faq-chevron">▾</span></button><div class="faq-a">None. You enter plain language inputs: your idea, capital, price, marketing budget, and location. The engine handles all the maths. Results are explained in plain English alongside the data. If you've ever used a calculator, you can use INFINICUS.</div></div>
       <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">What does Go / Modify / Stop actually mean?<span class="faq-chevron">▾</span></button><div class="faq-a"><strong style="color:var(--emerald)">GO</strong> — Strong unit economics and survival probability above 55%. <strong style="color:var(--amber)">MODIFY</strong> — Potential but significant risks; specific changes to price, capital, or market are recommended. <strong style="color:var(--red)">STOP</strong> — Under these parameters, the model consistently fails across most scenarios. Fundamental rethinking is needed.</div></div>
-      <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">Is my data private?<span class="faq-chevron">▾</span></button><div class="faq-a">Yes. All simulation data is stored in your browser's local storage by default — it never leaves your device unless you choose to share a result link. Account data (email) is stored securely. We do not sell or share your business ideas with anyone.</div></div>
+      <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">Is my data private?<span class="faq-chevron">▾</span></button><div class="faq-a">Yes. Simulation data is stored in your browser's local storage by default — it never leaves your device unless you choose to share a result link. If you connect a real business, that operations data is stored securely on the platform, isolated to your account. We do not sell or share your business ideas or data with anyone.</div></div>
       <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">Can I use INFINICUS on mobile?<span class="faq-chevron">▾</span></button><div class="faq-a">Yes. INFINICUS ENGINE is a Progressive Web App (PWA) — it works on any modern mobile browser and can be installed to your home screen. The full simulation, dashboard, and AI analysis all work on mobile. Some advanced chart interactions work better on desktop.</div></div>
     </div>
   </div>
@@ -695,11 +817,11 @@ footer{position:relative;z-index:1;border-top:1px solid var(--line);padding:3rem
 <!-- ══ CTA STRIP ═══════════════════════════════════════════════════════════ -->
 <section class="section" style="padding:4rem 2rem;text-align:center;position:relative;z-index:1;background:radial-gradient(ellipse 60% 80% at 50% 50%,rgba(0,224,96,.05),transparent 70%);">
   <div style="max-width:640px;margin:0 auto;">
-    <h2 style="font-family:var(--head);font-size:clamp(24px,4vw,38px);font-weight:900;margin-bottom:.85rem;">Don't guess. Simulate.</h2>
-    <p style="font-size:15px;color:var(--fg-2);line-height:1.65;margin-bottom:2rem;">Join thousands of founders who validate before they invest. Your first simulation is free — no card required.</p>
+    <h2 style="font-family:var(--head);font-size:clamp(24px,4vw,38px);font-weight:900;margin-bottom:.85rem;">Don't guess. Run the loop.</h2>
+    <p style="font-size:15px;color:var(--fg-2);line-height:1.65;margin-bottom:2rem;">Your first simulation is free — no card required. The rest of the platform is waiting underneath it.</p>
     <div style="display:flex;gap:.85rem;justify-content:center;flex-wrap:wrap;">
       <a class="btn-hero-primary" href="#register">⚡ Start Free Simulation</a>
-      <a class="btn-hero-secondary" href="index.html">Go Directly to Engine →</a>
+      <a class="btn-hero-secondary" href="#features">See the Full Platform →</a>
     </div>
   </div>
 </section>
@@ -712,8 +834,8 @@ footer{position:relative;z-index:1;border-top:1px solid var(--line);padding:3rem
         <div class="logo-mark"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="22" height="22"><rect width="100" height="100" rx="22" fill="#07080a"/><path d="M50,50 C50,34 38,24 28,30 C18,36 18,64 28,70 C38,76 50,66 50,50Z" fill="none" stroke="#00e676" stroke-width="9" stroke-linecap="round"/><path d="M50,50 C50,34 62,24 72,30 C82,36 82,64 72,70 C62,76 50,66 50,50Z" fill="none" stroke="#00e676" stroke-width="9" stroke-linecap="round"/></svg></div>
         INFIN<span class="logo-c">ICUS</span>
       </a>
-      <p class="footer-tagline">90-day Monte Carlo business simulation. Know before you invest.</p>
-      <div style="display:flex;gap:.5rem;flex-wrap:wrap;"><span class="tag cyan">ENGINE v3</span><span class="tag free">PWA</span></div>
+      <p class="footer-tagline">The operating and decision-intelligence platform for running a business on data — from simulation to approved action.</p>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap;"><span class="tag cyan">9 LAYERS</span><span class="tag free">PWA</span></div>
     </div>
     <div><div class="footer-col-h">PRODUCT</div><div class="footer-links"><a href="#how-it-works">How It Works</a><a href="#features">Features</a><a href="#pricing">Pricing</a><a href="index.html">Launch Engine</a><a href="#" onclick="openAccount();return false;">Account</a></div></div>
     <div><div class="footer-col-h">RESOURCES</div><div class="footer-links"><a href="#faq">FAQ</a><a href="legal.html#privacy">Privacy Policy</a><a href="legal.html#terms">Terms of Service</a><a href="legal.html#disclaimer">Disclaimer</a></div></div>
@@ -1158,6 +1280,14 @@ function prefillRegLoggedIn() {
 function scrollToReg() {
   if (U) { openAccount(); return; }
   const el = $('register'); if (el) el.scrollIntoView({behavior:'smooth'});
+}
+
+// Remembers which entry path the visitor picked in the hero ("Connect My
+// Existing Business" vs "Prepare My Business for Launch") so index.html can
+// land them on the right section right after signup, instead of always
+// dropping everyone into the Simulation setup form.
+function setLandingIntent(intent) {
+  try { localStorage.setItem('inf_landing_intent', intent); } catch (e) {}
 }
 
 // ══ ACCOUNT OVERLAY ══════════════════════════════════════════════════════════

@@ -6,6 +6,7 @@ import {
   registerBodySchema, registerResponseSchema,
   loginBodySchema, loginResponseSchema,
   sessionResponseSchema,
+  verifyEmailBodySchema, verifyEmailResponseSchema,
 } from '../schemas/auth.js';
 import { errorResponseSchema } from '../schemas/common.js';
 
@@ -17,13 +18,25 @@ export default async function authRoutes(app: FastifyInstance) {
   server.post('/v1/auth/register', {
     schema: {
       tags: ['auth'],
-      summary: 'Register a new user account (starts in pending status)',
+      summary: 'Register a new user account. Activated immediately (usable right away); a real verification email is also sent — see POST /v1/auth/verify-email.',
       body: registerBodySchema,
       response: { 201: registerResponseSchema, 400: errorResponseSchema, 409: errorResponseSchema },
     },
   }, async (request, reply) => {
     const user = await authService.register(request.body.email, request.body.password);
     return reply.status(201).send({ id: user.id, email: user.email, status: user.status });
+  });
+
+  server.post('/v1/auth/verify-email', {
+    schema: {
+      tags: ['auth'],
+      summary: 'Confirm ownership of the registered email address via the token sent at registration. Does not affect account status (already active) — tracked independently.',
+      body: verifyEmailBodySchema,
+      response: { 200: verifyEmailResponseSchema, 400: errorResponseSchema },
+    },
+  }, async (request, reply) => {
+    const user = await authService.verifyEmail(request.body.token);
+    return reply.status(200).send({ id: user.id, email: user.email, emailVerifiedAt: user.emailVerifiedAt!.toISOString() });
   });
 
   server.post('/v1/auth/login', {

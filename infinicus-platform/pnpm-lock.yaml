@@ -51,6 +51,9 @@ importers:
 
   apps/api:
     dependencies:
+      '@fastify/cors':
+        specifier: ^11.0.0
+        version: 11.3.0
       '@fastify/helmet':
         specifier: ^13.0.0
         version: 13.1.0
@@ -514,6 +517,18 @@ importers:
         specifier: ^1.6.0
         version: 1.6.1(@types/node@26.1.1)(lightningcss@1.33.0)
 
+  packages/llm-client:
+    devDependencies:
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.20.1
+      typescript:
+        specifier: ^5.4.0
+        version: 5.9.3
+      vitest:
+        specifier: ^1.6.0
+        version: 1.6.1(@types/node@22.20.1)(lightningcss@1.33.0)
+
   packages/observability:
     dependencies:
       '@infinicus/configuration':
@@ -564,6 +579,18 @@ importers:
         specifier: ^5.4.0
         version: 5.9.3
 
+  packages/simulation-engine:
+    devDependencies:
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.20.1
+      typescript:
+        specifier: ^5.4.0
+        version: 5.9.3
+      vitest:
+        specifier: ^1.6.0
+        version: 1.6.1(@types/node@22.20.1)(lightningcss@1.33.0)
+
   packages/testing:
     dependencies:
       '@infinicus/event-contracts':
@@ -588,9 +615,15 @@ importers:
       '@infinicus/database':
         specifier: workspace:*
         version: link:../database
+      '@infinicus/llm-client':
+        specifier: workspace:*
+        version: link:../llm-client
       '@infinicus/shared-types':
         specifier: workspace:*
         version: link:../shared-types
+      '@infinicus/simulation-engine':
+        specifier: workspace:*
+        version: link:../simulation-engine
     devDependencies:
       '@types/pg':
         specifier: ^8.11.6
@@ -792,6 +825,9 @@ packages:
 
   '@fastify/ajv-compiler@4.0.5':
     resolution: {integrity: sha512-KoWKW+MhvfTRWL4qrhUwAAZoaChluo0m0vbiJlGMt2GXvL4LVPQEjt8kSpHI3IBq5Rez8fg+XeH3cneztq+C7A==}
+
+  '@fastify/cors@11.3.0':
+    resolution: {integrity: sha512-ggQGua+xHv1MvePbPr0v//xLYEsCXbWspquXCJS9Ot5YoRXq8J8ZWzHnxDBVnbtXosvistXo6LtNzOJswf64Fw==}
 
   '@fastify/error@4.2.0':
     resolution: {integrity: sha512-RSo3sVDXfHskiBZKBPRgnQTtIqpi/7zhJOEmAxCiBcM7d0uwdGdxLlsCaLzGs8v8NnxIRlfG0N51p5yFaOentQ==}
@@ -2415,6 +2451,11 @@ snapshots:
       ajv: 8.20.0
       ajv-formats: 3.0.1(ajv@8.20.0)
       fast-uri: 3.1.4
+
+  '@fastify/cors@11.3.0':
+    dependencies:
+      fastify-plugin: 6.0.0
+      toad-cache: 3.7.4
 
   '@fastify/error@4.2.0': {}
 

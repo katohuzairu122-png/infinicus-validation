@@ -20,3 +20,9 @@ export type { Task, CreateTaskInput } from './TaskRepository.js';
 
 export { InventoryBalanceRepository } from './InventoryBalanceRepository.js';
 export type { InventoryBalance, CreateInventoryBalanceInput } from './InventoryBalanceRepository.js';
+
+export { BusinessEventRepository } from './BusinessEventRepository.js';
+export type {
+  BusinessEvent, LogBusinessEventInput, BusinessEventType, BusinessEventAction,
+  SalesAggregate, ExpensesAggregate, InventoryAggregate, CustomersAggregate, TeamAggregate,
+} from './BusinessEventRepository.js';

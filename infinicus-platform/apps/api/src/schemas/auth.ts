@@ -26,3 +26,13 @@ export const sessionResponseSchema = z.object({
   user: z.object({ id: z.string().uuid(), email: z.string(), status: z.string() }),
   sessionId: z.string().uuid(),
 });
+
+export const verifyEmailBodySchema = z.object({
+  token: z.string().min(1),
+});
+
+export const verifyEmailResponseSchema = z.object({
+  id: z.string().uuid(),
+  email: z.string(),
+  emailVerifiedAt: z.string().datetime(),
+});
