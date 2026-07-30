@@ -1790,6 +1790,10 @@ async function supabaseSaveSimulation(entry) {
       <div style="font-family:var(--mono);font-size:12px;color:var(--muted-2);text-align:center;padding:1.5rem;">Click LOAD TWIN to see your live business snapshot.</div>
     </div>
     <div style="margin-top:1.5rem;padding:1rem;background:rgba(0,224,96,.04);border:1px solid rgba(0,224,96,.15);border-radius:10px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;">
+      <div style="font-family:var(--mono);font-size:12px;color:var(--muted);">Want to test a decision before committing to it?</div>
+      <button class="btn-sm" onclick="bizRunSimulationFromTwin()">▶ RUN SIMULATION FROM THIS TWIN →</button>
+    </div>
+    <div style="margin-top:.75rem;padding:1rem;background:rgba(0,224,96,.04);border:1px solid rgba(0,224,96,.15);border-radius:10px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;">
       <div style="font-family:var(--mono);font-size:12px;color:var(--muted);">Ready for AI-powered recommendations?</div>
       <button class="btn-sm" onclick="nav('decisions')">AI DECISION INTELLIGENCE →</button>
     </div>
@@ -6808,6 +6812,65 @@ function renderTwin(t, cached) {
       <div class="biz-kpi-sub">${fmtN(t.team.hired30d)} hired · ${fmtN(t.team.terminated30d)} left</div>
     </div>
   </div>`;
+}
+
+// Seeds v3's own Simulation Setup form (sec-data) with whatever the connected
+// business's real data can honestly supply, then hands off to the exact same
+// startSim()/runBackendSimulation()/renderAll() pipeline every idea-only
+// simulation already uses — v3 itself is untouched, this just pre-fills its
+// inputs before the owner reviews and presses RUN. Deliberately does NOT read
+// business.legalName/industry: the shadow-account bridge (ensureBackendBusiness())
+// creates every business with a fixed placeholder name and no industry set,
+// so those fields carry no real information yet — treating them as "derived
+// from real data" would be exactly the kind of fabrication this platform is
+// built to avoid. Only the twin's transaction-derived average price is real;
+// starting capital, marketing budget, team size, industry, and the idea
+// description all stay as v3's own defaults, called out explicitly in the
+// banner rather than guessed.
+async function bizRunSimulationFromTwin() {
+  if (!_bizCurrentId) { showToast('Load your Digital Twin first.'); return; }
+  showToast('Pulling your business data…');
+  let twinResp;
+  try {
+    twinResp = await bizBackendFetch('/v1/businesses/' + _bizCurrentId + '/twin');
+  } catch (e) {
+    showToast('Could not load business data: ' + e.message);
+    return;
+  }
+  const t = twinResp.twin;
+  const derived = [];
+  const notDerived = ['Business idea / description', 'Industry', 'Starting capital', 'Marketing budget/month', 'Team size'];
+
+  const rate = CUR[curCode]?.r || 1;
+  if (t && t.financial.salesCount30d > 0) {
+    const avgPrice = t.financial.revenue30d / t.financial.salesCount30d;
+    $v('i-price', (avgPrice * rate).toFixed(2));
+    derived.push('Price (avg. transaction, last 30 days)');
+  } else {
+    notDerived.unshift('Price per unit');
+  }
+
+  ['i-price'].forEach(id => {
+    const el = $(id);
+    if (!el) return;
+    el.style.transition = 'border-color .2s, box-shadow .2s';
+    el.style.borderColor = '#00e676';
+    el.style.boxShadow = '0 0 0 2px rgba(0,224,96,.25)';
+    setTimeout(() => { el.style.borderColor = ''; el.style.boxShadow = ''; el.style.transition = ''; }, 4000);
+  });
+
+  nav('data');
+
+  const banner = $('alt-applied-banner');
+  const titleEl = $('alt-banner-title');
+  const bodyEl = $('alt-banner-body');
+  if (titleEl) titleEl.textContent = 'PRE-FILLED FROM YOUR DIGITAL TWIN';
+  if (bodyEl) {
+    bodyEl.innerHTML =
+      `<strong style="color:var(--text)">From real data:</strong> ${derived.length ? derived.join(', ') : 'not enough operations history yet'}.<br>` +
+      `<strong style="color:var(--amber)">No real-data equivalent tracked yet — please fill in:</strong> ${notDerived.join(', ')}.`;
+  }
+  if (banner) { banner.style.display = 'block'; banner.style.borderColor = 'rgba(0,224,96,.4)'; }
 }
 
 // ── Decision Intelligence ─────────────────────────────────────────────────────
