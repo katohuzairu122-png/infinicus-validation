@@ -20,7 +20,7 @@ export { DigitalTwinInstanceRepository } from './DigitalTwinInstanceRepository.j
 export type { DigitalTwinInstance } from './DigitalTwinInstanceRepository.js';
 
 export { DigitalTwinSnapshotRepository } from './DigitalTwinSnapshotRepository.js';
-export type { DigitalTwinSnapshot, DigitalTwinSnapshotVersion } from './DigitalTwinSnapshotRepository.js';
+export type { DigitalTwinSnapshot, DigitalTwinSnapshotVersion, DigitalTwinSnapshotValue } from './DigitalTwinSnapshotRepository.js';
 
 export { StateVariableRepository } from './StateVariableRepository.js';
 export type { StateVariableDefinition, StateVariableValue } from './StateVariableRepository.js';

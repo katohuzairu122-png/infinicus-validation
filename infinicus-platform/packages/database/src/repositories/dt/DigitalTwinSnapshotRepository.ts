@@ -24,6 +24,12 @@ export interface DigitalTwinSnapshotVersion {
   correlationId: string;
 }
 
+export interface DigitalTwinSnapshotValue {
+  variableCode: string;
+  valueJson: unknown;
+  confidence: number | null;
+}
+
 function rowToSnapshot(row: Record<string, unknown>): DigitalTwinSnapshot {
   return {
     id: row.id as string,
@@ -190,6 +196,24 @@ export class DigitalTwinSnapshotRepository {
         [instanceId]
       );
       return result.rows.map(rowToSnapshot);
+    });
+  }
+
+  /** Joins to the published version server-side — mirrors SimulationResultRepository.getMetricsForPublishedResult. */
+  async getValuesForPublishedSnapshot(ctx: TenantContext, snapshotId: string): Promise<DigitalTwinSnapshotValue[]> {
+    return withTenantTransaction(ctx, async (client) => {
+      const result = await client.query<Record<string, unknown>>(
+        `SELECT v.variable_code, v.value_json, v.confidence
+         FROM business_digital_twin.digital_twin_snapshot_values v
+         JOIN business_digital_twin.digital_twin_snapshot_versions sv ON sv.id = v.snapshot_version_id
+         WHERE sv.snapshot_id = $1 AND sv.status = 'published'`,
+        [snapshotId]
+      );
+      return result.rows.map((row) => ({
+        variableCode: row.variable_code as string,
+        valueJson: row.value_json,
+        confidence: row.confidence === null ? null : Number(row.confidence),
+      }));
     });
   }
 }

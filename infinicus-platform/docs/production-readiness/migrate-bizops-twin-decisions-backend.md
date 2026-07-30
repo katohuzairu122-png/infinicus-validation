@@ -1,0 +1,43 @@
+# Migrate Operations / Digital Twin / AI Decisions onto the real Postgres backend
+
+Scope: replace the legacy Cloudflare D1 + KV backend (`functions/api/business/*.js`) that has powered the live site's Operations, Digital Twin, and AI Decisions sidebar sections, with the real Postgres-backed `infinicus-platform/apps/api`. Clean cutover — no D1 data import; existing D1 data is left in place, untouched but unused, once the frontend cutover (a separate, following stage) lands. Backend-only in this pass — `index.html` still calls the legacy endpoints until the frontend cutover stage.
+
+## What this build found
+
+Confirmed via research before writing any code:
+
+- The legacy backend is real, not a stub — a genuine event-log-and-rollup implementation over Cloudflare D1, with a working KV-cached Digital Twin and a real Anthropic API call powering AI Decisions recommendations.
+- It has **zero server-verified identity** — every request trusts a client-supplied `user_email`/`business_id`. Moving to the real backend's bearer-token + tenant auth closes this for free.
+- The Postgres platform already had complete, tested repositories for every relevant domain (Business Operations, Digital Twin, ADI, ABA, OM) — but almost none of it was wired to HTTP, and two real gaps existed underneath the wiring gap:
+  1. **No transactional event ledger existed anywhere in Postgres.** BO's existing repositories (Leads, Opportunities, Purchase Orders, Support Cases, Tasks, Inventory Balance) are CRM/pipeline-shaped — none of them can represent "log a $40 sale" or "log a churn event," which is what the legacy Operations/Twin feature set is built around.
+  2. **No code anywhere generated an AI recommendation grounded in live business state** — the existing ADI-write path (`SimulationOrchestrationService.recordRecommendation`) only ever wrote deterministic, simulation-verdict-derived recommendations. Real LLM-grounded recommendations from live twin data were new capability, not just new wiring.
+  3. `DecisionWorkflowService`'s `createReview`/`recordOutcome` already existed but only work against an *already-existing* ABA intake package / OM monitored action — nothing auto-created those prerequisites.
+
+## What this build did
+
+- **Business event ledger** (`infrastructure/database/migrations/0158-0160`, `packages/database/src/repositories/bo/BusinessEventRepository.ts`): a new, deliberately lightweight, insert-only `business_operations.business_events` table (sale/expense/inventory/customer/team), plus the five KPI-rollup queries (`aggregateSales/Expenses/Inventory/Customers/Team`) ported directly from the legacy `summary.js`/`twin.js` SQL.
+- **Digital Twin computation** (`packages/workflow/src/TwinComputationService.ts`): computes and persists real Digital Twin snapshots from the event ledger, through the platform's actual DT create→validate→publish lifecycle (`DigitalTwinDefinitionRepository`/`DigitalTwinInstanceRepository`/`DigitalTwinSnapshotRepository`) — not a shortcut around it. "1-hour cache" is reproduced by checking the latest published snapshot's age; no new cache infrastructure. Added `DigitalTwinSnapshotRepository.getValuesForPublishedSnapshot()` (a real, previously-missing read method — the repository could write snapshot values but had no way to read them back).
+- **Operations + Twin HTTP routes** (`apps/api/src/routes/bizops.ts`, `apps/api/src/routes/twin.ts`): `POST/GET .../events`, `GET .../events/summary`, `GET .../twin`, `POST .../twin/refresh`.
+- **AI Decisions** (`packages/llm-client` — new minimal package, a straight port of the legacy `fetch()`-based Anthropic call, no SDK; `packages/workflow/src/BusinessDecisionRecommendationService.ts`; `apps/api/src/routes/decisionRecommendations.ts`):
+  - `recommend()` calls the real Anthropic API (`ANTHROPIC_API_KEY`, optional — same non-blocking pattern as `RESEND_API_KEY`) when configured, falling back to a deterministic threshold-based generator otherwise.
+  - **A deliberate upgrade over the legacy behavior**: "choosing" a recommendation now runs through the platform's real approval chain (ADI publication → ABA intake → review → `ApprovalDecision` → `ApprovedAction`) instead of flipping a boolean flag — this is what those layers exist for, and per AD-021 a human's explicit approve/reject belongs in ABA's formal model, not an ad-hoc flag. Declining runs the same review/decision steps with outcome `reject`.
+  - Recording an outcome runs the same real handoff chain forward (ABA publication → OM intake → monitoring plan → monitored action → `OutcomeObservation`).
+  - Added `DecisionRecommendationRepository.getPublishedVersion()` and `getPublishedVersionsForCase()` (real, previously-missing read methods needed to look up a recommendation's summary text/version id from just its header id).
+
+## Known, deliberate simplifications
+
+- **Decision history doesn't yet cross-reference chosen/outcome status.** `getHistory()` returns each past recommendation's text and timestamp; `chosen`/`outcomeNotes` come back `null` rather than fabricated. No repository method currently correlates a `DecisionCase` back to its ABA `ApprovalDecision` without a new cross-domain join this build didn't introduce — a real, bounded, explicitly-deferred gap, not a silently dropped one.
+- **`startChoiceReview`'s response contract differs from the legacy one on purpose.** The legacy `record-choice`/`record-outcome` pair reuses the same `decision_id` for both calls (one D1 row updated in place). The real chain instead returns a distinct `approvedActionId` from the choice step, which the caller must pass to the outcome step — a necessary consequence of running through real, separately-keyed domain entities instead of one mutable row. The frontend cutover stage needs to carry this id through, not just reuse the original recommendation id.
+- Single business per browser (reusing Simulation's shadow-account bridge) — the legacy multi-business dropdown is not carried over in this pass.
+
+## Verification
+
+- `pnpm turbo run build lint typecheck test` for every touched package (`@infinicus/database`, `@infinicus/workflow`, `@infinicus/api`, `@infinicus/llm-client`) — clean, including the full 2819-test `@infinicus/database` suite against live Postgres.
+- New unit tests: `packages/llm-client/tests/AnthropicClient.test.ts` (mocked fetch — success, non-2xx, empty-content cases). New integration tests: a `BusinessEventRepository` block added to `packages/database/tests/bo-repositories.integration.test.ts` (log + all 5 aggregations + tenant isolation).
+- Live end-to-end HTTP test (no browser) against local Postgres + `apps/api`, `ANTHROPIC_API_KEY` deliberately unset to exercise the deterministic fallback path: register → onboard → log 6 events across all 5 event types → KPI summary reflects them → fetch twin (computes fresh) → fetch again (cached) → force-refresh (recomputes) → generate 3 recommendations → approve one (real ABA chain, gets an `approvedActionId`) → decline another (real ABA chain, `reject`) → record the approved one's outcome (real OM chain) → fetch history. All 12 steps passed.
+- Spot-checked actual Postgres rows afterward (not just the HTTP responses): non-zero, correctly-linked rows across `business_events`, `digital_twin_snapshots` (published), `decision_recommendations` (published), `adi_publication_packages`, `aba_intake_packages`, `approval_decisions` (approved), `approved_actions`, `aba_publication_packages`, `om_intake_packages`, `monitored_actions`, and `outcome_observations` — `approved_actions`/`monitored_actions`/`outcome_observations` each showed exactly 1 row, matching the single full approve→outcome run.
+- Found and fixed one real bug during E2E testing: `startChoiceReview` initially passed the recommendation's header id where the ADI publication chain needs the recommendation *version* id, causing a foreign-key violation — fixed by adding `DecisionRecommendationRepository.getPublishedVersion()` and using it. Also fixed a teardown gap in `bo-repositories.integration.test.ts` (didn't clean up `business_events` rows before deleting their parent `businesses` fixture rows, breaking the suite on any run that populated the new table).
+
+## What's still pending
+
+- **Frontend cutover** (`index.html`'s `sec-operations`/`sec-twin`/`sec-decisions` sections, currently calling `/api/business/*`) — not in this pass. Needs to reuse `ensureBackendBusiness()` (the Simulation flow's shadow-account bridge) rather than provisioning a second identity, and needs to carry `approvedActionId` from the choice step through to the outcome step (see "known simplifications" above).

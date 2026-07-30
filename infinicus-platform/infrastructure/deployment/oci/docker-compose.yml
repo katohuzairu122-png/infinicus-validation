@@ -53,6 +53,7 @@ services:
       RESEND_API_KEY: ${RESEND_API_KEY:-}
       EMAIL_FROM_ADDRESS: ${EMAIL_FROM_ADDRESS:-INFINICUS <noreply@infini-cus.com>}
       EMAIL_VERIFICATION_URL_BASE: ${EMAIL_VERIFICATION_URL_BASE:-https://infini-cus.com/verify-email}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       LOG_LEVEL: ${LOG_LEVEL:-info}
     # Not published directly either — Caddy is the only public entry
     # point, so every request is TLS-terminated before it reaches this

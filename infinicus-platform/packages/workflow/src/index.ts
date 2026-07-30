@@ -13,3 +13,13 @@ export { SimulationOrchestrationService, ValidationError as SimulationValidation
 export type {
   StartSimulationInput, SimulationRunStatus, SimulationRunStatusResult,
 } from './SimulationOrchestrationService.js';
+
+export { TwinComputationService } from './TwinComputationService.js';
+export type {
+  TwinSnapshotResult, TwinFinancial, TwinCustomers, TwinOperations, TwinTeam,
+} from './TwinComputationService.js';
+
+export { BusinessDecisionRecommendationService } from './BusinessDecisionRecommendationService.js';
+export type {
+  RecommendedDecision, ChoiceReviewResult, DecisionHistoryEntry, RiskLevel,
+} from './BusinessDecisionRecommendationService.js';

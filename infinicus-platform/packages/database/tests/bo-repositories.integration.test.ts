@@ -19,6 +19,7 @@ import {
   IncidentRepository,
   TaskRepository,
   InventoryBalanceRepository,
+  BusinessEventRepository,
 } from '../src/repositories/bo/index.js';
 import { NotFoundError } from '../src/repositories/bo/errors.js';
 
@@ -220,6 +221,8 @@ async function teardownBOIntegration(): Promise<void> {
     await clean(`DELETE FROM business_operations.department_responsibilities
                  WHERE tenant_id = ANY($1)`);
     await clean(`DELETE FROM business_operations.business_profile_extensions
+                 WHERE tenant_id = ANY($1)`);
+    await clean(`DELETE FROM business_operations.business_events
                  WHERE tenant_id = ANY($1)`);
 
     // Platform fixtures
@@ -695,5 +698,79 @@ describe.runIf(run)('InventoryBalanceRepository', () => {
   it('tenant isolation: T2 cannot adjust T1 balance', async () => {
     await expect(repo.adjustQuantity(ctx2, sharedBalId, 1))
       .rejects.toThrow(NotFoundError);
+  });
+});
+
+// ── BusinessEventRepository ──────────────────────────────────────────────────
+
+describe.runIf(run)('BusinessEventRepository', () => {
+  const repo = new BusinessEventRepository();
+  const from = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000);
+  const to = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+  beforeAll(setupBOIntegration);
+  afterAll(teardownBOIntegration);
+
+  it('logs a sale event', async () => {
+    const event = await repo.logEvent(ctx1, {
+      businessId: BIZ1, eventType: 'sale', amount: 40, quantity: 1, customerId: 'cust-A',
+    });
+    expect(event.id).toBeTruthy();
+    expect(event.eventType).toBe('sale');
+    expect(event.amount).toBe(40);
+  });
+
+  it('aggregateSales sums revenue and finds top customer', async () => {
+    await repo.logEvent(ctx1, { businessId: BIZ1, eventType: 'sale', amount: 100, customerId: 'cust-top' });
+    await repo.logEvent(ctx1, { businessId: BIZ1, eventType: 'sale', amount: 50, customerId: 'cust-top' });
+    await repo.logEvent(ctx1, { businessId: BIZ1, eventType: 'sale', amount: 10, customerId: 'cust-other' });
+    const agg = await repo.aggregateSales(ctx1, BIZ1, from, to);
+    expect(agg.totalRevenue).toBeGreaterThanOrEqual(200);
+    expect(agg.topCustomer?.id).toBe('cust-top');
+    expect(agg.topCustomer?.spend).toBe(150);
+  });
+
+  it('aggregateExpenses sums spend and groups by category', async () => {
+    await repo.logEvent(ctx1, { businessId: BIZ1, eventType: 'expense', amount: 30, category: 'rent' });
+    await repo.logEvent(ctx1, { businessId: BIZ1, eventType: 'expense', amount: 20, category: 'rent' });
+    const agg = await repo.aggregateExpenses(ctx1, BIZ1, from, to);
+    expect(agg.totalSpend).toBeGreaterThanOrEqual(50);
+    const rent = agg.byCategory.find((c) => c.category === 'rent');
+    expect(rent?.amount).toBe(50);
+    expect(rent?.count).toBe(2);
+  });
+
+  it('aggregateInventory sums net units and groups by item', async () => {
+    await repo.logEvent(ctx1, { businessId: BIZ1, eventType: 'inventory', quantity: 10, amount: 2, category: 'widgets' });
+    await repo.logEvent(ctx1, { businessId: BIZ1, eventType: 'inventory', quantity: -3, amount: 2, category: 'widgets' });
+    const agg = await repo.aggregateInventory(ctx1, BIZ1, from, to);
+    const widgets = agg.topItems.find((i) => i.item === 'widgets');
+    expect(widgets?.netUnits).toBe(7);
+    expect(agg.totalCogs).toBeGreaterThanOrEqual(14);
+  });
+
+  it('aggregateCustomers computes churn rate and LTV', async () => {
+    await repo.logEvent(ctx1, { businessId: BIZ1, eventType: 'customer', action: 'new', customerId: 'cust-new-1' });
+    await repo.logEvent(ctx1, { businessId: BIZ1, eventType: 'customer', action: 'churn', customerId: 'cust-churn-1' });
+    const agg = await repo.aggregateCustomers(ctx1, BIZ1, from, to);
+    expect(agg.newCustomers).toBeGreaterThanOrEqual(1);
+    expect(agg.churned).toBeGreaterThanOrEqual(1);
+    expect(agg.churnRatePct).toBeGreaterThan(0);
+  });
+
+  it('aggregateTeam computes net headcount delta and hours', async () => {
+    await repo.logEvent(ctx1, { businessId: BIZ1, eventType: 'team', action: 'hire', memberId: 'emp-1' });
+    await repo.logEvent(ctx1, { businessId: BIZ1, eventType: 'team', action: 'hire', memberId: 'emp-2' });
+    await repo.logEvent(ctx1, { businessId: BIZ1, eventType: 'team', action: 'fire', memberId: 'emp-3' });
+    await repo.logEvent(ctx1, { businessId: BIZ1, eventType: 'team', quantity: 8, memberId: 'emp-1' });
+    const agg = await repo.aggregateTeam(ctx1, BIZ1, from, to);
+    expect(agg.netHeadcountDelta).toBeGreaterThanOrEqual(1);
+    expect(agg.totalHoursLogged).toBeGreaterThanOrEqual(8);
+  });
+
+  it('tenant isolation: T2 aggregates do not see T1 events', async () => {
+    const agg = await repo.aggregateSales(ctx2, BIZ1, from, to);
+    expect(agg.transactionCount).toBe(0);
+    expect(agg.totalRevenue).toBe(0);
   });
 });

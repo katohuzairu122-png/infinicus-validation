@@ -64,6 +64,14 @@ export const SECRET_INVENTORY: readonly SecretDefinition[] = [
   },
   { name: 'EMAIL_FROM_ADDRESS', classification: 'non-secret', required: false, owner: 'platform', rotationPolicyDays: null, description: 'From address for verification emails.' },
   { name: 'EMAIL_VERIFICATION_URL_BASE', classification: 'non-secret', required: false, owner: 'platform', rotationPolicyDays: null, description: 'Base URL the verification link points at (a frontend page that then calls POST /v1/auth/verify-email).' },
+  {
+    name: 'ANTHROPIC_API_KEY',
+    classification: 'secret',
+    required: false,
+    owner: 'platform',
+    rotationPolicyDays: 180,
+    description: 'Anthropic API key for AI Decisions recommendations (packages/workflow/BusinessDecisionRecommendationService, via @infinicus/llm-client). Not read via loadConfig() — same "resolved independently, optional" pattern as RESEND_API_KEY. Unset means recommendations fall back to a deterministic threshold-based generator, which never blocks the feature.',
+  },
 ] as const;
 
 /** pino `redact.paths` — structured-log paths that are always redacted regardless of value, independent of redactSecretValues()'s value-based scrubbing. */

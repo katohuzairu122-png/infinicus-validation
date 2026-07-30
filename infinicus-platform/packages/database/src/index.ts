@@ -55,6 +55,7 @@ export {
   IncidentRepository,
   TaskRepository,
   InventoryBalanceRepository,
+  BusinessEventRepository,
 } from './repositories/bo/index.js';
 export type {
   Lead, CreateLeadInput,
@@ -64,6 +65,8 @@ export type {
   Incident, CreateIncidentInput,
   Task, CreateTaskInput,
   InventoryBalance, CreateInventoryBalanceInput,
+  BusinessEvent, LogBusinessEventInput, BusinessEventType, BusinessEventAction,
+  SalesAggregate, ExpensesAggregate, InventoryAggregate, CustomersAggregate, TeamAggregate,
 } from './repositories/bo/index.js';
 
 // ── Business Intelligence repositories (Stage 2D) ───────────────────────────────
@@ -111,7 +114,7 @@ export type {
   DTIntakePackage, ReceivePackageInput,
   DigitalTwinDefinition, DigitalTwinDefinitionVersion,
   DigitalTwinInstance,
-  DigitalTwinSnapshot, DigitalTwinSnapshotVersion,
+  DigitalTwinSnapshot, DigitalTwinSnapshotVersion, DigitalTwinSnapshotValue,
   StateVariableDefinition, StateVariableValue,
   TwinEntity, TwinRelationship,
   TwinAssumption, TwinConstraint, TwinConstraintEvaluation,
