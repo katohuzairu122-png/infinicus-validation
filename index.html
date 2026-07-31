@@ -3119,6 +3119,11 @@ async function backendFetch(path, opts) {
 // and returns a fresh session token for it.
 async function ensureBackendBusiness() {
   if (!U) throw new Error('not signed in');
+  // U.supaId only exists after a real Supabase sign-up/sign-in (see
+  // onAuthStateChange above) — Public Idea Mode's lightweight email-only
+  // capture sets U.email without it, and every step below needs a real
+  // supaId to key the backend account.
+  if (!U.supaId) throw new Error('not signed in with a full account');
   let acct = loadBackendAccount();
   if (!acct || acct.supaId !== U.supaId) {
     acct = { supaId: U.supaId, email: U.email, password: randomBackendPassword() };
@@ -6584,10 +6589,14 @@ let _bizCurrentType = 'sale'; // active event tab
 
 // Called when nav('operations') fires — show/hide auth gate and provision the business
 function bizInit() {
-  const email = (U && U.email) ? U.email : null;
+  // Requires a real Supabase account (U.supaId), not just any locally-cached
+  // U — Public Idea Mode's lightweight email-only capture (see selectPlan()
+  // and the simulation email gate) sets U.email without U.supaId, and
+  // ensureBackendBusiness() needs a real supaId to provision a business.
+  const signedIn = !!(U && U.email && U.supaId);
   const gate  = document.getElementById('biz-auth-gate');
   const main  = document.getElementById('biz-main');
-  if (!email) {
+  if (!signedIn) {
     if (gate) gate.style.display = 'block';
     if (main) main.style.display = 'none';
     return;
