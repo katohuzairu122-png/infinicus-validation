@@ -5788,9 +5788,19 @@ async function doRegister() {
       errEl.textContent=error.message||'Registration failed. Please try again.'; errEl.style.display='block';
       btn.textContent='Create Account →'; btn.disabled=false; return;
     }
-    // Supabase may require email confirmation — show toast accordingly
+    // Supabase may require email confirmation — show toast accordingly.
+    // Either way, the button must come back to a usable state: on the
+    // confirmed path onAuthStateChange closes the modal shortly after, but
+    // on the unconfirmed path nothing else ever touches this modal again,
+    // and leaving the button stuck on "Creating account…" reads as broken.
     const confirmed = data.user?.email_confirmed_at;
     showToast(confirmed ? `Account created! Welcome, ${email} ✓` : `Check your inbox to confirm your email ✓`);
+    btn.textContent = 'Create Account →'; btn.disabled = false;
+    if (!confirmed) {
+      errEl.style.color = 'var(--green)';
+      errEl.textContent = 'Check your inbox to confirm your email before signing in.';
+      errEl.style.display = 'block';
+    }
     // onAuthStateChange fires and sets U once confirmed
   } catch(e){
     errEl.textContent='Network error. Please try again.'; errEl.style.display='block';
