@@ -912,17 +912,27 @@ async function supabaseSaveSimulation(entry) {
   <div class="sb-mode-badge" id="sb-mode-badge"><span class="sb-dot"></span>PUBLIC IDEA MODE</div>
 
   <div class="sb-platform-lbl">PLATFORM</div>
-  <div class="sb-pair" style="padding:0 .6rem;">
-    <button class="sb-platform-link active" data-section="home"       onclick="nav('home')">Home</button>
-    <button class="sb-platform-link"        data-section="operations" onclick="nav('operations')">Operations</button>
+  <div style="padding:0 .6rem;display:flex;flex-direction:column;gap:1px;">
+    <button class="sb-platform-link active" data-section="home" onclick="nav('home')">Home</button>
   </div>
-  <div class="sb-pair" style="padding:0 .6rem;">
-    <button class="sb-platform-link" data-section="twin"      onclick="nav('twin')">Digital Twin</button>
-    <button class="sb-platform-link" data-section="decisions" onclick="nav('decisions')">AI Decisions</button>
-  </div>
-  <div class="sb-pair" style="padding:0 .6rem;">
-    <button class="sb-platform-link" data-section="intelligence" onclick="nav('intelligence')">Biz Intel.</button>
-    <button class="sb-platform-link" data-section="simulation"   onclick="nav('simulation')">Engine Hub</button>
+  <!-- All 9 layers, replacing the old abbreviated 6-item nav. DA/BO share
+       Operations (DA is the entry point into the same logging UI BO uses
+       — see Platform Home's own DA/OPS cards, both nav('operations'));
+       ADI/ABA/OM share AI Decisions (ABA approval and OM outcome-recording
+       both happen from that same screen, not separate pages); CL has no
+       page yet (see docs/production-readiness — roadmap), shown disabled
+       rather than omitted so all 9 are visibly accounted for. -->
+  <div class="sb-platform-lbl" style="padding-top:.3rem;">9 LAYERS</div>
+  <div style="padding:0 .6rem;display:flex;flex-direction:column;gap:1px;">
+    <button class="sb-platform-link" data-section="operations"  onclick="nav('operations')">Data Acquisition</button>
+    <button class="sb-platform-link" data-section="operations"  onclick="nav('operations')">Business Operations</button>
+    <button class="sb-platform-link" data-section="intelligence" onclick="nav('intelligence')">Business Intelligence</button>
+    <button class="sb-platform-link" data-section="twin"        onclick="nav('twin')">Business Digital Twin</button>
+    <button class="sb-platform-link" data-section="simulation"  onclick="nav('simulation')">Simulation</button>
+    <button class="sb-platform-link" data-section="decisions"   onclick="nav('decisions')">AI Decision Intelligence</button>
+    <button class="sb-platform-link" data-section="decisions"   onclick="nav('decisions')">Approved Business Action</button>
+    <button class="sb-platform-link" data-section="decisions"   onclick="nav('decisions')">Outcome Monitoring</button>
+    <button class="sb-platform-link" disabled title="Not built yet — roadmap" style="opacity:.35;cursor:default;">Continuous Learning</button>
   </div>
 
   <hr class="sb-sep">
