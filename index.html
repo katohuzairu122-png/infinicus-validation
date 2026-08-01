@@ -897,49 +897,6 @@ async function supabaseSaveSimulation(entry) {
     <span id="hdr-mode-badge" style="font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--cyan);background:rgba(0,224,96,.08);border:1px solid rgba(0,224,96,.2);border-radius:4px;padding:3px 8px;white-space:nowrap;">● PUBLIC IDEA MODE</span>
   </div>
   <div class="hdr-right">
-    <button id="signin-btn" class="nb" onclick="openRegModal()" style="display:none;border-color:rgba(0,224,96,.25);color:var(--cyan);" title="Sign in or create account">SIGN IN</button>
-    <div id="user-badge-wrap" class="user-badge-wrap">
-      <button id="user-badge" class="user-badge free" onclick="toggleUserMenu(event)" title="Account">
-        <span id="user-badge-text"></span>
-        <span style="font-size:7px;opacity:.6;margin-left:1px;">▾</span>
-      </button>
-      <div id="user-menu" class="user-menu">
-        <a class="user-menu-item" href="./account.html">⚙&nbsp; Account Settings</a>
-        <div class="user-menu-sep"></div>
-        <button class="user-menu-item" onclick="closeUserMenu();openPlanModal()">⬆&nbsp; Upgrade Plan</button>
-        <div class="user-menu-sep"></div>
-        <button class="user-menu-item danger" onclick="signOutEngine()">⎋&nbsp; Sign Out</button>
-      </div>
-    </div>
-    <select id="lang-select" onchange="applyLang(this.value)" title="Language / 语言 / Idioma">
-      <option value="en">🌐 EN</option>
-      <option value="es">ES</option>
-      <option value="fr">FR</option>
-      <option value="pt">PT</option>
-      <option value="de">DE</option>
-      <option value="ar">AR</option>
-      <option value="zh">中文</option>
-      <option value="hi">HI</option>
-      <option value="ja">JA</option>
-    </select>
-    <select id="cur-select" class="cur-select" onchange="setCurrency(this.value)" title="Display currency">
-      <option value="USD">$ USD</option>
-      <option value="EUR">€ EUR</option>
-      <option value="GBP">£ GBP</option>
-      <option value="JPY">¥ JPY</option>
-      <option value="CNY">¥ CNY</option>
-      <option value="INR">₹ INR</option>
-      <option value="CAD">C$ CAD</option>
-      <option value="AUD">A$ AUD</option>
-      <option value="AED">AED</option>
-      <option value="SAR">SAR</option>
-      <option value="KWD">KWD</option>
-      <option value="NGN">₦ NGN</option>
-      <option value="KES">KSh KES</option>
-      <option value="UGX">USh UGX</option>
-      <option value="GHS">₵ GHS</option>
-      <option value="ZAR">R ZAR</option>
-    </select>
     <button id="pwa-install-btn" onclick="triggerInstall()" title="Install app" style="display:none;align-items:center;gap:5px;background:rgba(0,224,118,.08);border:1px solid rgba(0,224,118,.25);border-radius:7px;padding:5px 10px;color:var(--emerald);font-family:var(--mono);font-size:12px;cursor:pointer;letter-spacing:.05em;">⬇ INSTALL</button>
     <button class="tut-trigger" onclick="startTutorial()" title="How to use the engine">? <span>HOW IT WORKS</span></button>
     <span class="sim-badge idle" id="sim-badge">● IDLE</span>
@@ -969,11 +926,55 @@ async function supabaseSaveSimulation(entry) {
   </div>
 
   <hr class="sb-sep">
-  <!-- Reserved for future sidebar sections. All simulation navigation
-       (Input, Dashboard, Verdict, Risk/MC, Sensitivity, Economy,
-       Customers, Forecast, Compare, History, Report) now lives entirely
-       inside the ENGINE HUB tile grid (nav('simulation')) instead of a
-       persistent sidebar list — see sec-simulation below. -->
+  <!-- Account, language, and currency controls — moved here from the top
+       header bar to free it up. Same elements/IDs/handlers as before
+       (renderUserBadge(), toggleUserMenu(), applyLang(), setCurrency()),
+       just relocated; nothing about how they work changed. -->
+  <div class="sb-group" style="display:flex;flex-direction:column;gap:8px;">
+    <button id="signin-btn" class="nb" onclick="openRegModal()" style="display:none;border-color:rgba(0,224,96,.25);color:var(--cyan);width:100%;" title="Sign in or create account">SIGN IN</button>
+    <div id="user-badge-wrap" class="user-badge-wrap" style="display:none;width:100%;">
+      <button id="user-badge" class="user-badge free" onclick="toggleUserMenu(event)" title="Account" style="width:100%;justify-content:space-between;">
+        <span id="user-badge-text"></span>
+        <span style="font-size:7px;opacity:.6;margin-left:1px;">▾</span>
+      </button>
+      <div id="user-menu" class="user-menu">
+        <a class="user-menu-item" href="./account.html">⚙&nbsp; Account Settings</a>
+        <div class="user-menu-sep"></div>
+        <button class="user-menu-item" onclick="closeUserMenu();openPlanModal()">⬆&nbsp; Upgrade Plan</button>
+        <div class="user-menu-sep"></div>
+        <button class="user-menu-item danger" onclick="signOutEngine()">⎋&nbsp; Sign Out</button>
+      </div>
+    </div>
+    <select id="lang-select" onchange="applyLang(this.value)" title="Language / 语言 / Idioma" style="width:100%;">
+      <option value="en">🌐 EN</option>
+      <option value="es">ES</option>
+      <option value="fr">FR</option>
+      <option value="pt">PT</option>
+      <option value="de">DE</option>
+      <option value="ar">AR</option>
+      <option value="zh">中文</option>
+      <option value="hi">HI</option>
+      <option value="ja">JA</option>
+    </select>
+    <select id="cur-select" class="cur-select" onchange="setCurrency(this.value)" title="Display currency" style="width:100%;">
+      <option value="USD">$ USD</option>
+      <option value="EUR">€ EUR</option>
+      <option value="GBP">£ GBP</option>
+      <option value="JPY">¥ JPY</option>
+      <option value="CNY">¥ CNY</option>
+      <option value="INR">₹ INR</option>
+      <option value="CAD">C$ CAD</option>
+      <option value="AUD">A$ AUD</option>
+      <option value="AED">AED</option>
+      <option value="SAR">SAR</option>
+      <option value="KWD">KWD</option>
+      <option value="NGN">₦ NGN</option>
+      <option value="KES">KSh KES</option>
+      <option value="UGX">USh UGX</option>
+      <option value="GHS">₵ GHS</option>
+      <option value="ZAR">R ZAR</option>
+    </select>
+  </div>
 </aside>
 
 <!-- overlay for mobile sidebar -->
