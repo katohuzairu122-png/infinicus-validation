@@ -26,3 +26,6 @@ export type {
   BusinessEvent, LogBusinessEventInput, BusinessEventType, BusinessEventAction,
   SalesAggregate, ExpensesAggregate, InventoryAggregate, CustomersAggregate, TeamAggregate,
 } from './BusinessEventRepository.js';
+
+export { ProductRepository } from './ProductRepository.js';
+export type { Product, CreateProductInput, UpdateProductInput } from './ProductRepository.js';

@@ -1629,15 +1629,36 @@ async function supabaseSaveSimulation(entry) {
 
       <div style="font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.1em;margin-bottom:.6rem;">LOG AN EVENT</div>
       <div class="biz-tabs">
-        <button class="biz-tab active" onclick="bizTab('sale',this)">💰 SALE</button>
+        <button class="biz-tab active" onclick="bizTab('catalog',this)">🛒 CATALOG</button>
+        <button class="biz-tab" onclick="bizTab('sale',this)">💰 SALE</button>
         <button class="biz-tab" onclick="bizTab('expense',this)">📤 EXPENSE</button>
         <button class="biz-tab" onclick="bizTab('inventory',this)">📦 INVENTORY</button>
         <button class="biz-tab" onclick="bizTab('customer',this)">👥 CUSTOMER</button>
         <button class="biz-tab" onclick="bizTab('team',this)">🧑‍💼 TEAM</button>
       </div>
 
+      <!-- CATALOG — tap a product to log a sale instantly at its price,
+           instead of typing an amount by hand every time. Purely a
+           front-end convenience: tapping a card just calls the same
+           bizLogEvent('sale')-equivalent POST /events the SALE tab uses. -->
+      <div class="biz-form-panel visible" id="biz-panel-catalog">
+        <div id="biz-catalog-cats" class="biz-tabs" style="display:none;margin-bottom:1rem;"></div>
+        <div id="biz-catalog-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:.6rem;"></div>
+        <div id="biz-catalog-empty" style="display:none;text-align:center;padding:1.5rem 1rem;font-family:var(--mono);font-size:12px;color:var(--muted-2);">No products in your catalog yet — add your first one below.</div>
+        <div id="biz-catalog-loading" style="text-align:center;padding:1.5rem 1rem;font-family:var(--mono);font-size:12px;color:var(--muted-2);">Loading catalog…</div>
+        <button class="btn-sm" id="biz-catalog-add-toggle" onclick="bizToggleAddProduct()" style="margin-top:1rem;">+ ADD PRODUCT</button>
+        <div id="biz-add-product-form" style="display:none;margin-top:1rem;">
+          <div class="biz-field"><label>Name</label><input id="biz-prod-name" type="text" placeholder="e.g. Cappuccino"></div>
+          <div class="biz-field"><label>Price (USD)</label><input id="biz-prod-price" type="number" min="0" step="0.01" placeholder="e.g. 4.50"></div>
+          <div class="biz-field"><label>Category</label><input id="biz-prod-category" type="text" placeholder="e.g. Coffee, Retail, Service"></div>
+          <div class="biz-field"><label>Icon (emoji, optional)</label><input id="biz-prod-icon" type="text" maxlength="4" placeholder="e.g. ☕"></div>
+          <button class="btn-main" onclick="bizCreateProduct()" style="margin-top:.3rem;">SAVE PRODUCT →</button>
+        </div>
+        <div class="biz-event-msg" id="biz-msg-catalog"></div>
+      </div>
+
       <!-- SALE form -->
-      <div class="biz-form-panel visible" id="biz-panel-sale">
+      <div class="biz-form-panel" id="biz-panel-sale">
         <div class="biz-field"><label>Revenue Amount (USD)</label><input id="biz-sale-amount" type="number" min="0" step="0.01" placeholder="e.g. 150.00"></div>
         <div class="biz-field"><label>Units Sold</label><input id="biz-sale-qty" type="number" min="0" step="1" placeholder="e.g. 3"></div>
         <div class="biz-field"><label>Customer ID (optional)</label><input id="biz-sale-cust" type="text" placeholder="e.g. cust_001"></div>
@@ -6600,7 +6621,10 @@ async function handleIdeaUpload(input) {
 // ── MY BUSINESS ───────────────────────────────────────────────────────
 // State
 let _bizCurrentId   = null;   // selected business_id
-let _bizCurrentType = 'sale'; // active event tab
+let _bizCurrentType = 'catalog'; // active event tab
+let _bizCatalog = [];            // cached product list for the active business
+let _bizCatalogLoaded = false;
+let _bizCatalogCat = null;       // active category filter, null = all
 
 // Called when nav('operations') fires — show/hide auth gate and provision the business
 function bizInit() {
@@ -6644,6 +6668,8 @@ async function bizEnsureBusiness() {
     if (errArea) errArea.style.display = 'none';
     const area = document.getElementById('biz-event-area');
     if (area) area.style.display = 'block';
+    _bizCatalogLoaded = false;
+    if (_bizCurrentType === 'catalog') bizLoadCatalog();
   } catch (e) {
     if (statusLine) statusLine.textContent = '';
     if (errArea) errArea.style.display = 'block';
@@ -6659,6 +6685,7 @@ function bizTab(type, btn) {
   btn.classList.add('active');
   document.querySelectorAll('.biz-form-panel').forEach(p => p.classList.remove('visible'));
   document.getElementById('biz-panel-' + type)?.classList.add('visible');
+  if (type === 'catalog' && !_bizCatalogLoaded && _bizCurrentId) bizLoadCatalog();
 }
 
 function bizShowMsg(type, msg, isErr) {
@@ -6704,6 +6731,115 @@ async function bizLogEvent(type) {
       const el = document.getElementById(id); if (el) el.value = '';
     });
   } catch(e) { bizShowMsg(type, '✗ ' + e.message, true); }
+}
+
+async function bizLoadCatalog() {
+  if (!_bizCurrentId) return;
+  const grid = document.getElementById('biz-catalog-grid');
+  const empty = document.getElementById('biz-catalog-empty');
+  const loading = document.getElementById('biz-catalog-loading');
+  if (loading) loading.style.display = 'block';
+  if (grid) grid.style.display = 'none';
+  if (empty) empty.style.display = 'none';
+  try {
+    const d = await bizBackendFetch('/v1/businesses/' + _bizCurrentId + '/products');
+    _bizCatalog = d.products || [];
+    _bizCatalogLoaded = true;
+    _bizCatalogCat = null;
+    bizRenderCatalog();
+  } catch(e) {
+    if (loading) loading.textContent = '✗ Could not load catalog: ' + e.message;
+    return;
+  }
+  if (loading) loading.style.display = 'none';
+}
+
+function bizCatalogChip(label, active, onclick) {
+  const bg = active ? 'rgba(0,224,96,.12)' : 'none';
+  const border = active ? 'var(--green)' : 'var(--line-2)';
+  const color = active ? 'var(--green)' : 'var(--muted)';
+  return `<button class="biz-cat-chip" style="background:${bg};border:1px solid ${border};border-radius:6px;color:${color};font-family:var(--mono);font-size:12px;letter-spacing:.06em;padding:5px 12px;cursor:pointer;" onclick="${onclick}">${label}</button>`;
+}
+
+function bizRenderCatalog() {
+  const catsEl = document.getElementById('biz-catalog-cats');
+  const grid = document.getElementById('biz-catalog-grid');
+  const empty = document.getElementById('biz-catalog-empty');
+  if (!grid || !catsEl || !empty) return;
+
+  if (_bizCatalog.length === 0) {
+    catsEl.style.display = 'none';
+    grid.style.display = 'none';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  grid.style.display = 'grid';
+
+  const categories = [...new Set(_bizCatalog.map(p => p.category))].sort();
+  if (categories.length > 1) {
+    catsEl.style.display = 'flex';
+    catsEl.style.gap = '.4rem';
+    catsEl.style.flexWrap = 'wrap';
+    catsEl.innerHTML = bizCatalogChip('ALL', _bizCatalogCat === null, 'bizCatalogSetCat(null)')
+      + categories.map(c => bizCatalogChip(c.toUpperCase(), _bizCatalogCat === c, `bizCatalogSetCat('${c.replace(/'/g,"\\'")}')`)).join('');
+  } else {
+    catsEl.style.display = 'none';
+  }
+
+  const visible = _bizCatalogCat === null ? _bizCatalog : _bizCatalog.filter(p => p.category === _bizCatalogCat);
+  grid.innerHTML = visible.map(p => `
+    <button onclick="bizBuyProduct('${p.id}')" style="background:var(--glass);border:1px solid var(--line-2);border-radius:8px;padding:.8rem .5rem;cursor:pointer;text-align:center;transition:border-color .15s;" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--line-2)'">
+      <div style="font-size:24px;margin-bottom:.3rem;">${p.icon || '🛒'}</div>
+      <div style="font-family:var(--mono);font-size:12px;color:var(--text);margin-bottom:.2rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.name}</div>
+      <div style="font-family:var(--mono);font-size:12px;color:var(--green);font-weight:700;">$${p.price.toFixed(2)}</div>
+    </button>
+  `).join('');
+}
+
+function bizCatalogSetCat(cat) {
+  _bizCatalogCat = cat;
+  bizRenderCatalog();
+}
+
+async function bizBuyProduct(productId) {
+  if (!_bizCurrentId) return;
+  const p = _bizCatalog.find(x => x.id === productId);
+  if (!p) return;
+  try {
+    await bizBackendFetch('/v1/businesses/' + _bizCurrentId + '/events', {
+      method: 'POST',
+      body: { eventType: 'sale', amount: p.price, quantity: 1, category: p.category, notes: p.name },
+    });
+    bizShowMsg('catalog', `✓ Logged: ${p.name} — $${p.price.toFixed(2)}`, false);
+  } catch(e) { bizShowMsg('catalog', '✗ ' + e.message, true); }
+}
+
+function bizToggleAddProduct() {
+  const form = document.getElementById('biz-add-product-form');
+  if (!form) return;
+  form.style.display = form.style.display === 'none' ? 'block' : 'none';
+}
+
+async function bizCreateProduct() {
+  if (!_bizCurrentId) return;
+  const name = document.getElementById('biz-prod-name')?.value.trim();
+  const price = parseFloat(document.getElementById('biz-prod-price')?.value);
+  const category = document.getElementById('biz-prod-category')?.value.trim() || 'other';
+  const icon = document.getElementById('biz-prod-icon')?.value.trim() || undefined;
+  if (!name || !(price >= 0)) { bizShowMsg('catalog', '✗ Name and a valid price are required.', true); return; }
+  try {
+    await bizBackendFetch('/v1/businesses/' + _bizCurrentId + '/products', {
+      method: 'POST',
+      body: { name, price, category, icon },
+    });
+    ['biz-prod-name','biz-prod-price','biz-prod-category','biz-prod-icon'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.value = '';
+    });
+    bizToggleAddProduct();
+    bizShowMsg('catalog', `✓ Added ${name} to your catalog!`, false);
+    await bizLoadCatalog();
+  } catch(e) { bizShowMsg('catalog', '✗ ' + e.message, true); }
 }
 
 async function bizLoadSummary() {

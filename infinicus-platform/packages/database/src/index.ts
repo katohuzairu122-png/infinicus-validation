@@ -56,6 +56,7 @@ export {
   TaskRepository,
   InventoryBalanceRepository,
   BusinessEventRepository,
+  ProductRepository,
 } from './repositories/bo/index.js';
 export type {
   Lead, CreateLeadInput,
@@ -67,6 +68,7 @@ export type {
   InventoryBalance, CreateInventoryBalanceInput,
   BusinessEvent, LogBusinessEventInput, BusinessEventType, BusinessEventAction,
   SalesAggregate, ExpensesAggregate, InventoryAggregate, CustomersAggregate, TeamAggregate,
+  Product, CreateProductInput, UpdateProductInput,
 } from './repositories/bo/index.js';
 
 // ── Business Intelligence repositories (Stage 2D) ───────────────────────────────
