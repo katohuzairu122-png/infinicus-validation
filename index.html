@@ -982,6 +982,15 @@ async function supabaseSaveSimulation(entry) {
 <!-- ── WORKSPACE ── -->
 <div class="workspace">
 
+<!-- Quick-switch between simulation modules without returning to Engine
+     Hub first — shown only while inside one of the 11 sim sections (see
+     SIM_MODULES / updateSimModuleNav() in the script below). -->
+<div id="sim-module-nav" style="display:none;margin-bottom:1rem;">
+  <label style="font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.08em;margin-right:.5rem;">JUMP TO:</label>
+  <select id="sim-module-select" onchange="nav(this.value)" style="font-family:var(--mono);font-size:12px;letter-spacing:.04em;color:var(--cyan);background:var(--glass);border:1px solid var(--line-2);border-radius:6px;padding:5px 10px;cursor:pointer;outline:none;">
+  </select>
+</div>
+
 <!-- ══ PLATFORM HOME ══ -->
 <section class="section active" id="sec-home">
   <div class="pg-title">INFINICUS <span class="c">PLATFORM</span></div>
@@ -1308,7 +1317,7 @@ async function supabaseSaveSimulation(entry) {
 
 <section class="section" id="sec-dashboard">
   <div id="dash-loading" class="loading-wrap" style="display:none;">
-    <img src="./infinicus logo.jpeg" class="loading-logo" width="76" height="76" alt="INFINICUS" style="border-radius:18px;display:block;">
+    <img src="./infinicus-mark.svg" class="loading-logo" width="76" height="76" alt="INFINICUS" style="display:block;">
     <div class="loading-label" id="load-label">Initializing engines…</div>
     <div class="loading-detail" id="load-detail">Building statistical distributions</div>
     <div class="sim-progress"><i id="sim-progress-bar"></i></div>
@@ -3066,6 +3075,35 @@ function isPro()       { return U&&['starter','growth','professional'].includes(
 function isGrowthPlus(){ return U&&['growth','professional'].includes(U.plan); }
 
 // ─── NAVIGATION ──────────────────────────────────────────────────────────────
+// The 11 destinations that used to live in a persistent sidebar sub-nav
+// (see the ENGINE HUB restructure) — now reachable both from Engine Hub's
+// tile grid and, while already inside one of them, from the "JUMP TO"
+// dropdown updateSimModuleNav() maintains below.
+const SIM_MODULES = [
+  {id:'data',       label:'Input'},
+  {id:'dashboard',  label:'Dashboard'},
+  {id:'verdict',    label:'Verdict'},
+  {id:'risk',       label:'Risk / Monte Carlo'},
+  {id:'sensitivity',label:'Sensitivity'},
+  {id:'economy',    label:'Economy'},
+  {id:'customers',  label:'Customers'},
+  {id:'forecast',   label:'Forecast'},
+  {id:'compare',    label:'Compare'},
+  {id:'history',    label:'History'},
+  {id:'report',     label:'Report'},
+];
+
+function updateSimModuleNav(activeId) {
+  const wrap = document.getElementById('sim-module-nav');
+  const select = document.getElementById('sim-module-select');
+  if (!wrap || !select) return;
+  const isSimModule = SIM_MODULES.some(m => m.id === activeId);
+  wrap.style.display = isSimModule ? 'block' : 'none';
+  if (!isSimModule) return;
+  select.innerHTML = SIM_MODULES.map(m => `<option value="${m.id}">${m.label}</option>`).join('');
+  select.value = activeId;
+}
+
 function nav(id) {
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
@@ -3075,6 +3113,7 @@ function nav(id) {
   if (btn) btn.classList.add('active');
   const sbLink=document.querySelector(`.sb-link[data-section="${id}"],.sb-platform-link[data-section="${id}"]`);
   if (sbLink) sbLink.classList.add('active');
+  updateSimModuleNav(id);
   closeSidebar();
   window.scrollTo(0,0);
   if (id==='sensitivity'&&S.done) updateSensitivity();
