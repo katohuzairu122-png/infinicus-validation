@@ -1,0 +1,52 @@
+import { z } from 'zod';
+
+export const businessIdParamsSchema = z.object({
+  businessId: z.string().uuid(),
+});
+
+export const sessionIdParamsSchema = z.object({
+  businessId: z.string().uuid(),
+  sessionId: z.string().uuid(),
+});
+
+const registerSessionSchema = z.object({
+  id: z.string().uuid(),
+  registerName: z.string(),
+  status: z.enum(['open', 'closed']),
+  openedBy: z.string().nullable(),
+  closedBy: z.string().nullable(),
+  openingCash: z.number(),
+  closingCash: z.number().nullable(),
+  expectedCash: z.number().nullable(),
+  variance: z.number().nullable(),
+  notes: z.string().nullable(),
+  openedAt: z.coerce.date(),
+  closedAt: z.coerce.date().nullable(),
+});
+
+export const openRegisterSessionBodySchema = z.object({
+  openingCash: z.number().min(0),
+  registerName: z.string().max(255).optional(),
+  openedBy: z.string().max(255).optional(),
+  notes: z.string().max(2000).optional(),
+});
+
+export const closeRegisterSessionBodySchema = z.object({
+  closingCash: z.number().min(0),
+  closedBy: z.string().max(255).optional(),
+  notes: z.string().max(2000).optional(),
+});
+
+export const registerSessionResponseSchema = registerSessionSchema;
+
+export const listRegisterSessionsQuerySchema = z.object({
+  limit: z.coerce.number().int().min(1).max(100).optional().default(20),
+});
+
+export const listRegisterSessionsResponseSchema = z.object({
+  sessions: z.array(registerSessionSchema),
+});
+
+export const openRegisterSessionResponseSchema = z.object({
+  session: registerSessionSchema.nullable(),
+});

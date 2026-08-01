@@ -57,6 +57,7 @@ export {
   InventoryBalanceRepository,
   BusinessEventRepository,
   ProductRepository,
+  RegisterSessionRepository,
 } from './repositories/bo/index.js';
 export type {
   Lead, CreateLeadInput,
@@ -68,6 +69,7 @@ export type {
   InventoryBalance, CreateInventoryBalanceInput,
   BusinessEvent, LogBusinessEventInput, BusinessEventType, BusinessEventAction,
   SalesAggregate, ExpensesAggregate, InventoryAggregate, CustomersAggregate, TeamAggregate,
+  RegisterSession, OpenRegisterSessionInput, CloseRegisterSessionInput,
   Product, CreateProductInput, UpdateProductInput,
 } from './repositories/bo/index.js';
 

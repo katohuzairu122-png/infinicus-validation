@@ -1,4 +1,4 @@
-export { NotFoundError } from './errors.js';
+export { NotFoundError, ConflictError } from './errors.js';
 
 export { LeadRepository } from './LeadRepository.js';
 export type { Lead, CreateLeadInput } from './LeadRepository.js';
@@ -29,3 +29,6 @@ export type {
 
 export { ProductRepository } from './ProductRepository.js';
 export type { Product, CreateProductInput, UpdateProductInput } from './ProductRepository.js';
+
+export { RegisterSessionRepository } from './RegisterSessionRepository.js';
+export type { RegisterSession, OpenRegisterSessionInput, CloseRegisterSessionInput } from './RegisterSessionRepository.js';

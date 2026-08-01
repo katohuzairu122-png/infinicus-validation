@@ -23,6 +23,7 @@ import billingRoutes from './routes/billing.js';
 import incidentRoutes from './routes/incidents.js';
 import bizopsRoutes from './routes/bizops.js';
 import productsRoutes from './routes/products.js';
+import registerSessionsRoutes from './routes/registerSessions.js';
 import twinRoutes from './routes/twin.js';
 import decisionRecommendationsRoutes from './routes/decisionRecommendations.js';
 import './types.js';
@@ -128,6 +129,7 @@ export async function buildApp(config: InfinicusConfig): Promise<FastifyInstance
   await app.register(incidentRoutes);
   await app.register(bizopsRoutes);
   await app.register(productsRoutes);
+  await app.register(registerSessionsRoutes);
   await app.register(twinRoutes);
   await app.register(decisionRecommendationsRoutes);
 

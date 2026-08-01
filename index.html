@@ -1650,6 +1650,7 @@ async function supabaseSaveSimulation(entry) {
       <div style="font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.1em;margin-bottom:.6rem;">LOG AN EVENT</div>
       <div class="biz-tabs">
         <button class="biz-tab active" onclick="bizTab('catalog',this)">🛒 CATALOG</button>
+        <button class="biz-tab" onclick="bizTab('register',this)">🧾 REGISTER</button>
         <button class="biz-tab" onclick="bizTab('sale',this)">💰 SALE</button>
         <button class="biz-tab" onclick="bizTab('expense',this)">📤 EXPENSE</button>
         <button class="biz-tab" onclick="bizTab('inventory',this)">📦 INVENTORY</button>
@@ -1675,6 +1676,42 @@ async function supabaseSaveSimulation(entry) {
           <button class="btn-main" onclick="bizCreateProduct()" style="margin-top:.3rem;">SAVE PRODUCT →</button>
         </div>
         <div class="biz-event-msg" id="biz-msg-catalog"></div>
+      </div>
+
+      <!-- REGISTER — open/close shift with cash reconciliation. Expected
+           cash and variance are computed server-side from business_events
+           sale totals during the session window, so this panel only ever
+           displays numbers the backend already returned. -->
+      <div class="biz-form-panel" id="biz-panel-register">
+        <div id="biz-register-loading" style="text-align:center;padding:1.5rem 1rem;font-family:var(--mono);font-size:12px;color:var(--muted-2);">Loading register status…</div>
+
+        <div id="biz-register-closed-state" style="display:none;">
+          <div style="font-family:var(--mono);font-size:12px;color:var(--muted-2);margin-bottom:1rem;">No register is currently open.</div>
+          <div class="biz-field"><label>Opening Cash (USD)</label><input id="biz-reg-opening-cash" type="number" min="0" step="0.01" placeholder="e.g. 100.00"></div>
+          <div class="biz-field"><label>Register Name</label><input id="biz-reg-name" type="text" placeholder="Main Register"></div>
+          <div class="biz-field"><label>Opened By</label><input id="biz-reg-opened-by" type="text" placeholder="optional"></div>
+          <button class="btn-main" onclick="bizOpenRegister()" style="margin-top:.3rem;">OPEN REGISTER →</button>
+        </div>
+
+        <div id="biz-register-open-state" style="display:none;">
+          <div style="border:1px solid var(--line-2);border-radius:8px;padding:1rem;margin-bottom:1rem;">
+            <div style="font-family:var(--mono);font-size:13px;color:var(--green);margin-bottom:.4rem;">● <span id="biz-reg-open-name"></span> — OPEN</div>
+            <div style="font-family:var(--mono);font-size:12px;color:var(--muted-2);">Opened by <span id="biz-reg-open-by"></span> at <span id="biz-reg-open-at"></span></div>
+            <div style="font-family:var(--mono);font-size:12px;color:var(--muted-2);">Opening cash: $<span id="biz-reg-open-cash"></span></div>
+          </div>
+          <div class="biz-field"><label>Closing Cash Count (USD)</label><input id="biz-reg-closing-cash" type="number" min="0" step="0.01" placeholder="count the drawer and enter total"></div>
+          <div class="biz-field"><label>Closed By</label><input id="biz-reg-closed-by" type="text" placeholder="optional"></div>
+          <button class="btn-main" onclick="bizCloseRegister()" style="margin-top:.3rem;">CLOSE REGISTER →</button>
+        </div>
+
+        <div id="biz-register-result" style="display:none;border:1px solid var(--line-2);border-radius:8px;padding:1rem;margin-top:1rem;">
+          <div style="font-family:var(--mono);font-size:13px;color:var(--fg);margin-bottom:.4rem;">Register closed</div>
+          <div style="font-family:var(--mono);font-size:12px;color:var(--muted-2);">Expected cash: $<span id="biz-reg-expected"></span></div>
+          <div style="font-family:var(--mono);font-size:12px;color:var(--muted-2);">Counted cash: $<span id="biz-reg-counted"></span></div>
+          <div style="font-family:var(--mono);font-size:13px;margin-top:.3rem;">Variance: <span id="biz-reg-variance"></span></div>
+        </div>
+
+        <div class="biz-event-msg" id="biz-msg-register"></div>
       </div>
 
       <!-- SALE form -->
@@ -6675,6 +6712,8 @@ let _bizCurrentType = 'catalog'; // active event tab
 let _bizCatalog = [];            // cached product list for the active business
 let _bizCatalogLoaded = false;
 let _bizCatalogCat = null;       // active category filter, null = all
+let _bizOpenRegister = null;     // currently open register session, or null
+let _bizRegisterLoaded = false;
 
 // Called when nav('operations') fires — show/hide auth gate and provision the business
 function bizInit() {
@@ -6719,7 +6758,9 @@ async function bizEnsureBusiness() {
     const area = document.getElementById('biz-event-area');
     if (area) area.style.display = 'block';
     _bizCatalogLoaded = false;
+    _bizRegisterLoaded = false;
     if (_bizCurrentType === 'catalog') bizLoadCatalog();
+    if (_bizCurrentType === 'register') bizLoadRegister();
   } catch (e) {
     if (statusLine) statusLine.textContent = '';
     if (errArea) errArea.style.display = 'block';
@@ -6736,6 +6777,7 @@ function bizTab(type, btn) {
   document.querySelectorAll('.biz-form-panel').forEach(p => p.classList.remove('visible'));
   document.getElementById('biz-panel-' + type)?.classList.add('visible');
   if (type === 'catalog' && !_bizCatalogLoaded && _bizCurrentId) bizLoadCatalog();
+  if (type === 'register' && !_bizRegisterLoaded && _bizCurrentId) bizLoadRegister();
 }
 
 function bizShowMsg(type, msg, isErr) {
@@ -6890,6 +6932,92 @@ async function bizCreateProduct() {
     bizShowMsg('catalog', `✓ Added ${name} to your catalog!`, false);
     await bizLoadCatalog();
   } catch(e) { bizShowMsg('catalog', '✗ ' + e.message, true); }
+}
+
+async function bizLoadRegister() {
+  if (!_bizCurrentId) return;
+  const loading = document.getElementById('biz-register-loading');
+  const closedState = document.getElementById('biz-register-closed-state');
+  const openState = document.getElementById('biz-register-open-state');
+  const result = document.getElementById('biz-register-result');
+  if (loading) loading.style.display = 'block';
+  if (closedState) closedState.style.display = 'none';
+  if (openState) openState.style.display = 'none';
+  if (result) result.style.display = 'none';
+  try {
+    const d = await bizBackendFetch('/v1/businesses/' + _bizCurrentId + '/register-sessions/open');
+    _bizOpenRegister = d.session;
+    _bizRegisterLoaded = true;
+    bizRenderRegister();
+  } catch(e) {
+    if (loading) loading.textContent = '✗ Could not load register status: ' + e.message;
+    return;
+  }
+  if (loading) loading.style.display = 'none';
+}
+
+function bizRenderRegister() {
+  const closedState = document.getElementById('biz-register-closed-state');
+  const openState = document.getElementById('biz-register-open-state');
+  if (!closedState || !openState) return;
+  if (_bizOpenRegister) {
+    closedState.style.display = 'none';
+    openState.style.display = 'block';
+    document.getElementById('biz-reg-open-name').textContent = _bizOpenRegister.registerName;
+    document.getElementById('biz-reg-open-by').textContent = _bizOpenRegister.openedBy || '—';
+    document.getElementById('biz-reg-open-at').textContent = new Date(_bizOpenRegister.openedAt).toLocaleString();
+    document.getElementById('biz-reg-open-cash').textContent = Number(_bizOpenRegister.openingCash).toFixed(2);
+  } else {
+    closedState.style.display = 'block';
+    openState.style.display = 'none';
+  }
+}
+
+async function bizOpenRegister() {
+  if (!_bizCurrentId) return;
+  const openingCash = parseFloat(document.getElementById('biz-reg-opening-cash')?.value);
+  const registerName = document.getElementById('biz-reg-name')?.value.trim() || undefined;
+  const openedBy = document.getElementById('biz-reg-opened-by')?.value.trim() || undefined;
+  if (!(openingCash >= 0)) { bizShowMsg('register', '✗ Enter a valid opening cash amount.', true); return; }
+  try {
+    const session = await bizBackendFetch('/v1/businesses/' + _bizCurrentId + '/register-sessions', {
+      method: 'POST',
+      body: { openingCash, registerName, openedBy },
+    });
+    _bizOpenRegister = session;
+    ['biz-reg-opening-cash','biz-reg-name','biz-reg-opened-by'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.value = '';
+    });
+    document.getElementById('biz-register-result').style.display = 'none';
+    bizRenderRegister();
+    bizShowMsg('register', '✓ Register opened!', false);
+  } catch(e) { bizShowMsg('register', '✗ ' + e.message, true); }
+}
+
+async function bizCloseRegister() {
+  if (!_bizCurrentId || !_bizOpenRegister) return;
+  const closingCash = parseFloat(document.getElementById('biz-reg-closing-cash')?.value);
+  const closedBy = document.getElementById('biz-reg-closed-by')?.value.trim() || undefined;
+  if (!(closingCash >= 0)) { bizShowMsg('register', '✗ Enter a valid closing cash count.', true); return; }
+  try {
+    const session = await bizBackendFetch('/v1/businesses/' + _bizCurrentId + '/register-sessions/' + _bizOpenRegister.id + '/close', {
+      method: 'POST',
+      body: { closingCash, closedBy },
+    });
+    _bizOpenRegister = null;
+    ['biz-reg-closing-cash','biz-reg-closed-by'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.value = '';
+    });
+    bizRenderRegister();
+    const variance = Number(session.variance);
+    const varEl = document.getElementById('biz-reg-variance');
+    varEl.textContent = (variance > 0 ? '+' : '') + variance.toFixed(2) + (variance === 0 ? ' (exact)' : variance > 0 ? ' (over)' : ' (short)');
+    varEl.style.color = variance === 0 ? 'var(--green)' : (Math.abs(variance) < 5 ? 'var(--muted)' : 'var(--red)');
+    document.getElementById('biz-reg-expected').textContent = Number(session.expectedCash).toFixed(2);
+    document.getElementById('biz-reg-counted').textContent = Number(session.closingCash).toFixed(2);
+    document.getElementById('biz-register-result').style.display = 'block';
+    bizShowMsg('register', '✓ Register closed!', false);
+  } catch(e) { bizShowMsg('register', '✗ ' + e.message, true); }
 }
 
 async function bizLoadSummary() {
