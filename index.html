@@ -5762,7 +5762,12 @@ async function doLogin() {
       btn.textContent='Sign In →'; btn.disabled=false; return;
     }
     showToast(`Signed in as ${data.user.email} ✓`);
-    // onAuthStateChange handles U update and renderUserBadge
+    // onAuthStateChange handles U update, renderUserBadge, and closing this
+    // modal — but that's a separate async listener, not guaranteed to run
+    // before this function returns, so the button must not depend on it to
+    // leave its "Signing in…" disabled state (see the identical fix in
+    // doRegister() above).
+    btn.textContent='Sign In →'; btn.disabled=false;
   } catch(e){
     errEl.textContent='Network error. Please try again.'; errEl.style.display='block';
     btn.textContent='Sign In →'; btn.disabled=false;
