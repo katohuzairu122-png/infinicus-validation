@@ -969,41 +969,11 @@ async function supabaseSaveSimulation(entry) {
   </div>
 
   <hr class="sb-sep">
-
-  <div class="sb-group">
-    <div class="sb-group-lbl">SIMULATION — SETUP</div>
-    <button class="sb-link" data-section="data"        onclick="nav('data')">Input</button>
-  </div>
-
-  <div class="sb-group">
-    <div class="sb-group-lbl">RESULTS</div>
-    <div class="sb-pair">
-      <button class="sb-link" data-section="dashboard" onclick="nav('dashboard')">Dashboard</button>
-      <button class="sb-link" data-section="verdict"   onclick="nav('verdict')">Verdict</button>
-    </div>
-  </div>
-
-  <div class="sb-group">
-    <div class="sb-group-lbl">ANALYSIS</div>
-    <div class="sb-pair">
-      <button class="sb-link" data-section="economy"   onclick="nav('economy')">Economy</button>
-      <button class="sb-link" data-section="customers" onclick="nav('customers')">Customers</button>
-    </div>
-    <div class="sb-pair">
-      <button class="sb-link" data-section="risk"      onclick="nav('risk')">Risk · MC</button>
-      <button class="sb-link" data-section="forecast"  onclick="nav('forecast')">Forecast</button>
-    </div>
-    <button class="sb-link" data-section="sensitivity" onclick="nav('sensitivity')">Sensitivity</button>
-  </div>
-
-  <div class="sb-group">
-    <div class="sb-group-lbl">SCENARIOS &amp; OUTPUT</div>
-    <div class="sb-pair">
-      <button class="sb-link" data-section="compare"  onclick="nav('compare')">Compare</button>
-      <button class="sb-link" data-section="history"  onclick="nav('history')">History</button>
-    </div>
-    <button class="sb-link" data-section="report" onclick="nav('report')">Report</button>
-  </div>
+  <!-- Reserved for future sidebar sections. All simulation navigation
+       (Input, Dashboard, Verdict, Risk/MC, Sensitivity, Economy,
+       Customers, Forecast, Compare, History, Report) now lives entirely
+       inside the ENGINE HUB tile grid (nav('simulation')) instead of a
+       persistent sidebar list — see sec-simulation below. -->
 </aside>
 
 <!-- overlay for mobile sidebar -->
@@ -1441,36 +1411,66 @@ async function supabaseSaveSimulation(entry) {
 <!-- ══ SIMULATION HUB ══ -->
 <section class="section" id="sec-simulation">
   <div class="pg-title" style="font-size:22px;margin-bottom:.1rem;">SIMULATION <span class="c">ENGINE</span></div>
-  <div class="pg-sub">// MONTE CARLO · SENSITIVITY · SCENARIO COMPARISON · VERDICT · REPORT</div>
-  <div style="font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.1em;margin-bottom:1.2rem;margin-top:1rem;">SELECT AN ANALYSIS MODULE</div>
+  <div class="pg-sub">// SETUP · MONTE CARLO · SENSITIVITY · SCENARIO COMPARISON · VERDICT · REPORT</div>
+  <div style="font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.1em;margin-bottom:1.2rem;margin-top:1rem;">SELECT A MODULE — EVERY SIMULATION STEP LIVES HERE</div>
   <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.85rem;">
-    <div style="background:var(--glass);border:1px solid var(--line-2);border-radius:12px;padding:1.2rem;cursor:pointer;transition:all .2s;" onclick="nav('risk')" onmouseover="this.style.borderColor='rgba(0,224,96,.35)'" onmouseout="this.style.borderColor='rgba(255,255,255,.14)'">
+    <div style="background:var(--glass);border:1px solid var(--line-2);border-radius:12px;padding:1.2rem;cursor:pointer;transition:all .2s;" onclick="nav('data')" onmouseover="this.style.borderColor='rgba(0,224,96,.35)'" onmouseout="this.style.borderColor='rgba(255,255,255,.14)'">
       <div style="font-family:var(--mono);font-size:10px;color:var(--cyan);letter-spacing:.12em;margin-bottom:.5rem;">01</div>
+      <div style="font-family:var(--head);font-size:16px;font-weight:700;margin-bottom:.3rem;">INPUT</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.5;">Start here — enter your business idea, parameters, market, and financials.</div>
+    </div>
+    <div style="background:var(--glass);border:1px solid var(--line-2);border-radius:12px;padding:1.2rem;cursor:pointer;transition:all .2s;" onclick="nav('dashboard')" onmouseover="this.style.borderColor='rgba(0,224,96,.35)'" onmouseout="this.style.borderColor='rgba(255,255,255,.14)'">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--cyan);letter-spacing:.12em;margin-bottom:.5rem;">02</div>
+      <div style="font-family:var(--head);font-size:16px;font-weight:700;margin-bottom:.3rem;">DASHBOARD</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.5;">Live KPI overview after a run — cash, burn rate, runway, at a glance.</div>
+    </div>
+    <div style="background:var(--glass);border:1px solid var(--line-2);border-radius:12px;padding:1.2rem;cursor:pointer;transition:all .2s;" onclick="nav('verdict')" onmouseover="this.style.borderColor='rgba(0,224,96,.35)'" onmouseout="this.style.borderColor='rgba(255,255,255,.14)'">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--cyan);letter-spacing:.12em;margin-bottom:.5rem;">03</div>
+      <div style="font-family:var(--head);font-size:16px;font-weight:700;margin-bottom:.3rem;">VERDICT</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.5;">AI business health assessment — GO, MODIFY, or STOP recommendation.</div>
+    </div>
+    <div style="background:var(--glass);border:1px solid var(--line-2);border-radius:12px;padding:1.2rem;cursor:pointer;transition:all .2s;" onclick="nav('risk')" onmouseover="this.style.borderColor='rgba(0,224,96,.35)'" onmouseout="this.style.borderColor='rgba(255,255,255,.14)'">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--cyan);letter-spacing:.12em;margin-bottom:.5rem;">04</div>
       <div style="font-family:var(--head);font-size:16px;font-weight:700;margin-bottom:.3rem;">RISK / MONTE CARLO</div>
       <div style="font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.5;">500-run probability distribution — cash outcomes, failure rates, upside range.</div>
     </div>
     <div style="background:var(--glass);border:1px solid var(--line-2);border-radius:12px;padding:1.2rem;cursor:pointer;transition:all .2s;" onclick="nav('sensitivity')" onmouseover="this.style.borderColor='rgba(0,224,96,.35)'" onmouseout="this.style.borderColor='rgba(255,255,255,.14)'">
-      <div style="font-family:var(--mono);font-size:10px;color:var(--cyan);letter-spacing:.12em;margin-bottom:.5rem;">02</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--cyan);letter-spacing:.12em;margin-bottom:.5rem;">05</div>
       <div style="font-family:var(--head);font-size:16px;font-weight:700;margin-bottom:.3rem;">SENSITIVITY</div>
       <div style="font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.5;">Which variables move the needle most — heatmap of all key drivers.</div>
     </div>
+    <div style="background:var(--glass);border:1px solid var(--line-2);border-radius:12px;padding:1.2rem;cursor:pointer;transition:all .2s;" onclick="nav('economy')" onmouseover="this.style.borderColor='rgba(0,224,96,.35)'" onmouseout="this.style.borderColor='rgba(255,255,255,.14)'">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--cyan);letter-spacing:.12em;margin-bottom:.5rem;">06</div>
+      <div style="font-family:var(--head);font-size:16px;font-weight:700;margin-bottom:.3rem;">ECONOMY</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.5;">Revenue, expenses, and cashflow over the life of the simulation.</div>
+    </div>
+    <div style="background:var(--glass);border:1px solid var(--line-2);border-radius:12px;padding:1.2rem;cursor:pointer;transition:all .2s;" onclick="nav('customers')" onmouseover="this.style.borderColor='rgba(0,224,96,.35)'" onmouseout="this.style.borderColor='rgba(255,255,255,.14)'">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--cyan);letter-spacing:.12em;margin-bottom:.5rem;">07</div>
+      <div style="font-family:var(--head);font-size:16px;font-weight:700;margin-bottom:.3rem;">CUSTOMERS</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.5;">Acquisition, retention, and lifetime value across the run.</div>
+    </div>
+    <div style="background:var(--glass);border:1px solid var(--line-2);border-radius:12px;padding:1.2rem;cursor:pointer;transition:all .2s;" onclick="nav('forecast')" onmouseover="this.style.borderColor='rgba(0,224,96,.35)'" onmouseout="this.style.borderColor='rgba(255,255,255,.14)'">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--cyan);letter-spacing:.12em;margin-bottom:.5rem;">08</div>
+      <div style="font-family:var(--head);font-size:16px;font-weight:700;margin-bottom:.3rem;">FORECAST</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.5;">6-month and 12-month projections extending your simulation.</div>
+    </div>
     <div style="background:var(--glass);border:1px solid var(--line-2);border-radius:12px;padding:1.2rem;cursor:pointer;transition:all .2s;" onclick="nav('compare')" onmouseover="this.style.borderColor='rgba(0,224,96,.35)'" onmouseout="this.style.borderColor='rgba(255,255,255,.14)'">
-      <div style="font-family:var(--mono);font-size:10px;color:var(--cyan);letter-spacing:.12em;margin-bottom:.5rem;">03</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--cyan);letter-spacing:.12em;margin-bottom:.5rem;">09</div>
       <div style="font-family:var(--head);font-size:16px;font-weight:700;margin-bottom:.3rem;">COMPARE</div>
       <div style="font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.5;">Side-by-side scenario comparison — test different assumptions head to head.</div>
     </div>
-    <div style="background:var(--glass);border:1px solid var(--line-2);border-radius:12px;padding:1.2rem;cursor:pointer;transition:all .2s;" onclick="nav('verdict')" onmouseover="this.style.borderColor='rgba(0,224,96,.35)'" onmouseout="this.style.borderColor='rgba(255,255,255,.14)'">
-      <div style="font-family:var(--mono);font-size:10px;color:var(--cyan);letter-spacing:.12em;margin-bottom:.5rem;">04</div>
-      <div style="font-family:var(--head);font-size:16px;font-weight:700;margin-bottom:.3rem;">VERDICT</div>
-      <div style="font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.5;">AI business health assessment — GO, MODIFY, or STOP recommendation.</div>
+    <div style="background:var(--glass);border:1px solid var(--line-2);border-radius:12px;padding:1.2rem;cursor:pointer;transition:all .2s;" onclick="nav('history')" onmouseover="this.style.borderColor='rgba(0,224,96,.35)'" onmouseout="this.style.borderColor='rgba(255,255,255,.14)'">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--cyan);letter-spacing:.12em;margin-bottom:.5rem;">10</div>
+      <div style="font-family:var(--head);font-size:16px;font-weight:700;margin-bottom:.3rem;">HISTORY</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.5;">Your last 20 runs, stored locally in your browser.</div>
     </div>
     <div style="background:var(--glass);border:1px solid var(--line-2);border-radius:12px;padding:1.2rem;cursor:pointer;transition:all .2s;" onclick="nav('report')" onmouseover="this.style.borderColor='rgba(0,224,96,.35)'" onmouseout="this.style.borderColor='rgba(255,255,255,.14)'">
-      <div style="font-family:var(--mono);font-size:10px;color:var(--cyan);letter-spacing:.12em;margin-bottom:.5rem;">05</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--cyan);letter-spacing:.12em;margin-bottom:.5rem;">11</div>
       <div style="font-family:var(--head);font-size:16px;font-weight:700;margin-bottom:.3rem;">REPORT</div>
       <div style="font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.5;">Full printable business plan — PDF export, shareable link.</div>
     </div>
   </div>
-  <div style="margin-top:1.5rem;font-family:var(--mono);font-size:11px;color:var(--muted-2);text-align:center;">Run a simulation in DATA ACQ to unlock all analysis modules.</div>
+  <div style="margin-top:1.5rem;font-family:var(--mono);font-size:11px;color:var(--muted-2);text-align:center;">Start at INPUT to unlock the rest of the modules.</div>
 </section>
 
 <section class="section" id="sec-risk">
