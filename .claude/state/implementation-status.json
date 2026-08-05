@@ -356,17 +356,20 @@
       "id": "BUILD-28",
       "layer": "BILLING",
       "name": "Billing",
-      "status": "ready",
+      "status": "completed",
       "specification": "docs/implementation-queue/BUILD-28-BILLING-SPECIFICATION.md",
-      "notes": "Dependency BUILD-27 completed. Readied per explicit user instruction to continue through all builds to BUILD-30 without per-build check-ins."
+      "notes": "BUILD-28 completed. Billing plans, subscriptions, entitlements, usage metering, lifecycle enforcement, API routes, migrations, operational tooling, and live PostgreSQL validation completed.",
+      "completedAt": "2026-08-05T00:00:00.000Z",
+      "report": ".claude/state/reports/BUILD-28-BILLING-completion.md",
+      "testsPass": true
     },
     {
       "id": "BUILD-29",
       "layer": "INCIDENT",
       "name": "Incident response",
-      "status": "pending",
+      "status": "ready",
       "specification": "docs/implementation-queue/BUILD-29-INCIDENT-SPECIFICATION.md",
-      "notes": "Blocked on BUILD-28 completion."
+      "notes": "Dependency BUILD-28 completed. Ready for implementation."
     },
     {
       "id": "BUILD-30",
@@ -377,5 +380,5 @@
       "notes": "Blocked on BUILD-29 completion. Final build in the BUILD-10-30 master roadmap."
     }
   ],
-  "currentReadyBuild": "BUILD-28"
+  "currentReadyBuild": "BUILD-29"
 }
