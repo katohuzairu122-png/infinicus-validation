@@ -58,6 +58,7 @@ export {
   BusinessEventRepository,
   ProductRepository,
   RegisterSessionRepository,
+  OrderRepository,
 } from './repositories/bo/index.js';
 export type {
   Lead, CreateLeadInput,
@@ -71,6 +72,7 @@ export type {
   SalesAggregate, ExpensesAggregate, InventoryAggregate, CustomersAggregate, TeamAggregate,
   RegisterSession, OpenRegisterSessionInput, CloseRegisterSessionInput,
   Product, CreateProductInput, UpdateProductInput,
+  Order, OrderLineItem, OrderOperationalStatus, CreateOrderInput, AddLineItemInput,
 } from './repositories/bo/index.js';
 
 // ── Business Intelligence repositories (Stage 2D) ───────────────────────────────

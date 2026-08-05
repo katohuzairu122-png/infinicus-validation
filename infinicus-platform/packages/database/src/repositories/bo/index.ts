@@ -32,3 +32,6 @@ export type { Product, CreateProductInput, UpdateProductInput } from './ProductR
 
 export { RegisterSessionRepository } from './RegisterSessionRepository.js';
 export type { RegisterSession, OpenRegisterSessionInput, CloseRegisterSessionInput } from './RegisterSessionRepository.js';
+
+export { OrderRepository } from './OrderRepository.js';
+export type { Order, OrderLineItem, OrderOperationalStatus, CreateOrderInput, AddLineItemInput } from './OrderRepository.js';
