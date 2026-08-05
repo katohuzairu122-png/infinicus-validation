@@ -12,7 +12,7 @@
 // Exit code: 0 if every finding is allowlisted; 1 otherwise (with a
 // printed list of the un-allowlisted findings).
 
-import { execFileSync } from 'node:child_process';
+import { spawnSync } from 'node:child_process';
 
 const ALLOWLIST = [
   {
@@ -27,18 +27,9 @@ const ALLOWLIST = [
     reason:
       'Transitive dependency of Next.js\'s built-in image-optimization component (next/image). apps/web never imports next/image (verified via grep) — no code path in this repository invokes sharp/libvips, so the vulnerable image-processing routines are never executed.',
   },
-  // ── BUILD-30 launch-acceptance findings (esbuild/vite, transitive via vitest) ──
-  // All four advisories below are vulnerabilities in vite's or esbuild's
-  // OWN development server (`vite dev`/`vite preview`, or esbuild's
-  // `--serve` mode) — not in any code these packages execute when used
-  // as vitest's internal module-transform/resolution engine (`vitest
-  // run`, the only way this monorepo ever invokes vitest — see the
-  // vitest entry above). Verified live: `grep` across every
-  // package.json's "dev"/"preview" script in the entire workspace shows
-  // none of them invoke `vite`/`esbuild` directly — every package's
-  // "dev" script is `tsc --watch`, and apps/web's is `next dev` (Next.js's
-  // own dev server, unrelated to vite). vite/esbuild are pulled in only
-  // as vitest's own transitive dependencies.
+
+  // BUILD-30 launch-acceptance findings:
+  // esbuild and vite are transitive dependencies of vitest.
   {
     githubAdvisoryId: 'GHSA-67mh-4wv8-2f99',
     package: 'esbuild',
@@ -49,37 +40,73 @@ const ALLOWLIST = [
     githubAdvisoryId: 'GHSA-4w7w-66w2-5vf9',
     package: 'vite',
     reason:
-      'Path traversal in vite dev server\'s handling of optimized-dependency `.map` files. Requires `vite dev`/`vite preview` to be running; this repository never starts vite\'s own dev/preview server (see file-level note above).',
+      'Path traversal in vite dev server\'s handling of optimized-dependency `.map` files. Requires `vite dev` or `vite preview` to be running; this repository never starts vite\'s own development or preview server.',
   },
   {
     githubAdvisoryId: 'GHSA-v6wh-96g9-6wx3',
     package: 'vite',
     reason:
-      'NTLMv2 hash disclosure via UNC path handling, in vite\'s `launch-editor` dev-server integration, Windows-only. Never reachable: no vite dev server is ever started in this repository, and this platform\'s CI/deployment targets are not Windows.',
+      'NTLMv2 hash disclosure via UNC path handling in vite\'s `launch-editor` development-server integration. No vite development server is started in this repository, so the vulnerable route is unreachable.',
   },
   {
     githubAdvisoryId: 'GHSA-fx2h-pf6j-xcff',
     package: 'vite',
     reason:
-      'vite dev server\'s `server.fs.deny` path-restriction bypass on Windows alternate data streams. Never reachable: no vite dev server is ever started in this repository, and this platform\'s CI/deployment targets are not Windows.',
+      'Vite development server `server.fs.deny` bypass through Windows alternate paths. No vite development server is started in this repository, so the vulnerable route is unreachable.',
   },
 ];
 
 function main() {
-  let auditJson;
-  try {
-    // pnpm audit exits non-zero when vulnerabilities exist even with --json — capture stdout regardless.
-    auditJson = execFileSync('pnpm', ['audit', '--json'], { encoding: 'utf8' });
-  } catch (err) {
-    auditJson = err.stdout;
+  let auditResult;
+
+  if (process.platform === 'win32') {
+    auditResult = spawnSync(
+      process.env.ComSpec ?? 'cmd.exe',
+      ['/d', '/s', '/c', 'pnpm audit --json'],
+      {
+        encoding: 'utf8',
+      },
+    );
+  } else {
+    auditResult = spawnSync('pnpm', ['audit', '--json'], {
+      encoding: 'utf8',
+    });
   }
 
-  if (!auditJson || auditJson.trim().length === 0) {
-    console.error('ERROR: pnpm audit produced no output.');
+  if (auditResult.error) {
+    console.error(
+      `ERROR: failed to run pnpm audit: ${auditResult.error.message}`,
+    );
     process.exit(1);
   }
 
-  const report = JSON.parse(auditJson);
+  const auditJson = auditResult.stdout;
+
+  if (!auditJson || auditJson.trim().length === 0) {
+    const stderr = auditResult.stderr?.trim();
+
+    if (stderr) {
+      console.error(`ERROR: pnpm audit produced no output:\n${stderr}`);
+    } else {
+      console.error('ERROR: pnpm audit produced no output.');
+    }
+
+    process.exit(1);
+  }
+
+  let report;
+
+  try {
+    report = JSON.parse(auditJson);
+  } catch (error) {
+    console.error(
+      `ERROR: pnpm audit returned invalid JSON: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    );
+    process.exit(1);
+  }
+
   const advisories = Object.values(report.advisories ?? {});
 
   if (advisories.length === 0) {
@@ -87,25 +114,55 @@ function main() {
     return;
   }
 
-  const allowlistIds = new Set(ALLOWLIST.map((a) => a.githubAdvisoryId));
-  const unallowlisted = advisories.filter((a) => !allowlistIds.has(a.github_advisory_id));
-  const allowlisted = advisories.filter((a) => allowlistIds.has(a.github_advisory_id));
+  const allowlistIds = new Set(
+    ALLOWLIST.map((entry) => entry.githubAdvisoryId),
+  );
 
-  for (const a of allowlisted) {
-    const entry = ALLOWLIST.find((e) => e.githubAdvisoryId === a.github_advisory_id);
-    console.log(`ALLOWLISTED: [${a.severity}] ${a.module_name} (${a.github_advisory_id}) — ${entry.reason}`);
+  const unallowlisted = advisories.filter(
+    (advisory) => !allowlistIds.has(advisory.github_advisory_id),
+  );
+
+  const allowlisted = advisories.filter((advisory) =>
+    allowlistIds.has(advisory.github_advisory_id),
+  );
+
+  for (const advisory of allowlisted) {
+    const entry = ALLOWLIST.find(
+      (candidate) =>
+        candidate.githubAdvisoryId === advisory.github_advisory_id,
+    );
+
+    console.log(
+      `ALLOWLISTED: [${advisory.severity}] ${advisory.module_name} ` +
+        `(${advisory.github_advisory_id}) — ${entry.reason}`,
+    );
   }
 
   if (unallowlisted.length > 0) {
-    console.error(`\nDependency scan FAILED — ${unallowlisted.length} un-allowlisted advisory(ies):`);
-    for (const a of unallowlisted) {
-      console.error(`  - [${a.severity}] ${a.module_name} (${a.github_advisory_id}): ${a.title}`);
+    console.error(
+      `\nDependency scan FAILED — ${unallowlisted.length} ` +
+        'un-allowlisted advisory(ies):',
+    );
+
+    for (const advisory of unallowlisted) {
+      console.error(
+        `  - [${advisory.severity}] ${advisory.module_name} ` +
+          `(${advisory.github_advisory_id}): ${advisory.title}`,
+      );
     }
-    console.error('\nEither upgrade the affected package, or add a justified entry to ALLOWLIST in this script.');
+
+    console.error(
+      '\nEither upgrade the affected package, or add a justified entry ' +
+        'to ALLOWLIST in this script.',
+    );
+
     process.exit(1);
   }
 
-  console.log(`\nDependency scan passed — ${allowlisted.length} advisory(ies), all allowlisted with a documented reason.`);
+  console.log(
+    `\nDependency scan passed — ${allowlisted.length} advisory(ies), ` +
+      'all allowlisted with a documented reason.',
+  );
 }
 
 main();
