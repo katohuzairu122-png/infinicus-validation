@@ -374,14 +374,17 @@
       "report": ".claude/state/reports/BUILD-29-INCIDENT-completion.md",
       "testsPass": true
     },
-    {
+        {
       "id": "BUILD-30",
       "layer": "LAUNCH",
       "name": "Launch readiness",
-      "status": "ready",
+      "status": "completed",
       "specification": "docs/implementation-queue/BUILD-30-LAUNCH-SPECIFICATION.md",
-      "notes": "Dependency BUILD-29 completed. Ready for validation and formal closure."
+      "notes": "BUILD-30 completed. Production acceptance matrix, launch checklist, migration and smoke checks, monitoring proof, load proof, billing proof, incident proof, security evidence, restore and rollback evidence, and Windows-compatible acceptance tooling completed.",
+      "completedAt": "2026-08-05T00:00:00.000Z",
+      "report": ".claude/state/reports/BUILD-30-LAUNCH-completion.md",
+      "testsPass": true
     }
   ],
-  "currentReadyBuild": "BUILD-30"
+  "currentReadyBuild": null
 }
