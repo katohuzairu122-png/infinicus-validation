@@ -1658,15 +1658,34 @@ async function supabaseSaveSimulation(entry) {
         <button class="biz-tab" onclick="bizTab('team',this)">🧑‍💼 TEAM</button>
       </div>
 
-      <!-- CATALOG — tap a product to log a sale instantly at its price,
-           instead of typing an amount by hand every time. Purely a
-           front-end convenience: tapping a card just calls the same
-           bizLogEvent('sale')-equivalent POST /events the SALE tab uses. -->
+      <!-- CATALOG — tap a product to add it to a running order (cart) at
+           its catalog price, instead of typing an amount by hand every
+           time. Each tap adds a real order line item via the backend
+           Orders API; COMPLETE ORDER finalizes it, which records the sale
+           the same way the SALE tab's single-amount entry does. -->
       <div class="biz-form-panel visible" id="biz-panel-catalog">
         <div id="biz-catalog-cats" class="biz-tabs" style="display:none;margin-bottom:1rem;"></div>
         <div id="biz-catalog-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:.6rem;"></div>
         <div id="biz-catalog-empty" style="display:none;text-align:center;padding:1.5rem 1rem;font-family:var(--mono);font-size:12px;color:var(--muted-2);">No products in your catalog yet — add your first one below.</div>
         <div id="biz-catalog-loading" style="text-align:center;padding:1.5rem 1rem;font-family:var(--mono);font-size:12px;color:var(--muted-2);">Loading catalog…</div>
+
+        <!-- Cart — a real backend order, built one tap at a time. Hidden
+             until the first item is added; each tap adds a line item to
+             the same open order (created on the first tap) rather than
+             logging one-off sale events, so a multi-item sale shows up as
+             a single order with a real total instead of N separate rows. -->
+        <div id="biz-cart-panel" style="display:none;margin-top:1rem;border:1px solid var(--line-2);border-radius:8px;padding:.8rem;">
+          <div style="font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.1em;margin-bottom:.5rem;">CURRENT ORDER</div>
+          <div id="biz-cart-items"></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:.6rem;padding-top:.6rem;border-top:1px solid var(--line-2);">
+            <div style="font-family:var(--mono);font-size:13px;color:var(--fg);">Total: $<span id="biz-cart-total">0.00</span></div>
+            <div style="display:flex;gap:.4rem;">
+              <button class="btn-sm" onclick="bizVoidCart()">CLEAR</button>
+              <button class="btn-main" onclick="bizCompleteCart()">COMPLETE ORDER →</button>
+            </div>
+          </div>
+        </div>
+
         <button class="btn-sm" id="biz-catalog-add-toggle" onclick="bizToggleAddProduct()" style="margin-top:1rem;">+ ADD PRODUCT</button>
         <div id="biz-add-product-form" style="display:none;margin-top:1rem;">
           <div class="biz-field"><label>Name</label><input id="biz-prod-name" type="text" placeholder="e.g. Cappuccino"></div>
@@ -6714,6 +6733,10 @@ let _bizCatalogLoaded = false;
 let _bizCatalogCat = null;       // active category filter, null = all
 let _bizOpenRegister = null;     // currently open register session, or null
 let _bizRegisterLoaded = false;
+// Cart: a real backend order built one tap at a time. Lost on page reload
+// (the order itself survives server-side as 'planned' — only the local
+// pointer to it is gone), same tradeoff as any client-only cart state.
+let _bizCart = { orderId: null, items: [], totalAmount: 0 };
 
 // Called when nav('operations') fires — show/hide auth gate and provision the business
 function bizInit() {
@@ -6899,11 +6922,67 @@ async function bizBuyProduct(productId) {
   const p = _bizCatalog.find(x => x.id === productId);
   if (!p) return;
   try {
-    await bizBackendFetch('/v1/businesses/' + _bizCurrentId + '/events', {
+    if (!_bizCart.orderId) {
+      const order = await bizBackendFetch('/v1/businesses/' + _bizCurrentId + '/orders', { method: 'POST', body: {} });
+      _bizCart.orderId = order.id;
+    }
+    const order = await bizBackendFetch('/v1/businesses/' + _bizCurrentId + '/orders/' + _bizCart.orderId + '/line-items', {
       method: 'POST',
-      body: { eventType: 'sale', amount: p.price, quantity: 1, category: p.category, notes: p.name },
+      body: { description: p.name, quantity: 1, unitPrice: p.price },
     });
-    bizShowMsg('catalog', `✓ Logged: ${p.name} — $${p.price.toFixed(2)}`, false);
+    _bizCart.items = order.lineItems;
+    _bizCart.totalAmount = order.totalAmount;
+    bizRenderCart();
+    bizShowMsg('catalog', `✓ Added: ${p.name} — $${p.price.toFixed(2)}`, false);
+  } catch(e) { bizShowMsg('catalog', '✗ ' + e.message, true); }
+}
+
+function bizRenderCart() {
+  const panel = document.getElementById('biz-cart-panel');
+  const itemsEl = document.getElementById('biz-cart-items');
+  const totalEl = document.getElementById('biz-cart-total');
+  if (!panel || !itemsEl || !totalEl) return;
+  if (!_bizCart.orderId || _bizCart.items.length === 0) {
+    panel.style.display = 'none';
+    return;
+  }
+  panel.style.display = 'block';
+  itemsEl.innerHTML = _bizCart.items.map(li => `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:.3rem 0;font-family:var(--mono);font-size:12px;color:var(--text);">
+      <span>${li.description} × ${li.quantity}</span>
+      <span style="display:flex;align-items:center;gap:.5rem;">$${li.lineTotal.toFixed(2)}<button onclick="bizRemoveCartItem('${li.id}')" title="Remove" style="background:none;border:none;color:var(--muted-2);cursor:pointer;font-size:13px;padding:0;">✕</button></span>
+    </div>
+  `).join('');
+  totalEl.textContent = _bizCart.totalAmount.toFixed(2);
+}
+
+async function bizRemoveCartItem(lineItemId) {
+  if (!_bizCurrentId || !_bizCart.orderId) return;
+  try {
+    const order = await bizBackendFetch('/v1/businesses/' + _bizCurrentId + '/orders/' + _bizCart.orderId + '/line-items/' + lineItemId, { method: 'DELETE' });
+    _bizCart.items = order.lineItems;
+    _bizCart.totalAmount = order.totalAmount;
+    bizRenderCart();
+  } catch(e) { bizShowMsg('catalog', '✗ ' + e.message, true); }
+}
+
+async function bizCompleteCart() {
+  if (!_bizCurrentId || !_bizCart.orderId) return;
+  try {
+    await bizBackendFetch('/v1/businesses/' + _bizCurrentId + '/orders/' + _bizCart.orderId + '/complete', { method: 'POST' });
+    bizShowMsg('catalog', `✓ Order completed — $${_bizCart.totalAmount.toFixed(2)}`, false);
+    _bizCart = { orderId: null, items: [], totalAmount: 0 };
+    bizRenderCart();
+  } catch(e) { bizShowMsg('catalog', '✗ ' + e.message, true); }
+}
+
+async function bizVoidCart() {
+  if (!_bizCurrentId || !_bizCart.orderId) return;
+  try {
+    await bizBackendFetch('/v1/businesses/' + _bizCurrentId + '/orders/' + _bizCart.orderId + '/void', { method: 'POST', body: {} });
+    _bizCart = { orderId: null, items: [], totalAmount: 0 };
+    bizRenderCart();
+    bizShowMsg('catalog', 'Order cleared', false);
   } catch(e) { bizShowMsg('catalog', '✗ ' + e.message, true); }
 }
 
