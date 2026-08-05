@@ -367,18 +367,21 @@
       "id": "BUILD-29",
       "layer": "INCIDENT",
       "name": "Incident response",
-      "status": "ready",
+      "status": "completed",
       "specification": "docs/implementation-queue/BUILD-29-INCIDENT-SPECIFICATION.md",
-      "notes": "Dependency BUILD-28 completed. Ready for implementation."
+      "notes": "BUILD-29 completed. Incident severity, on-call ownership, runbooks, communication templates, rollback and restore procedures, platform incident persistence, APIs, authorization, and live PostgreSQL validation completed.",
+      "completedAt": "2026-08-05T00:00:00.000Z",
+      "report": ".claude/state/reports/BUILD-29-INCIDENT-completion.md",
+      "testsPass": true
     },
     {
       "id": "BUILD-30",
       "layer": "LAUNCH",
       "name": "Launch readiness",
-      "status": "pending",
+      "status": "ready",
       "specification": "docs/implementation-queue/BUILD-30-LAUNCH-SPECIFICATION.md",
-      "notes": "Blocked on BUILD-29 completion. Final build in the BUILD-10-30 master roadmap."
+      "notes": "Dependency BUILD-29 completed. Ready for validation and formal closure."
     }
   ],
-  "currentReadyBuild": "BUILD-29"
+  "currentReadyBuild": "BUILD-30"
 }
