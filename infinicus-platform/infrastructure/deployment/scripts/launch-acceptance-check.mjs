@@ -34,13 +34,18 @@
 //     node launch-acceptance-check.mjs
 
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
+import { createRequire } from 'node:module';
 
 const execFileAsync = promisify(execFile);
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const requireFromDatabase = createRequire(
+  path.join(__dirname, '..', '..', '..', 'packages', 'database', 'package.json')
+);
+const { Client } = requireFromDatabase('pg');
 const API_DIST_APP = path.join(__dirname, '..', '..', '..', 'apps', 'api', 'dist', 'app.js');
 const CONFIG_DIST = path.join(__dirname, '..', '..', '..', 'packages', 'configuration', 'dist', 'index.js');
 const DB_DIST = path.join(__dirname, '..', '..', '..', 'packages', 'database', 'dist', 'index.js');
@@ -50,22 +55,33 @@ const PORT = Number(process.env.ACCEPTANCE_CHECK_PORT ?? '34701');
 const BASE_URL = `http://127.0.0.1:${PORT}`;
 
 let failures = 0;
+
 function report(name, ok, detail = '') {
   console.log(`${ok ? 'PASS' : 'FAIL'}: ${name}${detail ? ` — ${detail}` : ''}`);
   if (!ok) failures += 1;
 }
 
 async function main() {
-  if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL is required');
-  if (!process.env.ADMIN_DATABASE_URL) throw new Error('ADMIN_DATABASE_URL is required');
+  if (!process.env.DATABASE_URL) {
+    throw new Error('DATABASE_URL is required');
+  }
 
-  const { loadConfig } = await import(CONFIG_DIST);
-  const { createPool, closePool, runMigrations } = await import(DB_DIST);
-  const { buildApp } = await import(API_DIST_APP);
+  if (!process.env.ADMIN_DATABASE_URL) {
+    throw new Error('ADMIN_DATABASE_URL is required');
+  }
+
+  const { loadConfig } = await import(pathToFileURL(CONFIG_DIST).href);
+  const { createPool, closePool, runMigrations } = await import(
+    pathToFileURL(DB_DIST).href
+  );
+  const { buildApp } = await import(pathToFileURL(API_DIST_APP).href);
 
   const config = loadConfig({
-    DATABASE_URL: process.env.DATABASE_URL, NODE_ENV: 'test', LOG_LEVEL: 'silent',
-    PORT: String(PORT), RATE_LIMIT_MAX: '100000',
+    DATABASE_URL: process.env.DATABASE_URL,
+    NODE_ENV: 'test',
+    LOG_LEVEL: 'silent',
+    PORT: String(PORT),
+    RATE_LIMIT_MAX: '100000',
   });
 
   // ── Migration state ────────────────────────────────────────────────────
@@ -125,7 +141,11 @@ async function main() {
     console.log(`  (throughput: ${report_.throughputReqPerSec} req/s)`);
 
     // ── Billing proof ──────────────────────────────────────────────────────
-    const { EntitlementService } = await import(path.join(__dirname, '..', '..', '..', 'packages', 'billing', 'dist', 'index.js'));
+const { EntitlementService } = await import(
+  pathToFileURL(
+    path.join(__dirname, '..', '..', '..', 'packages', 'billing', 'dist', 'index.js')
+  ).href
+);
     const entitlements = new EntitlementService();
     const acceptanceTenantId = '99999999-1a1a-4a1a-8a1a-000000000001';
     const acceptanceWorkspaceId = '99999999-1a1a-4a1a-8a1a-000000000002';
@@ -137,18 +157,55 @@ async function main() {
     // lives under infrastructure/, outside any workspace package, so it
     // has no node_modules of its own (the same reason every other
     // infrastructure/ script uses this convention).
-    await execFileAsync('psql', [process.env.ADMIN_DATABASE_URL, '-v', 'ON_ERROR_STOP=1', '-c',
-      `INSERT INTO tenancy.tenants (id, name, slug, status, plan_code) VALUES ('${acceptanceTenantId}','Launch Acceptance Tenant','launch-acceptance-tenant','active','test') ON CONFLICT (id) DO NOTHING;`
-    ]);
-    await execFileAsync('psql', [process.env.ADMIN_DATABASE_URL, '-v', 'ON_ERROR_STOP=1', '-c',
-      `INSERT INTO tenancy.workspaces (id, tenant_id, name, slug, status) VALUES ('${acceptanceWorkspaceId}','${acceptanceTenantId}','Launch Acceptance WS','launch-acceptance-ws','active') ON CONFLICT (id) DO NOTHING;`
-    ]);
+
+    const adminClient = new Client({
+      connectionString: process.env.ADMIN_DATABASE_URL,
+    });
+
+    await adminClient.connect();
+
+    try {
+      await adminClient.query(
+        `INSERT INTO tenancy.tenants
+          (id, name, slug, status, plan_code)
+         VALUES ($1, $2, $3, $4, $5)
+         ON CONFLICT (id) DO NOTHING`,
+        [
+          acceptanceTenantId,
+          'Launch Acceptance Tenant',
+          'launch-acceptance-tenant',
+          'active',
+          'test',
+        ]
+      );
+
+      await adminClient.query(
+        `INSERT INTO tenancy.workspaces
+          (id, tenant_id, name, slug, status)
+         VALUES ($1, $2, $3, $4, $5)
+         ON CONFLICT (id) DO NOTHING`,
+        [
+          acceptanceWorkspaceId,
+          acceptanceTenantId,
+          'Launch Acceptance WS',
+          'launch-acceptance-ws',
+          'active',
+        ]
+      );
+    } finally {
+      await adminClient.end();
+    }
+
     const ctx = { tenantId: acceptanceTenantId, workspaceId: acceptanceWorkspaceId, userId: '00000000-0000-0000-0000-000000000000' };
+
     const { subscription, plan } = await entitlements.getSubscriptionWithPlan(ctx);
+
     report('billing: subscription lazily provisions and resolves a real plan', subscription.status === 'active' && plan.code === 'free', `status=${subscription.status} plan=${plan.code}`);
 
     // ── Incident tracking proof (this build's own capability) ─────────────
-    const { PlatformIncidentRepository } = await import(DB_DIST);
+    const { PlatformIncidentRepository } = await import(
+  pathToFileURL(DB_DIST).href
+);
     const incidents = new PlatformIncidentRepository();
     const { incident } = await incidents.declare({ severity: 'sev4', title: 'Launch acceptance check', description: 'Automated proof this incident-tracking capability is live', declaredBy: 'launch-acceptance-check' });
     const resolved = await incidents.resolve(incident.id, 'launch-acceptance-check');
