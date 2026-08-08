@@ -2,6 +2,7 @@ import { randomUUID } from 'crypto';
 import type { PoolClient, QueryResult } from 'pg';
 import type { TenantContext } from '../../client.js';
 import { withTenantTransaction } from '../../client.js';
+import { NotFoundError } from './errors.js';
 
 export interface DataSource {
   id: string;
@@ -46,12 +47,7 @@ export interface CreateDataSourceInput {
   createdBy?: string;
 }
 
-export class NotFoundError extends Error {
-  constructor(entity: string, id: string) {
-    super(`${entity} not found: ${id}`);
-    this.name = 'NotFoundError';
-  }
-}
+export { NotFoundError } from './errors.js';
 
 function rowToDataSource(row: Record<string, unknown>): DataSource {
   return {

@@ -23,6 +23,8 @@ import { ValidationResultRepository }       from '../src/repositories/da/Validat
 import { DataQualityScoreRepository }       from '../src/repositories/da/DataQualityScoreRepository.js';
 import { ProvenanceRepository }             from '../src/repositories/da/ProvenanceRepository.js';
 import { PublicationPackageRepository }     from '../src/repositories/da/PublicationPackageRepository.js';
+import { UnsupportedConnectorError, ValidationError } from '../src/repositories/da/errors.js';
+import { withTenantTransaction }            from '../src/client.js';
 
 const RUN = !!process.env.DATABASE_URL;
 
@@ -115,8 +117,24 @@ describe.runIf(RUN)('Integration: ConnectorRepository', () => {
   const connRepo = new ConnectorRepository();
   let sourceId: string;
   let connectorId: string;
+  let build31SourceId: string;
 
-  beforeAll(setupIntegration);
+  // Fixed, guaranteed-absent ids. Reaching the database with these would
+  // raise a foreign-key or not-found error, so a test that instead sees the
+  // expected controlled error proves validation ran BEFORE any SQL.
+  const ABSENT_SOURCE_ID    = '00000000-0000-0000-0000-deadbeef0031';
+  const ABSENT_CONNECTOR_ID = '00000000-0000-0000-0000-deadbeef0032';
+
+  beforeAll(async () => {
+    await setupIntegration();
+    const src = await srcRepo.create(ctx1, {
+      name:             'BUILD-31 Connector Source',
+      sourceCode:       uniqueCode('build31'),
+      sourceType:       'api',
+      sensitivityLevel: 'public',
+    });
+    build31SourceId = src.id;
+  });
   afterAll(teardownIntegration);
 
   it('creates connector linked to a data source', async () => {
@@ -168,6 +186,136 @@ describe.runIf(RUN)('Integration: ConnectorRepository', () => {
     await expect(
       connRepo.findById(ctx2, connectorId)
     ).rejects.toBeInstanceOf(NotFoundError);
+  });
+
+  it('accepts the manual_json connector type', async () => {
+    const conn = await connRepo.create(ctx1, {
+      dataSourceId:  build31SourceId,
+      name:          'Manual JSON intake',
+      connectorType: 'manual_json',
+    });
+    expect(conn.connectorType).toBe('manual_json');
+  });
+
+  it('accepts every other supported connector type', async () => {
+    const types = [
+      'rest_api', 'graphql', 'webhook', 'postgres', 'mysql', 'mssql',
+      'sqlite', 'sftp', 'object_storage', 'file_upload', 'event_stream', 'custom',
+    ];
+    for (const connectorType of types) {
+      const conn = await connRepo.create(ctx1, {
+        dataSourceId: build31SourceId,
+        name:         `probe-${connectorType}`,
+        connectorType,
+      });
+      expect(conn.connectorType).toBe(connectorType);
+    }
+  });
+
+  it('throws UnsupportedConnectorError for an unsupported connector type', async () => {
+    await expect(
+      connRepo.create(ctx1, {
+        dataSourceId:  ABSENT_SOURCE_ID,
+        name:          'bogus',
+        connectorType: 'not_a_real_connector',
+      })
+    ).rejects.toBeInstanceOf(UnsupportedConnectorError);
+  });
+
+  it('exposes the offending type on UnsupportedConnectorError', async () => {
+    await expect(
+      connRepo.create(ctx1, {
+        dataSourceId:  ABSENT_SOURCE_ID,
+        name:          'bogus',
+        connectorType: 'not_a_real_connector',
+      })
+    ).rejects.toMatchObject({ connectorType: 'not_a_real_connector' });
+  });
+
+  it('throws ValidationError for an invalid create status', async () => {
+    await expect(
+      connRepo.create(ctx1, {
+        dataSourceId:  ABSENT_SOURCE_ID,
+        name:          'bad-status',
+        connectorType: 'rest_api',
+        status:        'not_a_status',
+      })
+    ).rejects.toBeInstanceOf(ValidationError);
+  });
+
+  it('throws ValidationError for an invalid status before touching the database', async () => {
+    await expect(
+      connRepo.updateStatus(ctx1, ABSENT_CONNECTOR_ID, 'not_a_status' as never)
+    ).rejects.toBeInstanceOf(ValidationError);
+  });
+
+  it('throws ValidationError for an invalid health status before touching the database', async () => {
+    await expect(
+      connRepo.updateHealth(ctx1, ABSENT_CONNECTOR_ID, 'not_a_health_status' as never)
+    ).rejects.toBeInstanceOf(ValidationError);
+  });
+});
+
+describe.runIf(RUN)('Schema: connectors_type_check', () => {
+  const srcRepo = new DataSourceRepository();
+  let sourceId: string;
+
+  beforeAll(async () => {
+    await setupIntegration();
+    const src = await srcRepo.create(ctx1, {
+      name:             'Constraint Probe Source',
+      sourceCode:       uniqueCode('constraint'),
+      sourceType:       'api',
+      sensitivityLevel: 'public',
+    });
+    sourceId = src.id;
+  });
+  afterAll(teardownIntegration);
+
+  it('accepts manual_json on a direct INSERT', async () => {
+    await withTenantTransaction(ctx1, async (client) => {
+      const res = await client.query(
+        `INSERT INTO data_acquisition.connectors
+           (tenant_id, workspace_id, data_source_id, name, connector_type)
+         VALUES ($1,$2,$3,$4,$5) RETURNING connector_type`,
+        [ctx1.tenantId, ctx1.workspaceId, sourceId, 'direct-manual', 'manual_json']
+      );
+      expect(res.rows[0].connector_type).toBe('manual_json');
+    });
+  });
+
+  it('accepts all twelve original values on a direct INSERT', async () => {
+    const types = [
+      'rest_api', 'graphql', 'webhook', 'postgres', 'mysql', 'mssql',
+      'sqlite', 'sftp', 'object_storage', 'file_upload', 'event_stream', 'custom',
+    ];
+    for (const type of types) {
+      await withTenantTransaction(ctx1, async (client) => {
+        const res = await client.query(
+          `INSERT INTO data_acquisition.connectors
+             (tenant_id, workspace_id, data_source_id, name, connector_type)
+           VALUES ($1,$2,$3,$4,$5) RETURNING connector_type`,
+          [ctx1.tenantId, ctx1.workspaceId, sourceId, `direct-${type}`, type]
+        );
+        expect(res.rows[0].connector_type).toBe(type);
+      });
+    }
+  });
+
+  // Defence in depth: the repository now rejects this first, but the
+  // database must still reject it for any writer that bypasses the
+  // repository.
+  it('rejects an unknown connector type on a direct INSERT', async () => {
+    await expect(
+      withTenantTransaction(ctx1, async (client) => {
+        await client.query(
+          `INSERT INTO data_acquisition.connectors
+             (tenant_id, workspace_id, data_source_id, name, connector_type)
+           VALUES ($1,$2,$3,$4,$5)`,
+          [ctx1.tenantId, ctx1.workspaceId, sourceId, 'direct-bogus', 'not_a_real_connector']
+        );
+      })
+    ).rejects.toThrow(/connectors_type_check/);
   });
 });
 

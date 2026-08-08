@@ -38,3 +38,41 @@ export type {
   PublicationPackage,
   CreatePublicationPackageInput,
 } from './PublicationPackageRepository.js';
+
+export {
+  InvalidStateTransitionError,
+  DuplicateSourceCodeError,
+  ProvenanceError,
+  ValidationError,
+  UnsupportedConnectorError,
+} from './errors.js';
+
+export { runGuardedTransition, statesAllowing } from './guards.js';
+export type { GuardedTransitionSpec } from './guards.js';
+
+export { boundedPage, DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE } from './pagination.js';
+export type { PageOptions, BoundedPage } from './pagination.js';
+
+export {
+  emitSourceRegistered,
+  emitConnectorRegistered,
+  emitCollectionStarted,
+  emitCollectionCompleted,
+  emitCollectionFailed,
+  emitValidationCompleted,
+  emitDataQuarantined,
+  emitDataQualityScored,
+  emitDataPublished,
+} from './outbox.js';
+export type {
+  OutboxEventId,
+  SourceRegisteredEvent,
+  ConnectorRegisteredEvent,
+  CollectionStartedEvent,
+  CollectionCompletedEvent,
+  CollectionFailedEvent,
+  ValidationCompletedEvent,
+  DataQuarantinedEvent,
+  DataQualityScoredEvent,
+  DataPublishedEvent,
+} from './outbox.js';
