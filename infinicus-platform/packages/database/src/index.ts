@@ -22,6 +22,7 @@ export {
   DataQualityScoreRepository,
   ProvenanceRepository,
   PublicationPackageRepository,
+  ManualSubmissionRepository,
   NotFoundError,
 } from './repositories/da/index.js';
 export type {
@@ -44,6 +45,9 @@ export type {
   CreateTransformationRecordInput,
   PublicationPackage,
   CreatePublicationPackageInput,
+  ManualSubmission,
+  CreateManualSubmissionInput,
+  ManualSubmissionStatus,
 } from './repositories/da/index.js';
 
 // ── Business Operations repositories ──────────────────────────────────────────

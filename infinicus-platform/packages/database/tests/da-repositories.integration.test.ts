@@ -14,6 +14,7 @@ import {
   ctx2,
   T1,
   WS1,
+  UID,
   uniqueCode,
 } from './helpers/integration.js';
 
@@ -24,6 +25,8 @@ import { ValidationResultRepository }       from '../src/repositories/da/Validat
 import { DataQualityScoreRepository }       from '../src/repositories/da/DataQualityScoreRepository.js';
 import { ProvenanceRepository }             from '../src/repositories/da/ProvenanceRepository.js';
 import { PublicationPackageRepository }     from '../src/repositories/da/PublicationPackageRepository.js';
+import { ManualSubmissionRepository, MANUAL_SUBMISSION_STATUSES } from '../src/repositories/da/ManualSubmissionRepository.js';
+import type { ManualSubmissionStatus } from '../src/repositories/da/ManualSubmissionRepository.js';
 import { UnsupportedConnectorError, ValidationError, InvalidStateTransitionError } from '../src/repositories/da/errors.js';
 import { withTenantTransaction }            from '../src/client.js';
 
@@ -1145,5 +1148,467 @@ describe.runIf(RUN)('Integration: PublicationPackageRepository', () => {
   it('correlation ID is preserved on the package', async () => {
     const found = await repo.findById(ctx1, draftId);
     expect(found.correlationId).toBe('00000000-aaaa-0000-0000-000000000008');
+  });
+});
+
+describe.runIf(RUN)('Integration: ManualSubmissionRepository', () => {
+  const srcRepo = new DataSourceRepository();
+  const runRepo = new CollectionRunRepository();
+  const msRepo  = new ManualSubmissionRepository();
+
+  const ABSENT_ID = '00000000-0000-0000-0000-deadbeef0009';
+
+  // Same tenant, non-existent workspace. manual_submissions_isolation predicates
+  // on BOTH tenant_id and workspace_id, so this isolates the workspace dimension
+  // independently of the tenant one. Matches the convention already used by the
+  // DataSourceRepository block.
+  const wrongWorkspaceCtx = { ...ctx1, workspaceId: '00000000-0000-0000-dead-beef00000009' };
+
+  // BYPASSRLS pool, needed to seed platform.businesses and identity.users, and
+  // to remove this block's manual_submissions rows before teardownIntegration
+  // (collection_run_id is ON DELETE RESTRICT, so leftover submissions would
+  // block the collection_runs delete).
+  let adminPool: Pool | null = null;
+
+  let businessId: string;
+  let sourceId: string;
+  let ctx2SourceId: string;
+
+  beforeAll(async () => {
+    await setupIntegration();
+
+    // ADMIN_DATABASE_URL only — no DATABASE_URL fallback.
+    adminPool = new Pool({ connectionString: process.env.ADMIN_DATABASE_URL });
+
+    const biz = await adminPool.query<{ id: string }>(
+      `INSERT INTO platform.businesses
+         (tenant_id, workspace_id, legal_name, business_code, status)
+       VALUES ($1,$2,'DA Manual Submission Biz',$3,'active')
+       RETURNING id`,
+      [T1, WS1, uniqueCode('da-ms-biz')]
+    );
+    businessId = biz.rows[0].id;
+
+    // Shared user fixture, following the established convention used by the
+    // aba/adi/bi/cl/dt/om suites. Not deleted in teardown, by that convention.
+    await adminPool.query(
+      `INSERT INTO identity.users (id, email, status)
+       VALUES ($1,'da-manual-submitter@example.test','active')
+       ON CONFLICT (id) DO NOTHING`,
+      [UID]
+    );
+
+    const src = await srcRepo.create(ctx1, {
+      name: 'Manual Src', sourceCode: uniqueCode('manual-src'), sourceType: 'manual', sensitivityLevel: 'internal',
+    });
+    sourceId = src.id;
+
+    // A source owned legitimately by tenant 2 / workspace 2, so the isolation
+    // test can build a fully FK-valid row for that tenant rather than
+    // manufacturing inconsistent tenant/workspace values.
+    const ctx2Src = await srcRepo.create(ctx2, {
+      name: 'Manual Src T2', sourceCode: uniqueCode('manual-src-t2'), sourceType: 'manual', sensitivityLevel: 'internal',
+    });
+    ctx2SourceId = ctx2Src.id;
+  });
+
+  afterAll(async () => {
+    try {
+      try {
+        try {
+          if (adminPool) {
+            // Must precede teardownIntegration: manual_submissions.collection_run_id
+            // is ON DELETE RESTRICT, so leftover rows would block its
+            // collection_runs delete.
+            await adminPool.query(
+              'DELETE FROM data_acquisition.manual_submissions WHERE tenant_id = ANY($1)',
+              [[ctx1.tenantId, ctx2.tenantId]]
+            );
+          }
+        } finally {
+          if (adminPool && businessId) {
+            await adminPool.query('DELETE FROM platform.businesses WHERE id = $1', [businessId]);
+          }
+        }
+      } finally {
+        if (adminPool) await adminPool.end();
+        adminPool = null;
+      }
+    } finally {
+      await teardownIntegration();
+    }
+  });
+
+  // ── fixtures: every test builds its own run and submission ─────────────────
+
+  async function newRun() {
+    return runRepo.create(ctx1, { dataSourceId: sourceId, collectionType: 'manual' });
+  }
+
+  async function newRunCtx2() {
+    return runRepo.create(ctx2, { dataSourceId: ctx2SourceId, collectionType: 'manual' });
+  }
+
+  async function newSubmission(
+    overrides: Partial<Parameters<ManualSubmissionRepository['create']>[1]> = {}
+  ) {
+    const run = await newRun();
+    return msRepo.create(ctx1, {
+      dataSourceId:    sourceId,
+      collectionRunId: run.id,
+      submissionType:  'manual_json',
+      ...overrides,
+    });
+  }
+
+  /** Raw read against the app connection; data_acquisition is app-role readable. */
+  async function jsonbTypeOf(id: string): Promise<string> {
+    return withTenantTransaction(ctx1, async (client) => {
+      const res = await client.query<{ t: string }>(
+        `SELECT jsonb_typeof(payload) AS t
+           FROM data_acquisition.manual_submissions
+          WHERE id = $1`,
+        [id]
+      );
+      return res.rows[0].t;
+    });
+  }
+
+  // ── create() ──────────────────────────────────────────────────────────────
+
+  it('creates a submission', async () => {
+    const run = await newRun();
+    const sub = await msRepo.create(ctx1, {
+      dataSourceId:    sourceId,
+      collectionRunId: run.id,
+      submissionType:  'manual_json',
+    });
+    expect(sub.id).toBeTruthy();
+    expect(sub.dataSourceId).toBe(sourceId);
+    expect(sub.collectionRunId).toBe(run.id);
+    expect(sub.submissionType).toBe('manual_json');
+  });
+
+  it('defaults status to submitted', async () => {
+    const sub = await newSubmission();
+    expect(sub.status).toBe('submitted');
+  });
+
+  it('defaults revisionNumber to 1', async () => {
+    const sub = await newSubmission();
+    expect(sub.revisionNumber).toBe(1);
+  });
+
+  it('defaults parentSubmissionId to null', async () => {
+    const sub = await newSubmission();
+    expect(sub.parentSubmissionId).toBeNull();
+  });
+
+  it('preserves a supplied correlationId', async () => {
+    const sub = await newSubmission({ correlationId: '00000000-aaaa-0000-0000-000000000009' });
+    expect(sub.correlationId).toBe('00000000-aaaa-0000-0000-000000000009');
+  });
+
+  it('generates a correlationId when omitted', async () => {
+    const a = await newSubmission();
+    const b = await newSubmission();
+    expect(a.correlationId).toBeTruthy();
+    expect(b.correlationId).toBeTruthy();
+    expect(a.correlationId).not.toBe(b.correlationId);
+  });
+
+  it('preserves submissionNotes', async () => {
+    const sub = await newSubmission({ submissionNotes: 'batch from finance team' });
+    expect(sub.submissionNotes).toBe('batch from finance team');
+  });
+
+  it('preserves businessId when supplied', async () => {
+    const sub = await newSubmission({ businessId });
+    expect(sub.businessId).toBe(businessId);
+  });
+
+  it('preserves submittedBy when supplied', async () => {
+    const sub = await newSubmission({ submittedBy: UID });
+    expect(sub.submittedBy).toBe(UID);
+  });
+
+  it('round-trips an object payload', async () => {
+    const payload = { records: [{ sku: 'A1', qty: 3 }], batch: 'b-01' };
+    const sub = await newSubmission({ payload });
+    expect(sub.payload).toEqual(payload);
+  });
+
+  it('round-trips an array payload', async () => {
+    const payload = [{ sku: 'A1' }, { sku: 'B2' }];
+    const sub = await newSubmission({ payload });
+    expect(sub.payload).toEqual(payload);
+  });
+
+  it('round-trips a numeric scalar payload', async () => {
+    const sub = await newSubmission({ payload: 42 });
+    expect(sub.payload).toBe(42);
+  });
+
+  it('round-trips an explicit JSON null payload', async () => {
+    const sub = await newSubmission({ payload: null });
+    expect(sub.payload).toBeNull();
+    // Distinguishes JSON null from SQL NULL, which pg would surface identically.
+    expect(await jsonbTypeOf(sub.id)).toBe('null');
+  });
+
+  it('writes an empty object when payload is omitted', async () => {
+    const sub = await newSubmission();
+    expect(sub.payload).toEqual({});
+  });
+
+  // ── findById() ────────────────────────────────────────────────────────────
+
+  it('findById retrieves the submission', async () => {
+    const created = await newSubmission();
+    const found = await msRepo.findById(ctx1, created.id);
+    expect(found.id).toBe(created.id);
+  });
+
+  it('findById throws NotFoundError for an unknown id', async () => {
+    await expect(
+      msRepo.findById(ctx1, ABSENT_ID)
+    ).rejects.toBeInstanceOf(NotFoundError);
+  });
+
+  it('findById is tenant-isolated', async () => {
+    const created = await newSubmission();
+    await expect(
+      msRepo.findById(ctx2, created.id)
+    ).rejects.toBeInstanceOf(NotFoundError);
+  });
+
+  it('findById is workspace-isolated within the same tenant', async () => {
+    const created = await newSubmission();
+    await expect(
+      msRepo.findById(wrongWorkspaceCtx, created.id)
+    ).rejects.toBeInstanceOf(NotFoundError);
+  });
+
+  // ── listByCollectionRun() ─────────────────────────────────────────────────
+
+  it('listByCollectionRun returns only the requested run', async () => {
+    const runA = await newRun();
+    const runB = await newRun();
+    const inA = await msRepo.create(ctx1, {
+      dataSourceId: sourceId, collectionRunId: runA.id, submissionType: 'manual_json',
+    });
+    await msRepo.create(ctx1, {
+      dataSourceId: sourceId, collectionRunId: runB.id, submissionType: 'manual_json',
+    });
+
+    const list = await msRepo.listByCollectionRun(ctx1, runA.id);
+    expect(list).toHaveLength(1);
+    expect(list[0].id).toBe(inA.id);
+  });
+
+  it('listByCollectionRun orders newest first', async () => {
+    const run = await newRun();
+    const first  = await msRepo.create(ctx1, { dataSourceId: sourceId, collectionRunId: run.id, submissionType: 'manual_json' });
+    const second = await msRepo.create(ctx1, { dataSourceId: sourceId, collectionRunId: run.id, submissionType: 'manual_json' });
+    const third  = await msRepo.create(ctx1, { dataSourceId: sourceId, collectionRunId: run.id, submissionType: 'manual_json' });
+
+    // The production query orders only by created_at DESC, so equal timestamps
+    // would leave relative order unspecified. Stamp these three rows — and only
+    // these three, by id — with explicitly distinct times so the assertion is
+    // deterministic without relying on transaction-clock resolution or sleeps.
+    await withTenantTransaction(ctx1, async (client) => {
+      const stamps: Array<[string, string]> = [
+        [first.id,  '2026-01-01T00:00:01.000Z'],
+        [second.id, '2026-01-01T00:00:02.000Z'],
+        [third.id,  '2026-01-01T00:00:03.000Z'],
+      ];
+      for (const [id, at] of stamps) {
+        await client.query(
+          'UPDATE data_acquisition.manual_submissions SET created_at = $2 WHERE id = $1',
+          [id, at]
+        );
+      }
+    });
+
+    const list = await msRepo.listByCollectionRun(ctx1, run.id);
+    expect(list.map((s) => s.id)).toEqual([third.id, second.id, first.id]);
+  });
+
+  it('listByCollectionRun respects limit', async () => {
+    const run = await newRun();
+    for (let i = 0; i < 3; i++) {
+      await msRepo.create(ctx1, { dataSourceId: sourceId, collectionRunId: run.id, submissionType: 'manual_json' });
+    }
+    const page = await msRepo.listByCollectionRun(ctx1, run.id, { limit: 2 });
+    expect(page).toHaveLength(2);
+  });
+
+  it('listByCollectionRun respects offset', async () => {
+    const run = await newRun();
+    for (let i = 0; i < 3; i++) {
+      await msRepo.create(ctx1, { dataSourceId: sourceId, collectionRunId: run.id, submissionType: 'manual_json' });
+    }
+    const firstPage  = await msRepo.listByCollectionRun(ctx1, run.id, { limit: 2 });
+    const secondPage = await msRepo.listByCollectionRun(ctx1, run.id, { limit: 2, offset: 2 });
+    expect(secondPage).toHaveLength(1);
+    expect(firstPage.map((s) => s.id)).not.toContain(secondPage[0].id);
+  });
+
+  it('listByCollectionRun excludes rows from another tenant/workspace', async () => {
+    // Fully FK-valid row owned by tenant 2: its source and run both belong to
+    // ctx2, so nothing inconsistent is manufactured to exercise RLS.
+    const ctx2Run = await newRunCtx2();
+    await msRepo.create(ctx2, {
+      dataSourceId: ctx2SourceId, collectionRunId: ctx2Run.id, submissionType: 'manual_json',
+    });
+
+    expect(await msRepo.listByCollectionRun(ctx1, ctx2Run.id)).toHaveLength(0);
+    expect(await msRepo.listByCollectionRun(wrongWorkspaceCtx, ctx2Run.id)).toHaveLength(0);
+    expect(await msRepo.listByCollectionRun(ctx2, ctx2Run.id)).toHaveLength(1);
+  });
+
+  // ── updateStatus() ────────────────────────────────────────────────────────
+  //
+  // The edges exercised below are caller-selected compare-and-set operations.
+  // They are NOT a claim that any of them form a frozen lifecycle policy —
+  // BUILD-31 defines no transition matrix for manual submissions.
+
+  it('updateStatus moves submitted -> reviewing when the expected status matches', async () => {
+    const sub = await newSubmission();
+    const updated = await msRepo.updateStatus(ctx1, sub.id, 'submitted', 'reviewing');
+    expect(updated.status).toBe('reviewing');
+  });
+
+  it('updateStatus moves reviewing -> accepted when the expected status matches', async () => {
+    const sub = await newSubmission();
+    await msRepo.updateStatus(ctx1, sub.id, 'submitted', 'reviewing');
+    const updated = await msRepo.updateStatus(ctx1, sub.id, 'reviewing', 'accepted');
+    expect(updated.status).toBe('accepted');
+  });
+
+  it('updateStatus permits a self-transition when the expected status matches', async () => {
+    const sub = await newSubmission();
+    const updated = await msRepo.updateStatus(ctx1, sub.id, 'submitted', 'submitted');
+    expect(updated.status).toBe('submitted');
+  });
+
+  it('updateStatus throws InvalidStateTransitionError when the persisted status differs', async () => {
+    const sub = await newSubmission();
+    await expect(
+      msRepo.updateStatus(ctx1, sub.id, 'accepted', 'rejected')
+    ).rejects.toBeInstanceOf(InvalidStateTransitionError);
+  });
+
+  it('updateStatus throws NotFoundError for an unknown id', async () => {
+    await expect(
+      msRepo.updateStatus(ctx1, ABSENT_ID, 'submitted', 'reviewing')
+    ).rejects.toBeInstanceOf(NotFoundError);
+  });
+
+  it('updateStatus throws NotFoundError for an inaccessible id', async () => {
+    const sub = await newSubmission();
+    await expect(
+      msRepo.updateStatus(ctx2, sub.id, 'submitted', 'reviewing')
+    ).rejects.toBeInstanceOf(NotFoundError);
+    await expect(
+      msRepo.updateStatus(wrongWorkspaceCtx, sub.id, 'submitted', 'reviewing')
+    ).rejects.toBeInstanceOf(NotFoundError);
+  });
+
+  // The casts below are a deliberate test-only escape so a runtime-invalid
+  // value can reach the method. Production signatures stay narrowed.
+  it('updateStatus throws ValidationError for an invalid expectedStatus', async () => {
+    await expect(
+      msRepo.updateStatus(ctx1, ABSENT_ID, 'not_a_status' as ManualSubmissionStatus, 'reviewing')
+    ).rejects.toBeInstanceOf(ValidationError);
+  });
+
+  it('updateStatus throws ValidationError for an invalid nextStatus', async () => {
+    await expect(
+      msRepo.updateStatus(ctx1, ABSENT_ID, 'submitted', 'not_a_status' as ManualSubmissionStatus)
+    ).rejects.toBeInstanceOf(ValidationError);
+  });
+
+  // ── permitted status set ──────────────────────────────────────────────────
+
+  it('MANUAL_SUBMISSION_STATUSES matches manual_submissions_status_check', () => {
+    expect([...MANUAL_SUBMISSION_STATUSES]).toEqual([
+      'submitted',
+      'reviewing',
+      'accepted',
+      'rejected',
+      'superseded',
+    ]);
+  });
+});
+
+describe.runIf(RUN)('Schema: manual_submissions_status_check', () => {
+  const srcRepo = new DataSourceRepository();
+  const runRepo = new CollectionRunRepository();
+
+  let adminPool: Pool | null = null;
+  let sourceId: string;
+  let runId: string;
+
+  beforeAll(async () => {
+    await setupIntegration();
+
+    // ADMIN_DATABASE_URL only — no DATABASE_URL fallback.
+    adminPool = new Pool({ connectionString: process.env.ADMIN_DATABASE_URL });
+
+    const src = await srcRepo.create(ctx1, {
+      name: 'Status Probe Src', sourceCode: uniqueCode('status-probe'), sourceType: 'manual', sensitivityLevel: 'internal',
+    });
+    sourceId = src.id;
+
+    const run = await runRepo.create(ctx1, { dataSourceId: sourceId, collectionType: 'manual' });
+    runId = run.id;
+  });
+
+  afterAll(async () => {
+    try {
+      try {
+        if (adminPool) {
+          await adminPool.query(
+            'DELETE FROM data_acquisition.manual_submissions WHERE tenant_id = ANY($1)',
+            [[ctx1.tenantId]]
+          );
+        }
+      } finally {
+        if (adminPool) await adminPool.end();
+        adminPool = null;
+      }
+    } finally {
+      await teardownIntegration();
+    }
+  });
+
+  it('accepts every permitted status on a direct INSERT', async () => {
+    for (const status of ['submitted', 'reviewing', 'accepted', 'rejected', 'superseded']) {
+      await withTenantTransaction(ctx1, async (client) => {
+        const res = await client.query<{ status: string }>(
+          `INSERT INTO data_acquisition.manual_submissions
+             (tenant_id, workspace_id, data_source_id, collection_run_id, submission_type, status)
+           VALUES ($1,$2,$3,$4,'manual_json',$5) RETURNING status`,
+          [ctx1.tenantId, ctx1.workspaceId, sourceId, runId, status]
+        );
+        expect(res.rows[0].status).toBe(status);
+      });
+    }
+  });
+
+  // Defence in depth: the repository validates first, but the database must
+  // still reject an unsupported status for any writer that bypasses it.
+  it('rejects an unsupported status on a direct INSERT', async () => {
+    await expect(
+      withTenantTransaction(ctx1, async (client) => {
+        await client.query(
+          `INSERT INTO data_acquisition.manual_submissions
+             (tenant_id, workspace_id, data_source_id, collection_run_id, submission_type, status)
+           VALUES ($1,$2,$3,$4,'manual_json','not_a_status')`,
+          [ctx1.tenantId, ctx1.workspaceId, sourceId, runId]
+        );
+      })
+    ).rejects.toThrow(/manual_submissions_status_check/);
   });
 });

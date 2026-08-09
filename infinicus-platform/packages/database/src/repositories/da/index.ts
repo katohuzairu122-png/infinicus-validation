@@ -39,6 +39,13 @@ export type {
   CreatePublicationPackageInput,
 } from './PublicationPackageRepository.js';
 
+export { ManualSubmissionRepository } from './ManualSubmissionRepository.js';
+export type {
+  ManualSubmission,
+  CreateManualSubmissionInput,
+  ManualSubmissionStatus,
+} from './ManualSubmissionRepository.js';
+
 export {
   InvalidStateTransitionError,
   DuplicateSourceCodeError,
