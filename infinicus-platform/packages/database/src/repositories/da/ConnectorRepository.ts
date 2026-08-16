@@ -1,5 +1,5 @@
 import { randomUUID } from 'crypto';
-import type { QueryResult } from 'pg';
+import type { PoolClient, QueryResult } from 'pg';
 import type { TenantContext } from '../../client.js';
 import { withTenantTransaction } from '../../client.js';
 import {
@@ -254,15 +254,30 @@ export class ConnectorRepository {
     dataSourceId: string,
     id: string
   ): Promise<Connector> {
-    return withTenantTransaction(ctx, async (client) => {
-      const result = await client.query<Record<string, unknown>>(
-        `SELECT * FROM data_acquisition.connectors
-         WHERE id = $1 AND data_source_id = $2`,
-        [id, dataSourceId]
-      );
-      if (result.rows.length === 0) throw new NotFoundError('Connector', id);
-      return rowToConnector(result.rows[0]);
-    });
+    return withTenantTransaction(
+      ctx,
+      (client) => this.findByIdForSourceOn(client, ctx, dataSourceId, id)
+    );
+  }
+
+  /**
+   * findByIdForSource() on a caller-supplied PoolClient.
+   * Does not open or control a transaction; callers composing multiple
+   * operations must supply the client from one outer withTenantTransaction().
+   */
+  async findByIdForSourceOn(
+    client: PoolClient,
+    ctx: TenantContext,
+    dataSourceId: string,
+    id: string
+  ): Promise<Connector> {
+    const result = await client.query<Record<string, unknown>>(
+      `SELECT * FROM data_acquisition.connectors
+       WHERE id = $1 AND data_source_id = $2`,
+      [id, dataSourceId]
+    );
+    if (result.rows.length === 0) throw new NotFoundError('Connector', id);
+    return rowToConnector(result.rows[0]);
   }
 
   /**

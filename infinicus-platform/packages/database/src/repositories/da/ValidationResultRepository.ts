@@ -1,5 +1,5 @@
 import { randomUUID } from 'crypto';
-import type { QueryResult } from 'pg';
+import type { PoolClient, QueryResult } from 'pg';
 import type { TenantContext } from '../../client.js';
 import { withTenantTransaction } from '../../client.js';
 import { NotFoundError } from './DataSourceRepository.js';
@@ -104,54 +104,69 @@ export class ValidationResultRepository {
     input: CreateValidationResultInput,
     issues: CreateValidationIssueInput[] = []
   ): Promise<{ result: ValidationResult; issues: ValidationIssue[] }> {
-    return withTenantTransaction(ctx, async (client) => {
-      const resultRow: QueryResult<Record<string, unknown>> = await client.query(
-        `INSERT INTO data_acquisition.validation_results
-           (tenant_id, workspace_id, business_id, collection_run_id, validation_policy_id,
-            record_reference, is_valid, error_count, warning_count, result_details, correlation_id)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+    return withTenantTransaction(
+      ctx,
+      (client) => this.createOn(client, ctx, input, issues)
+    );
+  }
+
+  /**
+   * create() on a caller-supplied PoolClient.
+   * Does not open or control a transaction; callers composing multiple
+   * operations must supply the client from one outer withTenantTransaction().
+   */
+  async createOn(
+    client: PoolClient,
+    ctx: TenantContext,
+    input: CreateValidationResultInput,
+    issues: CreateValidationIssueInput[] = []
+  ): Promise<{ result: ValidationResult; issues: ValidationIssue[] }> {
+    const resultRow: QueryResult<Record<string, unknown>> = await client.query(
+      `INSERT INTO data_acquisition.validation_results
+         (tenant_id, workspace_id, business_id, collection_run_id, validation_policy_id,
+          record_reference, is_valid, error_count, warning_count, result_details, correlation_id)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+       RETURNING *`,
+      [
+        ctx.tenantId,
+        ctx.workspaceId,
+        input.businessId         ?? null,
+        input.collectionRunId,
+        input.validationPolicyId ?? null,
+        input.recordReference    ?? null,
+        input.isValid,
+        input.errorCount,
+        input.warningCount,
+        JSON.stringify(input.resultDetails ?? {}),
+        input.correlationId      ?? randomUUID(),
+      ]
+    );
+    const result = rowToValidationResult(resultRow.rows[0]);
+    const createdIssues: ValidationIssue[] = [];
+
+    for (const issue of issues) {
+      const issueRow = await client.query<Record<string, unknown>>(
+        `INSERT INTO data_acquisition.validation_issues
+           (validation_result_id, tenant_id, rule_code, field_path, severity,
+            issue_type, message, observed_value, expected_value)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
          RETURNING *`,
         [
+          result.id,
           ctx.tenantId,
-          ctx.workspaceId,
-          input.businessId         ?? null,
-          input.collectionRunId,
-          input.validationPolicyId ?? null,
-          input.recordReference    ?? null,
-          input.isValid,
-          input.errorCount,
-          input.warningCount,
-          JSON.stringify(input.resultDetails ?? {}),
-          input.correlationId      ?? randomUUID(),
+          issue.ruleCode,
+          issue.fieldPath     ?? null,
+          issue.severity,
+          issue.issueType,
+          issue.message,
+          issue.observedValue !== undefined ? JSON.stringify(issue.observedValue) : null,
+          issue.expectedValue !== undefined ? JSON.stringify(issue.expectedValue) : null,
         ]
       );
-      const result = rowToValidationResult(resultRow.rows[0]);
-      const createdIssues: ValidationIssue[] = [];
+      createdIssues.push(rowToValidationIssue(issueRow.rows[0]));
+    }
 
-      for (const issue of issues) {
-        const issueRow = await client.query<Record<string, unknown>>(
-          `INSERT INTO data_acquisition.validation_issues
-             (validation_result_id, tenant_id, rule_code, field_path, severity,
-              issue_type, message, observed_value, expected_value)
-           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
-           RETURNING *`,
-          [
-            result.id,
-            ctx.tenantId,
-            issue.ruleCode,
-            issue.fieldPath     ?? null,
-            issue.severity,
-            issue.issueType,
-            issue.message,
-            issue.observedValue !== undefined ? JSON.stringify(issue.observedValue) : null,
-            issue.expectedValue !== undefined ? JSON.stringify(issue.expectedValue) : null,
-          ]
-        );
-        createdIssues.push(rowToValidationIssue(issueRow.rows[0]));
-      }
-
-      return { result, issues: createdIssues };
-    });
+    return { result, issues: createdIssues };
   }
 
   async findById(ctx: TenantContext, id: string): Promise<ValidationResult> {

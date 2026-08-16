@@ -1612,3 +1612,316 @@ describe.runIf(RUN)('Schema: manual_submissions_status_check', () => {
     ).rejects.toThrow(/manual_submissions_status_check/);
   });
 });
+
+/**
+ * BUILD-31 §4.5 — client-scoped composition.
+ *
+ * Every suite above exercises the public repository methods, each of which
+ * opens its own transaction. None of them calls an `*On` method with a
+ * caller-supplied client, so the composition path this prerequisite exists to
+ * enable is otherwise unexercised. This block covers exactly that:
+ *
+ *   - several repositories composed onto ONE client inside ONE transaction;
+ *   - a mid-sequence failure rolling back the domain writes and the outbox
+ *     event emitted earlier in that same transaction, together — the case the
+ *     CollectionRunRepository block explicitly records as untested, because a
+ *     rejected guard there fails before any emitter is reached;
+ *   - the transaction-local RLS GUCs, not the `ctx` argument, deciding what an
+ *     `*On` read can reach.
+ *
+ * No assertion is made about da.validation.completed or da.data.quality_scored:
+ * those emitters exist in outbox.ts but have no call site, and wiring them is a
+ * separate BUILD-31 change.
+ */
+describe.runIf(RUN)('Integration: BUILD-31 §4.5 client-scoped composition', () => {
+  const srcRepo  = new DataSourceRepository();
+  const connRepo = new ConnectorRepository();
+  const runRepo  = new CollectionRunRepository();
+  const msRepo   = new ManualSubmissionRepository();
+  const vrRepo   = new ValidationResultRepository();
+  const dqsRepo  = new DataQualityScoreRepository();
+  const provRepo = new ProvenanceRepository();
+
+  // BYPASSRLS pool, for the two things the app role cannot do: reading
+  // events.outbox_events (app_test_user has no USAGE on the events schema) and
+  // removing this block's manual_submissions before teardownIntegration
+  // (collection_run_id is ON DELETE RESTRICT, so leftovers would block its
+  // collection_runs delete). Everything else goes through the app role.
+  let adminPool: Pool | null = null;
+
+  let sourceId: string;
+  let connectorId: string;
+  let ctx2SourceId: string;
+  let ctx2ConnectorId: string;
+
+  beforeAll(async () => {
+    await setupIntegration();
+
+    // ADMIN_DATABASE_URL only — no DATABASE_URL fallback.
+    adminPool = new Pool({ connectionString: process.env.ADMIN_DATABASE_URL });
+
+    const src = await srcRepo.create(ctx1, {
+      name:             'Composition Source',
+      sourceCode:       uniqueCode('compose-src'),
+      sourceType:       'manual',
+      sensitivityLevel: 'internal',
+    });
+    sourceId = src.id;
+
+    const conn = await connRepo.create(ctx1, {
+      dataSourceId:  sourceId,
+      name:          'Composition manual intake',
+      connectorType: 'manual_json',
+    });
+    connectorId = conn.id;
+
+    // Owned legitimately by tenant 2 / workspace 2 and created through the
+    // public method, so their own GUCs are correct and no inconsistent
+    // tenant/workspace values are manufactured. The isolation tests reach for
+    // these from a tenant-1 transaction.
+    const ctx2Src = await srcRepo.create(ctx2, {
+      name:             'Composition Source T2',
+      sourceCode:       uniqueCode('compose-src-t2'),
+      sourceType:       'manual',
+      sensitivityLevel: 'internal',
+    });
+    ctx2SourceId = ctx2Src.id;
+
+    const ctx2Conn = await connRepo.create(ctx2, {
+      dataSourceId:  ctx2SourceId,
+      name:          'Composition manual intake T2',
+      connectorType: 'manual_json',
+    });
+    ctx2ConnectorId = ctx2Conn.id;
+  });
+
+  afterAll(async () => {
+    try {
+      try {
+        if (adminPool) {
+          await adminPool.query(
+            'DELETE FROM data_acquisition.manual_submissions WHERE tenant_id = ANY($1)',
+            [[ctx1.tenantId, ctx2.tenantId]]
+          );
+        }
+      } finally {
+        if (adminPool) await adminPool.end();
+        adminPool = null;
+      }
+    } finally {
+      await teardownIntegration();
+    }
+  });
+
+  /**
+   * Outbox rows for one aggregate, read through adminPool for the same reason
+   * the CollectionRunRepository block reads them that way. BYPASSRLS means
+   * outbox_events_isolation is not enforcing tenancy on this connection, so
+   * tenant_id and workspace_id are asserted in the predicate rather than
+   * relied upon.
+   */
+  async function eventsFor(runId: string, eventType: string) {
+    if (!adminPool) {
+      throw new Error('eventsFor requires adminPool; beforeAll did not run');
+    }
+    const res = await adminPool.query<Record<string, unknown>>(
+      `SELECT event_type, aggregate_type, aggregate_id, status
+         FROM events.outbox_events
+        WHERE tenant_id    = $1
+          AND workspace_id = $2
+          AND aggregate_id = $3
+          AND event_type   = $4`,
+      [ctx1.tenantId, ctx1.workspaceId, runId, eventType]
+    );
+    return res.rows;
+  }
+
+  // 122
+  it('composes the manual-intake path across seven repositories in one transaction', async () => {
+    const composed = await withTenantTransaction(ctx1, async (client) => {
+      // 1 — source reachable on this client
+      const source = await srcRepo.findByIdOn(client, ctx1, sourceId);
+      expect(source.id).toBe(sourceId);
+
+      // 2 — connector must belong to that source
+      const connector = await connRepo.findByIdForSourceOn(client, ctx1, sourceId, connectorId);
+      expect(connector.id).toBe(connectorId);
+
+      // 3 — planned
+      const run = await runRepo.createOn(client, ctx1, {
+        dataSourceId:   sourceId,
+        connectorId,
+        collectionType: 'manual',
+      });
+      expect(run.state).toBe('planned');
+
+      // 4 — planned -> collecting; emits da.collection.started on THIS client
+      const started = await runRepo.markStartedOn(client, ctx1, run.id);
+      expect(started.state).toBe('collecting');
+
+      // 5
+      const submission = await msRepo.createOn(client, ctx1, {
+        dataSourceId:    sourceId,
+        collectionRunId: run.id,
+        submissionType:  'manual_json',
+        payload:         { records: [{ sku: 'A-1' }, { sku: 'A-2' }, { sku: 'A-3' }] },
+      });
+
+      // 6
+      const { result: validation } = await vrRepo.createOn(client, ctx1, {
+        collectionRunId: run.id,
+        isValid:         true,
+        errorCount:      0,
+        warningCount:    0,
+      });
+
+      // 7
+      const score = await dqsRepo.createOn(client, ctx1, {
+        dataSourceId:    sourceId,
+        collectionRunId: run.id,
+        completeness: 1,
+        validity:     1,
+        consistency:  1,
+        timeliness:   1,
+        uniqueness:   1,
+        conformity:   1,
+        overallScore: 1,
+      });
+
+      // 8
+      const { provenance } = await provRepo.createOn(client, ctx1, {
+        dataSourceId:    sourceId,
+        collectionRunId: run.id,
+        recordReference: 'sku:A-1',
+        sourceReference: 'upload:composition-1',
+      });
+
+      // 9 — collecting -> collected; emits da.collection.completed
+      const completed = await runRepo.markCompletedOn(client, ctx1, run.id, {
+        recordsReceived: 3,
+        recordsAccepted: 3,
+        recordsRejected: 0,
+        bytesReceived:   512,
+      });
+      expect(completed.state).toBe('collected');
+
+      // 10 — collected -> validated; emits nothing, by design
+      const validated = await runRepo.markValidatedOn(client, ctx1, run.id);
+      expect(validated.state).toBe('validated');
+
+      return {
+        runId:        run.id,
+        submissionId: submission.id,
+        validationId: validation.id,
+        scoreId:      score.id,
+        provenanceId: provenance.id,
+      };
+    });
+
+    // Committed state, re-read on a fresh transaction and connection.
+    const persisted = await withTenantTransaction(ctx1, async (client) => ({
+      run: (await client.query<Record<string, unknown>>(
+        'SELECT state FROM data_acquisition.collection_runs WHERE id = $1', [composed.runId])).rows,
+      submission: (await client.query<Record<string, unknown>>(
+        'SELECT id FROM data_acquisition.manual_submissions WHERE id = $1', [composed.submissionId])).rows,
+      validation: (await client.query<Record<string, unknown>>(
+        'SELECT id FROM data_acquisition.validation_results WHERE id = $1', [composed.validationId])).rows,
+      score: (await client.query<Record<string, unknown>>(
+        'SELECT id FROM data_acquisition.data_quality_scores WHERE id = $1', [composed.scoreId])).rows,
+      provenance: (await client.query<Record<string, unknown>>(
+        'SELECT id FROM data_acquisition.provenance_records WHERE id = $1', [composed.provenanceId])).rows,
+    }));
+
+    expect(persisted.run).toHaveLength(1);
+    expect(persisted.run[0].state).toBe('validated');
+    expect(persisted.submission).toHaveLength(1);
+    expect(persisted.validation).toHaveLength(1);
+    expect(persisted.score).toHaveLength(1);
+    expect(persisted.provenance).toHaveLength(1);
+
+    const startedEvents = await eventsFor(composed.runId, 'da.collection.started');
+    expect(startedEvents).toHaveLength(1);
+    expect(startedEvents[0].aggregate_type).toBe('collection_run');
+
+    const completedEvents = await eventsFor(composed.runId, 'da.collection.completed');
+    expect(completedEvents).toHaveLength(1);
+    expect(completedEvents[0].aggregate_type).toBe('collection_run');
+  });
+
+  // 123
+  it('rolls back domain writes and the outbox event together when a later guarded transition fails', async () => {
+    let runId = '';
+    let submissionId = '';
+
+    await expect(
+      withTenantTransaction(ctx1, async (client) => {
+        const run = await runRepo.createOn(client, ctx1, {
+          dataSourceId:   sourceId,
+          connectorId,
+          collectionType: 'manual',
+        });
+        runId = run.id;
+
+        // The one emission in this transaction: da.collection.started, written
+        // to the outbox on the same client as the state change.
+        await runRepo.markStartedOn(client, ctx1, run.id);
+
+        const submission = await msRepo.createOn(client, ctx1, {
+          dataSourceId:    sourceId,
+          collectionRunId: run.id,
+          submissionType:  'manual_json',
+          payload:         { records: [{ sku: 'B-1' }] },
+        });
+        submissionId = submission.id;
+
+        // Illegal under the frozen matrix: 'validated' is reachable only from
+        // 'collected' or 'quarantined', and this run is still 'collecting'.
+        // Deliberately not caught here — it must escape so that
+        // withTenantTransaction issues ROLLBACK rather than COMMIT.
+        return runRepo.markValidatedOn(client, ctx1, run.id);
+      })
+    ).rejects.toBeInstanceOf(InvalidStateTransitionError);
+
+    // Both ids were assigned before the failure, so the assertions below query
+    // rows that really were written inside the rejected transaction.
+    expect(runId).not.toBe('');
+    expect(submissionId).not.toBe('');
+
+    const after = await withTenantTransaction(ctx1, async (client) => ({
+      run: (await client.query<Record<string, unknown>>(
+        'SELECT id FROM data_acquisition.collection_runs WHERE id = $1', [runId])).rows,
+      submission: (await client.query<Record<string, unknown>>(
+        'SELECT id FROM data_acquisition.manual_submissions WHERE id = $1', [submissionId])).rows,
+    }));
+
+    expect(after.run).toHaveLength(0);
+    expect(after.submission).toHaveLength(0);
+    expect(await eventsFor(runId, 'da.collection.started')).toHaveLength(0);
+  });
+
+  // 124
+  it('denies cross-tenant access through findByIdOn under transaction-local GUCs', async () => {
+    await expect(
+      withTenantTransaction(ctx1, (client) => srcRepo.findByIdOn(client, ctx1, ctx2SourceId))
+    ).rejects.toBeInstanceOf(NotFoundError);
+  });
+
+  // 125
+  it('treats the enclosing transaction GUCs, not the ctx argument, as the access authority', async () => {
+    // Tenant-1 GUCs with the OWNING tenant-2 ctx: still denied. Passing the
+    // resource's own ctx does not grant access.
+    await expect(
+      withTenantTransaction(ctx1, (client) =>
+        connRepo.findByIdForSourceOn(client, ctx2, ctx2SourceId, ctx2ConnectorId))
+    ).rejects.toBeInstanceOf(NotFoundError);
+
+    // Tenant-2 GUCs with a FOREIGN tenant-1 ctx: still permitted. The ctx
+    // argument is inert for isolation; the enclosing transaction decides.
+    const connector = await withTenantTransaction(ctx2, (client) =>
+      connRepo.findByIdForSourceOn(client, ctx1, ctx2SourceId, ctx2ConnectorId));
+
+    expect(connector.id).toBe(ctx2ConnectorId);
+    expect(connector.dataSourceId).toBe(ctx2SourceId);
+    expect(connector.tenantId).toBe(ctx2.tenantId);
+  });
+});

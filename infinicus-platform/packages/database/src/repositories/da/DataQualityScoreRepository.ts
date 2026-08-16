@@ -1,5 +1,5 @@
 import { randomUUID } from 'crypto';
-import type { QueryResult } from 'pg';
+import type { PoolClient, QueryResult } from 'pg';
 import type { TenantContext } from '../../client.js';
 import { withTenantTransaction } from '../../client.js';
 import { NotFoundError } from './DataSourceRepository.js';
@@ -72,37 +72,51 @@ function rowToScore(row: Record<string, unknown>): DataQualityScore {
 
 export class DataQualityScoreRepository {
   async create(ctx: TenantContext, input: CreateDataQualityScoreInput): Promise<DataQualityScore> {
-    return withTenantTransaction(ctx, async (client) => {
-      const result: QueryResult<Record<string, unknown>> = await client.query(
-        `INSERT INTO data_acquisition.data_quality_scores
-           (tenant_id, workspace_id, business_id, data_source_id, collection_run_id,
-            scope_type, scope_reference, completeness, validity, consistency,
-            timeliness, uniqueness, conformity, overall_score, weights, score_details,
-            correlation_id)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
-         RETURNING *`,
-        [
-          ctx.tenantId,
-          ctx.workspaceId,
-          input.businessId      ?? null,
-          input.dataSourceId,
-          input.collectionRunId ?? null,
-          input.scopeType       ?? 'run',
-          input.scopeReference  ?? null,
-          input.completeness,
-          input.validity,
-          input.consistency,
-          input.timeliness,
-          input.uniqueness,
-          input.conformity,
-          input.overallScore,
-          JSON.stringify(input.weights      ?? {}),
-          JSON.stringify(input.scoreDetails ?? {}),
-          input.correlationId   ?? randomUUID(),
-        ]
-      );
-      return rowToScore(result.rows[0]);
-    });
+    return withTenantTransaction(
+      ctx,
+      (client) => this.createOn(client, ctx, input)
+    );
+  }
+
+  /**
+   * create() on a caller-supplied PoolClient.
+   * Does not open or control a transaction; callers composing multiple
+   * operations must supply the client from one outer withTenantTransaction().
+   */
+  async createOn(
+    client: PoolClient,
+    ctx: TenantContext,
+    input: CreateDataQualityScoreInput
+  ): Promise<DataQualityScore> {
+    const result: QueryResult<Record<string, unknown>> = await client.query(
+      `INSERT INTO data_acquisition.data_quality_scores
+         (tenant_id, workspace_id, business_id, data_source_id, collection_run_id,
+          scope_type, scope_reference, completeness, validity, consistency,
+          timeliness, uniqueness, conformity, overall_score, weights, score_details,
+          correlation_id)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
+       RETURNING *`,
+      [
+        ctx.tenantId,
+        ctx.workspaceId,
+        input.businessId      ?? null,
+        input.dataSourceId,
+        input.collectionRunId ?? null,
+        input.scopeType       ?? 'run',
+        input.scopeReference  ?? null,
+        input.completeness,
+        input.validity,
+        input.consistency,
+        input.timeliness,
+        input.uniqueness,
+        input.conformity,
+        input.overallScore,
+        JSON.stringify(input.weights      ?? {}),
+        JSON.stringify(input.scoreDetails ?? {}),
+        input.correlationId   ?? randomUUID(),
+      ]
+    );
+    return rowToScore(result.rows[0]);
   }
 
   async findById(ctx: TenantContext, id: string): Promise<DataQualityScore> {

@@ -39,7 +39,7 @@
  */
 
 import { randomUUID } from 'crypto';
-import type { QueryResult } from 'pg';
+import type { PoolClient, QueryResult } from 'pg';
 import type { TenantContext } from '../../client.js';
 import { withTenantTransaction } from '../../client.js';
 import { NotFoundError, ValidationError } from './errors.js';
@@ -161,33 +161,47 @@ export class ManualSubmissionRepository {
     ctx: TenantContext,
     input: CreateManualSubmissionInput
   ): Promise<ManualSubmission> {
-    return withTenantTransaction(ctx, async (client) => {
-      const result: QueryResult<Record<string, unknown>> = await client.query(
-        `INSERT INTO data_acquisition.manual_submissions
-           (tenant_id, workspace_id, business_id, data_source_id, collection_run_id,
-            submitted_by, submission_type, payload, submission_notes, correlation_id)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
-         RETURNING *`,
-        [
-          ctx.tenantId,
-          ctx.workspaceId,
-          input.businessId      ?? null,
-          input.dataSourceId,
-          input.collectionRunId,
-          input.submittedBy     ?? null,
-          input.submissionType,
-          // payload is NOT NULL and currently defaults to '{}'. Because this
-          // INSERT supplies the payload column explicitly, an omitted
-          // application value is written as '{}' here rather than invoking the
-          // database DEFAULT. Any supplied JSON value — including null — is
-          // serialized faithfully.
-          input.payload !== undefined ? JSON.stringify(input.payload) : '{}',
-          input.submissionNotes ?? null,
-          input.correlationId   ?? randomUUID(),
-        ]
-      );
-      return rowToManualSubmission(result.rows[0]);
-    });
+    return withTenantTransaction(
+      ctx,
+      (client) => this.createOn(client, ctx, input)
+    );
+  }
+
+  /**
+   * create() on a caller-supplied PoolClient.
+   * Does not open or control a transaction; callers composing multiple
+   * operations must supply the client from one outer withTenantTransaction().
+   */
+  async createOn(
+    client: PoolClient,
+    ctx: TenantContext,
+    input: CreateManualSubmissionInput
+  ): Promise<ManualSubmission> {
+    const result: QueryResult<Record<string, unknown>> = await client.query(
+      `INSERT INTO data_acquisition.manual_submissions
+         (tenant_id, workspace_id, business_id, data_source_id, collection_run_id,
+          submitted_by, submission_type, payload, submission_notes, correlation_id)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+       RETURNING *`,
+      [
+        ctx.tenantId,
+        ctx.workspaceId,
+        input.businessId      ?? null,
+        input.dataSourceId,
+        input.collectionRunId,
+        input.submittedBy     ?? null,
+        input.submissionType,
+        // payload is NOT NULL and currently defaults to '{}'. Because this
+        // INSERT supplies the payload column explicitly, an omitted
+        // application value is written as '{}' here rather than invoking the
+        // database DEFAULT. Any supplied JSON value — including null — is
+        // serialized faithfully.
+        input.payload !== undefined ? JSON.stringify(input.payload) : '{}',
+        input.submissionNotes ?? null,
+        input.correlationId   ?? randomUUID(),
+      ]
+    );
+    return rowToManualSubmission(result.rows[0]);
   }
 
   async findById(ctx: TenantContext, id: string): Promise<ManualSubmission> {

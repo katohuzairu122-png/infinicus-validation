@@ -1,5 +1,5 @@
 import { randomUUID } from 'crypto';
-import type { QueryResult } from 'pg';
+import type { PoolClient, QueryResult } from 'pg';
 import type { TenantContext } from '../../client.js';
 import { withTenantTransaction } from '../../client.js';
 import { NotFoundError } from './errors.js';
@@ -143,28 +143,42 @@ function rowToCollectionRun(row: Record<string, unknown>): CollectionRun {
 
 export class CollectionRunRepository {
   async create(ctx: TenantContext, input: CreateCollectionRunInput): Promise<CollectionRun> {
-    return withTenantTransaction(ctx, async (client) => {
-      const result: QueryResult<Record<string, unknown>> = await client.query(
-        `INSERT INTO data_acquisition.collection_runs
-           (tenant_id, workspace_id, business_id, data_source_id, connector_id,
-            schedule_id, collection_type, state, correlation_id, causation_id, created_by)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,'planned',$8,$9,$10)
-         RETURNING *`,
-        [
-          ctx.tenantId,
-          ctx.workspaceId,
-          input.businessId   ?? null,
-          input.dataSourceId,
-          input.connectorId  ?? null,
-          input.scheduleId   ?? null,
-          input.collectionType,
-          input.correlationId ?? randomUUID(),
-          input.causationId   ?? null,
-          input.createdBy     ?? null,
-        ]
-      );
-      return rowToCollectionRun(result.rows[0]);
-    });
+    return withTenantTransaction(
+      ctx,
+      (client) => this.createOn(client, ctx, input)
+    );
+  }
+
+  /**
+   * create() on a caller-supplied PoolClient.
+   * Does not open or control a transaction; callers composing multiple
+   * operations must supply the client from one outer withTenantTransaction().
+   */
+  async createOn(
+    client: PoolClient,
+    ctx: TenantContext,
+    input: CreateCollectionRunInput
+  ): Promise<CollectionRun> {
+    const result: QueryResult<Record<string, unknown>> = await client.query(
+      `INSERT INTO data_acquisition.collection_runs
+         (tenant_id, workspace_id, business_id, data_source_id, connector_id,
+          schedule_id, collection_type, state, correlation_id, causation_id, created_by)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,'planned',$8,$9,$10)
+       RETURNING *`,
+      [
+        ctx.tenantId,
+        ctx.workspaceId,
+        input.businessId   ?? null,
+        input.dataSourceId,
+        input.connectorId  ?? null,
+        input.scheduleId   ?? null,
+        input.collectionType,
+        input.correlationId ?? randomUUID(),
+        input.causationId   ?? null,
+        input.createdBy     ?? null,
+      ]
+    );
+    return rowToCollectionRun(result.rows[0]);
   }
 
   async findById(ctx: TenantContext, id: string): Promise<CollectionRun> {
@@ -186,31 +200,45 @@ export class CollectionRunRepository {
    * and overwriting started_at.
    */
   async markStarted(ctx: TenantContext, id: string): Promise<CollectionRun> {
-    return withTenantTransaction(ctx, async (client) => {
-      const row = await runGuardedTransition(client, {
-        table:       'data_acquisition.collection_runs',
-        stateColumn: 'state',
-        entity:      'CollectionRun',
-        id,
-        expected:    statesAllowing(COLLECTION_RUN_TRANSITIONS, 'collecting'),
-        next:        'collecting',
-        extraSet:    ['started_at = now()'],
-      });
+    return withTenantTransaction(
+      ctx,
+      (client) => this.markStartedOn(client, ctx, id)
+    );
+  }
 
-      const run = rowToCollectionRun(row);
-
-      // Correlation and causation are read back from the persisted row, so the
-      // event carries the same trace ids the run was stored with.
-      await emitCollectionStarted(client, ctx, {
-        collectionRunId: run.id,
-        sourceId:        run.dataSourceId,
-        collectionType:  run.collectionType,
-        correlationId:   run.correlationId,
-        causationId:     run.causationId,
-      });
-
-      return run;
+  /**
+   * markStarted() on a caller-supplied PoolClient.
+   * Does not open or control a transaction; callers composing multiple
+   * operations must supply the client from one outer withTenantTransaction().
+   */
+  async markStartedOn(
+    client: PoolClient,
+    ctx: TenantContext,
+    id: string
+  ): Promise<CollectionRun> {
+    const row = await runGuardedTransition(client, {
+      table:       'data_acquisition.collection_runs',
+      stateColumn: 'state',
+      entity:      'CollectionRun',
+      id,
+      expected:    statesAllowing(COLLECTION_RUN_TRANSITIONS, 'collecting'),
+      next:        'collecting',
+      extraSet:    ['started_at = now()'],
     });
+
+    const run = rowToCollectionRun(row);
+
+    // Correlation and causation are read back from the persisted row, so the
+    // event carries the same trace ids the run was stored with.
+    await emitCollectionStarted(client, ctx, {
+      collectionRunId: run.id,
+      sourceId:        run.dataSourceId,
+      collectionType:  run.collectionType,
+      correlationId:   run.correlationId,
+      causationId:     run.causationId,
+    });
+
+    return run;
   }
 
   /**
@@ -224,48 +252,63 @@ export class CollectionRunRepository {
     id: string,
     input: CompleteCollectionRunInput
   ): Promise<CollectionRun> {
-    return withTenantTransaction(ctx, async (client) => {
-      const row = await runGuardedTransition(client, {
-        table:       'data_acquisition.collection_runs',
-        stateColumn: 'state',
-        entity:      'CollectionRun',
-        id,
-        expected:    statesAllowing(COLLECTION_RUN_TRANSITIONS, 'collected'),
-        next:        'collected',
-        // extraValues bind $3..$7; the expected-state array lands on $8.
-        extraSet: [
-          'completed_at      = now()',
-          'records_received  = $3',
-          'records_accepted  = $4',
-          'records_rejected  = $5',
-          'bytes_received    = $6',
-          'response_metadata = $7',
-        ],
-        extraValues: [
-          input.recordsReceived,
-          input.recordsAccepted,
-          input.recordsRejected,
-          input.bytesReceived,
-          JSON.stringify(input.responseMetadata ?? {}),
-        ],
-      });
+    return withTenantTransaction(
+      ctx,
+      (client) => this.markCompletedOn(client, ctx, id, input)
+    );
+  }
 
-      const run = rowToCollectionRun(row);
-
-      // bytesReceived is deliberately absent: emit_collection_completed in
-      // migration 0022 takes only the three record counts.
-      await emitCollectionCompleted(client, ctx, {
-        collectionRunId: run.id,
-        sourceId:        run.dataSourceId,
-        recordsReceived: run.recordsReceived,
-        recordsAccepted: run.recordsAccepted,
-        recordsRejected: run.recordsRejected,
-        correlationId:   run.correlationId,
-        causationId:     run.causationId,
-      });
-
-      return run;
+  /**
+   * markCompleted() on a caller-supplied PoolClient.
+   * Does not open or control a transaction; callers composing multiple
+   * operations must supply the client from one outer withTenantTransaction().
+   */
+  async markCompletedOn(
+    client: PoolClient,
+    ctx: TenantContext,
+    id: string,
+    input: CompleteCollectionRunInput
+  ): Promise<CollectionRun> {
+    const row = await runGuardedTransition(client, {
+      table:       'data_acquisition.collection_runs',
+      stateColumn: 'state',
+      entity:      'CollectionRun',
+      id,
+      expected:    statesAllowing(COLLECTION_RUN_TRANSITIONS, 'collected'),
+      next:        'collected',
+      // extraValues bind $3..$7; the expected-state array lands on $8.
+      extraSet: [
+        'completed_at      = now()',
+        'records_received  = $3',
+        'records_accepted  = $4',
+        'records_rejected  = $5',
+        'bytes_received    = $6',
+        'response_metadata = $7',
+      ],
+      extraValues: [
+        input.recordsReceived,
+        input.recordsAccepted,
+        input.recordsRejected,
+        input.bytesReceived,
+        JSON.stringify(input.responseMetadata ?? {}),
+      ],
     });
+
+    const run = rowToCollectionRun(row);
+
+    // bytesReceived is deliberately absent: emit_collection_completed in
+    // migration 0022 takes only the three record counts.
+    await emitCollectionCompleted(client, ctx, {
+      collectionRunId: run.id,
+      sourceId:        run.dataSourceId,
+      recordsReceived: run.recordsReceived,
+      recordsAccepted: run.recordsAccepted,
+      recordsRejected: run.recordsRejected,
+      correlationId:   run.correlationId,
+      causationId:     run.causationId,
+    });
+
+    return run;
   }
 
   /**
@@ -281,37 +324,53 @@ export class CollectionRunRepository {
     errorCode: string,
     errorMessage: string
   ): Promise<CollectionRun> {
-    return withTenantTransaction(ctx, async (client) => {
-      const row = await runGuardedTransition(client, {
-        table:       'data_acquisition.collection_runs',
-        stateColumn: 'state',
-        entity:      'CollectionRun',
-        id,
-        expected:    statesAllowing(COLLECTION_RUN_TRANSITIONS, 'failed'),
-        next:        'failed',
-        // extraValues bind $3..$4; the expected-state array lands on $5.
-        extraSet: [
-          'completed_at  = now()',
-          'error_code    = $3',
-          'error_message = $4',
-        ],
-        extraValues: [errorCode, errorMessage],
-      });
+    return withTenantTransaction(
+      ctx,
+      (client) => this.markFailedOn(client, ctx, id, errorCode, errorMessage)
+    );
+  }
 
-      const run = rowToCollectionRun(row);
-
-      // errorMessage is deliberately absent: emit_collection_failed in
-      // migration 0022 takes only the error code.
-      await emitCollectionFailed(client, ctx, {
-        collectionRunId: run.id,
-        sourceId:        run.dataSourceId,
-        errorCode,
-        correlationId:   run.correlationId,
-        causationId:     run.causationId,
-      });
-
-      return run;
+  /**
+   * markFailed() on a caller-supplied PoolClient.
+   * Does not open or control a transaction; callers composing multiple
+   * operations must supply the client from one outer withTenantTransaction().
+   */
+  async markFailedOn(
+    client: PoolClient,
+    ctx: TenantContext,
+    id: string,
+    errorCode: string,
+    errorMessage: string
+  ): Promise<CollectionRun> {
+    const row = await runGuardedTransition(client, {
+      table:       'data_acquisition.collection_runs',
+      stateColumn: 'state',
+      entity:      'CollectionRun',
+      id,
+      expected:    statesAllowing(COLLECTION_RUN_TRANSITIONS, 'failed'),
+      next:        'failed',
+      // extraValues bind $3..$4; the expected-state array lands on $5.
+      extraSet: [
+        'completed_at  = now()',
+        'error_code    = $3',
+        'error_message = $4',
+      ],
+      extraValues: [errorCode, errorMessage],
     });
+
+    const run = rowToCollectionRun(row);
+
+    // errorMessage is deliberately absent: emit_collection_failed in
+    // migration 0022 takes only the error code.
+    await emitCollectionFailed(client, ctx, {
+      collectionRunId: run.id,
+      sourceId:        run.dataSourceId,
+      errorCode,
+      correlationId:   run.correlationId,
+      causationId:     run.causationId,
+    });
+
+    return run;
   }
 
   /**
@@ -350,17 +409,31 @@ export class CollectionRunRepository {
    * state changes.
    */
   async markValidated(ctx: TenantContext, id: string): Promise<CollectionRun> {
-    return withTenantTransaction(ctx, async (client) => {
-      const row = await runGuardedTransition(client, {
-        table:       'data_acquisition.collection_runs',
-        stateColumn: 'state',
-        entity:      'CollectionRun',
-        id,
-        expected:    statesAllowing(COLLECTION_RUN_TRANSITIONS, 'validated'),
-        next:        'validated',
-      });
-      return rowToCollectionRun(row);
+    return withTenantTransaction(
+      ctx,
+      (client) => this.markValidatedOn(client, ctx, id)
+    );
+  }
+
+  /**
+   * markValidated() on a caller-supplied PoolClient.
+   * Does not open or control a transaction; callers composing multiple
+   * operations must supply the client from one outer withTenantTransaction().
+   */
+  async markValidatedOn(
+    client: PoolClient,
+    ctx: TenantContext,
+    id: string
+  ): Promise<CollectionRun> {
+    const row = await runGuardedTransition(client, {
+      table:       'data_acquisition.collection_runs',
+      stateColumn: 'state',
+      entity:      'CollectionRun',
+      id,
+      expected:    statesAllowing(COLLECTION_RUN_TRANSITIONS, 'validated'),
+      next:        'validated',
     });
+    return rowToCollectionRun(row);
   }
 
   /**
@@ -374,17 +447,31 @@ export class CollectionRunRepository {
    * require inventing a record reference.
    */
   async markQuarantined(ctx: TenantContext, id: string): Promise<CollectionRun> {
-    return withTenantTransaction(ctx, async (client) => {
-      const row = await runGuardedTransition(client, {
-        table:       'data_acquisition.collection_runs',
-        stateColumn: 'state',
-        entity:      'CollectionRun',
-        id,
-        expected:    statesAllowing(COLLECTION_RUN_TRANSITIONS, 'quarantined'),
-        next:        'quarantined',
-      });
-      return rowToCollectionRun(row);
+    return withTenantTransaction(
+      ctx,
+      (client) => this.markQuarantinedOn(client, ctx, id)
+    );
+  }
+
+  /**
+   * markQuarantined() on a caller-supplied PoolClient.
+   * Does not open or control a transaction; callers composing multiple
+   * operations must supply the client from one outer withTenantTransaction().
+   */
+  async markQuarantinedOn(
+    client: PoolClient,
+    ctx: TenantContext,
+    id: string
+  ): Promise<CollectionRun> {
+    const row = await runGuardedTransition(client, {
+      table:       'data_acquisition.collection_runs',
+      stateColumn: 'state',
+      entity:      'CollectionRun',
+      id,
+      expected:    statesAllowing(COLLECTION_RUN_TRANSITIONS, 'quarantined'),
+      next:        'quarantined',
     });
+    return rowToCollectionRun(row);
   }
 
   /**

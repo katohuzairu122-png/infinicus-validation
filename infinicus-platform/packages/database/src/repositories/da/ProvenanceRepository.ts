@@ -1,5 +1,5 @@
 import { randomUUID } from 'crypto';
-import type { QueryResult } from 'pg';
+import type { PoolClient, QueryResult } from 'pg';
 import type { TenantContext } from '../../client.js';
 import { withTenantTransaction } from '../../client.js';
 import { NotFoundError } from './DataSourceRepository.js';
@@ -102,61 +102,76 @@ export class ProvenanceRepository {
     input: CreateProvenanceRecordInput,
     transformations: CreateTransformationRecordInput[] = []
   ): Promise<{ provenance: ProvenanceRecord; transformations: TransformationRecord[] }> {
-    return withTenantTransaction(ctx, async (client) => {
-      const parentDepth = input.parentProvenanceId
-        ? await this._getDepth(client, input.parentProvenanceId)
-        : -1;
+    return withTenantTransaction(
+      ctx,
+      (client) => this.createOn(client, ctx, input, transformations)
+    );
+  }
 
-      const result: QueryResult<Record<string, unknown>> = await client.query(
-        `INSERT INTO data_acquisition.provenance_records
-           (tenant_id, workspace_id, business_id, data_source_id, collection_run_id,
-            record_reference, source_reference, source_hash, transformation_chain,
-            evidence_references, parent_provenance_id, lineage_depth, correlation_id)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+  /**
+   * create() on a caller-supplied PoolClient.
+   * Does not open or control a transaction; callers composing multiple
+   * operations must supply the client from one outer withTenantTransaction().
+   */
+  async createOn(
+    client: PoolClient,
+    ctx: TenantContext,
+    input: CreateProvenanceRecordInput,
+    transformations: CreateTransformationRecordInput[] = []
+  ): Promise<{ provenance: ProvenanceRecord; transformations: TransformationRecord[] }> {
+    const parentDepth = input.parentProvenanceId
+      ? await this._getDepth(client, input.parentProvenanceId)
+      : -1;
+
+    const result: QueryResult<Record<string, unknown>> = await client.query(
+      `INSERT INTO data_acquisition.provenance_records
+         (tenant_id, workspace_id, business_id, data_source_id, collection_run_id,
+          record_reference, source_reference, source_hash, transformation_chain,
+          evidence_references, parent_provenance_id, lineage_depth, correlation_id)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+       RETURNING *`,
+      [
+        ctx.tenantId,
+        ctx.workspaceId,
+        input.businessId          ?? null,
+        input.dataSourceId,
+        input.collectionRunId     ?? null,
+        input.recordReference,
+        input.sourceReference,
+        input.sourceHash          ?? null,
+        JSON.stringify(input.transformationChain ?? []),
+        JSON.stringify(input.evidenceReferences  ?? []),
+        input.parentProvenanceId  ?? null,
+        parentDepth + 1,
+        input.correlationId       ?? randomUUID(),
+      ]
+    );
+    const provenance = rowToProvenance(result.rows[0]);
+    const createdTransformations: TransformationRecord[] = [];
+
+    for (const t of transformations) {
+      const tRow = await client.query<Record<string, unknown>>(
+        `INSERT INTO data_acquisition.transformation_records
+           (provenance_record_id, transformation_type, transformation_version,
+            input_hash, output_hash, parameters, performed_by_type, performed_by_id, performed_at)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
          RETURNING *`,
         [
-          ctx.tenantId,
-          ctx.workspaceId,
-          input.businessId          ?? null,
-          input.dataSourceId,
-          input.collectionRunId     ?? null,
-          input.recordReference,
-          input.sourceReference,
-          input.sourceHash          ?? null,
-          JSON.stringify(input.transformationChain ?? []),
-          JSON.stringify(input.evidenceReferences  ?? []),
-          input.parentProvenanceId  ?? null,
-          parentDepth + 1,
-          input.correlationId       ?? randomUUID(),
+          provenance.id,
+          t.transformationType,
+          t.transformationVersion ?? '1.0',
+          t.inputHash             ?? null,
+          t.outputHash            ?? null,
+          JSON.stringify(t.parameters ?? {}),
+          t.performedByType,
+          t.performedById         ?? null,
+          t.performedAt           ?? new Date(),
         ]
       );
-      const provenance = rowToProvenance(result.rows[0]);
-      const createdTransformations: TransformationRecord[] = [];
+      createdTransformations.push(rowToTransformation(tRow.rows[0]));
+    }
 
-      for (const t of transformations) {
-        const tRow = await client.query<Record<string, unknown>>(
-          `INSERT INTO data_acquisition.transformation_records
-             (provenance_record_id, transformation_type, transformation_version,
-              input_hash, output_hash, parameters, performed_by_type, performed_by_id, performed_at)
-           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
-           RETURNING *`,
-          [
-            provenance.id,
-            t.transformationType,
-            t.transformationVersion ?? '1.0',
-            t.inputHash             ?? null,
-            t.outputHash            ?? null,
-            JSON.stringify(t.parameters ?? {}),
-            t.performedByType,
-            t.performedById         ?? null,
-            t.performedAt           ?? new Date(),
-          ]
-        );
-        createdTransformations.push(rowToTransformation(tRow.rows[0]));
-      }
-
-      return { provenance, transformations: createdTransformations };
-    });
+    return { provenance, transformations: createdTransformations };
   }
 
   private async _getDepth(client: import('pg').PoolClient, id: string): Promise<number> {

@@ -111,14 +111,28 @@ export class DataSourceRepository {
   }
 
   async findById(ctx: TenantContext, id: string): Promise<DataSource> {
-    return withTenantTransaction(ctx, async (client) => {
-      const result = await client.query<Record<string, unknown>>(
-        'SELECT * FROM data_acquisition.data_sources WHERE id = $1',
-        [id]
-      );
-      if (result.rows.length === 0) throw new NotFoundError('DataSource', id);
-      return rowToDataSource(result.rows[0]);
-    });
+    return withTenantTransaction(
+      ctx,
+      (client) => this.findByIdOn(client, ctx, id)
+    );
+  }
+
+  /**
+   * findById() on a caller-supplied PoolClient.
+   * Does not open or control a transaction; callers composing multiple
+   * operations must supply the client from one outer withTenantTransaction().
+   */
+  async findByIdOn(
+    client: PoolClient,
+    ctx: TenantContext,
+    id: string
+  ): Promise<DataSource> {
+    const result = await client.query<Record<string, unknown>>(
+      'SELECT * FROM data_acquisition.data_sources WHERE id = $1',
+      [id]
+    );
+    if (result.rows.length === 0) throw new NotFoundError('DataSource', id);
+    return rowToDataSource(result.rows[0]);
   }
 
   async listActive(ctx: TenantContext): Promise<DataSource[]> {
