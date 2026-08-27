@@ -1,8 +1,111 @@
 import { randomUUID } from 'crypto';
-import type { QueryResult } from 'pg';
+import type { PoolClient, QueryResult } from 'pg';
 import type { TenantContext } from '../../client.js';
 import { withTenantTransaction } from '../../client.js';
-import { NotFoundError } from './DataSourceRepository.js';
+import {
+  NotFoundError,
+  UnsupportedConnectorError,
+  ValidationError,
+} from './errors.js';
+import { runGuardedTransition } from './guards.js';
+import { boundedPage } from './pagination.js';
+import type { PageOptions } from './pagination.js';
+import { emitConnectorRegistered } from './outbox.js';
+
+/**
+ * Connector types permitted by connectors_type_check.
+ *
+ * These are the thirteen values legal after migration
+ * 0169_add_manual_json_connector_type.sql — the original twelve from
+ * 0013_create_da_sources_connectors.sql plus 'manual_json', which BUILD-31
+ * §4.4 requires as the first implemented connector type.
+ */
+export type ConnectorType =
+  | 'rest_api'
+  | 'graphql'
+  | 'webhook'
+  | 'postgres'
+  | 'mysql'
+  | 'mssql'
+  | 'sqlite'
+  | 'sftp'
+  | 'object_storage'
+  | 'file_upload'
+  | 'event_stream'
+  | 'custom'
+  | 'manual_json';
+
+/**
+ * Connector lifecycle states, mirroring connectors_status_check in
+ * migration 0013_create_da_sources_connectors.sql.
+ *
+ * This is a set of permitted *values*, not a lifecycle policy. BUILD-31 does
+ * not define which connector status may follow which, so this module makes no
+ * such claim — see updateStatus.
+ */
+export type ConnectorStatus =
+  | 'draft'
+  | 'active'
+  | 'paused'
+  | 'suspended'
+  | 'retired'
+  | 'failed';
+
+/**
+ * Connector health states, mirroring connectors_health_check in
+ * migration 0013_create_da_sources_connectors.sql.
+ */
+export type ConnectorHealthStatus =
+  | 'unknown'
+  | 'healthy'
+  | 'degraded'
+  | 'unhealthy'
+  | 'offline';
+
+const CONNECTOR_TYPES: readonly ConnectorType[] = Object.freeze([
+  'rest_api',
+  'graphql',
+  'webhook',
+  'postgres',
+  'mysql',
+  'mssql',
+  'sqlite',
+  'sftp',
+  'object_storage',
+  'file_upload',
+  'event_stream',
+  'custom',
+  'manual_json',
+]);
+
+const CONNECTOR_STATUSES: readonly ConnectorStatus[] = Object.freeze([
+  'draft',
+  'active',
+  'paused',
+  'suspended',
+  'retired',
+  'failed',
+]);
+
+const CONNECTOR_HEALTH_STATUSES: readonly ConnectorHealthStatus[] = Object.freeze([
+  'unknown',
+  'healthy',
+  'degraded',
+  'unhealthy',
+  'offline',
+]);
+
+function isConnectorType(value: string): value is ConnectorType {
+  return (CONNECTOR_TYPES as readonly string[]).includes(value);
+}
+
+function isConnectorStatus(value: string): value is ConnectorStatus {
+  return (CONNECTOR_STATUSES as readonly string[]).includes(value);
+}
+
+function isConnectorHealthStatus(value: string): value is ConnectorHealthStatus {
+  return (CONNECTOR_HEALTH_STATUSES as readonly string[]).includes(value);
+}
 
 export interface Connector {
   id: string;
@@ -64,7 +167,29 @@ function rowToConnector(row: Record<string, unknown>): Connector {
 }
 
 export class ConnectorRepository {
+  /**
+   * Registers a connector and publishes da.connector.registered.
+   *
+   * BUILD-31 §6.2 defines this as one transaction: the connector row and the
+   * outbox row commit together or not at all, so the emission runs on the same
+   * client inside withTenantTransaction.
+   *
+   * Both inputs are validated before the transaction opens, so an unsupported
+   * value never reaches PostgreSQL and never surfaces as a raw CHECK
+   * violation — BUILD-31 §7 requires the application error model, not the
+   * database, to reject it. The CHECK constraint remains as defence in depth.
+   */
   async create(ctx: TenantContext, input: CreateConnectorInput): Promise<Connector> {
+    if (!isConnectorType(input.connectorType)) {
+      throw new UnsupportedConnectorError(input.connectorType);
+    }
+
+    if (input.status !== undefined && !isConnectorStatus(input.status)) {
+      throw new ValidationError(
+        'Unsupported connector status: ' + String(input.status)
+      );
+    }
+
     return withTenantTransaction(ctx, async (client) => {
       const result: QueryResult<Record<string, unknown>> = await client.query(
         `INSERT INTO data_acquisition.connectors
@@ -88,7 +213,20 @@ export class ConnectorRepository {
           input.createdBy             ?? null,
         ]
       );
-      return rowToConnector(result.rows[0]);
+
+      const connector = rowToConnector(result.rows[0]);
+
+      // Correlation is read back from the persisted row rather than the input,
+      // so the event carries the same correlation_id the connector was stored
+      // with even when the caller supplied none and the column defaulted.
+      await emitConnectorRegistered(client, ctx, {
+        connectorId:   connector.id,
+        sourceId:      connector.dataSourceId,
+        connectorType: connector.connectorType,
+        correlationId: connector.correlationId,
+      });
+
+      return connector;
     });
   }
 
@@ -103,23 +241,143 @@ export class ConnectorRepository {
     });
   }
 
-  async listByDataSource(ctx: TenantContext, dataSourceId: string): Promise<Connector[]> {
+  /**
+   * Looks up a connector that must belong to the given data source.
+   *
+   * BUILD-31 §4.4 requires a connector to belong to the requested source and
+   * §4.7 requires a lookup constrained by source. Enforcing ownership in the
+   * WHERE clause means a connector addressed through the wrong source is not
+   * found, rather than being fetched and then checked.
+   */
+  async findByIdForSource(
+    ctx: TenantContext,
+    dataSourceId: string,
+    id: string
+  ): Promise<Connector> {
+    return withTenantTransaction(
+      ctx,
+      (client) => this.findByIdForSourceOn(client, ctx, dataSourceId, id)
+    );
+  }
+
+  /**
+   * findByIdForSource() on a caller-supplied PoolClient.
+   * Does not open or control a transaction; callers composing multiple
+   * operations must supply the client from one outer withTenantTransaction().
+   */
+  async findByIdForSourceOn(
+    client: PoolClient,
+    ctx: TenantContext,
+    dataSourceId: string,
+    id: string
+  ): Promise<Connector> {
+    const result = await client.query<Record<string, unknown>>(
+      `SELECT * FROM data_acquisition.connectors
+       WHERE id = $1 AND data_source_id = $2`,
+      [id, dataSourceId]
+    );
+    if (result.rows.length === 0) throw new NotFoundError('Connector', id);
+    return rowToConnector(result.rows[0]);
+  }
+
+  /**
+   * Lists a source's connectors, bounded by BUILD-31 §4 pagination limits.
+   *
+   * `page` is optional so existing callers keep working; omitting it yields
+   * the explicit DEFAULT_PAGE_SIZE rather than an unbounded scan.
+   */
+  async listByDataSource(
+    ctx: TenantContext,
+    dataSourceId: string,
+    page: PageOptions = {}
+  ): Promise<Connector[]> {
+    const { limit, offset } = boundedPage(page);
+
     return withTenantTransaction(ctx, async (client) => {
       const result = await client.query<Record<string, unknown>>(
         `SELECT * FROM data_acquisition.connectors
          WHERE data_source_id = $1 AND deleted_at IS NULL
-         ORDER BY created_at DESC`,
-        [dataSourceId]
+         ORDER BY created_at DESC
+         LIMIT $2 OFFSET $3`,
+        [dataSourceId, limit, offset]
       );
       return result.rows.map(rowToConnector);
     });
   }
 
+  /**
+   * Sets the connector's status under an optimistic concurrency guard.
+   *
+   * This method deliberately encodes NO lifecycle policy. BUILD-31 defines a
+   * state machine for collection runs (§4.6) but defines none for connectors,
+   * so this repository does not decide which status may follow which — that
+   * remains open for the connector lifecycle service to specify once frozen.
+   *
+   * What it does enforce is that the write is not lost. The status read here
+   * becomes the expected value of the guarded UPDATE, making the pair a
+   * compare-and-swap: if a concurrent transaction changes the status between
+   * the read and the UPDATE, the guard matches zero rows and
+   * runGuardedTransition raises InvalidStateTransitionError instead of
+   * silently overwriting the other writer's value.
+   *
+   * @throws ValidationError             `next` is not a permitted status value
+   * @throws NotFoundError               connector not visible to this tenant
+   * @throws InvalidStateTransitionError status changed under us concurrently
+   */
+  async updateStatus(
+    ctx: TenantContext,
+    id: string,
+    next: ConnectorStatus
+  ): Promise<Connector> {
+    if (!isConnectorStatus(next)) {
+      throw new ValidationError('Unsupported connector status: ' + String(next));
+    }
+
+    return withTenantTransaction(ctx, async (client) => {
+      const current = await client.query<{ status: string }>(
+        'SELECT status FROM data_acquisition.connectors WHERE id = $1',
+        [id]
+      );
+
+      if (current.rows.length === 0) {
+        throw new NotFoundError('Connector', id);
+      }
+
+      const row = await runGuardedTransition(client, {
+        table:       'data_acquisition.connectors',
+        stateColumn: 'status',
+        entity:      'Connector',
+        id,
+        // The observed value only — never a policy-derived list. This asserts
+        // "nobody moved this row since I read it", not "this edge is legal".
+        expected:    [current.rows[0].status],
+        next,
+        extraSet:    ['version = version + 1'],
+      });
+
+      return rowToConnector(row);
+    });
+  }
+
+  /**
+   * Records a health-check result.
+   *
+   * Health is an observation rather than a lifecycle transition, so this is
+   * not routed through runGuardedTransition. The value is validated against
+   * the permitted set first, per BUILD-31 §4.7, so an unknown value raises a
+   * controlled error instead of a raw CHECK-constraint violation.
+   */
   async updateHealth(
     ctx: TenantContext,
     id: string,
-    healthStatus: string
+    healthStatus: ConnectorHealthStatus
   ): Promise<Connector> {
+    if (!isConnectorHealthStatus(healthStatus)) {
+      throw new ValidationError(
+        'Unsupported connector health status: ' + String(healthStatus)
+      );
+    }
+
     return withTenantTransaction(ctx, async (client) => {
       const result = await client.query<Record<string, unknown>>(
         `UPDATE data_acquisition.connectors

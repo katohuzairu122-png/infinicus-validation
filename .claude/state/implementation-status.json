@@ -356,26 +356,48 @@
       "id": "BUILD-28",
       "layer": "BILLING",
       "name": "Billing",
-      "status": "ready",
+      "status": "completed",
       "specification": "docs/implementation-queue/BUILD-28-BILLING-SPECIFICATION.md",
-      "notes": "Dependency BUILD-27 completed. Readied per explicit user instruction to continue through all builds to BUILD-30 without per-build check-ins."
+      "notes": "BUILD-28 completed. Billing plans, subscriptions, entitlements, usage metering, lifecycle enforcement, API routes, migrations, operational tooling, and live PostgreSQL validation completed.",
+      "completedAt": "2026-08-05T00:00:00.000Z",
+      "report": ".claude/state/reports/BUILD-28-BILLING-completion.md",
+      "testsPass": true
     },
     {
       "id": "BUILD-29",
       "layer": "INCIDENT",
       "name": "Incident response",
-      "status": "pending",
+      "status": "completed",
       "specification": "docs/implementation-queue/BUILD-29-INCIDENT-SPECIFICATION.md",
-      "notes": "Blocked on BUILD-28 completion."
+      "notes": "BUILD-29 completed. Incident severity, on-call ownership, runbooks, communication templates, rollback and restore procedures, platform incident persistence, APIs, authorization, and live PostgreSQL validation completed.",
+      "completedAt": "2026-08-05T00:00:00.000Z",
+      "report": ".claude/state/reports/BUILD-29-INCIDENT-completion.md",
+      "testsPass": true
     },
-    {
+        {
       "id": "BUILD-30",
       "layer": "LAUNCH",
       "name": "Launch readiness",
-      "status": "pending",
+      "status": "completed",
       "specification": "docs/implementation-queue/BUILD-30-LAUNCH-SPECIFICATION.md",
-      "notes": "Blocked on BUILD-29 completion. Final build in the BUILD-10-30 master roadmap."
+      "notes": "BUILD-30 completed. Production acceptance matrix, launch checklist, migration and smoke checks, monitoring proof, load proof, billing proof, incident proof, security evidence, restore and rollback evidence, and Windows-compatible acceptance tooling completed.",
+      "completedAt": "2026-08-05T00:00:00.000Z",
+      "report": ".claude/state/reports/BUILD-30-LAUNCH-completion.md",
+      "testsPass": true
+    },
+    {
+      "id": "BUILD-31",
+      "layer": "DATA-ACQUISITION-RUNTIME",
+      "name": "Data Acquisition Runtime Foundation",
+      "status": "completed",
+      "specification": "docs/implementation-queue/BUILD-31-DATA-ACQUISITION-RUNTIME-SPECIFICATION.md",
+      "specificationSha256": "53d797086f2d0bb722c05d15a3431de116aa76fdcacf93590ba2cc78feba429f",
+      "notes": "BUILD-31 completed. Governed source and connector lifecycle, synchronous manual JSON intake, guarded collection transitions, deterministic validation and quality scoring, SHA-256 provenance, transactional DA outbox events, publication-package preparation, controlled Business Operations publication, the @infinicus/data-acquisition-runtime service package, Fastify API routes, and live PostgreSQL validation at the repository/service/HTTP layers all completed. Foodics and other external connectors remain deferred per the frozen spec.",
+      "readyAt": "2026-08-05T18:24:00.000Z",
+      "completedAt": "2026-08-27T03:00:00.000Z",
+      "report": ".claude/state/reports/BUILD-31-DATA-ACQUISITION-RUNTIME-completion.md",
+      "testsPass": true
     }
   ],
-  "currentReadyBuild": "BUILD-28"
+  "currentReadyBuild": null
 }

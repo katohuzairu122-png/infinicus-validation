@@ -1,7 +1,7 @@
 // sw.js — INFINICUS Engine v3 Service Worker
 // Bump CACHE_VERSION when deploying significant updates to force re-cache
 // Deployed: 2026-07-16 rev21 — platform flow redesign: 6-layer nav (Data/Ops/Intel/Twin/Simulate/AI)
-const CACHE_VERSION = 'v25';
+const CACHE_VERSION = 'v27';
 const CACHE = 'infinicus-' + CACHE_VERSION;
 
 // Core shell assets — cached on install
@@ -45,8 +45,12 @@ self.addEventListener('fetch', e => {
   const { request } = e;
   const url = new URL(request.url);
 
-  // Never intercept API calls — always go to network
-  if (url.pathname.startsWith('/api/')) return;
+  // Never intercept API calls (legacy Cloudflare Functions under /api/, or
+  // the Postgres platform under /v1/) or any non-GET request — always go
+  // straight to network. Cache-first/cache-put only make sense for
+  // cacheable GET requests; matching or storing a POST/PUT/DELETE by URL
+  // risks serving a stale or wrong response for a different payload.
+  if (request.method !== 'GET' || url.pathname.startsWith('/api/') || url.pathname.startsWith('/v1/')) return;
 
   // External analytics — don't intercept
   if (url.hostname.includes('cloudflareinsights.com')) return;
@@ -74,7 +78,8 @@ self.addEventListener('fetch', e => {
       fetch(request)
         .then(resp => {
           if (resp && resp.status === 200) {
-            caches.open(CACHE).then(c => c.put(request, resp.clone()));
+            const copy = resp.clone();
+            caches.open(CACHE).then(c => c.put(request, copy));
           }
           return resp;
         })
@@ -92,7 +97,8 @@ self.addEventListener('fetch', e => {
       if (cached) return cached;
       return fetch(request).then(resp => {
         if (resp && resp.status === 200) {
-          caches.open(CACHE).then(c => c.put(request, resp.clone()));
+          const copy = resp.clone();
+          caches.open(CACHE).then(c => c.put(request, copy));
         }
         return resp;
       });

@@ -27,11 +27,18 @@ if (!BASE_URL) {
 }
 const CONCURRENCY = Number(process.env.CONCURRENCY ?? '20');
 const TOTAL_REQUESTS = Number(process.env.REQUESTS ?? '500');
+const WARMUP_REQUESTS = Number(process.env.WARMUP_REQUESTS ?? '20');
 const PATH = process.argv[2] ?? '/v1/health';
 const HEADERS = process.env.LOAD_TEST_HEADERS ? JSON.parse(process.env.LOAD_TEST_HEADERS) : {};
 
 function percentile(sortedLatencies, p) {
-  const index = Math.min(sortedLatencies.length - 1, Math.floor((p / 100) * sortedLatencies.length));
+  if (sortedLatencies.length === 0) return 0;
+
+  // Nearest-rank percentile: p99 of 100 samples uses index 98,
+  // rather than incorrectly reporting the single maximum value.
+  const rank = Math.ceil((p / 100) * sortedLatencies.length);
+  const index = Math.max(0, Math.min(sortedLatencies.length - 1, rank - 1));
+
   return sortedLatencies[index];
 }
 
@@ -56,7 +63,27 @@ async function worker(remaining, results) {
 }
 
 async function main() {
-  console.log(`=== Load test: ${TOTAL_REQUESTS} requests to ${BASE_URL}${PATH}, concurrency ${CONCURRENCY} ===`);
+  console.log(
+    `=== Load test: ${TOTAL_REQUESTS} requests to ${BASE_URL}${PATH}, concurrency ${CONCURRENCY} ===`
+  );
+
+  if (!Number.isInteger(WARMUP_REQUESTS) || WARMUP_REQUESTS < 0) {
+    throw new Error('WARMUP_REQUESTS must be a non-negative integer');
+  }
+
+  if (WARMUP_REQUESTS > 0) {
+    const warmupRemaining = { count: WARMUP_REQUESTS };
+    const warmupResults = [];
+    const warmupConcurrency = Math.min(CONCURRENCY, WARMUP_REQUESTS);
+
+    const warmupWorkers = Array.from(
+      { length: warmupConcurrency },
+      () => worker(warmupRemaining, warmupResults)
+    );
+
+    await Promise.all(warmupWorkers);
+  }
+
   const remaining = { count: TOTAL_REQUESTS };
   const results = [];
   const startedAt = performance.now();

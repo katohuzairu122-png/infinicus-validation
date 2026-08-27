@@ -40,7 +40,7 @@ SCHEMAS=$(psql "$ADMIN_DATABASE_URL" -tAc "
   WHERE schema_name NOT IN ('pg_catalog','information_schema','pg_toast','public')
     AND schema_name NOT LIKE 'pg_temp%' AND schema_name NOT LIKE 'pg_toast_temp%'
   ORDER BY 1;
-")
+" | tr -d '\r')
 
 if [[ -z "$SCHEMAS" ]]; then
   echo "ERROR: no schemas found — has the database been migrated yet?" >&2

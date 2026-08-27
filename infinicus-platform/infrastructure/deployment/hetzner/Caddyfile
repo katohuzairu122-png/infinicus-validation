@@ -1,0 +1,18 @@
+# TLS termination for the API. Caddy fetches and renews a real Let's
+# Encrypt certificate automatically (no manual certbot steps) as long as
+# api.infini-cus.com's DNS A record points at this VM's public IP and
+# ports 80/443 are reachable (Hetzner Cloud Firewall + this VM's ufw —
+# see cloud-init.yaml and runbook.md).
+#
+# Replace api.infini-cus.com below if using a different subdomain.
+
+api.infini-cus.com {
+	reverse_proxy api:3000
+
+	encode gzip
+
+	log {
+		output stdout
+		format json
+	}
+}

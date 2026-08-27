@@ -4,3 +4,10 @@ export class NotFoundError extends Error {
     this.name = 'NotFoundError';
   }
 }
+
+export class ConflictError extends Error {
+  constructor(entity: string, reason: string) {
+    super(`${entity} conflict: ${reason}`);
+    this.name = 'ConflictError';
+  }
+}

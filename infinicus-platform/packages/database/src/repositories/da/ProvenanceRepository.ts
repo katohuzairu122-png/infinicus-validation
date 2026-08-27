@@ -1,8 +1,20 @@
 import { randomUUID } from 'crypto';
-import type { QueryResult } from 'pg';
+import type { PoolClient, QueryResult } from 'pg';
 import type { TenantContext } from '../../client.js';
 import { withTenantTransaction } from '../../client.js';
 import { NotFoundError } from './DataSourceRepository.js';
+import { ProvenanceError } from './errors.js';
+import { boundedPage } from './pagination.js';
+import type { PageOptions } from './pagination.js';
+
+/**
+ * Hard ceiling on lineage_depth. BUILD-31 §4.11 requires "a reasonable
+ * maximum lineage depth" without naming one; 50 is generous for the
+ * canonicalize -> validate -> (future transform) chains this build produces
+ * while still catching a runaway or cyclic chain before it becomes
+ * unbounded.
+ */
+export const MAX_LINEAGE_DEPTH = 50;
 
 export interface ProvenanceRecord {
   id: string;
@@ -102,69 +114,102 @@ export class ProvenanceRepository {
     input: CreateProvenanceRecordInput,
     transformations: CreateTransformationRecordInput[] = []
   ): Promise<{ provenance: ProvenanceRecord; transformations: TransformationRecord[] }> {
-    return withTenantTransaction(ctx, async (client) => {
-      const parentDepth = input.parentProvenanceId
-        ? await this._getDepth(client, input.parentProvenanceId)
-        : -1;
-
-      const result: QueryResult<Record<string, unknown>> = await client.query(
-        `INSERT INTO data_acquisition.provenance_records
-           (tenant_id, workspace_id, business_id, data_source_id, collection_run_id,
-            record_reference, source_reference, source_hash, transformation_chain,
-            evidence_references, parent_provenance_id, lineage_depth, correlation_id)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
-         RETURNING *`,
-        [
-          ctx.tenantId,
-          ctx.workspaceId,
-          input.businessId          ?? null,
-          input.dataSourceId,
-          input.collectionRunId     ?? null,
-          input.recordReference,
-          input.sourceReference,
-          input.sourceHash          ?? null,
-          JSON.stringify(input.transformationChain ?? []),
-          JSON.stringify(input.evidenceReferences  ?? []),
-          input.parentProvenanceId  ?? null,
-          parentDepth + 1,
-          input.correlationId       ?? randomUUID(),
-        ]
-      );
-      const provenance = rowToProvenance(result.rows[0]);
-      const createdTransformations: TransformationRecord[] = [];
-
-      for (const t of transformations) {
-        const tRow = await client.query<Record<string, unknown>>(
-          `INSERT INTO data_acquisition.transformation_records
-             (provenance_record_id, transformation_type, transformation_version,
-              input_hash, output_hash, parameters, performed_by_type, performed_by_id, performed_at)
-           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
-           RETURNING *`,
-          [
-            provenance.id,
-            t.transformationType,
-            t.transformationVersion ?? '1.0',
-            t.inputHash             ?? null,
-            t.outputHash            ?? null,
-            JSON.stringify(t.parameters ?? {}),
-            t.performedByType,
-            t.performedById         ?? null,
-            t.performedAt           ?? new Date(),
-          ]
-        );
-        createdTransformations.push(rowToTransformation(tRow.rows[0]));
-      }
-
-      return { provenance, transformations: createdTransformations };
-    });
+    return withTenantTransaction(
+      ctx,
+      (client) => this.createOn(client, ctx, input, transformations)
+    );
   }
 
-  private async _getDepth(client: import('pg').PoolClient, id: string): Promise<number> {
+  /**
+   * create() on a caller-supplied PoolClient.
+   * Does not open or control a transaction; callers composing multiple
+   * operations must supply the client from one outer withTenantTransaction().
+   */
+  async createOn(
+    client: PoolClient,
+    ctx: TenantContext,
+    input: CreateProvenanceRecordInput,
+    transformations: CreateTransformationRecordInput[] = []
+  ): Promise<{ provenance: ProvenanceRecord; transformations: TransformationRecord[] }> {
+    let parentDepth = -1;
+    if (input.parentProvenanceId) {
+      const parent = await this._getDepth(client, input.parentProvenanceId);
+      if (parent === null) {
+        // BUILD-31 §4.11: "reject missing parent provenance rather than
+        // silently creating incorrect lineage" — a parentProvenanceId that
+        // does not resolve must fail closed, not default to depth 0 as
+        // though no parent were given.
+        throw new ProvenanceError(
+          'Parent provenance record not found: ' + input.parentProvenanceId
+        );
+      }
+      parentDepth = parent;
+    }
+
+    if (parentDepth + 1 > MAX_LINEAGE_DEPTH) {
+      throw new ProvenanceError(
+        'Provenance lineage depth would exceed maximum of ' + MAX_LINEAGE_DEPTH
+      );
+    }
+
+    const result: QueryResult<Record<string, unknown>> = await client.query(
+      `INSERT INTO data_acquisition.provenance_records
+         (tenant_id, workspace_id, business_id, data_source_id, collection_run_id,
+          record_reference, source_reference, source_hash, transformation_chain,
+          evidence_references, parent_provenance_id, lineage_depth, correlation_id)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+       RETURNING *`,
+      [
+        ctx.tenantId,
+        ctx.workspaceId,
+        input.businessId          ?? null,
+        input.dataSourceId,
+        input.collectionRunId     ?? null,
+        input.recordReference,
+        input.sourceReference,
+        input.sourceHash          ?? null,
+        JSON.stringify(input.transformationChain ?? []),
+        JSON.stringify(input.evidenceReferences  ?? []),
+        input.parentProvenanceId  ?? null,
+        parentDepth + 1,
+        input.correlationId       ?? randomUUID(),
+      ]
+    );
+    const provenance = rowToProvenance(result.rows[0]);
+    const createdTransformations: TransformationRecord[] = [];
+
+    for (const t of transformations) {
+      const tRow = await client.query<Record<string, unknown>>(
+        `INSERT INTO data_acquisition.transformation_records
+           (provenance_record_id, transformation_type, transformation_version,
+            input_hash, output_hash, parameters, performed_by_type, performed_by_id, performed_at)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+         RETURNING *`,
+        [
+          provenance.id,
+          t.transformationType,
+          t.transformationVersion ?? '1.0',
+          t.inputHash             ?? null,
+          t.outputHash            ?? null,
+          JSON.stringify(t.parameters ?? {}),
+          t.performedByType,
+          t.performedById         ?? null,
+          t.performedAt           ?? new Date(),
+        ]
+      );
+      createdTransformations.push(rowToTransformation(tRow.rows[0]));
+    }
+
+    return { provenance, transformations: createdTransformations };
+  }
+
+  /** Returns the parent's lineage_depth, or null when no such record exists. */
+  private async _getDepth(client: import('pg').PoolClient, id: string): Promise<number | null> {
     const r = await client.query<{ lineage_depth: number }>(
       'SELECT lineage_depth FROM data_acquisition.provenance_records WHERE id = $1',
       [id]
     );
-    return r.rows[0]?.lineage_depth ?? 0;
+    return r.rows.length > 0 ? r.rows[0].lineage_depth : null;
   }
 
   async findById(ctx: TenantContext, id: string): Promise<ProvenanceRecord> {
@@ -175,6 +220,30 @@ export class ProvenanceRepository {
       );
       if (result.rows.length === 0) throw new NotFoundError('ProvenanceRecord', id);
       return rowToProvenance(result.rows[0]);
+    });
+  }
+
+  /**
+   * Lists provenance records for one collection run, oldest first, bounded
+   * by BUILD-31 §4.14 pagination limits. Backs
+   * GET /data-acquisition/runs/:runId/provenance.
+   */
+  async listByCollectionRun(
+    ctx: TenantContext,
+    collectionRunId: string,
+    page: PageOptions = {}
+  ): Promise<ProvenanceRecord[]> {
+    const { limit, offset } = boundedPage(page);
+
+    return withTenantTransaction(ctx, async (client) => {
+      const result = await client.query<Record<string, unknown>>(
+        `SELECT * FROM data_acquisition.provenance_records
+         WHERE collection_run_id = $1
+         ORDER BY created_at ASC
+         LIMIT $2 OFFSET $3`,
+        [collectionRunId, limit, offset]
+      );
+      return result.rows.map(rowToProvenance);
     });
   }
 

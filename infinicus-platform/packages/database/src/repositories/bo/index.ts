@@ -1,4 +1,4 @@
-export { NotFoundError } from './errors.js';
+export { NotFoundError, ConflictError } from './errors.js';
 
 export { LeadRepository } from './LeadRepository.js';
 export type { Lead, CreateLeadInput } from './LeadRepository.js';
@@ -26,3 +26,12 @@ export type {
   BusinessEvent, LogBusinessEventInput, BusinessEventType, BusinessEventAction,
   SalesAggregate, ExpensesAggregate, InventoryAggregate, CustomersAggregate, TeamAggregate,
 } from './BusinessEventRepository.js';
+
+export { ProductRepository } from './ProductRepository.js';
+export type { Product, CreateProductInput, UpdateProductInput } from './ProductRepository.js';
+
+export { RegisterSessionRepository } from './RegisterSessionRepository.js';
+export type { RegisterSession, OpenRegisterSessionInput, CloseRegisterSessionInput } from './RegisterSessionRepository.js';
+
+export { OrderRepository } from './OrderRepository.js';
+export type { Order, OrderLineItem, OrderOperationalStatus, CreateOrderInput, AddLineItemInput } from './OrderRepository.js';
