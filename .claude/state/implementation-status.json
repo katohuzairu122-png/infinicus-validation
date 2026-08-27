@@ -389,13 +389,15 @@
       "id": "BUILD-31",
       "layer": "DATA-ACQUISITION-RUNTIME",
       "name": "Data Acquisition Runtime Foundation",
-      "status": "ready",
+      "status": "completed",
       "specification": "docs/implementation-queue/BUILD-31-DATA-ACQUISITION-RUNTIME-SPECIFICATION.md",
       "specificationSha256": "53d797086f2d0bb722c05d15a3431de116aa76fdcacf93590ba2cc78feba429f",
-      "notes": "First production Data Acquisition runtime slice. Implements governed source and connector lifecycle, synchronous manual JSON intake, guarded collection transitions, deterministic validation and quality scoring, SHA-256 provenance, transactional DA outbox events, publication-package preparation, controlled Business Operations publication, Fastify routes, and live PostgreSQL validation. Foodics and other external connectors remain deferred.",
+      "notes": "BUILD-31 completed. Governed source and connector lifecycle, synchronous manual JSON intake, guarded collection transitions, deterministic validation and quality scoring, SHA-256 provenance, transactional DA outbox events, publication-package preparation, controlled Business Operations publication, the @infinicus/data-acquisition-runtime service package, Fastify API routes, and live PostgreSQL validation at the repository/service/HTTP layers all completed. Foodics and other external connectors remain deferred per the frozen spec.",
       "readyAt": "2026-08-05T18:24:00.000Z",
-      "testsPass": false
+      "completedAt": "2026-08-27T03:00:00.000Z",
+      "report": ".claude/state/reports/BUILD-31-DATA-ACQUISITION-RUNTIME-completion.md",
+      "testsPass": true
     }
   ],
-  "currentReadyBuild": "BUILD-31"
+  "currentReadyBuild": null
 }
