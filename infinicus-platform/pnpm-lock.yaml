@@ -81,6 +81,9 @@ importers:
       '@infinicus/configuration':
         specifier: workspace:*
         version: link:../../packages/configuration
+      '@infinicus/data-acquisition-runtime':
+        specifier: workspace:*
+        version: link:../../packages/data-acquisition-runtime
       '@infinicus/database':
         specifier: workspace:*
         version: link:../../packages/database
@@ -459,6 +462,34 @@ importers:
       '@types/node':
         specifier: ^22.0.0
         version: 22.20.1
+      typescript:
+        specifier: ^5.4.0
+        version: 5.9.3
+      vitest:
+        specifier: ^1.6.0
+        version: 1.6.1(@types/node@22.20.1)(lightningcss@1.33.0)
+
+  packages/data-acquisition-runtime:
+    dependencies:
+      '@infinicus/database':
+        specifier: workspace:*
+        version: link:../database
+      '@infinicus/shared-types':
+        specifier: workspace:*
+        version: link:../shared-types
+      pg:
+        specifier: ^8.12.0
+        version: 8.22.0
+      zod:
+        specifier: ^3.23.0
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.20.1
+      '@types/pg':
+        specifier: ^8.11.6
+        version: 8.20.0
       typescript:
         specifier: ^5.4.0
         version: 5.9.3

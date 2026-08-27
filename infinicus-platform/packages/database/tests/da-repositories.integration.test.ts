@@ -23,11 +23,11 @@ import { ConnectorRepository }              from '../src/repositories/da/Connect
 import { CollectionRunRepository }          from '../src/repositories/da/CollectionRunRepository.js';
 import { ValidationResultRepository }       from '../src/repositories/da/ValidationResultRepository.js';
 import { DataQualityScoreRepository }       from '../src/repositories/da/DataQualityScoreRepository.js';
-import { ProvenanceRepository }             from '../src/repositories/da/ProvenanceRepository.js';
+import { ProvenanceRepository, MAX_LINEAGE_DEPTH } from '../src/repositories/da/ProvenanceRepository.js';
 import { PublicationPackageRepository }     from '../src/repositories/da/PublicationPackageRepository.js';
 import { ManualSubmissionRepository, MANUAL_SUBMISSION_STATUSES } from '../src/repositories/da/ManualSubmissionRepository.js';
 import type { ManualSubmissionStatus } from '../src/repositories/da/ManualSubmissionRepository.js';
-import { UnsupportedConnectorError, ValidationError, InvalidStateTransitionError } from '../src/repositories/da/errors.js';
+import { UnsupportedConnectorError, ValidationError, InvalidStateTransitionError, ProvenanceError } from '../src/repositories/da/errors.js';
 import { withTenantTransaction }            from '../src/client.js';
 
 const RUN = !!process.env.DATABASE_URL;
@@ -1059,6 +1059,59 @@ describe.runIf(RUN)('Integration: ProvenanceRepository', () => {
     expect(trs).toHaveLength(0);
   });
 
+  it('rejects a parentProvenanceId that does not resolve, rather than silently defaulting to depth 0', async () => {
+    // BUILD-31 §4.11: "reject missing parent provenance rather than
+    // silently creating incorrect lineage."
+    await expect(
+      provRepo.create(ctx1, {
+        dataSourceId: sourceId,
+        recordReference: 'rec-orphan',
+        sourceReference: 'upstream/feed/orphan',
+        parentProvenanceId: '00000000-0000-0000-0000-deadbeef0006',
+      })
+    ).rejects.toBeInstanceOf(ProvenanceError);
+  });
+
+  it('enforces the maximum lineage depth', async () => {
+    // rootId is depth 0, childId (created above) is depth 1 — walk the rest
+    // of the way to MAX_LINEAGE_DEPTH from there.
+    let parentId = childId;
+    for (let depth = 2; depth <= MAX_LINEAGE_DEPTH; depth++) {
+      const { provenance } = await provRepo.create(ctx1, {
+        dataSourceId: sourceId,
+        recordReference: 'rec-depth-' + depth,
+        sourceReference: 'upstream/feed/depth-' + depth,
+        parentProvenanceId: parentId,
+      });
+      expect(provenance.lineageDepth).toBe(depth);
+      parentId = provenance.id;
+    }
+
+    // parentId is now at MAX_LINEAGE_DEPTH; one more child would exceed it.
+    await expect(
+      provRepo.create(ctx1, {
+        dataSourceId: sourceId,
+        recordReference: 'rec-too-deep',
+        sourceReference: 'upstream/feed/too-deep',
+        parentProvenanceId: parentId,
+      })
+    ).rejects.toBeInstanceOf(ProvenanceError);
+  }, 20000);
+
+  it('listByCollectionRun lists provenance scoped to one run', async () => {
+    const runRepo = new CollectionRunRepository();
+    const run = await runRepo.create(ctx1, { dataSourceId: sourceId, collectionType: 'api' });
+    const { provenance } = await provRepo.create(ctx1, {
+      dataSourceId: sourceId,
+      collectionRunId: run.id,
+      recordReference: 'rec-run-scoped',
+      sourceReference: 'upstream/feed/run-scoped',
+    });
+
+    const list = await provRepo.listByCollectionRun(ctx1, run.id);
+    expect(list.map((p) => p.id)).toEqual([provenance.id]);
+  });
+
   it('throws NotFoundError for unknown provenance id', async () => {
     await expect(
       provRepo.findById(ctx1, '00000000-0000-0000-0000-deadbeef0007')
@@ -1074,10 +1127,32 @@ describe.runIf(RUN)('Integration: ProvenanceRepository', () => {
 
 describe.runIf(RUN)('Integration: PublicationPackageRepository', () => {
   const repo = new PublicationPackageRepository();
+  const srcRepo = new DataSourceRepository();
+  const runRepo = new CollectionRunRepository();
   let draftId: string;
   let readyId: string;
+  let validatedRunId: string;
 
-  beforeAll(setupIntegration);
+  beforeAll(async () => {
+    await setupIntegration();
+
+    // A source and a run walked all the way to `validated`, mirroring the
+    // CollectionRunRepository suite's newValidated() helper — publishOn now
+    // requires a real validated run (BUILD-31 §6.7: package and run
+    // transition to published atomically), and publication_packages has no
+    // collection_run_id column of its own (0019_create_da_publication_
+    // deployment.sql) to derive one from.
+    const src = await srcRepo.create(ctx1, {
+      name: 'Publication Src', sourceCode: uniqueCode('pub-src'), sourceType: 'api', sensitivityLevel: 'internal',
+    });
+    let run = await runRepo.create(ctx1, { dataSourceId: src.id, collectionType: 'api' });
+    run = await runRepo.markStarted(ctx1, run.id);
+    run = await runRepo.markCompleted(ctx1, run.id, {
+      recordsReceived: 10, recordsAccepted: 9, recordsRejected: 1, bytesReceived: 1024,
+    });
+    run = await runRepo.markValidated(ctx1, run.id);
+    validatedRunId = run.id;
+  });
   afterAll(teardownIntegration);
 
   it('creates a draft publication package', async () => {
@@ -1109,7 +1184,11 @@ describe.runIf(RUN)('Integration: PublicationPackageRepository', () => {
   });
 
   it('publish rejects draft (requires ready status)', async () => {
-    await expect(repo.publish(ctx1, draftId)).rejects.toBeInstanceOf(NotFoundError);
+    // A package that exists but is in the wrong state must raise
+    // InvalidStateTransitionError, not NotFoundError — BUILD-31 §4.6: "A
+    // generic not-found error must not be used for an invalid transition
+    // when the record exists."
+    await expect(repo.publish(ctx1, draftId, validatedRunId)).rejects.toBeInstanceOf(InvalidStateTransitionError);
   });
 
   it('publish succeeds when package is in ready status', async () => {
@@ -1123,9 +1202,24 @@ describe.runIf(RUN)('Integration: PublicationPackageRepository', () => {
     });
     readyId = ready.id;
 
-    const published = await repo.publish(ctx1, readyId);
+    const published = await repo.publish(ctx1, readyId, validatedRunId);
     expect(published.status).toBe('published');
     expect(published.publishedAt).not.toBeNull();
+
+    const run = await runRepo.findById(ctx1, validatedRunId);
+    expect(run.state).toBe('published');
+  });
+
+  it('publish rejects a run that is not validated', async () => {
+    const ready = await repo.create(ctx1, {
+      packageType: 'delta', targetLayer: 'business_intelligence', targetBlock: 'bi-01',
+      recordCount: 1, status: 'ready',
+    });
+    const planned = await runRepo.create(ctx1, { dataSourceId: (await srcRepo.create(ctx1, {
+      name: 'Unvalidated Src', sourceCode: uniqueCode('unval-src'), sourceType: 'api', sensitivityLevel: 'internal',
+    })).id, collectionType: 'api' });
+
+    await expect(repo.publish(ctx1, ready.id, planned.id)).rejects.toBeInstanceOf(InvalidStateTransitionError);
   });
 
   it('revoke sets status to revoked', async () => {

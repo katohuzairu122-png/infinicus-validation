@@ -487,17 +487,35 @@ export class CollectionRunRepository {
    * collection finished, and overwriting it here would destroy that fact.
    */
   async markPublished(ctx: TenantContext, id: string): Promise<CollectionRun> {
-    return withTenantTransaction(ctx, async (client) => {
-      const row = await runGuardedTransition(client, {
-        table:       'data_acquisition.collection_runs',
-        stateColumn: 'state',
-        entity:      'CollectionRun',
-        id,
-        expected:    statesAllowing(COLLECTION_RUN_TRANSITIONS, 'published'),
-        next:        'published',
-      });
-      return rowToCollectionRun(row);
+    return withTenantTransaction(
+      ctx,
+      (client) => this.markPublishedOn(client, ctx, id)
+    );
+  }
+
+  /**
+   * markPublished() on a caller-supplied PoolClient.
+   *
+   * BUILD-31 §6.7 requires the publication package's transition to
+   * `published` and this run's transition to `published` to be atomic —
+   * the `On` variant lets PublicationPackageRepository.publishOn() run both
+   * updates, plus the da.data.published emission, on one shared client
+   * inside one outer withTenantTransaction().
+   */
+  async markPublishedOn(
+    client: PoolClient,
+    ctx: TenantContext,
+    id: string
+  ): Promise<CollectionRun> {
+    const row = await runGuardedTransition(client, {
+      table:       'data_acquisition.collection_runs',
+      stateColumn: 'state',
+      entity:      'CollectionRun',
+      id,
+      expected:    statesAllowing(COLLECTION_RUN_TRANSITIONS, 'published'),
+      next:        'published',
     });
+    return rowToCollectionRun(row);
   }
 
   /**

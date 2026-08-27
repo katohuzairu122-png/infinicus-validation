@@ -92,3 +92,49 @@ export class UnsupportedConnectorError extends Error {
     this.connectorType = connectorType;
   }
 }
+
+export class CollectionLimitExceededError extends Error {
+  readonly limitName: string;
+  readonly limit: number;
+  readonly actual: number;
+
+  constructor(limitName: string, limit: number, actual: number) {
+    super(
+      'Collection limit "' + limitName + '" exceeded: max ' + limit + ', got ' + actual,
+    );
+
+    this.name = 'CollectionLimitExceededError';
+    this.limitName = limitName;
+    this.limit = limit;
+    this.actual = actual;
+  }
+}
+
+export class PublicationNotReadyError extends Error {
+  readonly packageId: string;
+  readonly reason: string;
+
+  constructor(packageId: string, reason: string) {
+    super('Publication package ' + packageId + ' is not ready to publish: ' + reason);
+
+    this.name = 'PublicationNotReadyError';
+    this.packageId = packageId;
+    this.reason = reason;
+  }
+}
+
+export class QualityThresholdError extends Error {
+  readonly overallScore: number;
+  readonly minimumRequired: number;
+
+  constructor(overallScore: number, minimumRequired: number) {
+    super(
+      'Quality score ' + overallScore + ' is below the minimum required ' + minimumRequired +
+        ' for this operation',
+    );
+
+    this.name = 'QualityThresholdError';
+    this.overallScore = overallScore;
+    this.minimumRequired = minimumRequired;
+  }
+}

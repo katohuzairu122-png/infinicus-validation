@@ -80,6 +80,18 @@ export const ERROR_STATUS_CODES: Record<string, number> = {
   // note above) and already covered by the generic NotFoundError entry.
   PlatformIncidentAlreadyResolvedError: 409,
 
+  // Data Acquisition runtime (@infinicus/database/repositories/da — BUILD-31).
+  // Unlike most other domains, these set their own unique .name rather than
+  // reporting through the generic NotFoundError/ConflictError/ValidationError
+  // base — see errors.ts under packages/database/src/repositories/da/.
+  InvalidStateTransitionError: 409,
+  DuplicateSourceCodeError: 409,
+  UnsupportedConnectorError: 400,
+  ProvenanceError: 400,
+  CollectionLimitExceededError: 413,
+  PublicationNotReadyError: 409,
+  QualityThresholdError: 409,
+
   // Fastify / schema validation
   FST_ERR_VALIDATION: 400,
 };

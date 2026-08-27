@@ -3,6 +3,18 @@ import type { PoolClient, QueryResult } from 'pg';
 import type { TenantContext } from '../../client.js';
 import { withTenantTransaction } from '../../client.js';
 import { NotFoundError } from './DataSourceRepository.js';
+import { ProvenanceError } from './errors.js';
+import { boundedPage } from './pagination.js';
+import type { PageOptions } from './pagination.js';
+
+/**
+ * Hard ceiling on lineage_depth. BUILD-31 §4.11 requires "a reasonable
+ * maximum lineage depth" without naming one; 50 is generous for the
+ * canonicalize -> validate -> (future transform) chains this build produces
+ * while still catching a runaway or cyclic chain before it becomes
+ * unbounded.
+ */
+export const MAX_LINEAGE_DEPTH = 50;
 
 export interface ProvenanceRecord {
   id: string;
@@ -119,9 +131,26 @@ export class ProvenanceRepository {
     input: CreateProvenanceRecordInput,
     transformations: CreateTransformationRecordInput[] = []
   ): Promise<{ provenance: ProvenanceRecord; transformations: TransformationRecord[] }> {
-    const parentDepth = input.parentProvenanceId
-      ? await this._getDepth(client, input.parentProvenanceId)
-      : -1;
+    let parentDepth = -1;
+    if (input.parentProvenanceId) {
+      const parent = await this._getDepth(client, input.parentProvenanceId);
+      if (parent === null) {
+        // BUILD-31 §4.11: "reject missing parent provenance rather than
+        // silently creating incorrect lineage" — a parentProvenanceId that
+        // does not resolve must fail closed, not default to depth 0 as
+        // though no parent were given.
+        throw new ProvenanceError(
+          'Parent provenance record not found: ' + input.parentProvenanceId
+        );
+      }
+      parentDepth = parent;
+    }
+
+    if (parentDepth + 1 > MAX_LINEAGE_DEPTH) {
+      throw new ProvenanceError(
+        'Provenance lineage depth would exceed maximum of ' + MAX_LINEAGE_DEPTH
+      );
+    }
 
     const result: QueryResult<Record<string, unknown>> = await client.query(
       `INSERT INTO data_acquisition.provenance_records
@@ -174,12 +203,13 @@ export class ProvenanceRepository {
     return { provenance, transformations: createdTransformations };
   }
 
-  private async _getDepth(client: import('pg').PoolClient, id: string): Promise<number> {
+  /** Returns the parent's lineage_depth, or null when no such record exists. */
+  private async _getDepth(client: import('pg').PoolClient, id: string): Promise<number | null> {
     const r = await client.query<{ lineage_depth: number }>(
       'SELECT lineage_depth FROM data_acquisition.provenance_records WHERE id = $1',
       [id]
     );
-    return r.rows[0]?.lineage_depth ?? 0;
+    return r.rows.length > 0 ? r.rows[0].lineage_depth : null;
   }
 
   async findById(ctx: TenantContext, id: string): Promise<ProvenanceRecord> {
@@ -190,6 +220,30 @@ export class ProvenanceRepository {
       );
       if (result.rows.length === 0) throw new NotFoundError('ProvenanceRecord', id);
       return rowToProvenance(result.rows[0]);
+    });
+  }
+
+  /**
+   * Lists provenance records for one collection run, oldest first, bounded
+   * by BUILD-31 §4.14 pagination limits. Backs
+   * GET /data-acquisition/runs/:runId/provenance.
+   */
+  async listByCollectionRun(
+    ctx: TenantContext,
+    collectionRunId: string,
+    page: PageOptions = {}
+  ): Promise<ProvenanceRecord[]> {
+    const { limit, offset } = boundedPage(page);
+
+    return withTenantTransaction(ctx, async (client) => {
+      const result = await client.query<Record<string, unknown>>(
+        `SELECT * FROM data_acquisition.provenance_records
+         WHERE collection_run_id = $1
+         ORDER BY created_at ASC
+         LIMIT $2 OFFSET $3`,
+        [collectionRunId, limit, offset]
+      );
+      return result.rows.map(rowToProvenance);
     });
   }
 

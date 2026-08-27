@@ -130,6 +130,23 @@ export class DataQualityScoreRepository {
     });
   }
 
+  /**
+   * The quality score scoped to one collection run. Backs
+   * GET /data-acquisition/runs/:runId/quality-score.
+   */
+  async findByCollectionRun(ctx: TenantContext, collectionRunId: string): Promise<DataQualityScore | null> {
+    return withTenantTransaction(ctx, async (client) => {
+      const result = await client.query<Record<string, unknown>>(
+        `SELECT * FROM data_acquisition.data_quality_scores
+         WHERE collection_run_id = $1
+         ORDER BY scored_at DESC
+         LIMIT 1`,
+        [collectionRunId]
+      );
+      return result.rows.length > 0 ? rowToScore(result.rows[0]) : null;
+    });
+  }
+
   async latestForSource(ctx: TenantContext, dataSourceId: string): Promise<DataQualityScore | null> {
     return withTenantTransaction(ctx, async (client) => {
       const result = await client.query<Record<string, unknown>>(

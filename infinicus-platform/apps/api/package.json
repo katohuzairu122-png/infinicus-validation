@@ -30,6 +30,7 @@
     "@infinicus/authorization": "workspace:*",
     "@infinicus/billing": "workspace:*",
     "@infinicus/configuration": "workspace:*",
+    "@infinicus/data-acquisition-runtime": "workspace:*",
     "@infinicus/database": "workspace:*",
     "@infinicus/event-contracts": "workspace:*",
     "@infinicus/handoff-contracts": "workspace:*",

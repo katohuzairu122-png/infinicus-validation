@@ -3,6 +3,8 @@ import type { PoolClient, QueryResult } from 'pg';
 import type { TenantContext } from '../../client.js';
 import { withTenantTransaction } from '../../client.js';
 import { NotFoundError } from './DataSourceRepository.js';
+import { boundedPage } from './pagination.js';
+import type { PageOptions } from './pagination.js';
 
 export interface ValidationResult {
   id: string;
@@ -180,13 +182,24 @@ export class ValidationResultRepository {
     });
   }
 
-  async listByCollectionRun(ctx: TenantContext, collectionRunId: string): Promise<ValidationResult[]> {
+  /**
+   * Lists validation results for one collection run, newest first, bounded
+   * by BUILD-31 §4.14 pagination limits.
+   */
+  async listByCollectionRun(
+    ctx: TenantContext,
+    collectionRunId: string,
+    page: PageOptions = {}
+  ): Promise<ValidationResult[]> {
+    const { limit, offset } = boundedPage(page);
+
     return withTenantTransaction(ctx, async (client) => {
       const result = await client.query<Record<string, unknown>>(
         `SELECT * FROM data_acquisition.validation_results
          WHERE collection_run_id = $1
-         ORDER BY validated_at DESC`,
-        [collectionRunId]
+         ORDER BY validated_at DESC
+         LIMIT $2 OFFSET $3`,
+        [collectionRunId, limit, offset]
       );
       return result.rows.map(rowToValidationResult);
     });
