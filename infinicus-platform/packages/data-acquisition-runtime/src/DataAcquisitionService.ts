@@ -4,7 +4,7 @@ import {
   ConnectorRepository, type Connector, type CreateConnectorInput,
   type ConnectorHealthStatus,
   CollectionRunRepository, type CollectionRun,
-  ValidationResultRepository, type ValidationResult,
+  ValidationResultRepository, type ValidationResult, type ValidationIssue,
   DataQualityScoreRepository, type DataQualityScore,
   ManualSubmissionRepository,
   ProvenanceRepository, type ProvenanceRecord,
@@ -410,14 +410,26 @@ export class DataAcquisitionService {
     return runs.listByBusiness(ctx, businessId, page);
   }
 
+  /**
+   * ValidationResultRepository.listByCollectionRun() does not join issues
+   * (a separate table/query — listIssues()); callers of this API need to
+   * see *why* a result was rejected, not just error/warning counts, so
+   * each result's issues are fetched and attached here.
+   */
   async listValidationResults(
     ctx: TenantContext,
     businessId: string,
     runId: string,
     page: PageOptions = {}
-  ): Promise<ValidationResult[]> {
+  ): Promise<(ValidationResult & { issues: ValidationIssue[] })[]> {
     await this.getRun(ctx, businessId, runId); // ownership check
-    return validationResults.listByCollectionRun(ctx, runId, page);
+    const results = await validationResults.listByCollectionRun(ctx, runId, page);
+    return Promise.all(
+      results.map(async (result) => ({
+        ...result,
+        issues: await validationResults.listIssues(ctx, result.id),
+      }))
+    );
   }
 
   async getQualityScore(

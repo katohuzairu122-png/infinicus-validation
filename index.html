@@ -915,16 +915,17 @@ async function supabaseSaveSimulation(entry) {
   <div style="padding:0 .6rem;display:flex;flex-direction:column;gap:1px;">
     <button class="sb-platform-link active" data-section="home" onclick="nav('home')">Home</button>
   </div>
-  <!-- All 9 layers, replacing the old abbreviated 6-item nav. DA/BO share
-       Operations (DA is the entry point into the same logging UI BO uses
-       — see Platform Home's own DA/OPS cards, both nav('operations'));
-       ADI/ABA/OM share AI Decisions (ABA approval and OM outcome-recording
-       both happen from that same screen, not separate pages); CL has no
-       page yet (see docs/production-readiness — roadmap), shown disabled
-       rather than omitted so all 9 are visibly accounted for. -->
+  <!-- All 9 layers, replacing the old abbreviated 6-item nav. DA now has
+       its own screen (governed sources, manual JSON intake, quality/
+       provenance, publication — BUILD-31), separate from BO's event-
+       logging screen; ADI/ABA/OM share AI Decisions (ABA approval and OM
+       outcome-recording both happen from that same screen, not separate
+       pages); CL has no page yet (see docs/production-readiness —
+       roadmap), shown disabled rather than omitted so all 9 are visibly
+       accounted for. -->
   <div class="sb-platform-lbl" style="padding-top:.3rem;">9 LAYERS</div>
   <div style="padding:0 .6rem;display:flex;flex-direction:column;gap:1px;">
-    <button class="sb-platform-link" data-section="operations"  onclick="nav('operations')">Data Acquisition</button>
+    <button class="sb-platform-link" data-section="acquisition" onclick="nav('acquisition')">Data Acquisition</button>
     <button class="sb-platform-link" data-section="operations"  onclick="nav('operations')">Business Operations</button>
     <button class="sb-platform-link" data-section="intelligence" onclick="nav('intelligence')">Business Intelligence</button>
     <button class="sb-platform-link" data-section="twin"        onclick="nav('twin')">Business Digital Twin</button>
@@ -1008,10 +1009,10 @@ async function supabaseSaveSimulation(entry) {
   <div class="pg-sub">// DATA IN · DECISION OUT · OUTCOME TRACKED — NINE LAYERS, ONE LOOP</div>
   <div style="font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.1em;margin-bottom:1.2rem;margin-top:1rem;">GO TO A LAYER</div>
   <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:.85rem;">
-    <div class="home-card" onclick="nav('operations')">
+    <div class="home-card" onclick="nav('acquisition')">
       <div class="home-card-code">DA</div>
       <div class="home-card-t">Data Acquisition</div>
-      <div class="home-card-d">Every sale, expense, or inventory change you log is the entry point for the whole platform.</div>
+      <div class="home-card-d">Register governed data sources and submit batch JSON intake — validated, quality-scored, and provenance-tracked before publication.</div>
       <span class="home-card-tag live">LIVE</span>
     </div>
     <div class="home-card" onclick="nav('operations')">
@@ -1819,6 +1820,108 @@ async function supabaseSaveSimulation(entry) {
     </div><!-- /biz-event-area -->
 
   </div><!-- /biz-main -->
+</section>
+
+<!-- ══ DATA ACQUISITION ══ -->
+<section class="section" id="sec-acquisition">
+  <div class="pg-title" style="font-size:22px;margin-bottom:.1rem;">DATA <span class="c">ACQUISITION</span></div>
+  <div class="pg-sub">// GOVERNED SOURCES · MANUAL JSON INTAKE · QUALITY SCORING · PROVENANCE · PUBLICATION</div>
+
+  <!-- Auth gate -->
+  <div id="da-auth-gate" style="display:none;text-align:center;padding:2.5rem 1rem;">
+    <div style="font-size:36px;margin-bottom:.7rem;">🔒</div>
+    <div style="font-family:var(--mono);font-size:14px;color:var(--muted-2);margin-bottom:1rem;">Sign in to register data sources and submit intake.</div>
+    <button class="btn-main" onclick="openRegModal()">SIGN IN</button>
+  </div>
+
+  <!-- Main content (shown when logged in) -->
+  <div id="da-main" style="display:none;">
+
+    <div id="da-status-line" style="font-family:var(--mono);font-size:11px;color:var(--muted-2);margin-bottom:1.2rem;"></div>
+
+    <div id="da-service-error" style="display:none;text-align:center;padding:2.5rem 1rem;">
+      <div style="font-size:36px;margin-bottom:.7rem;">⚠️</div>
+      <div style="font-family:var(--mono);font-size:13px;color:var(--muted-2);margin-bottom:1rem;">Couldn't reach the data acquisition service. The platform backend may be temporarily unavailable — this isn't something you need to fix.</div>
+      <button class="btn-sm" onclick="daEnsureBusiness()">RETRY →</button>
+    </div>
+
+    <div id="da-event-area" style="display:none;">
+
+      <div class="biz-tabs">
+        <button class="biz-tab active" onclick="daTab('sources',this)">🗂 SOURCES</button>
+        <button class="biz-tab" onclick="daTab('intake',this)">📥 MANUAL INTAKE</button>
+        <button class="biz-tab" onclick="daTab('runs',this)">🔍 RUNS</button>
+        <button class="biz-tab" onclick="daTab('publish',this)">📤 PUBLISH</button>
+      </div>
+
+      <!-- SOURCES -->
+      <div class="biz-form-panel visible" id="da-panel-sources">
+        <div id="da-sources-loading" style="text-align:center;padding:1.5rem 1rem;font-family:var(--mono);font-size:12px;color:var(--muted-2);">Loading sources…</div>
+        <div id="da-sources-empty" style="display:none;text-align:center;padding:1.5rem 1rem;font-family:var(--mono);font-size:12px;color:var(--muted-2);">No data sources registered yet — add your first one below.</div>
+        <div id="da-sources-list" style="display:grid;gap:.6rem;margin-bottom:1rem;"></div>
+
+        <button class="btn-sm" id="da-source-add-toggle" onclick="daToggleAddSource()">+ REGISTER SOURCE</button>
+        <div id="da-add-source-form" style="display:none;margin-top:1rem;">
+          <div class="biz-field"><label>Name</label><input id="da-src-name" type="text" placeholder="e.g. Supplier Invoices"></div>
+          <div class="biz-field"><label>Source Code</label><input id="da-src-code" type="text" placeholder="e.g. supplier-invoices"></div>
+          <div class="biz-field"><label>Source Type</label><input id="da-src-type" type="text" placeholder="e.g. api, file, manual"></div>
+          <div class="biz-field"><label>Sensitivity</label>
+            <select id="da-src-sensitivity">
+              <option value="internal">Internal</option>
+              <option value="public">Public</option>
+              <option value="confidential">Confidential</option>
+              <option value="restricted">Restricted</option>
+            </select>
+          </div>
+          <div class="biz-field"><label>Description</label><input id="da-src-desc" type="text" placeholder="optional"></div>
+          <button class="btn-main" onclick="daCreateSource()" style="margin-top:.3rem;">REGISTER →</button>
+        </div>
+        <div class="biz-event-msg" id="da-msg-sources"></div>
+      </div>
+
+      <!-- MANUAL INTAKE -->
+      <div class="biz-form-panel" id="da-panel-intake">
+        <div class="biz-field"><label>Data Source</label>
+          <select id="da-intake-source"><option value="">— select an active source —</option></select>
+        </div>
+        <div class="biz-field"><label>Submission Type</label><input id="da-intake-type" type="text" value="manual_batch" placeholder="e.g. product_catalog, supplier_batch"></div>
+        <div class="biz-field" style="align-items:start;"><label>Records (JSON array)</label><textarea id="da-intake-records" rows="8" placeholder='[{"name":"Widget","price":9.99},{"name":"Gadget","price":19.99}]'></textarea></div>
+        <button class="btn-main" onclick="daSubmitIntake()" style="margin-top:.3rem;">SUBMIT INTAKE →</button>
+        <div class="biz-event-msg" id="da-msg-intake"></div>
+        <div id="da-intake-result" style="display:none;margin-top:1rem;border:1px solid var(--line-2);border-radius:8px;padding:1rem;"></div>
+      </div>
+
+      <!-- RUNS -->
+      <div class="biz-form-panel" id="da-panel-runs">
+        <div style="display:flex;gap:1rem;flex-wrap:wrap;">
+          <div style="flex:1;min-width:220px;">
+            <div id="da-runs-loading" style="font-family:var(--mono);font-size:12px;color:var(--muted-2);padding:.5rem 0;">Loading runs…</div>
+            <div id="da-runs-empty" style="display:none;font-family:var(--mono);font-size:12px;color:var(--muted-2);padding:.5rem 0;">No collection runs yet — submit a manual intake first.</div>
+            <div id="da-runs-list" style="display:grid;gap:.4rem;"></div>
+          </div>
+          <div style="flex:2;min-width:280px;">
+            <div id="da-run-detail-empty" style="font-family:var(--mono);font-size:12px;color:var(--muted-2);padding:.5rem 0;">Select a run to see validation, quality, and provenance detail.</div>
+            <div id="da-run-detail" style="display:none;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PUBLISH -->
+      <div class="biz-form-panel" id="da-panel-publish">
+        <div id="da-publish-loading" style="text-align:center;padding:1.5rem 1rem;font-family:var(--mono);font-size:12px;color:var(--muted-2);">Loading publication packages…</div>
+        <div id="da-publish-empty" style="display:none;text-align:center;padding:1.5rem 1rem;font-family:var(--mono);font-size:12px;color:var(--muted-2);">No publication packages yet — prepare one from a validated run in the RUNS tab.</div>
+        <div id="da-publish-list" style="display:grid;gap:.6rem;"></div>
+      </div>
+
+      <!-- Navigation hint -->
+      <div style="margin-top:2rem;padding:1rem;background:rgba(0,224,96,.04);border:1px solid rgba(0,224,96,.15);border-radius:10px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;">
+        <div style="font-family:var(--mono);font-size:12px;color:var(--muted);">Next step: log day-to-day sales and expenses</div>
+        <button class="btn-sm" onclick="nav('operations')">GO TO OPERATIONS →</button>
+      </div>
+
+    </div><!-- /da-event-area -->
+
+  </div><!-- /da-main -->
 </section>
 
 <!-- ══ DIGITAL TWIN ══ -->
@@ -7438,6 +7541,336 @@ async function bizInitDecisions() {
   if (lbl) lbl.textContent = `Powered by claude-haiku-4-5 · grounded in live twin · Business: ${_bizCurrentId}`;
 }
 
+// ─── DATA ACQUISITION (BUILD-31) ─────────────────────────────────────────────
+// Same shadow business as Operations/Twin/Decisions (ensureBackendBusiness()/
+// bizBackendFetch() above) — a real, separate DA backend (sources, connectors,
+// manual JSON batch intake, quality scoring, provenance, publication packages),
+// distinct from Operations' single-event logging screen.
+let _daBusinessId = null;
+let _daSources = [];
+let _daRuns = [];
+let _daRunsLoaded = false;
+let _daSelectedRunId = null;
+let _daPackages = [];
+let _daPublicationsLoaded = false;
+
+// Called when nav('acquisition') fires — show/hide auth gate and provision the business
+function daInit() {
+  const signedIn = !!(U && U.email && U.supaId);
+  const gate = document.getElementById('da-auth-gate');
+  const main = document.getElementById('da-main');
+  if (!signedIn) {
+    if (gate) gate.style.display = 'block';
+    if (main) main.style.display = 'none';
+    return;
+  }
+  if (gate) gate.style.display = 'none';
+  if (main) main.style.display = 'block';
+  daEnsureBusiness();
+}
+
+async function daEnsureBusiness() {
+  const statusLine = document.getElementById('da-status-line');
+  const errArea = document.getElementById('da-service-error');
+  try {
+    const acct = await ensureBackendBusiness();
+    _daBusinessId = acct.businessId;
+    if (statusLine) statusLine.textContent = `Business ID: ${_daBusinessId}`;
+    if (errArea) errArea.style.display = 'none';
+    const area = document.getElementById('da-event-area');
+    if (area) area.style.display = 'block';
+    daLoadSources();
+  } catch (e) {
+    if (statusLine) statusLine.textContent = '';
+    if (errArea) errArea.style.display = 'block';
+    const area = document.getElementById('da-event-area');
+    if (area) area.style.display = 'none';
+    showToast('Could not set up your business account: ' + e.message);
+  }
+}
+
+function daTab(type, btn) {
+  document.querySelectorAll('#sec-acquisition .biz-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('#sec-acquisition .biz-form-panel').forEach(p => p.classList.remove('visible'));
+  document.getElementById('da-panel-' + type)?.classList.add('visible');
+  if (type === 'intake') daPopulateIntakeSources();
+  if (type === 'runs' && !_daRunsLoaded) daLoadRuns();
+  if (type === 'publish' && !_daPublicationsLoaded) daLoadPublications();
+}
+
+function daShowMsg(type, msg, isErr) {
+  const el = document.getElementById('da-msg-' + type);
+  if (!el) return;
+  el.style.cssText = `margin-top:.5rem;font-family:var(--mono);font-size:12px;color:${isErr?'var(--red)':'var(--green)'};`;
+  el.textContent = msg;
+  setTimeout(() => { el.textContent = ''; }, 4000);
+}
+
+function daStatusBadge(status) {
+  const colors = { draft:'var(--muted)', active:'var(--green)', paused:'#e0a800', suspended:'#e0a800', retired:'var(--muted-2)', failed:'var(--red)', validated:'var(--green)', quarantined:'#e0a800', collecting:'var(--cyan)', collected:'var(--cyan)', published:'var(--green)', ready:'var(--cyan)', revoked:'var(--muted-2)' };
+  const c = colors[status] || 'var(--muted)';
+  return `<span style="font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:${c};border:1px solid ${c};border-radius:4px;padding:1px 6px;">${(status||'').toUpperCase()}</span>`;
+}
+
+async function daLoadSources() {
+  if (!_daBusinessId) return;
+  const loading = document.getElementById('da-sources-loading');
+  const empty = document.getElementById('da-sources-empty');
+  if (loading) loading.style.display = 'block';
+  if (empty) empty.style.display = 'none';
+  try {
+    const d = await bizBackendFetch('/v1/businesses/' + _daBusinessId + '/data-sources');
+    _daSources = d.dataSources || [];
+  } catch(e) {
+    if (loading) loading.textContent = '✗ Could not load sources: ' + e.message;
+    return;
+  }
+  if (loading) loading.style.display = 'none';
+  daRenderSources();
+}
+
+function daRenderSources() {
+  const list = document.getElementById('da-sources-list');
+  const empty = document.getElementById('da-sources-empty');
+  if (!list || !empty) return;
+  if (_daSources.length === 0) { empty.style.display = 'block'; list.innerHTML = ''; return; }
+  empty.style.display = 'none';
+  list.innerHTML = _daSources.map(s => `
+    <div style="background:var(--glass);border:1px solid var(--line-2);border-radius:8px;padding:.7rem .9rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem;">
+      <div>
+        <div style="font-family:var(--mono);font-size:13px;color:var(--text);">${s.name} <span style="color:var(--muted-2);">(${s.sourceCode})</span></div>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--muted-2);">${s.sourceType} · ${s.sensitivityLevel}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:.5rem;">
+        ${daStatusBadge(s.status)}
+        ${s.status === 'draft' ? `<button class="btn-sm" onclick="daActivateSource('${s.id}')">ACTIVATE</button>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function daToggleAddSource() {
+  const form = document.getElementById('da-add-source-form');
+  if (!form) return;
+  form.style.display = form.style.display === 'none' ? 'block' : 'none';
+}
+
+async function daCreateSource() {
+  if (!_daBusinessId) return;
+  const name = document.getElementById('da-src-name')?.value.trim();
+  const sourceCode = document.getElementById('da-src-code')?.value.trim();
+  const sourceType = document.getElementById('da-src-type')?.value.trim();
+  const sensitivityLevel = document.getElementById('da-src-sensitivity')?.value;
+  const description = document.getElementById('da-src-desc')?.value.trim() || undefined;
+  if (!name || !sourceCode || !sourceType) { daShowMsg('sources', '✗ Name, source code, and source type are required.', true); return; }
+  try {
+    await bizBackendFetch('/v1/businesses/' + _daBusinessId + '/data-sources', {
+      method: 'POST',
+      body: { name, sourceCode, sourceType, sensitivityLevel, description },
+    });
+    ['da-src-name','da-src-code','da-src-type','da-src-desc'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+    daToggleAddSource();
+    daShowMsg('sources', `✓ Registered ${name}.`, false);
+    await daLoadSources();
+  } catch(e) { daShowMsg('sources', '✗ ' + e.message, true); }
+}
+
+async function daActivateSource(sourceId) {
+  if (!_daBusinessId) return;
+  try {
+    await bizBackendFetch('/v1/businesses/' + _daBusinessId + '/data-sources/' + sourceId + '/status', {
+      method: 'PATCH',
+      body: { status: 'active' },
+    });
+    daShowMsg('sources', '✓ Source activated.', false);
+    await daLoadSources();
+  } catch(e) { daShowMsg('sources', '✗ ' + e.message, true); }
+}
+
+function daPopulateIntakeSources() {
+  const sel = document.getElementById('da-intake-source');
+  if (!sel) return;
+  const active = _daSources.filter(s => s.status === 'active');
+  sel.innerHTML = '<option value="">— select an active source —</option>' +
+    active.map(s => `<option value="${s.id}">${s.name} (${s.sourceCode})</option>`).join('') +
+    (active.length === 0 ? '<option value="" disabled>No active sources — activate one in SOURCES first</option>' : '');
+}
+
+async function daSubmitIntake() {
+  if (!_daBusinessId) return;
+  const sourceId = document.getElementById('da-intake-source')?.value;
+  const submissionType = document.getElementById('da-intake-type')?.value.trim() || 'manual_batch';
+  const raw = document.getElementById('da-intake-records')?.value.trim();
+  if (!sourceId) { daShowMsg('intake', '✗ Select a data source first.', true); return; }
+  let records;
+  try { records = JSON.parse(raw); } catch(e) { daShowMsg('intake', '✗ Records must be valid JSON.', true); return; }
+  if (!Array.isArray(records) || records.length === 0) { daShowMsg('intake', '✗ Records must be a non-empty JSON array.', true); return; }
+  try {
+    const result = await bizBackendFetch('/v1/businesses/' + _daBusinessId + '/data-sources/' + sourceId + '/manual-intake', {
+      method: 'POST',
+      body: { submissionType, records },
+    });
+    daShowMsg('intake', `✓ Intake submitted — run is ${result.state}.`, false);
+    const box = document.getElementById('da-intake-result');
+    if (box) {
+      box.style.display = 'block';
+      box.innerHTML = `
+        <div style="font-family:var(--mono);font-size:12px;color:var(--text);margin-bottom:.4rem;">Run state: ${daStatusBadge(result.state)}</div>
+        <div style="font-family:var(--mono);font-size:12px;color:var(--muted-2);">Received: ${result.recordsReceived} · Accepted: ${result.recordsAccepted} · Rejected: ${result.recordsRejected}</div>
+        <button class="btn-sm" style="margin-top:.6rem;" onclick="daViewRun('${result.collectionRunId}')">VIEW RUN DETAIL →</button>
+      `;
+    }
+    _daRunsLoaded = false;
+  } catch(e) { daShowMsg('intake', '✗ ' + e.message, true); }
+}
+
+async function daViewRun(runId) {
+  document.querySelectorAll('#sec-acquisition .biz-tab').forEach(b => b.classList.remove('active'));
+  document.querySelector('#sec-acquisition .biz-tab[onclick^="daTab(\'runs\'"]')?.classList.add('active');
+  document.querySelectorAll('#sec-acquisition .biz-form-panel').forEach(p => p.classList.remove('visible'));
+  document.getElementById('da-panel-runs')?.classList.add('visible');
+  await daLoadRuns();
+  daSelectRun(runId);
+}
+
+async function daLoadRuns() {
+  if (!_daBusinessId) return;
+  const loading = document.getElementById('da-runs-loading');
+  const empty = document.getElementById('da-runs-empty');
+  if (loading) loading.style.display = 'block';
+  if (empty) empty.style.display = 'none';
+  try {
+    const d = await bizBackendFetch('/v1/businesses/' + _daBusinessId + '/collection-runs');
+    _daRuns = d.runs || [];
+    _daRunsLoaded = true;
+  } catch(e) {
+    if (loading) loading.textContent = '✗ Could not load runs: ' + e.message;
+    return;
+  }
+  if (loading) loading.style.display = 'none';
+  if (_daRuns.length === 0 && empty) empty.style.display = 'block';
+  daRenderRunsList();
+}
+
+function daRenderRunsList() {
+  const list = document.getElementById('da-runs-list');
+  if (!list) return;
+  list.innerHTML = _daRuns.map(r => `
+    <button onclick="daSelectRun('${r.id}')" style="text-align:left;background:${_daSelectedRunId===r.id?'rgba(0,224,96,.08)':'var(--glass)'};border:1px solid ${_daSelectedRunId===r.id?'var(--green)':'var(--line-2)'};border-radius:8px;padding:.6rem .8rem;cursor:pointer;width:100%;">
+      <div style="font-family:var(--mono);font-size:12px;color:var(--text);">${r.collectionType} · ${daStatusBadge(r.state)}</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--muted-2);margin-top:.2rem;">${new Date(r.createdAt).toLocaleString()}</div>
+    </button>
+  `).join('');
+}
+
+async function daSelectRun(runId) {
+  _daSelectedRunId = runId;
+  daRenderRunsList();
+  const detail = document.getElementById('da-run-detail');
+  const detailEmpty = document.getElementById('da-run-detail-empty');
+  if (!detail) return;
+  if (detailEmpty) detailEmpty.style.display = 'none';
+  detail.style.display = 'block';
+  detail.innerHTML = '<div style="font-family:var(--mono);font-size:12px;color:var(--muted-2);">Loading run detail…</div>';
+  try {
+    const [run, validation, quality, provenance] = await Promise.all([
+      bizBackendFetch('/v1/businesses/' + _daBusinessId + '/collection-runs/' + runId),
+      bizBackendFetch('/v1/businesses/' + _daBusinessId + '/collection-runs/' + runId + '/validation-results'),
+      bizBackendFetch('/v1/businesses/' + _daBusinessId + '/collection-runs/' + runId + '/quality-score'),
+      bizBackendFetch('/v1/businesses/' + _daBusinessId + '/collection-runs/' + runId + '/provenance'),
+    ]);
+    const score = quality.qualityScore;
+    const issues = (validation.validationResults || []).flatMap(v => v.issues || []);
+    detail.innerHTML = `
+      <div style="font-family:var(--mono);font-size:13px;color:var(--text);margin-bottom:.5rem;">Run ${daStatusBadge(run.state)}</div>
+      <div style="font-family:var(--mono);font-size:12px;color:var(--muted-2);margin-bottom:.8rem;">Received ${run.recordsReceived} · Accepted ${run.recordsAccepted} · Rejected ${run.recordsRejected}</div>
+      ${score ? `
+      <div style="font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.08em;margin-bottom:.4rem;">QUALITY SCORE — ${(score.overallScore*100).toFixed(0)}%</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem;margin-bottom:.9rem;font-family:var(--mono);font-size:11px;color:var(--muted-2);">
+        <div>Completeness: ${(score.completeness*100).toFixed(0)}%</div>
+        <div>Validity: ${(score.validity*100).toFixed(0)}%</div>
+        <div>Consistency: ${(score.consistency*100).toFixed(0)}%</div>
+        <div>Timeliness: ${(score.timeliness*100).toFixed(0)}%</div>
+        <div>Uniqueness: ${(score.uniqueness*100).toFixed(0)}%</div>
+        <div>Conformity: ${(score.conformity*100).toFixed(0)}%</div>
+      </div>` : `<div style="font-family:var(--mono);font-size:12px;color:var(--muted-2);margin-bottom:.9rem;">No quality score yet.</div>`}
+      <div style="font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.08em;margin-bottom:.3rem;">PROVENANCE — ${(provenance.provenance||[]).length} record(s) hashed</div>
+      ${issues.length ? `
+      <div style="font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.08em;margin:.8rem 0 .3rem;">ISSUES (${issues.length})</div>
+      <div style="max-height:140px;overflow-y:auto;">${issues.map(i => `<div style="font-family:var(--mono);font-size:11px;color:var(--muted-2);padding:.2rem 0;border-bottom:1px solid var(--line-2);">[${i.severity}] ${i.message}</div>`).join('')}</div>
+      ` : ''}
+      ${run.state === 'validated' ? `
+      <div style="margin-top:1rem;padding-top:.8rem;border-top:1px solid var(--line-2);">
+        <div class="biz-field"><label>Target Block</label><input id="da-publish-target-${runId}" type="text" placeholder="e.g. bo-events" style="max-width:200px;"></div>
+        <button class="btn-sm" onclick="daPreparePublication('${runId}')">PREPARE PUBLICATION PACKAGE →</button>
+      </div>` : ''}
+    `;
+  } catch(e) {
+    detail.innerHTML = `<div style="font-family:var(--mono);font-size:12px;color:var(--red);">✗ Could not load run detail: ${e.message}</div>`;
+  }
+}
+
+async function daPreparePublication(runId) {
+  if (!_daBusinessId) return;
+  const targetBlock = document.getElementById('da-publish-target-' + runId)?.value.trim() || 'bo-events';
+  try {
+    await bizBackendFetch('/v1/businesses/' + _daBusinessId + '/collection-runs/' + runId + '/publication-package', {
+      method: 'POST',
+      body: { targetBlock },
+    });
+    showToast('✓ Publication package prepared — see the PUBLISH tab.');
+    _daPublicationsLoaded = false;
+  } catch(e) { showToast('✗ ' + e.message); }
+}
+
+async function daLoadPublications() {
+  if (!_daBusinessId) return;
+  const loading = document.getElementById('da-publish-loading');
+  const empty = document.getElementById('da-publish-empty');
+  if (loading) loading.style.display = 'block';
+  if (empty) empty.style.display = 'none';
+  try {
+    const d = await bizBackendFetch('/v1/businesses/' + _daBusinessId + '/publication-packages');
+    _daPackages = d.publicationPackages || [];
+    _daPublicationsLoaded = true;
+  } catch(e) {
+    if (loading) loading.textContent = '✗ Could not load publication packages: ' + e.message;
+    return;
+  }
+  if (loading) loading.style.display = 'none';
+  daRenderPublications();
+}
+
+function daRenderPublications() {
+  const list = document.getElementById('da-publish-list');
+  const empty = document.getElementById('da-publish-empty');
+  if (!list || !empty) return;
+  if (_daPackages.length === 0) { empty.style.display = 'block'; list.innerHTML = ''; return; }
+  empty.style.display = 'none';
+  list.innerHTML = _daPackages.map(p => `
+    <div style="background:var(--glass);border:1px solid var(--line-2);border-radius:8px;padding:.7rem .9rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem;">
+      <div>
+        <div style="font-family:var(--mono);font-size:13px;color:var(--text);">${p.targetBlock} <span style="color:var(--muted-2);">· ${p.recordCount} record(s)</span></div>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--muted-2);">${p.packageType} → ${p.targetLayer}${p.qualityScore!=null ? ' · quality ' + (p.qualityScore*100).toFixed(0) + '%' : ''}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:.5rem;">
+        ${daStatusBadge(p.status)}
+        ${p.status === 'ready' ? `<button class="btn-sm" onclick="daPublishPackage('${p.id}')">PUBLISH</button>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+async function daPublishPackage(packageId) {
+  if (!_daBusinessId) return;
+  try {
+    await bizBackendFetch('/v1/businesses/' + _daBusinessId + '/publication-packages/' + packageId + '/publish', { method: 'POST' });
+    showToast('✓ Package published.');
+    await daLoadPublications();
+  } catch(e) { showToast('✗ ' + e.message); }
+}
+
 // Hook into the nav function: call biz init functions when layer tabs are opened
 // (Will be wired below after nav() is defined, via a safe patch)
 (function patchNavForBiz() {
@@ -7445,6 +7878,7 @@ async function bizInitDecisions() {
   if (typeof _origNav === 'function') {
     window.nav = function(sec) {
       _origNav(sec);
+      if (sec === 'acquisition') daInit();
       if (sec === 'operations') bizInit();
       if (sec === 'twin')       bizInitTwin();
       if (sec === 'decisions')  bizInitDecisions();
@@ -7456,6 +7890,7 @@ async function bizInitDecisions() {
       if (typeof orig === 'function') {
         window.nav = function(sec) {
           orig(sec);
+          if (sec === 'acquisition') daInit();
           if (sec === 'operations') bizInit();
           if (sec === 'twin')       bizInitTwin();
           if (sec === 'decisions')  bizInitDecisions();

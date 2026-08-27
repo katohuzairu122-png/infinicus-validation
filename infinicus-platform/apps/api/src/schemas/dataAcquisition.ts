@@ -249,7 +249,7 @@ export const listCollectionRunsResponseSchema = z.object({ runs: z.array(collect
 export const manualIntakeResponseSchema = manualIntakeResultSchema;
 
 export const listValidationResultsResponseSchema = z.object({
-  validationResults: z.array(validationResultSchema.extend({ issues: z.array(validationIssueSchema).optional() })),
+  validationResults: z.array(validationResultSchema.extend({ issues: z.array(validationIssueSchema) })),
 });
 
 export const qualityScoreResponseSchema = z.object({ qualityScore: dataQualityScoreSchema.nullable() });
