@@ -258,6 +258,58 @@ describe.runIf(RUN)('Integration: ConnectorRepository', () => {
       connRepo.updateHealth(ctx1, ABSENT_CONNECTOR_ID, 'not_a_health_status' as never)
     ).rejects.toBeInstanceOf(ValidationError);
   });
+
+  describe('webhook token', () => {
+    let webhookConnectorId: string;
+
+    beforeAll(async () => {
+      const conn = await connRepo.create(ctx1, {
+        dataSourceId: build31SourceId, name: 'Webhook Connector', connectorType: 'webhook',
+      });
+      webhookConnectorId = conn.id;
+    });
+
+    it('generateWebhookToken returns a raw prefix.secret token and persists only its hash', async () => {
+      const rawToken = await connRepo.generateWebhookToken(ctx1, webhookConnectorId);
+      expect(rawToken).toMatch(/^[0-9a-f]{12}\.[0-9a-f]{64}$/);
+
+      const connector = await connRepo.findById(ctx1, webhookConnectorId);
+      expect(connector.webhookTokenPrefix).toBe(rawToken.split('.')[0]);
+      // The stored row never carries the secret itself in plain form under
+      // any exposed field — webhookTokenHash is intentionally absent from
+      // the public Connector shape (see rowToConnector).
+      expect(JSON.stringify(connector)).not.toContain(rawToken.split('.')[1]);
+    });
+
+    it('findConnectorForWebhook resolves the connector across tenants without any TenantContext (RLS bypass via SECURITY DEFINER)', async () => {
+      const rawToken = await connRepo.generateWebhookToken(ctx1, webhookConnectorId);
+      const [prefix] = rawToken.split('.');
+
+      const lookup = await connRepo.findConnectorForWebhook(prefix);
+      expect(lookup).not.toBeNull();
+      expect(lookup!.connectorId).toBe(webhookConnectorId);
+      expect(lookup!.tenantId).toBe(ctx1.tenantId);
+      expect(lookup!.workspaceId).toBe(ctx1.workspaceId);
+      expect(lookup!.dataSourceId).toBe(build31SourceId);
+      expect(lookup!.connectorStatus).toBe('draft');
+    });
+
+    it('findConnectorForWebhook returns null for an unknown prefix', async () => {
+      const lookup = await connRepo.findConnectorForWebhook('does-not-exist');
+      expect(lookup).toBeNull();
+    });
+
+    it('regenerating the token invalidates the previous one', async () => {
+      const first = await connRepo.generateWebhookToken(ctx1, webhookConnectorId);
+      const second = await connRepo.generateWebhookToken(ctx1, webhookConnectorId);
+      expect(second).not.toBe(first);
+
+      const [firstPrefix] = first.split('.');
+      const [secondPrefix] = second.split('.');
+      expect(await connRepo.findConnectorForWebhook(firstPrefix)).toBeNull();
+      expect(await connRepo.findConnectorForWebhook(secondPrefix)).not.toBeNull();
+    });
+  });
 });
 
 describe.runIf(RUN)('Schema: connectors_type_check', () => {
