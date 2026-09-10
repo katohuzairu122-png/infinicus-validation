@@ -14,6 +14,7 @@ import {
   connectorResponseSchema, listConnectorsResponseSchema,
   collectionRunResponseSchema, listCollectionRunsResponseSchema,
   manualIntakeResponseSchema,
+  webhookTokenResponseSchema,
   listValidationResultsResponseSchema, qualityScoreResponseSchema,
   listProvenanceResponseSchema,
   publicationPackageResponseSchema, listPublicationPackagesResponseSchema,
@@ -186,6 +187,21 @@ export default async function dataAcquisitionRoutes(app: FastifyInstance) {
     await businesses.getById(request.ctx!, businessId);
     const connector = await dataAcquisition.updateConnectorStatus(request.ctx!, businessId, sourceId, connectorId, request.body.status);
     return reply.status(200).send(connector);
+  });
+
+  server.post('/v1/businesses/:businessId/data-sources/:sourceId/connectors/:connectorId/webhook-token', {
+    schema: {
+      tags: ['data-acquisition'],
+      summary: '(Re)generate a webhook connector\'s bearer token — shown exactly once here, never retrievable again',
+      params: connectorIdParamsSchema,
+      response: { 201: webhookTokenResponseSchema, 401: errorResponseSchema, 403: errorResponseSchema, 404: errorResponseSchema, 400: errorResponseSchema },
+    },
+    preHandler: [app.authenticate, app.resolveTenantContext, app.requirePermission('da:admin'), app.requireActiveSubscription(), app.requireIdempotencyKey],
+  }, async (request, reply) => {
+    const { businessId, sourceId, connectorId } = request.params;
+    await businesses.getById(request.ctx!, businessId);
+    const token = await dataAcquisition.generateConnectorWebhookToken(request.ctx!, businessId, sourceId, connectorId);
+    return reply.status(201).send({ token, webhookUrl: `/v1/webhooks/data-acquisition/${token}` });
   });
 
   // ── Manual JSON intake (§4.5) ───────────────────────────────────────────────

@@ -91,6 +91,7 @@ export const ERROR_STATUS_CODES: Record<string, number> = {
   CollectionLimitExceededError: 413,
   PublicationNotReadyError: 409,
   QualityThresholdError: 409,
+  WebhookAuthenticationError: 401,
 
   // Fastify / schema validation
   FST_ERR_VALIDATION: 400,
