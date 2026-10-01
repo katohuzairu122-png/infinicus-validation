@@ -28,6 +28,7 @@ import ordersRoutes from './routes/orders.js';
 import twinRoutes from './routes/twin.js';
 import decisionRecommendationsRoutes from './routes/decisionRecommendations.js';
 import dataAcquisitionRoutes from './routes/dataAcquisition.js';
+import webhooksRoutes from './routes/webhooks.js';
 import './types.js';
 
 export async function buildApp(config: InfinicusConfig): Promise<FastifyInstance> {
@@ -136,6 +137,7 @@ export async function buildApp(config: InfinicusConfig): Promise<FastifyInstance
   await app.register(twinRoutes);
   await app.register(decisionRecommendationsRoutes);
   await app.register(dataAcquisitionRoutes);
+  await app.register(webhooksRoutes);
 
   return app;
 }
